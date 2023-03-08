@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "gtk-wrapper"
+version = "0.1.0"
+description = ""
+authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "web_gui" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pywebview = "^4.0.2"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+isort = "^5.12.0"
+pre-commit = "^3.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

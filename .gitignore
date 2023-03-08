@@ -1,0 +1,14 @@
+# Python Cache Files
+__pycache__
+*.pyc
+*.pyo
+
+
+# Poetry
+.venv
+poetry.lock
+
+
+# Editor Files
+.vscode
+
