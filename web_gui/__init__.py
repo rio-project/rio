@@ -1,51 +1,7 @@
-import asyncio
-import webview
 from abc import ABC, abstractmethod
-from typing import Iterable, Tuple, Union
+from typing import Iterable, Tuple, Union, Optional
 import html
-
-
-class Color:
-    r: float
-    g: float
-    b: float
-    a: float
-
-    def __init__(self):
-        raise RuntimeError(
-            "Don't call this constructor directly. Use `srgb()` and related methods instead."
-        )
-
-    @classmethod
-    def srgb(cls, r: float, g: float, b: float, a: float = 1.0) -> "Color":
-        if not 0 <= r <= 1:
-            raise ValueError("r must be between 0 and 1")
-
-        if not 0 <= g <= 1:
-            raise ValueError("g must be between 0 and 1")
-
-        if not 0 <= b <= 1:
-            raise ValueError("b must be between 0 and 1")
-
-        if not 0 <= a <= 1:
-            raise ValueError("a must be between 0 and 1")
-
-        self = cls.__new__(cls)
-
-        self.r = r
-        self.g = g
-        self.b = b
-        self.a = a
-
-        return self
-
-    GREY: "Color"
-
-    def to_css(self) -> str:
-        return f"rgba({self.r * 255}, {self.g * 255}, {self.b * 255}, {self.a})"
-
-
-Color.GREY = Color.srgb(0.5, 0.5, 0.5)
+from .styling import *
 
 
 class Widget(ABC):
@@ -53,17 +9,24 @@ class Widget(ABC):
         pass
 
     @abstractmethod
-    def to_html(self) -> Iterable[str]:
+    def _as_html(self) -> Iterable[str]:
         raise NotImplementedError()
 
 
-class Label(Widget):
-    def __init__(self, text: str):
+class Text(Widget):
+    def __init__(
+        self,
+        text: str,
+        *,
+        multiline: bool = False,
+    ):
         super().__init__()
         self.text = text
+        self.multiline = multiline
 
-    def to_html(self) -> Iterable[str]:
-        yield f"<span>{html.escape(self.text)}</span>"
+    def _as_html(self) -> Iterable[str]:
+        multiline_str = "" if self.multiline else ' style="white-space: nowrap;"'
+        yield f"<span{multiline_str}>{html.escape(self.text)}</span>"
 
 
 class Row(Widget):
@@ -73,30 +36,42 @@ class Row(Widget):
         super().__init__()
         self.children = children
 
-    def to_html(self) -> Iterable[str]:
-        yield '<div style="display: flex;">'
+    def _as_html(self) -> Iterable[str]:
+        yield '<div style="width: 100%; height: 100%; display: flex;">'
+
         for widget in self.children:
-            yield from widget.to_html()
+            yield from widget._as_html()
+
+        yield "</div>"
+
+
+class Column(Widget):
+    children: Tuple[Widget]
+
+    def __init__(self, *children: Widget):
+        super().__init__()
+        self.children = children
+
+    def _as_html(self) -> Iterable[str]:
+        yield '<div style="width: 100%; height: 100%; display: flex; flex-direction: column;">'
+
+        for widget in self.children:
+            yield from widget._as_html()
+
         yield "</div>"
 
 
 class Rectangle(Widget):
-    width: float
-    height: float
     color: Color
     _corner_radius: Tuple[float, float, float, float]
 
     def __init__(
         self,
         *,
-        width: float = 1,
-        height: float = 1,
         color: Color = Color.GREY,
         corner_radius: float = 0.0,
     ):
         super().__init__()
-        self.width = width
-        self.height = height
         self.color = color
         self.corner_radius = corner_radius
 
@@ -118,22 +93,160 @@ class Rectangle(Widget):
 
             self._corner_radius = value
 
-    def to_html(self) -> Iterable[str]:
-        yield f"<div style='width: {self.width}em; height: {self.height}em; background-color: {self.color.to_css()}; border-radius: {self.corner_radius}em;'></div>"
+    def _as_html(self) -> Iterable[str]:
+        border_radius_str = " ".join(f"{radius}em" for radius in self.corner_radius)
+        yield f'<div style="width: 100%; height: 100%; background: {self.color._as_css()}; border-radius: {border_radius_str};"></div>'
 
 
-async def main():
-    gui = Row(
-        Rectangle(width=3, height=2, color=Color.srgb(1, 0, 0)),
-        Rectangle(width=3, height=2, color=Color.srgb(0, 1, 0)),
-        Label("Hello, world!"),
-    )
+class Stack(Widget):
+    children: Tuple[Widget]
 
-    html = "".join(gui.to_html())
+    def __init__(self, *children: Widget):
+        super().__init__()
+        self.children = children
 
-    webview.create_window("Hello world", html=html)
-    webview.start()
+    def _as_html(self) -> Iterable[str]:
+        yield '<div style="position: relative; width: 100%; height: 100%;">'
+
+        for widget in self.children:
+            yield '<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">'
+            yield from widget._as_html()
+            yield "</div>"
+
+        yield "</div>"
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+class Margin(Widget):
+    child: Widget
+    margin_left: float
+    margin_top: float
+    margin_right: float
+    margin_bottom: float
+
+    def __init__(
+        self,
+        child: Widget,
+        *,
+        margin: float = 0,
+        margin_horizontal: float = 0,
+        margin_vertical: float = 0,
+        margin_left: float = 0,
+        margin_top: float = 0,
+        margin_right: float = 0,
+        margin_bottom: float = 0,
+    ):
+        super().__init__()
+
+        self.child = child
+
+        if margin != 0:
+            self.margin_left = margin
+            self.margin_top = margin
+            self.margin_right = margin
+            self.margin_bottom = margin
+
+        elif margin_horizontal != 0:
+            self.margin_left = margin_horizontal
+            self.margin_top = 0
+            self.margin_right = margin_horizontal
+            self.margin_bottom = 0
+
+        elif margin_vertical != 0:
+            self.margin_left = 0
+            self.margin_top = margin_vertical
+            self.margin_right = 0
+            self.margin_bottom = margin_vertical
+
+        else:
+            self.margin_left = margin_left
+            self.margin_top = margin_top
+            self.margin_right = margin_right
+            self.margin_bottom = margin_bottom
+
+    def _as_html(self) -> Iterable[str]:
+        yield f'<div style="margin: {self.margin_top}em {self.margin_right}em {self.margin_bottom}em {self.margin_left}em;">'
+        yield from self.child._as_html()
+        yield "</div>"
+
+
+class Align(Widget):
+    child: Widget
+    align_x: Optional[float]
+    align_y: Optional[float]
+
+    def __init__(
+        self,
+        child: Widget,
+        *,
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        super().__init__()
+        self.child = child
+        self.align_x = align_x
+        self.align_y = align_y
+
+    @classmethod
+    def top(cls, child: Widget):
+        return cls(child, align_y=0)
+
+    @classmethod
+    def bottom(cls, child: Widget):
+        return cls(child, align_y=1)
+
+    @classmethod
+    def left(cls, child: Widget):
+        return cls(child, align_x=0)
+
+    @classmethod
+    def right(cls, child: Widget):
+        return cls(child, align_x=1)
+
+    @classmethod
+    def top_left(cls, child: Widget):
+        return cls(child, align_x=0, align_y=0)
+
+    @classmethod
+    def top_center(cls, child: Widget):
+        return cls(child, align_x=0.5, align_y=0)
+
+    @classmethod
+    def top_right(cls, child: Widget):
+        return cls(child, align_x=1, align_y=0)
+
+    @classmethod
+    def center_left(cls, child: Widget):
+        return cls(child, align_x=0, align_y=0.5)
+
+    @classmethod
+    def center(cls, child: Widget):
+        return cls(child, align_x=0.5, align_y=0.5)
+
+    @classmethod
+    def center_right(cls, child: Widget):
+        return cls(child, align_x=1, align_y=0.5)
+
+    @classmethod
+    def bottom_left(cls, child: Widget):
+        return cls(child, align_x=0, align_y=1)
+
+    @classmethod
+    def bottom_center(cls, child: Widget):
+        return cls(child, align_x=0.5, align_y=1)
+
+    @classmethod
+    def bottom_right(cls, child: Widget):
+        return cls(child, align_x=1, align_y=1)
+
+    def _as_html(self) -> Iterable[str]:
+        style_props = ""
+
+        if self.align_x is not None:
+            style_props += f"justify-content: {self.align_x*100}%;"
+
+        if self.align_y is not None:
+            style_props += f"align-items: {self.align_y*100}%;"
+
+        yield f'<div style="width: 100%; height: 100%; display: flex; {style_props}">'
+        yield from self.child._as_html()
+        yield "</div>"
