@@ -1,28 +1,59 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Tuple, Union, Optional
+from typing import Iterable, Tuple, Union, Optional, TypeVar, Generic, Self, dataclass_transform, overload
+import dataclasses
 import html
 from .styling import *
 
 
+T = TypeVar('T')
+
+
+@dataclass_transform()
 class Widget(ABC):
-    def __init__(self):
-        pass
+    _dirty: bool = False
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
+        dataclasses.dataclass(cls)
+
+        for attr in vars(cls).get('__annotations__', ()):
+            setattr(cls, attr, StateProperty(attr))
 
     @abstractmethod
     def _as_html(self) -> Iterable[str]:
         raise NotImplementedError()
 
 
-class Text(Widget):
-    def __init__(
+class StateProperty(Generic[T]):
+    def __init__(self, name: str):
+        self.name = name
+
+    @overload
+    def __get__(self, instance: Widget, owner: Optional[type] = None) -> T: ...
+    
+    @overload
+    def __get__(self, instance: None, owner: Optional[type] = None) -> Self: ...
+    
+    def __get__(
         self,
-        text: str,
-        *,
-        multiline: bool = False,
-    ):
-        super().__init__()
-        self.text = text
-        self.multiline = multiline
+        instance: Optional[Widget],
+        owner: Optional[type] = None,
+    ) -> Union[T, Self]:
+        if instance is None:
+            return self
+
+        return vars(instance)[self.name]
+    
+    def __set__(self, instance: Widget, value: T) -> None:
+        vars(instance)[self.name] = value
+        instance._dirty = True
+
+
+class Text(Widget):
+    text: str
+    _: dataclasses.KW_ONLY
+    multiline: bool = False
 
     def _as_html(self) -> Iterable[str]:
         multiline_str = "" if self.multiline else ' style="white-space: nowrap;"'
