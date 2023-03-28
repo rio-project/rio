@@ -1,11 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import Iterable, Tuple, Union, Optional, TypeVar, Generic, Self, dataclass_transform, overload
 import dataclasses
 import html
+import typing
+from abc import ABC, abstractmethod
+from dataclasses import KW_ONLY, dataclass
+from typing import Dict, Generic, Iterable, Optional, Tuple, TypeVar, Union, overload
+
+from typing_extensions import Self, dataclass_transform
+
+from .common import Jsonable
 from .styling import *
 
-
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass_transform()
@@ -17,12 +22,26 @@ class Widget(ABC):
 
         dataclasses.dataclass(cls)
 
-        for attr in vars(cls).get('__annotations__', ()):
+        for attr in vars(cls).get("__annotations__", ()):
             setattr(cls, attr, StateProperty(attr))
 
     @abstractmethod
-    def _as_html(self) -> Iterable[str]:
-        raise NotImplementedError()
+    def build(self) -> "Widget":
+        raise NotImplementedError
+
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return self.build()._serialize()
+
+    def _serialize_state(self) -> Dict[str, Jsonable]:
+        result = {}
+
+        for name, typ in typing.get_type_hints(self.__class__).items():
+            if typ is bool or typ is int or typ is float or typ is str:
+                # TODO: Optional values? Literal? Tuples?
+                value = getattr(self, name)
+                result[name] = value
+
+        return result
 
 
 class StateProperty(Generic[T]):
@@ -30,11 +49,13 @@ class StateProperty(Generic[T]):
         self.name = name
 
     @overload
-    def __get__(self, instance: Widget, owner: Optional[type] = None) -> T: ...
-    
+    def __get__(self, instance: Widget, owner: Optional[type] = None) -> T:
+        ...
+
     @overload
-    def __get__(self, instance: None, owner: Optional[type] = None) -> Self: ...
-    
+    def __get__(self, instance: None, owner: Optional[type] = None) -> Self:
+        ...
+
     def __get__(
         self,
         instance: Optional[Widget],
@@ -44,110 +65,73 @@ class StateProperty(Generic[T]):
             return self
 
         return vars(instance)[self.name]
-    
+
     def __set__(self, instance: Widget, value: T) -> None:
         vars(instance)[self.name] = value
         instance._dirty = True
 
 
-class Text(Widget):
+class FundamentalWidget(Widget):
+    def build(self) -> "Widget":
+        return self
+
+
+@dataclass
+class Text(FundamentalWidget):
     text: str
-    _: dataclasses.KW_ONLY
+    _: KW_ONLY
     multiline: bool = False
+    font: Optional[str] = None
 
-    def _as_html(self) -> Iterable[str]:
-        multiline_str = "" if self.multiline else ' style="white-space: nowrap;"'
-        yield f"<span{multiline_str}>{html.escape(self.text)}</span>"
-
-
-class Row(Widget):
-    children: Tuple[Widget]
-
-    def __init__(self, *children: Widget):
-        super().__init__()
-        self.children = children
-
-    def _as_html(self) -> Iterable[str]:
-        yield '<div style="width: 100%; height: 100%; display: flex;">'
-
-        for widget in self.children:
-            yield from widget._as_html()
-
-        yield "</div>"
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {"type": "text"}
 
 
-class Column(Widget):
-    children: Tuple[Widget]
+@dataclass
+class Row(FundamentalWidget):
+    children: List[Widget]
 
-    def __init__(self, *children: Widget):
-        super().__init__()
-        self.children = children
-
-    def _as_html(self) -> Iterable[str]:
-        yield '<div style="width: 100%; height: 100%; display: flex; flex-direction: column;">'
-
-        for widget in self.children:
-            yield from widget._as_html()
-
-        yield "</div>"
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "row",
+            "children": [child._serialize() for child in self.children],
+        }
 
 
-class Rectangle(Widget):
-    color: Color
-    _corner_radius: Tuple[float, float, float, float]
+@dataclass
+class Column(FundamentalWidget):
+    children: List[Widget]
 
-    def __init__(
-        self,
-        *,
-        color: Color = Color.GREY,
-        corner_radius: float = 0.0,
-    ):
-        super().__init__()
-        self.color = color
-        self.corner_radius = corner_radius
-
-    @property
-    def corner_radius(self) -> Tuple[float, float, float, float]:
-        return self._corner_radius
-
-    @corner_radius.setter
-    def corner_radius(self, value: Union[float, Iterable[float]]):
-        if isinstance(value, (int, float)):
-            self._corner_radius = (value, value, value, value)
-        else:
-            value = tuple(value)
-
-            if len(value) != 4:
-                raise ValueError(
-                    "The corner radius must either be a float or a 4-tuple of floats"
-                )
-
-            self._corner_radius = value
-
-    def _as_html(self) -> Iterable[str]:
-        border_radius_str = " ".join(f"{radius}em" for radius in self.corner_radius)
-        yield f'<div style="width: 100%; height: 100%; background: {self.color._as_css()}; border-radius: {border_radius_str};"></div>'
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "column",
+            "children": [child._serialize() for child in self.children],
+        }
 
 
-class Stack(Widget):
-    children: Tuple[Widget]
+@dataclass
+class Rectangle(FundamentalWidget):
+    fill: FillLike
+    _: KW_ONLY
+    corner_radius: Tuple[float, float, float, float] = (0, 0, 0, 0)
 
-    def __init__(self, *children: Widget):
-        super().__init__()
-        self.children = children
-
-    def _as_html(self) -> Iterable[str]:
-        yield '<div style="position: relative; width: 100%; height: 100%;">'
-
-        for widget in self.children:
-            yield '<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">'
-            yield from widget._as_html()
-            yield "</div>"
-
-        yield "</div>"
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {"type": "rectangle"}
 
 
-class Margin(Widget):
+@dataclass
+class Stack(FundamentalWidget):
+    children: List[Widget]
+
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "stack",
+            "children": [child._serialize() for child in self.children],
+        }
+
+
+@dataclass
+class Margin(FundamentalWidget):
     child: Widget
     margin_left: float
     margin_top: float
@@ -194,13 +178,15 @@ class Margin(Widget):
             self.margin_right = margin_right
             self.margin_bottom = margin_bottom
 
-    def _as_html(self) -> Iterable[str]:
-        yield f'<div style="margin: {self.margin_top}em {self.margin_right}em {self.margin_bottom}em {self.margin_left}em;">'
-        yield from self.child._as_html()
-        yield "</div>"
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "margin",
+            "child": self.child._serialize(),
+        }
 
 
-class Align(Widget):
+@dataclass
+class Align(FundamentalWidget):
     child: Widget
     align_x: Optional[float]
     align_y: Optional[float]
@@ -269,15 +255,8 @@ class Align(Widget):
     def bottom_right(cls, child: Widget):
         return cls(child, align_x=1, align_y=1)
 
-    def _as_html(self) -> Iterable[str]:
-        style_props = ""
-
-        if self.align_x is not None:
-            style_props += f"justify-content: {self.align_x*100}%;"
-
-        if self.align_y is not None:
-            style_props += f"align-items: {self.align_y*100}%;"
-
-        yield f'<div style="width: 100%; height: 100%; display: flex; {style_props}">'
-        yield from self.child._as_html()
-        yield "</div>"
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "align",
+            "child": self.child._serialize(),
+        }

@@ -2,6 +2,7 @@ import asyncio
 import webview
 from web_gui import *
 from pathlib import Path
+import json
 
 
 HERE = Path(__file__).resolve().parent
@@ -9,79 +10,41 @@ PROJECT_ROOT = HERE
 GENERATED_DIR = PROJECT_ROOT / "generated"
 
 
-HTML_BOILERPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-	<title>{title}</title>
-	<style>
-		html, body {{
-			margin: 0;
-			padding: 0;
-			height: 100%;
-		}}
-	</style>
-</head>
-<body>
-{body}
-</body>
-</html>
-"""
-
-
 async def main():
     title = "Sample Page"
 
-    # gui = Row(
-    #     Rectangle(color=Color.srgb(1, 0, 0)),
-    #     Rectangle(color=Color.srgb(0, 1, 0)),
-    #     Text("Hello, world!"),
-    # )
+    Lsd = LinearGradientFill(
+        (Color.RED, 0.0),
+        (Color.GREEN, 0.5),
+        (Color.BLUE, 1.0),
+        angle_degrees=45,
+    )
 
-    gui = Row(
-        Margin(
-            Rectangle(
-                color=Color.RED,
-                # grow=1,
-            ),
-            margin=1,
-        ),
-        Column(
-            Rectangle(
-                color=Color.GREEN,
-                # grow=1,
+    gui = Column(
+        children=[
+            Text("Foo"),
+            Rectangle(fill=Color.BLUE),
+            Row(
+                children=[
+                    Rectangle(fill=Color.RED),
+                    Rectangle(fill=Color.GREY),
+                ],
             ),
             Stack(
-                Rectangle(
-                    color=Color.BLUE,
-                    # grow=1,
-                ),
-                Align.center(
-                    Rectangle(
-                        color=Color.WHITE,
-                        # requested_height=5,
-                        # requested_width=5,
-                    ),
-                ),
+                children=[
+                    Text("Bar"),
+                    Text("Baz"),
+                    # Rectangle(fill=Color.GREEN),
+                ]
             ),
-        ),
+            Rectangle(fill=Lsd),
+        ]
     )
 
-    html = "".join(gui._as_html())
-    html = HTML_BOILERPLATE.format(
-        title=title,
-        body=html,
-    )
+    as_json = gui._serialize()
 
-    (GENERATED_DIR / "page.html").write_text(html)
-
-    webview.create_window(
-        title,
-        html=html,
-        text_select=True,
-        server=None,  # type: ignore
-    )
-    webview.start()
+    with open(GENERATED_DIR / "sample.html", "w") as f:
+        f.write(json.dumps(as_json, indent=4))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
-import abc
-from typing import Iterable, Tuple, List, Union, Literal
+from typing import Iterable, Tuple, List, Union, Literal, Dict
+from abc import ABC, abstractmethod
+from .common import Jsonable
 
 
 FillLike = Union["Fill", "Color"]
@@ -89,9 +90,6 @@ class Color:
         # TODO: Alpha
         return f"{self.red*255:02x}{self.green*255:02x}{self.blue*255:02x}"
 
-    def _as_css(self) -> str:
-        return f"rgba({self.red*255}, {self.green*255}, {self.blue*255}, {self.alpha})"
-
     # TODO:
     # - from/to hsv
     # - range checks (allow hdr?)
@@ -106,11 +104,7 @@ Color.WHITE = Color.from_rgb(1.0, 1.0, 1.0)
 Color.GREY = Color.from_rgb(0.5, 0.5, 0.5)
 
 
-class Fill(abc.ABC):
-    @abc.abstractmethod
-    def _as_css(self) -> str:
-        raise NotImplementedError()
-
+class Fill(ABC):
     @staticmethod
     def _try_from(value: FillLike) -> "Fill":
         if isinstance(value, Fill):
@@ -121,6 +115,10 @@ class Fill(abc.ABC):
 
         raise TypeError(f"Expected Fill or Color, got {type(value)}")
 
+    @abstractmethod
+    def _serialize(self) -> Dict[str, Jsonable]:
+        raise NotImplementedError()
+
 
 class SolidFill(Fill):
     color: Color
@@ -128,12 +126,19 @@ class SolidFill(Fill):
     def __init__(self, color: Color):
         self.color = color
 
-    def _as_css(self) -> str:
-        return self.color._as_css()
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "solid",
+            "color": self.color.rgba,
+        }
 
 
 class LinearGradientFill(Fill):
-    def __init__(self, stops: Iterable[Tuple[Color, float]]):
+    def __init__(
+        self,
+        *stops: Tuple[Color, float],
+        angle_degrees: float = 0.0,
+    ):
         # Sort and store the stops
         self.stops = tuple(sorted(stops, key=lambda x: x[1]))
 
@@ -141,17 +146,11 @@ class LinearGradientFill(Fill):
         if not self.stops:
             raise ValueError("Gradients must have at least 1 stop")
 
-    def _as_css(self) -> str:
-        # Special case: solid color
-        if len(self.stops) == 1:
-            return self.stops[0][0]._as_css()
+        self.angle_degrees = angle_degrees
 
-        # Otherwise build the CSS gradient
-        stop_strings = [
-            f"{color._as_css()} {position * 100}%" for color, position in self.stops
-        ]
-
-        # TODO: What does CSS do if the first / last stop isn't at 0 / 1? Should
-        # additional stops be added to make sure they behave as expected?
-
-        return f"linear-gradient({', '.join(stop_strings)})"
+    def _serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "type": "linearGradient",
+            "stops": [(color.rgba, position) for color, position in self.stops],
+            "angleDegrees": self.angle_degrees,
+        }
