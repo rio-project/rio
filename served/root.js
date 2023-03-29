@@ -49,6 +49,30 @@ function updateText(element, state) {
     if (state.multiline !== undefined) {
         element.style.whiteSpace = state.multiline ? "normal" : "nowrap";
     }
+
+    if (state.font !== undefined) {
+        element.style.fontFamily = state.font;
+    }
+
+    if (state.font_color !== undefined) {
+        element.style.font_color = colorToCss(state.font_color);
+    }
+
+    if (state.font_size !== undefined) {
+        element.style.fontSize = state.font_size + "em";
+    }
+
+    if (state.font_weight !== undefined) {
+        element.style.fontWeight = state.font_weight;
+    }
+
+    if (state.italic !== undefined) {
+        element.style.fontStyle = state.italic ? "italic" : "normal";
+    }
+
+    if (state.underlined !== undefined) {
+        element.style.textDecoration = state.underlined ? "underline" : "none";
+    }
 }
 
 function buildRow(widget) {
@@ -124,17 +148,21 @@ function buildAlign(widget) {
 }
 
 function updateAlign(element, state) {
-    // style_props = ""
+    if (state.align_x !== undefined) {
+        if (state.align_x === null) {
+            element.style.justifyContent = "unset";
+        } else {
+            element.style.justifyContent = state.align_x * 100 + "%";
+        }
+    }
 
-    // if self.align_x is not None:
-    //     style_props += f"justify-content: {self.align_x*100}%;"
-
-    // if self.align_y is not None:
-    //     style_props += f"align-items: {self.align_y*100}%;"
-
-    // yield f'<div style="width: 100%; height: 100%; display: flex; {style_props}">'
-    // yield from self.child._as_html()
-    // yield "</div>"
+    if (state.align_y !== undefined) {
+        if (state.align_y === null) {
+            element.style.alignItems = "unset";
+        } else {
+            element.style.alignItems = state.align_y * 100 + "%";
+        }
+    }
 }
 
 widgetHandlers = {

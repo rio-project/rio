@@ -1,9 +1,11 @@
 from typing import Iterable, Tuple, List, Union, Literal, Dict
 from abc import ABC, abstractmethod
 from .common import Jsonable
+import enum
 
 
 FillLike = Union["Fill", "Color"]
+
 
 
 class Color:

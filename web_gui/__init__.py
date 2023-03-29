@@ -68,6 +68,10 @@ def _try_serialize_state(value: Any, type: Type) -> Jsonable:
         value = Fill._try_from(value)
         return value._serialize()
 
+    # Colors
+    if type is Color:
+        return value.rgba
+
     # Optional / Union
     if origin is Union:
         if value is None:
@@ -78,6 +82,12 @@ def _try_serialize_state(value: Any, type: Type) -> Jsonable:
                 return _try_serialize_state(value, arg)
 
         raise WontSerialize()
+
+    # Literal
+    #
+    # TODO: Only allow certain types
+    if origin is Literal:
+        return value
 
     # The value shouldn't be serialized
     raise WontSerialize()
@@ -186,6 +196,11 @@ class Text(FundamentalWidget):
     _: KW_ONLY
     multiline: bool = False
     font: Optional[str] = None
+    font_color: Color = Color.from_rgb(0, 0, 0)
+    font_size: float = 1.0
+    font_weight: Literal["normal", "bold"] = "normal"
+    italic: bool = False
+    underlined: bool = False
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {

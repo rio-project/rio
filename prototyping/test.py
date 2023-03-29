@@ -63,7 +63,7 @@ async def main():
 
     root_widget = Column(
         children=[
-            Text("Foo"),
+            Text("Foo", font_weight="bold"),
             Rectangle(fill=Color.BLUE),
             Row(
                 children=[
