@@ -1,9 +1,17 @@
 import dataclasses
-import html
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
-from typing import Dict, Generic, Iterable, Optional, Tuple, TypeVar, Union, overload
+from typing import (
+    Dict,
+    Generic,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+    Callable,
+)
 
 from typing_extensions import Self, dataclass_transform
 
@@ -11,6 +19,15 @@ from .common import Jsonable
 from .styling import *
 
 T = TypeVar("T")
+
+
+_unique_id_counter = -1
+
+
+def _make_unique_id() -> int:
+    global _unique_id_counter
+    _unique_id_counter += 1
+    return _unique_id_counter
 
 
 @dataclass_transform()
@@ -25,6 +42,15 @@ class Widget(ABC):
         for attr in vars(cls).get("__annotations__", ()):
             setattr(cls, attr, StateProperty(attr))
 
+    @property
+    def _id(self) -> int:
+        try:
+            return vars(self)["_id"]
+        except KeyError:
+            _id = _make_unique_id()
+            vars(self)["_id"] = _id
+            return _id
+
     @abstractmethod
     def build(self) -> "Widget":
         raise NotImplementedError
@@ -36,12 +62,33 @@ class Widget(ABC):
         result = {}
 
         for name, typ in typing.get_type_hints(self.__class__).items():
+            # Skip built-in values
+            if name in ("_dirty",):
+                continue
+
+            # Serialize anything with values useful for the client
             if typ is bool or typ is int or typ is float or typ is str:
                 # TODO: Optional values? Literal? Tuples?
                 value = getattr(self, name)
                 result[name] = value
 
         return result
+
+    def _map_direct_children(self, callback: Callable[["Widget"], "Widget"]):
+        for name, typ in typing.get_type_hints(self.__class__).items():
+            origin, args = typing.get_origin(typ), typing.get_args(typ)
+
+            # Remap directly contained widgets
+            if origin is Widget:
+                child = getattr(self, name)
+                setattr(self, name, callback(child))
+
+            # Iterate over lists of widgets, remapping their values
+            elif origin is list and args[0] is Widget:
+                children = getattr(self, name)
+                setattr(self, name, [callback(child) for child in children])
+
+            # TODO: What about other containers
 
 
 class StateProperty(Generic[T]):
@@ -84,7 +131,10 @@ class Text(FundamentalWidget):
     font: Optional[str] = None
 
     def _serialize(self) -> Dict[str, Jsonable]:
-        return {"type": "text"}
+        return {
+            "id": self._id,
+            "type": "text",
+        }
 
 
 @dataclass
@@ -93,6 +143,7 @@ class Row(FundamentalWidget):
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {
+            "id": self._id,
             "type": "row",
             "children": [child._serialize() for child in self.children],
         }
@@ -104,6 +155,7 @@ class Column(FundamentalWidget):
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {
+            "id": self._id,
             "type": "column",
             "children": [child._serialize() for child in self.children],
         }
@@ -116,7 +168,10 @@ class Rectangle(FundamentalWidget):
     corner_radius: Tuple[float, float, float, float] = (0, 0, 0, 0)
 
     def _serialize(self) -> Dict[str, Jsonable]:
-        return {"type": "rectangle"}
+        return {
+            "id": self._id,
+            "type": "rectangle",
+        }
 
 
 @dataclass
@@ -125,6 +180,7 @@ class Stack(FundamentalWidget):
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {
+            "id": self._id,
             "type": "stack",
             "children": [child._serialize() for child in self.children],
         }
@@ -180,6 +236,7 @@ class Margin(FundamentalWidget):
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {
+            "id": self._id,
             "type": "margin",
             "child": self.child._serialize(),
         }
@@ -257,6 +314,7 @@ class Align(FundamentalWidget):
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {
+            "id": str(self._id),
             "type": "align",
             "child": self.child._serialize(),
         }

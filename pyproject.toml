@@ -8,7 +8,6 @@ packages = [{ include = "web_gui" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pywebview = "^4.0.2"
 typing-extensions = "^4.5.0"
 
 
