@@ -5,12 +5,18 @@ initialStates = "{initial_states}";
 
 function buildText(widget) {
     var element = document.createElement("div");
-    element.classList.add("pygui-text");
-    element.innerText = "TEXT!";
     return element;
 }
 
-function updateText(state) { }
+function updateText(element, state) {
+    if (state.text !== undefined) {
+        element.innerText = state.text;
+    }
+
+    if (state.multiline !== undefined) {
+        element.style.whiteSpace = state.multiline ? "normal" : "nowrap";
+    }
+}
 
 function buildRow(widget) {
     var element = document.createElement("div");
@@ -23,7 +29,7 @@ function buildRow(widget) {
     return element;
 }
 
-function updateRow(state) { }
+function updateRow(element, state) { }
 
 function buildColumn(widget) {
     var element = document.createElement("div");
@@ -36,19 +42,26 @@ function buildColumn(widget) {
     return element;
 }
 
-function updateColumn(state) { }
+function updateColumn(element, state) { }
 
 function buildRectangle(widget) {
     var element = document.createElement("div");
-    element.classList.add("pygui-rectangle");
     return element;
 }
 
-function updateRectangle(state) { }
+function updateRectangle(element, state) {
+    if (state.fill !== undefined) {
+        element.style.backgroundColor = "red";
+    }
+
+    if (state.cornerRadius !== undefined) {
+        const [topLeft, topRight, bottomRight, bottomLeft] = state.cornerRadius;
+        element.style.borderRadius = `${topLeft}em ${topRight}em ${bottomRight}em ${bottomLeft}em`;
+    }
+}
 
 function buildStack(widget) {
     var element = document.createElement("div");
-    element.classList.add("pygui-stack");
 
     for (const child of widget.children) {
         element.appendChild(buildWidget(child));
@@ -57,7 +70,7 @@ function buildStack(widget) {
     return element;
 }
 
-function updateStack(state) { }
+function updateStack(element, state) { }
 
 function buildMargin(widget) {
     var element = document.createElement("div");
@@ -73,7 +86,7 @@ function buildAlign(widget) {
     return element;
 }
 
-function updateAlign(state) { }
+function updateAlign(element, state) { }
 
 widgetHandlers = {
     "text": [buildText, updateText],
@@ -98,25 +111,36 @@ function buildWidget(widget) {
     var result = build(widget);
 
     // Add a unique ID to the widget
-    result.id = "id-" + widget.id;
+    result.id = "pygui-id-" + widget.id;
+
+    // Store the widget's type in the element. This is used by the update
+    // function to determine the correct update function to call.
+    result.setAttribute("data-pygui-type", widget.type);
 
     return result;
 }
 
-function updateWidget(widget, state) {
-    const callbacks = widgetHandlers[widget.type];
+function updateWidget(widgetId, state) {
+    // Get the widget element
+    const element = document.getElementById("pygui-id-" + widgetId);
 
-    if (callbacks === undefined) {
-        throw "Cannot update unknown widget type: " + widget.type;
-    }
+    // Get the appropriate update function
+    const widgetType = element.getAttribute("data-pygui-type");
+    const [build, update] = widgetHandlers[widgetType];
 
-    const [build, update] = callbacks;
-    return update(state);
+    // Update
+    update(element, state);
 }
 
 function main() {
+    // Build the HTML document
     var body = document.getElementsByTagName("body")[0];
     body.appendChild(buildWidget(rootWidget));
+
+    // Apply the initial states
+    for (const [widgetId, state] of Object.entries(initialStates)) {
+        updateWidget(widgetId, state);
+    }
 }
 
 main();
