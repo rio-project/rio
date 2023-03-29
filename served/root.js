@@ -3,6 +3,39 @@ rootWidget = "{root_widget}";
 initialStates = "{initial_states}";
 
 
+function colorToCss(color) {
+    const [r, g, b, a] = color;
+    return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+}
+
+
+function fillToCss(fill) {
+    // Solid Color
+    if (fill.type === "solid") {
+        return colorToCss(fill.color);
+    }
+
+    // Linear Gradient
+    if (fill.type === "linearGradient") {
+        if (fill.stops.length == 1) {
+            return colorToCss(fill.stops[0][0]);
+        }
+
+        var stopStrings = [];
+        for (var i = 0; i < fill.stops.length; i++) {
+            var color = fill.stops[i][0];
+            var position = fill.stops[i][1];
+            stopStrings.push(`${colorToCss(color)} ${position * 100}%`);
+        }
+
+        return `linear-gradient(${fill.angleDegrees}deg, ${stopStrings.join(', ')})`;
+    }
+
+    // Unsupported
+    throw `Unsupported fill type: ${fill.type}`;
+}
+
+
 function buildText(widget) {
     var element = document.createElement("div");
     return element;
@@ -46,12 +79,13 @@ function updateColumn(element, state) { }
 
 function buildRectangle(widget) {
     var element = document.createElement("div");
+    element.classList.add("pygui-rectangle");
     return element;
 }
 
 function updateRectangle(element, state) {
     if (state.fill !== undefined) {
-        element.style.backgroundColor = "red";
+        element.style.background = fillToCss(state.fill);
     }
 
     if (state.cornerRadius !== undefined) {
@@ -62,9 +96,12 @@ function updateRectangle(element, state) {
 
 function buildStack(widget) {
     var element = document.createElement("div");
+    element.classList.add("pygui-stack");
 
-    for (const child of widget.children) {
-        element.appendChild(buildWidget(child));
+    for (var ii = 0; ii < widget.children.length; ii++) {
+        const childElement = buildWidget(widget.children[ii]);
+        childElement.style.zIndex = ii + 1;
+        element.appendChild(childElement);
     }
 
     return element;
@@ -86,7 +123,19 @@ function buildAlign(widget) {
     return element;
 }
 
-function updateAlign(element, state) { }
+function updateAlign(element, state) {
+    // style_props = ""
+
+    // if self.align_x is not None:
+    //     style_props += f"justify-content: {self.align_x*100}%;"
+
+    // if self.align_y is not None:
+    //     style_props += f"align-items: {self.align_y*100}%;"
+
+    // yield f'<div style="width: 100%; height: 100%; display: flex; {style_props}">'
+    // yield from self.child._as_html()
+    // yield "</div>"
+}
 
 widgetHandlers = {
     "text": [buildText, updateText],

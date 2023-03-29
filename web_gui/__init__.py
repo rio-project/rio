@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
 from typing import (
     Dict,
+    Any,
+    Type,
     Generic,
     Optional,
     Tuple,
@@ -18,6 +20,7 @@ from typing_extensions import Self, dataclass_transform
 from .common import Jsonable
 from .styling import *
 
+
 T = TypeVar("T")
 
 
@@ -28,6 +31,56 @@ def _make_unique_id() -> int:
     global _unique_id_counter
     _unique_id_counter += 1
     return _unique_id_counter
+
+
+class WontSerialize(Exception):
+    pass
+
+
+def _try_serialize_state(value: Any, type: Type) -> Jsonable:
+    """
+    Which values are serialized for state depends on the annotated datatypes.
+    There is no point in sending fancy values over to the client which it can't
+    interpret.
+
+    This function attempts to serialize the value, or raises a `WontSerialize`
+    exception if this value shouldn't be included in the state.
+    """
+    origin, args = typing.get_origin(type), typing.get_args(type)
+
+    # Basic JSON values
+    if type is bool or type is int or type is float or type is str:
+        return value
+
+    # Tuples or lists of serializable values
+    if origin is tuple or origin is list:
+        return [_try_serialize_state(v, args[0]) for v in value]
+
+    # Special case: `FillLike`
+    #
+    # TODO: Is there a nicer way to detect these?
+    if (
+        origin is Union
+        and len(args) == 2
+        and (args[0] is Fill or args[1] is Fill)
+        and (args[0] is Color or args[1] is Color)
+    ):
+        value = Fill._try_from(value)
+        return value._serialize()
+
+    # Optional / Union
+    if origin is Union:
+        if value is None:
+            return None
+
+        for arg in args:
+            if isinstance(value, arg):
+                return _try_serialize_state(value, arg)
+
+        raise WontSerialize()
+
+    # The value shouldn't be serialized
+    raise WontSerialize()
 
 
 @dataclass_transform()
@@ -62,15 +115,19 @@ class Widget(ABC):
         result = {}
 
         for name, typ in typing.get_type_hints(self.__class__).items():
-            # Skip built-in values
-            if name in ("_dirty",):
+            # Skip some values
+            if name in (
+                "_dirty",  # Internal state
+                "_",  # Used to mark keyword-only arguments in dataclasses
+            ):
                 continue
 
-            # Serialize anything with values useful for the client
-            if typ is bool or typ is int or typ is float or typ is str:
-                # TODO: Optional values? Literal? Tuples?
-                value = getattr(self, name)
-                result[name] = value
+            # Let the serialization function handle the value, or skip it
+            # if it shouldn't be serialized
+            try:
+                result[name] = _try_serialize_state(getattr(self, name), typ)
+            except WontSerialize:
+                continue
 
         return result
 
@@ -314,7 +371,7 @@ class Align(FundamentalWidget):
 
     def _serialize(self) -> Dict[str, Jsonable]:
         return {
-            "id": str(self._id),
+            "id": self._id,
             "type": "align",
             "child": self.child._serialize(),
         }

@@ -10,7 +10,10 @@ GENERATED_DIR = PROJECT_ROOT / "generated"
 SERVED_DIR = PROJECT_ROOT / "served"
 
 
-def make_html(root_widget: Widget) -> str:
+def make_html(
+    title: str,
+    root_widget: Widget,
+) -> str:
     # Dump the widgets
     widgets_json = root_widget._serialize()
 
@@ -43,20 +46,9 @@ def make_html(root_widget: Widget) -> str:
         json.dumps(initial_states_json, indent=4),
     )
 
-    html = html.replace(
-        "{title}",
-        "TODO: Title",
-    )
-
-    html = html.replace(
-        "/*{style}*/",
-        css,
-    )
-
-    html = html.replace(
-        "/*{script}*/",
-        js,
-    )
+    html = html.replace("{title}", title)
+    html = html.replace("/*{style}*/", css)
+    html = html.replace("/*{script}*/", js)
 
     return html
 
@@ -91,7 +83,7 @@ async def main():
     )
 
     GENERATED_DIR.mkdir(exist_ok=True, parents=True)
-    html = make_html(root_widget)
+    html = make_html("Super Static Website!", root_widget)
     (GENERATED_DIR / "site.html").write_text(html)
 
 
