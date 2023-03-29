@@ -3,19 +3,14 @@ rootWidget = "{root_widget}";
 initialStates = "{initial_states}";
 
 
-
-function buildColumn(widget) {
+function buildText(widget) {
     var element = document.createElement("div");
-    element.classList.add("pygui-column");
-
-    for (const child of widget.children) {
-        element.appendChild(buildWidget(child));
-    }
-
+    element.classList.add("pygui-text");
+    element.innerText = "TEXT!";
     return element;
 }
 
-function updateColumn(state) { }
+function updateText(state) { }
 
 function buildRow(widget) {
     var element = document.createElement("div");
@@ -30,22 +25,65 @@ function buildRow(widget) {
 
 function updateRow(state) { }
 
-function buildText(widget) {
+function buildColumn(widget) {
     var element = document.createElement("div");
-    element.classList.add("pygui-text");
-    element.innerText = "TEXT!";
+    element.classList.add("pygui-column");
+
+    for (const child of widget.children) {
+        element.appendChild(buildWidget(child));
+    }
+
     return element;
 }
 
-function updateText(state) {
+function updateColumn(state) { }
+
+function buildRectangle(widget) {
+    var element = document.createElement("div");
+    element.classList.add("pygui-rectangle");
+    return element;
 }
+
+function updateRectangle(state) { }
+
+function buildStack(widget) {
+    var element = document.createElement("div");
+    element.classList.add("pygui-stack");
+
+    for (const child of widget.children) {
+        element.appendChild(buildWidget(child));
+    }
+
+    return element;
+}
+
+function updateStack(state) { }
+
+function buildMargin(widget) {
+    var element = document.createElement("div");
+    element.appendChild(buildWidget(widget.child));
+    return element;
+}
+
+function updateMargin(state) { }
+
+function buildAlign(widget) {
+    var element = document.createElement("div");
+    element.appendChild(buildWidget(widget.child));
+    return element;
+}
+
+function updateAlign(state) { }
 
 widgetHandlers = {
-    "column": [buildColumn, updateColumn],
-    "row": [buildRow, updateRow],
     "text": [buildText, updateText],
+    "row": [buildRow, updateRow],
+    "column": [buildColumn, updateColumn],
+    "rectangle": [buildRectangle, updateRectangle],
+    "stack": [buildStack, updateStack],
+    "margin": [buildMargin, updateMargin],
+    "align": [buildAlign, updateAlign],
 }
-
 
 function buildWidget(widget) {
     // Make sure the widget type is valid
@@ -76,12 +114,9 @@ function updateWidget(widget, state) {
     return update(state);
 }
 
-
-
 function main() {
     var body = document.getElementsByTagName("body")[0];
     body.appendChild(buildWidget(rootWidget));
 }
-
 
 main();

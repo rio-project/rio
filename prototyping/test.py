@@ -72,21 +72,21 @@ async def main():
     root_widget = Column(
         children=[
             Text("Foo"),
-            # Rectangle(fill=Color.BLUE),
-            # Row(
-            #     children=[
-            #         Rectangle(fill=Color.RED),
-            #         Rectangle(fill=Color.GREY),
-            #     ],
-            # ),
-            # Stack(
-            #     children=[
-            #         Text("Bar"),
-            #         Text("Baz"),
-            #         # Rectangle(fill=Color.GREEN),
-            #     ]
-            # ),
-            # Rectangle(fill=Lsd),
+            Rectangle(fill=Color.BLUE),
+            Row(
+                children=[
+                    Rectangle(fill=Color.RED),
+                    Rectangle(fill=Color.GREY),
+                ],
+            ),
+            Stack(
+                children=[
+                    Text("Bar"),
+                    Text("Baz"),
+                    Rectangle(fill=Color.GREEN),
+                ]
+            ),
+            Rectangle(fill=Lsd),
         ]
     )
 
