@@ -1,7 +1,7 @@
 import asyncio
 from web_gui import *
 from pathlib import Path
-import web_gui
+import web_gui.widgets as widgets
 import json
 
 
@@ -9,31 +9,6 @@ HERE = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = HERE
 BUILD_DIR = PROJECT_ROOT / "build"
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
-
-
-def make_html(
-    title: str,
-    root_widget: Widget,
-) -> str:
-    # Dump the widgets
-    widgets_json = web_gui._serialize(root_widget, type(root_widget))
-
-    # Load the templates
-    html = (FRONTEND_DIR / "index.html").read_text()
-    js = (BUILD_DIR / "app.js").read_text()
-    css = (FRONTEND_DIR / "style.css").read_text()
-
-    # Fill in all placeholders
-    js = js.replace(
-        "'{root_widget}'",
-        json.dumps(widgets_json, indent=4),
-    )
-
-    html = html.replace("{title}", title)
-    html = html.replace("/*{style}*/", css)
-    html = html.replace("/*{script}*/", js)
-
-    return html
 
 
 def build_lsd() -> Widget:
@@ -96,13 +71,12 @@ def build_diffusion_ui() -> Widget:
     return Stack(children)
 
 
-async def main():
+def main():
     root_widget = build_lsd()
-
-    BUILD_DIR.mkdir(exist_ok=True, parents=True)
-    html = make_html("Super Static Website!", root_widget)
-    (BUILD_DIR / "site.html").write_text(html)
+    app = App("Super Dynamic Website!", root_widget)
+    app.run(quiet=False)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run(main())
+    main()

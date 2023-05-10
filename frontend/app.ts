@@ -10,6 +10,8 @@ import { Color, Fill, JsonWidget } from './models';
 // @ts-ignore
 const initialRootWidget: JsonWidget = '{root_widget}';
 
+const sessionSecret: string = '{session_secret}';
+
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
     return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;

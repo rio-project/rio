@@ -9,6 +9,9 @@ packages = [{ include = "web_gui" }]
 [tool.poetry.dependencies]
 python = "^3.10"
 typing-extensions = "^4.5.0"
+fastapi = "^0.95.1"
+uvicorn = "^0.22.0"
+timer-dict = "^1.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
