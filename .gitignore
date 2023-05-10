@@ -12,3 +12,13 @@ poetry.lock
 # Editor Files
 .vscode
 
+
+# JavaScript
+/build
+/node_modules
+package-lock.json
+package.json
+
+
+# Unknown
+/.cache

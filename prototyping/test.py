@@ -1,13 +1,14 @@
 import asyncio
 from web_gui import *
 from pathlib import Path
+import web_gui
 import json
 
 
 HERE = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = HERE
-GENERATED_DIR = PROJECT_ROOT / "generated"
-SERVED_DIR = PROJECT_ROOT / "served"
+BUILD_DIR = PROJECT_ROOT / "build"
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 
 def make_html(
@@ -15,35 +16,17 @@ def make_html(
     root_widget: Widget,
 ) -> str:
     # Dump the widgets
-    widgets_json = root_widget._serialize()
-
-    # Dump their states
-    initial_states_json = {}
-    to_do: List[Widget] = [root_widget]
-
-    def extend_and_keep(widget: Widget):
-        to_do.append(widget)
-        return widget
-
-    while to_do:
-        widget = to_do.pop()
-        initial_states_json[str(widget._id)] = widget._serialize_state()
-        widget._map_direct_children(extend_and_keep)
+    widgets_json = web_gui._serialize(root_widget, type(root_widget))
 
     # Load the templates
-    html = (SERVED_DIR / "root.html").read_text()
-    js = (SERVED_DIR / "root.js").read_text()
-    css = (SERVED_DIR / "root.css").read_text()
+    html = (FRONTEND_DIR / "index.html").read_text()
+    js = (BUILD_DIR / "app.js").read_text()
+    css = (FRONTEND_DIR / "style.css").read_text()
 
     # Fill in all placeholders
     js = js.replace(
-        '"{root_widget}"',
+        "'{root_widget}'",
         json.dumps(widgets_json, indent=4),
-    )
-
-    js = js.replace(
-        '"{initial_states}"',
-        json.dumps(initial_states_json, indent=4),
     )
 
     html = html.replace("{title}", title)
@@ -53,7 +36,7 @@ def make_html(
     return html
 
 
-async def main():
+def build_lsd() -> Widget:
     Lsd = LinearGradientFill(
         (Color.RED, 0.0),
         (Color.GREEN, 0.5),
@@ -61,7 +44,7 @@ async def main():
         angle_degrees=45,
     )
 
-    root_widget = Column(
+    return Column(
         children=[
             Text("Foo", font_weight="bold"),
             Rectangle(fill=Color.BLUE),
@@ -82,9 +65,43 @@ async def main():
         ]
     )
 
-    GENERATED_DIR.mkdir(exist_ok=True, parents=True)
+
+def build_diffusion_ui() -> Widget:
+    children = [
+        Rectangle(
+            fill=Color.RED,
+            corner_radius=(2.0, 2.0, 2.0, 2.0),
+        ),
+        Column(
+            children=[
+                Text(
+                    "Positive Prompt Example, Lorem Ipsum dolor sit amet",
+                    multiline=True,
+                ),
+                Text(
+                    "Negative Prompt Example, Lorem Ipsum dolor sit amet",
+                    multiline=True,
+                ),
+                Row(
+                    children=[
+                        Text("Euler A"),
+                        Text("20 Steps"),
+                    ],
+                ),
+                Text("CFG 7.0"),
+                Text("Tilable"),
+            ],
+        ),
+    ]
+    return Stack(children)
+
+
+async def main():
+    root_widget = build_lsd()
+
+    BUILD_DIR.mkdir(exist_ok=True, parents=True)
     html = make_html("Super Static Website!", root_widget)
-    (GENERATED_DIR / "site.html").write_text(html)
+    (BUILD_DIR / "site.html").write_text(html)
 
 
 if __name__ == "__main__":

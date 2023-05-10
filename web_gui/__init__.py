@@ -2,8 +2,10 @@ import dataclasses
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
+import inspect
 from typing import (
     Dict,
+    Set,
     Any,
     Type,
     Generic,
@@ -37,7 +39,7 @@ class WontSerialize(Exception):
     pass
 
 
-def _try_serialize_state(value: Any, type: Type) -> Jsonable:
+def _serialize(value: Any, type_: Type) -> Jsonable:
     """
     Which values are serialized for state depends on the annotated datatypes.
     There is no point in sending fancy values over to the client which it can't
@@ -46,15 +48,16 @@ def _try_serialize_state(value: Any, type: Type) -> Jsonable:
     This function attempts to serialize the value, or raises a `WontSerialize`
     exception if this value shouldn't be included in the state.
     """
-    origin, args = typing.get_origin(type), typing.get_args(type)
+    origin = typing.get_origin(type_)
+    args = typing.get_args(type_)
 
     # Basic JSON values
-    if type is bool or type is int or type is float or type is str:
+    if type_ in (bool, int, float, str):
         return value
 
     # Tuples or lists of serializable values
     if origin is tuple or origin is list:
-        return [_try_serialize_state(v, args[0]) for v in value]
+        return [_serialize(v, args[0]) for v in value]
 
     # Special case: `FillLike`
     #
@@ -69,7 +72,7 @@ def _try_serialize_state(value: Any, type: Type) -> Jsonable:
         return value._serialize()
 
     # Colors
-    if type is Color:
+    if type_ is Color:
         return value.rgba
 
     # Optional / Union
@@ -79,23 +82,48 @@ def _try_serialize_state(value: Any, type: Type) -> Jsonable:
 
         for arg in args:
             if isinstance(value, arg):
-                return _try_serialize_state(value, arg)
+                return _serialize(value, arg)
 
-        raise WontSerialize()
+        assert False, f'Value "{value}" is not of any of the union types {args}'
 
     # Literal
-    #
-    # TODO: Only allow certain types
     if origin is Literal:
-        return value
+        return _serialize(value, type(value))
 
-    # The value shouldn't be serialized
+    # Widgets
+    if inspect.isclass(type_) and issubclass(type_, Widget):
+        return _serialize_widget(value)
+
+    # Invalid type
     raise WontSerialize()
 
 
+def _serialize_widget(value: "Widget") -> Jsonable:
+    result = {
+        "id": value._id,  # TODO: Avoid name clashes
+        "type": type(value).__name__.lower(),  # TODO: Avoid name clashes
+    }
+
+    for name, type_ in typing.get_type_hints(type(value)).items():
+        # Skip some values
+        if name in ("_",):  # Used to mark keyword-only arguments in dataclasses
+            continue
+
+        # Let the serialization function handle the value
+        try:
+            result[name] = _serialize(getattr(value, name), type_)
+        except WontSerialize:
+            pass
+
+    return result
+
+
 @dataclass_transform()
+@dataclass
 class Widget(ABC):
-    _dirty: bool = False
+    _: KW_ONLY
+    width_override: Optional[float] = None
+    height_override: Optional[float] = None
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -117,29 +145,6 @@ class Widget(ABC):
     @abstractmethod
     def build(self) -> "Widget":
         raise NotImplementedError
-
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return self.build()._serialize()
-
-    def _serialize_state(self) -> Dict[str, Jsonable]:
-        result = {}
-
-        for name, typ in typing.get_type_hints(self.__class__).items():
-            # Skip some values
-            if name in (
-                "_dirty",  # Internal state
-                "_",  # Used to mark keyword-only arguments in dataclasses
-            ):
-                continue
-
-            # Let the serialization function handle the value, or skip it
-            # if it shouldn't be serialized
-            try:
-                result[name] = _try_serialize_state(getattr(self, name), typ)
-            except WontSerialize:
-                continue
-
-        return result
 
     def _map_direct_children(self, callback: Callable[["Widget"], "Widget"]):
         for name, typ in typing.get_type_hints(self.__class__).items():
@@ -182,7 +187,6 @@ class StateProperty(Generic[T]):
 
     def __set__(self, instance: Widget, value: T) -> None:
         vars(instance)[self.name] = value
-        instance._dirty = True
 
 
 class FundamentalWidget(Widget):
@@ -202,35 +206,15 @@ class Text(FundamentalWidget):
     italic: bool = False
     underlined: bool = False
 
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "text",
-        }
-
 
 @dataclass
 class Row(FundamentalWidget):
     children: List[Widget]
 
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "row",
-            "children": [child._serialize() for child in self.children],
-        }
-
 
 @dataclass
 class Column(FundamentalWidget):
     children: List[Widget]
-
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "column",
-            "children": [child._serialize() for child in self.children],
-        }
 
 
 @dataclass
@@ -239,23 +223,10 @@ class Rectangle(FundamentalWidget):
     _: KW_ONLY
     corner_radius: Tuple[float, float, float, float] = (0, 0, 0, 0)
 
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "rectangle",
-        }
-
 
 @dataclass
 class Stack(FundamentalWidget):
     children: List[Widget]
-
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "stack",
-            "children": [child._serialize() for child in self.children],
-        }
 
 
 @dataclass
@@ -305,13 +276,6 @@ class Margin(FundamentalWidget):
             self.margin_top = margin_top
             self.margin_right = margin_right
             self.margin_bottom = margin_bottom
-
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "margin",
-            "child": self.child._serialize(),
-        }
 
 
 @dataclass
@@ -383,10 +347,3 @@ class Align(FundamentalWidget):
     @classmethod
     def bottom_right(cls, child: Widget):
         return cls(child, align_x=1, align_y=1)
-
-    def _serialize(self) -> Dict[str, Jsonable]:
-        return {
-            "id": self._id,
-            "type": "align",
-            "child": self.child._serialize(),
-        }
