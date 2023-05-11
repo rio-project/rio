@@ -1,14 +1,9 @@
 import asyncio
 from web_gui import *
 from pathlib import Path
+import PIL.Image
 import web_gui.widgets as widgets
 import json
-
-
-HERE = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = HERE
-BUILD_DIR = PROJECT_ROOT / "build"
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 
 def build_lsd() -> Widget:
@@ -73,7 +68,11 @@ def build_diffusion_ui() -> Widget:
 
 def main():
     root_widget = build_lsd()
-    app = App("Super Dynamic Website!", root_widget)
+    app = App(
+        "Super Dynamic Website!",
+        root_widget,
+        icon=PIL.Image.open("./icon.jpg"),
+    )
     app.run(quiet=False)
 
 

@@ -11,7 +11,10 @@ python = "^3.10"
 typing-extensions = "^4.5.0"
 fastapi = "^0.95.1"
 uvicorn = "^0.22.0"
-timer-dict = "^1.0.0"
+uniserde = "^0.2.5"
+pillow = "^9.5.0"
+websocket = "^0.2.1"
+websockets = "^11.0.3"
 
 
 [tool.poetry.group.dev.dependencies]
