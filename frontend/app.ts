@@ -6,10 +6,10 @@ import { StackWidget } from './stack';
 import { MarginWidget } from './margin';
 import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
-import WebSocket = require('ws');
+import { ButtonWidget } from './button';
 
 const initialMessages = '{initial_messages}';
-let ws: WebSocket = null;
+var socket: WebSocket | null = null;
 
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
@@ -45,13 +45,14 @@ export function fillToCss(fill: Fill): string {
 }
 
 const widgetClasses = {
-    text: TextWidget,
-    row: RowWidget,
-    column: ColumnWidget,
-    rectangle: RectangleWidget,
-    stack: StackWidget,
-    margin: MarginWidget,
     align: AlignWidget,
+    button: ButtonWidget,
+    column: ColumnWidget,
+    margin: MarginWidget,
+    rectangle: RectangleWidget,
+    row: RowWidget,
+    stack: StackWidget,
+    text: TextWidget,
 };
 
 export function buildWidget(widget: JsonWidget): HTMLElement {
@@ -102,31 +103,52 @@ function main() {
     url.protocol = url.protocol.replace('http', 'ws');
     console.log(`Connecting websocket to ${url.href}`)
 
-    // ws = new WebSocket(url.href);
-    ws = new WebSocket("ws://localhost:8000/ws");
+    // socket = new WebSocket(url.href);
+    socket = new WebSocket("ws://localhost:8000/ws");
 
-    ws.addEventListener('open', onOpen);
-    ws.addEventListener('message', onMessage);
-    ws.addEventListener('error', onError);
-    ws.addEventListener('close', onClose);
+    socket.addEventListener('open', onOpen);
+    socket.addEventListener('message', onMessage);
+    socket.addEventListener('error', onError);
+    socket.addEventListener('close', onClose);
 }
 
 function onOpen() {
     console.log('Connection opened');
 }
 
-function onMessage(event: WebSocket.MessageEvent) {
+function onMessage(event: any) {
     console.log(`Received message: ${event.data}`);
 }
 
-function onError(event: WebSocket.ErrorEvent) {
+function onError(event: any) {
     console.log(`Error: ${event.message}`);
 }
 
-function onClose(event: WebSocket.CloseEvent) {
+function onClose(event: any) {
     console.log(`Connection closed: ${event.reason}`);
 }
 
-// main();
 
-let ws = new WebSocket("ws://localhost:{self.port}/ws");
+export function sendJson(message: object) {
+    if (!socket) {
+        console.log(`Attempted to send message, but the websocket is not connected: ${message}`);
+        return;
+    }
+
+    socket.send(JSON.stringify(message));
+}
+
+export function sendEvent(element: HTMLElement, eventType: string, eventArgs: object) {
+    sendJson({
+        type: eventType,
+        // Remove the leading `pygui-id-` from the element's ID
+        widgetId: element.id.substring(9),
+        ...eventArgs,
+    });
+}
+
+
+
+
+main();
+

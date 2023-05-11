@@ -1,27 +1,26 @@
 import dataclasses
+import inspect
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
-import inspect
 from typing import (
-    Dict,
-    Set,
     Any,
-    Type,
+    Callable,
+    Dict,
     Generic,
     Optional,
+    Set,
     Tuple,
+    Type,
     TypeVar,
     Union,
     overload,
-    Callable,
 )
 
 from typing_extensions import Self, dataclass_transform
 
 from .common import Jsonable
 from .styling import *
-
 
 T = TypeVar("T")
 
@@ -347,3 +346,14 @@ class Align(FundamentalWidget):
     @classmethod
     def bottom_right(cls, child: Widget):
         return cls(child, align_x=1, align_y=1)
+
+
+@dataclass
+class Button(FundamentalWidget):
+    text: str
+    on_click: Optional[Callable[[], Any]]
+
+    def __init__(self, text: str, *, on_click: Optional[Callable[[], Any]] = None):
+        super().__init__()
+        self.text = text
+        self.on_click = on_click

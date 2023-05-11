@@ -1,9 +1,11 @@
 import asyncio
-from web_gui import *
-from pathlib import Path
-import PIL.Image
-import web_gui.widgets as widgets
 import json
+from pathlib import Path
+
+import PIL.Image
+
+import web_gui.widgets as widgets
+from web_gui import *
 
 
 def build_lsd() -> Widget:
@@ -32,6 +34,7 @@ def build_lsd() -> Widget:
                 ]
             ),
             Rectangle(fill=Lsd),
+            Button("Fooo"),
         ]
     )
 
@@ -71,7 +74,7 @@ def main():
     app = App(
         "Super Dynamic Website!",
         root_widget,
-        icon=PIL.Image.open("./icon.jpg"),
+        icon=PIL.Image.open("./prototyping/icon.png"),
     )
     app.run(quiet=False)
 

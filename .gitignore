@@ -17,8 +17,6 @@ poetry.lock
 /node_modules
 package-lock.json
 package.json
-/frontend/app.js
-/frontend/app.js.map
 
 
 # Unknown

@@ -1,15 +1,15 @@
 import functools
+import io
 import json
 from datetime import timedelta
-import io
-from typing import List
-import PIL.Image
+from typing import List, Optional
 
 import fastapi
+import PIL.Image
+import uniserde
 import uvicorn
 
 from . import common, messages, widgets
-from typing import Optional
 from .common import Jsonable
 
 
@@ -68,42 +68,6 @@ class App:
         )
 
     async def _serve_index(self) -> fastapi.responses.HTMLResponse:
-        foo = fastapi.responses.HTMLResponse(
-            f"""
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var ws = new WebSocket("ws://localhost:{self.port}/ws");
-            ws.onmessage = function(event) {{
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            }};
-            function sendMessage(event) {{
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }}
-        </script>
-    </body>
-</html>
-"""
-        )
-
         # Create a list of all messages the frontend should process immediately
         widget_json = widgets._serialize(self.root_widget, type(self.root_widget))
         initial_messages: List[Jsonable] = [
@@ -158,8 +122,16 @@ class App:
     ):
         await websocket.accept()
 
-        await websocket.send_text("Hello, world!")
-
         while True:
-            data = await websocket.receive_text()
-            print(data)
+            try:
+                message_json = await websocket.receive_json()
+                message = messages.IncomingMessage.from_json(message_json)
+            except (
+                uniserde.SerdeError,
+                json.JSONDecodeError,
+                UnicodeDecodeError,
+            ) as err:
+                # TODO what if invalid json is received
+                raise NotImplementedError(err)
+
+            print(message)
