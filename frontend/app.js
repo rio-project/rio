@@ -340,6 +340,48 @@ var ButtonWidget = /** @class */function () {
   return ButtonWidget;
 }();
 exports.ButtonWidget = ButtonWidget;
+},{"./app":"EVxB"}],"LKOD":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MouseEventListener = void 0;
+var app_1 = require("./app");
+var MouseEventListener = /** @class */function () {
+  function MouseEventListener() {}
+  MouseEventListener.build = function (data) {
+    var element = document.createElement('div');
+    element.appendChild((0, app_1.buildWidget)(data.child));
+    return element;
+  };
+  MouseEventListener.update = function (element, deltaState) {
+    if (deltaState.reportMouseDown) {
+      element.onmousedown = function (e) {
+        (0, app_1.sendEvent)(element, 'mouseDownEvent', {
+          x: e.clientX / app_1.pixelsPerEm,
+          y: e.clientY / app_1.pixelsPerEm
+        });
+      };
+    } else {
+      element.onmousedown = null;
+    }
+    if (deltaState.reportMouseUp) {
+      element.onmouseup = function (e) {
+        (0, app_1.sendEvent)(element, 'mouseUpEvent', {
+          x: e.clientX / app_1.pixelsPerEm,
+          y: e.clientY / app_1.pixelsPerEm
+        });
+      };
+    } else {
+      element.onmouseup = null;
+    }
+    // TODO
+  };
+
+  return MouseEventListener;
+}();
+exports.MouseEventListener = MouseEventListener;
 },{"./app":"EVxB"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
@@ -356,7 +398,7 @@ var __assign = this && this.__assign || function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.sendEvent = exports.sendJson = exports.buildWidget = exports.fillToCss = exports.colorToCss = void 0;
+exports.sendEvent = exports.sendJson = exports.buildWidget = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
 var text_1 = require("./text");
 var row_1 = require("./row");
 var column_1 = require("./column");
@@ -365,8 +407,10 @@ var stack_1 = require("./stack");
 var margin_1 = require("./margin");
 var align_1 = require("./align");
 var button_1 = require("./button");
+var mouse_event_listener_1 = require("./mouse_event_listener");
 var initialMessages = '{initial_messages}';
 var socket = null;
+exports.pixelsPerEm = 16;
 function colorToCss(color) {
   var r = color[0],
     g = color[1],
@@ -405,7 +449,8 @@ var widgetClasses = {
   rectangle: rectangle_1.RectangleWidget,
   row: row_1.RowWidget,
   stack: stack_1.StackWidget,
-  text: text_1.TextWidget
+  text: text_1.TextWidget,
+  mouseEventListener: mouse_event_listener_1.MouseEventListener
 };
 function buildWidget(widget) {
   // Get the class for this widget
@@ -436,6 +481,12 @@ function processMessage(message) {
   }
 }
 function main() {
+  // Determine the browser's font size
+  var measure = document.createElement('div');
+  measure.style.height = '10em';
+  document.body.appendChild(measure);
+  exports.pixelsPerEm = measure.offsetHeight / 10;
+  document.body.removeChild(measure);
   // Process initial messages
   console.log("Processing ".concat(initialMessages.length, " initial message(s)"));
   for (var _i = 0, initialMessages_1 = initialMessages; _i < initialMessages_1.length; _i++) {
@@ -482,5 +533,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./button":"zONe"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./button":"zONe","./mouse_event_listener":"LKOD"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

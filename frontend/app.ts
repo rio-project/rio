@@ -7,9 +7,11 @@ import { MarginWidget } from './margin';
 import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
 import { ButtonWidget } from './button';
+import { MouseEventListener } from './mouse_event_listener';
 
 const initialMessages = '{initial_messages}';
 var socket: WebSocket | null = null;
+export var pixelsPerEm = 16;
 
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
@@ -53,6 +55,7 @@ const widgetClasses = {
     row: RowWidget,
     stack: StackWidget,
     text: TextWidget,
+    mouseEventListener: MouseEventListener,
 };
 
 export function buildWidget(widget: JsonWidget): HTMLElement {
@@ -92,6 +95,13 @@ function processMessage(message: any) {
 }
 
 function main() {
+    // Determine the browser's font size
+    var measure = document.createElement('div');
+    measure.style.height = '10em';
+    document.body.appendChild(measure);
+    pixelsPerEm = measure.offsetHeight / 10;
+    document.body.removeChild(measure);
+
     // Process initial messages
     console.log(`Processing ${initialMessages.length} initial message(s)`)
     for (let message of initialMessages) {

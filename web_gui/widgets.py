@@ -19,6 +19,9 @@ from typing import (
 
 from typing_extensions import Self, dataclass_transform
 
+from web_gui.common import Jsonable
+from web_gui.styling import Dict, Jsonable
+
 from .common import Jsonable
 from .styling import *
 
@@ -50,6 +53,11 @@ def _serialize(value: Any, type_: Type) -> Jsonable:
     origin = typing.get_origin(type_)
     args = typing.get_args(type_)
 
+    # Explicit check for some types. These don't play nice with `isinstance` and
+    # similar methods
+    if value is Callable:
+        raise WontSerialize()
+
     # Basic JSON values
     if type_ in (bool, int, float, str):
         return value
@@ -80,6 +88,10 @@ def _serialize(value: Any, type_: Type) -> Jsonable:
             return None
 
         for arg in args:
+            # Callable doesn't play nice with `isinstance`
+            if isinstance(arg, Callable) and callable(value):
+                raise WontSerialize()
+
             if isinstance(value, arg):
                 return _serialize(value, arg)
 
@@ -98,10 +110,15 @@ def _serialize(value: Any, type_: Type) -> Jsonable:
 
 
 def _serialize_widget(value: "Widget") -> Jsonable:
+    type_name = type(value).__name__
+    type_name_camel_case = type_name[0].lower() + type_name[1:]
+
     result = {
         "id": value._id,  # TODO: Avoid name clashes
-        "type": type(value).__name__.lower(),  # TODO: Avoid name clashes
+        "type": type_name_camel_case,  # TODO: Avoid name clashes
     }
+
+    result.update(value._custom_serialize())
 
     for name, type_ in typing.get_type_hints(type(value)).items():
         # Skip some values
@@ -140,6 +157,13 @@ class Widget(ABC):
             _id = _make_unique_id()
             vars(self)["_id"] = _id
             return _id
+
+    def _custom_serialize(self) -> Dict[str, Jsonable]:
+        """
+        Return any additional properties to be serialized, which cannot be
+        deduced automatically from the type annotations.
+        """
+        return {}
 
     @abstractmethod
     def build(self) -> "Widget":
@@ -357,3 +381,23 @@ class Button(FundamentalWidget):
         super().__init__()
         self.text = text
         self.on_click = on_click
+
+
+@dataclass
+class MouseEventListener(FundamentalWidget):
+    child: Widget
+    _: KW_ONLY
+    on_mouse_down: Optional[Callable[[float, float], Any]] = None
+    on_mouse_up: Optional[Callable[[float, float], Any]] = None
+    on_mouse_move: Optional[Callable[[float, float], Any]] = None
+    on_mouse_enter: Optional[Callable[[], Any]] = None
+    on_mouse_leave: Optional[Callable[[], Any]] = None
+
+    def _custom_serialize(self) -> Dict[str, Jsonable]:
+        return {
+            "reportMouseDown": self.on_mouse_down is not None,
+            "reportMouseUp": self.on_mouse_up is not None,
+            "reportMouseMove": self.on_mouse_move is not None,
+            "reportMouseEnter": self.on_mouse_enter is not None,
+            "reportMouseLeave": self.on_mouse_leave is not None,
+        }

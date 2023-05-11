@@ -30,3 +30,17 @@ class IncomingMessage(uniserde.Serde):
 @dataclass
 class ButtonPressedEvent(IncomingMessage):
     widget_id: str
+
+
+@dataclass
+class MouseDownEvent(IncomingMessage):
+    widget_id: str
+    x: float
+    y: float
+
+
+@dataclass
+class MouseUpEvent(IncomingMessage):
+    widget_id: str
+    x: float
+    y: float

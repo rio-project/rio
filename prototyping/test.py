@@ -35,6 +35,10 @@ def build_lsd() -> Widget:
             ),
             Rectangle(fill=Lsd),
             Button("Fooo"),
+            MouseEventListener(
+                Text("Click me!"),
+                on_mouse_down=lambda x, y: print(f"Mouse down @ {x}, {y}"),
+            ),
         ]
     )
 
