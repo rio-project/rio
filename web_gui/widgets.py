@@ -1,5 +1,6 @@
 import dataclasses
 import inspect
+import traceback
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
@@ -49,10 +50,15 @@ async def call_event_handler(
     if handler is None:
         return
 
-    result = handler(event_data)
+    try:
+        result = handler(event_data)
 
-    if inspect.isawaitable(result):
-        await result
+        if inspect.isawaitable(result):
+            await result
+
+    except Exception:
+        print("Exception in event handler:")
+        traceback.print_exc()
 
 
 @dataclass_transform()
