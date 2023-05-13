@@ -276,7 +276,14 @@ var MarginWidget = /** @class */function () {
     element.appendChild((0, app_1.buildWidget)(widget.child));
     return element;
   };
-  MarginWidget.update = function (element, state) {};
+  MarginWidget.update = function (element, state) {
+    if (state.margin !== undefined) {
+      element.style.marginLeft = "".concat(state.margin[0], "em");
+      element.style.marginTop = "".concat(state.margin[1], "em");
+      element.style.marginRight = "".concat(state.margin[2], "em");
+      element.style.marginBottom = "".concat(state.margin[3], "em");
+    }
+  };
   return MarginWidget;
 }();
 exports.MarginWidget = MarginWidget;
@@ -327,9 +334,9 @@ var ButtonWidget = /** @class */function () {
   ButtonWidget.build = function (data) {
     var element = document.createElement('button');
     element.type = 'button';
-    element.addEventListener('click', function () {
+    element.onclick = function () {
       (0, app_1.sendEvent)(element, 'buttonPressedEvent', {});
-    });
+    };
     return element;
   };
   ButtonWidget.update = function (element, deltaState) {
@@ -478,6 +485,8 @@ function processMessage(message) {
     body.innerHTML = '';
     // Build the HTML document
     body.appendChild(buildWidget(message.widget));
+  } else {
+    throw "Encountered unknown message type: ".concat(message);
   }
 }
 function main() {
@@ -497,8 +506,7 @@ function main() {
   var url = new URL('/ws', window.location.href);
   url.protocol = url.protocol.replace('http', 'ws');
   console.log("Connecting websocket to ".concat(url.href));
-  // socket = new WebSocket(url.href);
-  socket = new WebSocket("ws://localhost:8000/ws");
+  socket = new WebSocket(url.href);
   socket.addEventListener('open', onOpen);
   socket.addEventListener('message', onMessage);
   socket.addEventListener('error', onError);
@@ -508,7 +516,10 @@ function onOpen() {
   console.log('Connection opened');
 }
 function onMessage(event) {
-  console.log("Received message: ".concat(event.data));
+  // Parse the message JSON
+  var message = JSON.parse(event.data);
+  // Handle it
+  processMessage(message);
 }
 function onError(event) {
   console.log("Error: ".concat(event.message));

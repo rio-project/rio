@@ -37,105 +37,8 @@ def _make_unique_id() -> int:
     return _unique_id_counter
 
 
-class WontSerialize(Exception):
-    pass
-
-
-def _serialize(value: Any, type_: Type) -> Jsonable:
-    """
-    Which values are serialized for state depends on the annotated datatypes.
-    There is no point in sending fancy values over to the client which it can't
-    interpret.
-
-    This function attempts to serialize the value, or raises a `WontSerialize`
-    exception if this value shouldn't be included in the state.
-    """
-    origin = typing.get_origin(type_)
-    args = typing.get_args(type_)
-
-    # Explicit check for some types. These don't play nice with `isinstance` and
-    # similar methods
-    if value is Callable:
-        raise WontSerialize()
-
-    # Basic JSON values
-    if type_ in (bool, int, float, str):
-        return value
-
-    # Tuples or lists of serializable values
-    if origin is tuple or origin is list:
-        return [_serialize(v, args[0]) for v in value]
-
-    # Special case: `FillLike`
-    #
-    # TODO: Is there a nicer way to detect these?
-    if (
-        origin is Union
-        and len(args) == 2
-        and (args[0] is Fill or args[1] is Fill)
-        and (args[0] is Color or args[1] is Color)
-    ):
-        value = Fill._try_from(value)
-        return value._serialize()
-
-    # Colors
-    if type_ is Color:
-        return value.rgba
-
-    # Optional / Union
-    if origin is Union:
-        if value is None:
-            return None
-
-        for arg in args:
-            # Callable doesn't play nice with `isinstance`
-            if isinstance(arg, Callable) and callable(value):
-                raise WontSerialize()
-
-            if isinstance(value, arg):
-                return _serialize(value, arg)
-
-        assert False, f'Value "{value}" is not of any of the union types {args}'
-
-    # Literal
-    if origin is Literal:
-        return _serialize(value, type(value))
-
-    # Widgets
-    if inspect.isclass(type_) and issubclass(type_, Widget):
-        return _serialize_widget(value)
-
-    # Invalid type
-    raise WontSerialize()
-
-
-def _serialize_widget(value: "Widget") -> Jsonable:
-    type_name = type(value).__name__
-    type_name_camel_case = type_name[0].lower() + type_name[1:]
-
-    result = {
-        "id": value._id,  # TODO: Avoid name clashes
-        "type": type_name_camel_case,  # TODO: Avoid name clashes
-    }
-
-    result.update(value._custom_serialize())
-
-    for name, type_ in typing.get_type_hints(type(value)).items():
-        # Skip some values
-        if name in ("_",):  # Used to mark keyword-only arguments in dataclasses
-            continue
-
-        # Let the serialization function handle the value
-        try:
-            result[name] = _serialize(getattr(value, name), type_)
-        except WontSerialize:
-            pass
-
-    return result
-
-
 @dataclass_transform()
-@dataclass
+@dataclass(unsafe_hash=True)
 class Widget(ABC):
     _: KW_ONLY
     width_override: Optional[float] = None
@@ -144,13 +47,27 @@ class Widget(ABC):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        dataclasses.dataclass(cls)
+        # Apply the dataclass transform
+        dataclasses.dataclass(unsafe_hash=True)(cls)
 
+        # Replace all properties with custom state properties
         for attr in vars(cls).get("__annotations__", ()):
             setattr(cls, attr, StateProperty(attr))
 
+        # Widgets must be hashable, because sessions use weak dicts & sets to
+        # keep track of them. However, unlike dataclasses, instances should only
+        # be equal to themselves.
+        #
+        # -> Replace the dataclass implementations of `__eq__` and `__hash__`
+        cls.__eq__ = lambda self, other: self._id == other._id  # type: ignore
+        cls.__hash__ = lambda self: self._id  # type: ignore
+
     @property
     def _id(self) -> int:
+        """
+        Return an unchanging, unique ID for this widget, so it can be identified
+        over the API.
+        """
         try:
             return vars(self)["_id"]
         except KeyError:
@@ -167,7 +84,7 @@ class Widget(ABC):
 
     @abstractmethod
     def build(self) -> "Widget":
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def _map_direct_children(self, callback: Callable[["Widget"], "Widget"]):
         for name, typ in typing.get_type_hints(self.__class__).items():
@@ -184,6 +101,27 @@ class Widget(ABC):
                 setattr(self, name, [callback(child) for child in children])
 
             # TODO: What about other containers
+
+    def _iter_direct_children(self) -> Iterable["Widget"]:
+        for name, typ in typing.get_type_hints(self.__class__).items():
+            origin, args = typing.get_origin(typ), typing.get_args(typ)
+
+            # Remap directly contained widgets
+            if origin is Widget:
+                child = getattr(self, name)
+                yield child
+
+            # Iterate over lists of widgets, remapping their values
+            elif origin is list and args[0] is Widget:
+                children = getattr(self, name)
+                yield from children
+
+            # TODO: What about other containers
+
+
+class FundamentalWidget(Widget):
+    def build(self) -> "Widget":
+        raise RuntimeError(f"Attempted to call `build` on fundamental widget {self}")
 
 
 class StateProperty(Generic[T]):
@@ -212,12 +150,6 @@ class StateProperty(Generic[T]):
         vars(instance)[self.name] = value
 
 
-class FundamentalWidget(Widget):
-    def build(self) -> "Widget":
-        return self
-
-
-@dataclass
 class Text(FundamentalWidget):
     text: str
     _: KW_ONLY
@@ -230,29 +162,24 @@ class Text(FundamentalWidget):
     underlined: bool = False
 
 
-@dataclass
 class Row(FundamentalWidget):
     children: List[Widget]
 
 
-@dataclass
 class Column(FundamentalWidget):
     children: List[Widget]
 
 
-@dataclass
 class Rectangle(FundamentalWidget):
     fill: FillLike
     _: KW_ONLY
     corner_radius: Tuple[float, float, float, float] = (0, 0, 0, 0)
 
 
-@dataclass
 class Stack(FundamentalWidget):
     children: List[Widget]
 
 
-@dataclass
 class Margin(FundamentalWidget):
     child: Widget
     margin_left: float
@@ -301,7 +228,6 @@ class Margin(FundamentalWidget):
             self.margin_bottom = margin_bottom
 
 
-@dataclass
 class Align(FundamentalWidget):
     child: Widget
     align_x: Optional[float]
@@ -372,7 +298,6 @@ class Align(FundamentalWidget):
         return cls(child, align_x=1, align_y=1)
 
 
-@dataclass
 class Button(FundamentalWidget):
     text: str
     on_click: Optional[Callable[[], Any]]
@@ -383,7 +308,6 @@ class Button(FundamentalWidget):
         self.on_click = on_click
 
 
-@dataclass
 class MouseEventListener(FundamentalWidget):
     child: Widget
     _: KW_ONLY

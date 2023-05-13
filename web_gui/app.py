@@ -1,35 +1,39 @@
 import functools
 import io
 import json
-from datetime import timedelta
-from typing import List, Optional
+import weakref
+from typing import Callable, List, Optional
 
 import fastapi
 import PIL.Image
 import uniserde
 import uvicorn
 
-from . import common, messages, widgets
+from . import common, messages, session, widgets
 from .common import Jsonable
 
 
-@functools.lru_cache()
-def read_template(template_name: str) -> str:
+@functools.lru_cache(maxsize=None)
+def read_frontend_template(template_name: str) -> str:
+    """
+    Read a text file from the frontend directory and return its content. The
+    results are cached to avoid repeated disk access.
+    """
     return (common.FRONTEND_DIR / template_name).read_text()
 
 
 class App:
     def __init__(
         self,
-        app_name: str,
-        root_widget: widgets.Widget,
+        name: str,
+        build: Callable[[], widgets.Widget],
         *,
         host: str = "127.0.0.1",
         port: int = 8000,
         icon: Optional[PIL.Image.Image] = None,
     ):
-        self.app_name = app_name
-        self.root_widget = root_widget
+        self.name = name
+        self.build = build
         self.host = host
         self.port = port
 
@@ -69,18 +73,12 @@ class App:
 
     async def _serve_index(self) -> fastapi.responses.HTMLResponse:
         # Create a list of all messages the frontend should process immediately
-        widget_json = widgets._serialize(self.root_widget, type(self.root_widget))
-        initial_messages: List[Jsonable] = [
-            m.as_json()
-            for m in [
-                messages.ReplaceWidgets(widget=widget_json),
-            ]
-        ]
+        initial_messages: List[Jsonable] = [m.as_json() for m in []]
 
         # Load the templates
-        html = read_template("index.html")
-        js = read_template("app.js")
-        css = read_template("style.css")
+        html = read_frontend_template("index.html")
+        js = read_frontend_template("app.js")
+        css = read_frontend_template("style.css")
 
         # Fill in all placeholders
         js = js.replace(
@@ -88,7 +86,7 @@ class App:
             json.dumps(initial_messages, indent=4),
         )
 
-        html = html.replace("{title}", self.app_name)
+        html = html.replace("{title}", self.name)
         html = html.replace("/*{style}*/", css)
         html = html.replace("/*{script}*/", js)
 
@@ -103,7 +101,7 @@ class App:
 
     async def _serve_js_map(self) -> fastapi.responses.Response:
         return fastapi.responses.Response(
-            content=read_template("app.js.map"),
+            content=read_frontend_template("app.js.map"),
             media_type="application/json",
         )
 
@@ -120,8 +118,26 @@ class App:
         self,
         websocket: fastapi.WebSocket,
     ):
+        # FIXME: Instead of reusing the root widget over and over, make sure
+        #        each session gets a fresh, independent copy.
+
+        # Accept the socket
         await websocket.accept()
 
+        # Create a session instance to hold all of this state in an organized
+        # fashion
+        root_widget = self.build()
+        sess = session.Session(root_widget)
+
+        # Trigger an initial build
+        sess.register_dirty_widget(root_widget)
+        sess.refresh()
+
+        # Building has spawned widgets. Send those to the client
+        widget_json = sess._serialize_widget(root_widget)
+        await websocket.send_json(messages.ReplaceWidgets(widget=widget_json).as_json())
+
+        # Listen for incoming messages and react to them
         while True:
             try:
                 message_json = await websocket.receive_json()

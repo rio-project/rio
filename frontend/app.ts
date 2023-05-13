@@ -91,6 +91,8 @@ function processMessage(message: any) {
 
         // Build the HTML document
         body.appendChild(buildWidget(message.widget));
+    } else {
+        throw `Encountered unknown message type: ${message}`;
     }
 }
 
@@ -103,7 +105,7 @@ function main() {
     document.body.removeChild(measure);
 
     // Process initial messages
-    console.log(`Processing ${initialMessages.length} initial message(s)`)
+    console.log(`Processing ${initialMessages.length} initial message(s)`);
     for (let message of initialMessages) {
         processMessage(message);
     }
@@ -111,10 +113,8 @@ function main() {
     // Connect to the websocket
     var url = new URL('/ws', window.location.href);
     url.protocol = url.protocol.replace('http', 'ws');
-    console.log(`Connecting websocket to ${url.href}`)
-
-    // socket = new WebSocket(url.href);
-    socket = new WebSocket("ws://localhost:8000/ws");
+    console.log(`Connecting websocket to ${url.href}`);
+    socket = new WebSocket(url.href);
 
     socket.addEventListener('open', onOpen);
     socket.addEventListener('message', onMessage);
@@ -127,7 +127,11 @@ function onOpen() {
 }
 
 function onMessage(event: any) {
-    console.log(`Received message: ${event.data}`);
+    // Parse the message JSON
+    let message = JSON.parse(event.data);
+
+    // Handle it
+    processMessage(message);
 }
 
 function onError(event: any) {
@@ -138,17 +142,22 @@ function onClose(event: any) {
     console.log(`Connection closed: ${event.reason}`);
 }
 
-
 export function sendJson(message: object) {
     if (!socket) {
-        console.log(`Attempted to send message, but the websocket is not connected: ${message}`);
+        console.log(
+            `Attempted to send message, but the websocket is not connected: ${message}`
+        );
         return;
     }
 
     socket.send(JSON.stringify(message));
 }
 
-export function sendEvent(element: HTMLElement, eventType: string, eventArgs: object) {
+export function sendEvent(
+    element: HTMLElement,
+    eventType: string,
+    eventArgs: object
+) {
     sendJson({
         type: eventType,
         // Remove the leading `pygui-id-` from the element's ID
@@ -157,8 +166,4 @@ export function sendEvent(element: HTMLElement, eventType: string, eventArgs: ob
     });
 }
 
-
-
-
 main();
-

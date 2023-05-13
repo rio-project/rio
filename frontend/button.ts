@@ -6,7 +6,7 @@ export class ButtonWidget {
         let element = document.createElement('button');
         element.type = 'button';
 
-        element.addEventListener('click', () => {
+        element.onclick = (() => {
             sendEvent(element, 'buttonPressedEvent', {});
         });
 

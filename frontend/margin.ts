@@ -10,6 +10,11 @@ export class MarginWidget {
     }
 
     static update(element: HTMLElement, state: JsonMargin): void {
-
+        if (state.margin !== undefined) {
+            element.style.marginLeft   = `${state.margin[0]}em`;
+            element.style.marginTop    = `${state.margin[1]}em`;
+            element.style.marginRight  = `${state.margin[2]}em`;
+            element.style.marginBottom = `${state.margin[3]}em`;
+        }
     }
 }

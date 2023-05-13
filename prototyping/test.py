@@ -74,10 +74,9 @@ def build_diffusion_ui() -> Widget:
 
 
 def main():
-    root_widget = build_lsd()
     app = App(
         "Super Dynamic Website!",
-        root_widget,
+        build_lsd,
         icon=PIL.Image.open("./prototyping/icon.png"),
     )
     app.run(quiet=False)
