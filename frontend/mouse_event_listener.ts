@@ -1,6 +1,18 @@
 import { JsonMouseEventListener } from './models';
 import { buildWidget, pixelsPerEm, sendEvent } from './app';
 
+function eventMouseButtonToString(event: any): object {
+    return {
+        button: ['left', 'middle', 'right'][event.button],
+    };
+}
+
+function eventMousePositionToString(event: any): object {
+    return {
+        x: event.clientX / pixelsPerEm,
+        y: event.clientY / pixelsPerEm,
+    };
+}
 
 export class MouseEventListener {
     static build(data: JsonMouseEventListener): HTMLElement {
@@ -16,8 +28,8 @@ export class MouseEventListener {
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
                 sendEvent(element, 'mouseDownEvent', {
-                    x: e.clientX / pixelsPerEm,
-                    y: e.clientY / pixelsPerEm,
+                    ...eventMouseButtonToString(e),
+                    ...eventMousePositionToString(e),
                 });
             };
         } else {
@@ -27,8 +39,8 @@ export class MouseEventListener {
         if (deltaState.reportMouseUp) {
             element.onmouseup = (e) => {
                 sendEvent(element, 'mouseUpEvent', {
-                    x: e.clientX / pixelsPerEm,
-                    y: e.clientY / pixelsPerEm,
+                    ...eventMouseButtonToString(e),
+                    ...eventMousePositionToString(e),
                 });
             };
         } else {

@@ -161,7 +161,7 @@ export function sendEvent(
     sendJson({
         type: eventType,
         // Remove the leading `pygui-id-` from the element's ID
-        widgetId: element.id.substring(9),
+        widgetId: parseInt(element.id.substring(9)),
         ...eventArgs,
     });
 }

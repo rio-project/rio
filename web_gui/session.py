@@ -1,10 +1,11 @@
 import inspect
+import logging
 import typing
 import weakref
 from dataclasses import dataclass
 from typing import Any, Callable, Tuple, Type, Union
 
-from . import widgets
+from . import messages, widgets
 from .common import Jsonable
 from .styling import *
 
@@ -29,31 +30,30 @@ class Session:
         # Never access these directly. Instead, use helper functions
         # - `lookup_widget`
         # - `lookup_widget_id`
-        self._unbuilt_widgets_by_id: weakref.WeakValueDictionary[
+        self._weak_widgets_by_id: weakref.WeakValueDictionary[
             int, widgets.Widget
         ] = weakref.WeakValueDictionary()
 
-        self._widget_data_by_widget: weakref.WeakKeyDictionary[
+        self._weak_widget_data_by_widget: weakref.WeakKeyDictionary[
             widgets.Widget, WidgetData
         ] = weakref.WeakKeyDictionary()
 
         # Keep track of all dirty widgets, once again, weakly
         self._dirty_widgets: weakref.WeakSet[widgets.Widget] = weakref.WeakSet()
 
-    def lookup_widget(self, widget: widgets.Widget) -> WidgetData:
+    def lookup_widget_data(self, widget: widgets.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
         data is present for the widget.
         """
-        return self._widget_data_by_widget[widget]
+        return self._weak_widget_data_by_widget[widget]
 
-    def lookup_widget_id(self, widget_id: int) -> Tuple[widgets.Widget, WidgetData]:
+    def lookup_widget(self, widget_id: int) -> widgets.Widget:
         """
         Returns the widget and its data for the given widget ID. Raises
         `KeyError` if no widget is present for the ID.
         """
-        widget = self._unbuilt_widgets_by_id[widget_id]
-        return widget, self.lookup_widget(widget)
+        return self._weak_widgets_by_id[widget_id]
 
     def register_dirty_widget(self, widget: widgets.Widget) -> None:
         self._dirty_widgets.add(widget)
@@ -77,6 +77,9 @@ class Session:
         while self._dirty_widgets:
             widget = self._dirty_widgets.pop()
 
+            # Keep track of this widget's existance
+            self._weak_widgets_by_id[widget._id] = widget
+
             # Fundamental widgets just need their children looked at
             if isinstance(widget, widgets.FundamentalWidget):
                 self._dirty_widgets.update(widget._iter_direct_children())
@@ -87,13 +90,13 @@ class Session:
 
             # Has this widget been built before?
             try:
-                widget_data = self.lookup_widget(widget)
+                widget_data = self.lookup_widget_data(widget)
 
             # No, this is the first time
             except KeyError:
                 widget_data = WidgetData(build_result)
-                self._widget_data_by_widget[widget] = widget_data
-                self._unbuilt_widgets_by_id[widget._id] = widget
+                self._weak_widget_data_by_widget[widget] = widget_data
+                self._weak_widgets_by_id[widget._id] = widget
 
             # Yes, rescue state
             else:
@@ -153,7 +156,7 @@ class Session:
                 if isinstance(arg, Callable) and callable(value):
                     raise WontSerialize()
 
-                if isinstance(value, arg):
+                if isinstance(value, arg):  # type: ignore
                     return self._serialize_value(value, arg)
 
             assert False, f'Value "{value}" is not of any of the union types {args}'
@@ -182,7 +185,7 @@ class Session:
         fundamental_widget = widget
 
         while not isinstance(fundamental_widget, widgets.FundamentalWidget):
-            widget_data = self.lookup_widget(fundamental_widget)
+            widget_data = self.lookup_widget_data(fundamental_widget)
             fundamental_widget = widget_data.previous_build_result
 
         # Serialize the obtained fundamental widget
@@ -210,3 +213,23 @@ class Session:
                 pass
 
         return result
+
+    async def handle_message(self, msg: messages.IncomingMessage) -> None:
+        """
+        Handle a message from the client. This is the main entry point for
+        messages from the client.
+        """
+        try:
+            widget_id = msg.widget_id  # type: ignore
+        except AttributeError:
+            raise NotImplementedError("Encountered message without widget ID")
+
+        try:
+            widget = self.lookup_widget(widget_id)
+        except KeyError:
+            logging.warn(
+                f"Encountered message for unknown widget {widget_id}. (The widget might have been deleted in the meantime.)"
+            )
+            return
+
+        await widget._handle_message(msg)

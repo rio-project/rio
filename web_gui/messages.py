@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 import uniserde
 
@@ -29,18 +29,20 @@ class IncomingMessage(uniserde.Serde):
 
 @dataclass
 class ButtonPressedEvent(IncomingMessage):
-    widget_id: str
+    widget_id: int
 
 
 @dataclass
 class MouseDownEvent(IncomingMessage):
-    widget_id: str
+    widget_id: int
+    button: Literal["left", "middle", "right"]
     x: float
     y: float
 
 
 @dataclass
 class MouseUpEvent(IncomingMessage):
-    widget_id: str
+    widget_id: int
+    button: Literal["left", "middle", "right"]
     x: float
     y: float

@@ -150,4 +150,5 @@ class App:
                 # TODO what if invalid json is received
                 raise NotImplementedError(err)
 
-            print(message)
+            # Delegate to the session
+            await sess.handle_message(message)

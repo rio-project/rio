@@ -350,11 +350,32 @@ exports.ButtonWidget = ButtonWidget;
 },{"./app":"EVxB"}],"LKOD":[function(require,module,exports) {
 "use strict";
 
+var __assign = this && this.__assign || function () {
+  __assign = Object.assign || function (t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+    return t;
+  };
+  return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.MouseEventListener = void 0;
 var app_1 = require("./app");
+function eventMouseButtonToString(event) {
+  return {
+    button: ['left', 'middle', 'right'][event.button]
+  };
+}
+function eventMousePositionToString(event) {
+  return {
+    x: event.clientX / app_1.pixelsPerEm,
+    y: event.clientY / app_1.pixelsPerEm
+  };
+}
 var MouseEventListener = /** @class */function () {
   function MouseEventListener() {}
   MouseEventListener.build = function (data) {
@@ -365,20 +386,14 @@ var MouseEventListener = /** @class */function () {
   MouseEventListener.update = function (element, deltaState) {
     if (deltaState.reportMouseDown) {
       element.onmousedown = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseDownEvent', {
-          x: e.clientX / app_1.pixelsPerEm,
-          y: e.clientY / app_1.pixelsPerEm
-        });
+        (0, app_1.sendEvent)(element, 'mouseDownEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
       };
     } else {
       element.onmousedown = null;
     }
     if (deltaState.reportMouseUp) {
       element.onmouseup = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseUpEvent', {
-          x: e.clientX / app_1.pixelsPerEm,
-          y: e.clientY / app_1.pixelsPerEm
-        });
+        (0, app_1.sendEvent)(element, 'mouseUpEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
       };
     } else {
       element.onmouseup = null;
@@ -539,7 +554,7 @@ function sendEvent(element, eventType, eventArgs) {
   sendJson(__assign({
     type: eventType,
     // Remove the leading `pygui-id-` from the element's ID
-    widgetId: element.id.substring(9)
+    widgetId: parseInt(element.id.substring(9))
   }, eventArgs));
 }
 exports.sendEvent = sendEvent;

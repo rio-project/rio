@@ -5,13 +5,12 @@ from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
 from typing import (
     Any,
+    Awaitable,
     Callable,
     Dict,
     Generic,
     Optional,
-    Set,
     Tuple,
-    Type,
     TypeVar,
     Union,
     overload,
@@ -19,13 +18,16 @@ from typing import (
 
 from typing_extensions import Self, dataclass_transform
 
+from web_gui import messages
 from web_gui.common import Jsonable
 from web_gui.styling import Dict, Jsonable
 
+from . import event_classes, messages
 from .common import Jsonable
 from .styling import *
 
 T = TypeVar("T")
+EventHandler = Optional[Callable[[T], Any | Awaitable[Any]]]
 
 
 _unique_id_counter = -1
@@ -35,6 +37,22 @@ def _make_unique_id() -> int:
     global _unique_id_counter
     _unique_id_counter += 1
     return _unique_id_counter
+
+
+async def call_event_handler(
+    event_data: T,
+    handler: EventHandler[T],
+) -> None:
+    """
+    Call an event handler, if one is present. Await it if necessary
+    """
+    if handler is None:
+        return
+
+    result = handler(event_data)
+
+    if inspect.isawaitable(result):
+        await result
 
 
 @dataclass_transform()
@@ -117,6 +135,9 @@ class Widget(ABC):
                 yield from children
 
             # TODO: What about other containers
+
+    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
+        raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
 
 class FundamentalWidget(Widget):
@@ -311,11 +332,11 @@ class Button(FundamentalWidget):
 class MouseEventListener(FundamentalWidget):
     child: Widget
     _: KW_ONLY
-    on_mouse_down: Optional[Callable[[float, float], Any]] = None
-    on_mouse_up: Optional[Callable[[float, float], Any]] = None
-    on_mouse_move: Optional[Callable[[float, float], Any]] = None
-    on_mouse_enter: Optional[Callable[[], Any]] = None
-    on_mouse_leave: Optional[Callable[[], Any]] = None
+    on_mouse_down: EventHandler[event_classes.MouseDownEvent] = None
+    on_mouse_up: EventHandler[event_classes.MouseUpEvent] = None
+    on_mouse_move: EventHandler[event_classes.MouseMoveEvent] = None
+    on_mouse_enter: EventHandler[event_classes.MouseEnterEvent] = None
+    on_mouse_leave: EventHandler[event_classes.MouseLeaveEvent] = None
 
     def _custom_serialize(self) -> Dict[str, Jsonable]:
         return {
@@ -325,3 +346,29 @@ class MouseEventListener(FundamentalWidget):
             "reportMouseEnter": self.on_mouse_enter is not None,
             "reportMouseLeave": self.on_mouse_leave is not None,
         }
+
+    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
+        if isinstance(msg, messages.MouseDownEvent):
+            await call_event_handler(
+                event_classes.MouseDownEvent(
+                    x=msg.x,
+                    y=msg.y,
+                    button=event_classes.MouseButton(msg.button),
+                ),
+                self.on_mouse_down,
+            )
+
+        elif isinstance(msg, messages.MouseUpEvent):
+            await call_event_handler(
+                event_classes.MouseUpEvent(
+                    x=msg.x,
+                    y=msg.y,
+                    button=event_classes.MouseButton(msg.button),
+                ),
+                self.on_mouse_up,
+            )
+
+        else:
+            raise RuntimeError(
+                f"MouseEventListener received unexpected message `{msg}`"
+            )
