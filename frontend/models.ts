@@ -70,11 +70,6 @@ export type JsonAlign = {
     align_y?: number,
 }
 
-export type JsonButton = {
-    type: 'button',
-    id: string,
-    text: string,
-}
 
 export type JsonMouseEventListener = {
     type: 'mouseEventListener',
@@ -87,4 +82,4 @@ export type JsonMouseEventListener = {
     reportMouseLeave: boolean,
 }
 
-export type JsonWidget = JsonText | JsonRow | JsonColumn | JsonRectangle | JsonStack | JsonMargin | JsonAlign | JsonButton | JsonMouseEventListener;
+export type JsonWidget = JsonText | JsonRow | JsonColumn | JsonRectangle | JsonStack | JsonMargin | JsonAlign |  JsonMouseEventListener;

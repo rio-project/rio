@@ -1,9 +1,12 @@
 import inspect
 import logging
+import pprint
 import typing
 import weakref
 from dataclasses import dataclass
 from typing import Any, Callable, Tuple, Type, Union
+
+from fastapi import WebSocket
 
 from . import messages, widgets
 from .common import Jsonable
@@ -20,8 +23,9 @@ class WontSerialize(Exception):
 
 
 class Session:
-    def __init__(self, root_widget: widgets.Widget):
+    def __init__(self, root_widget: widgets.Widget, websocket: WebSocket):
         self.root_widget = root_widget
+        self.websocket = websocket
 
         # Weak dictionaries to hold additional information about widgets. These
         # are split in two to avoid the dictionaries keeping the widgets alive.
@@ -58,7 +62,7 @@ class Session:
     def register_dirty_widget(self, widget: widgets.Widget) -> None:
         self._dirty_widgets.add(widget)
 
-    def refresh(self) -> None:
+    async def refresh(self) -> None:
         """
         Make sure the session state is up to date. Specifically:
 
@@ -69,6 +73,11 @@ class Session:
         Thus the session is up to date and ready for display to the user after
         this method returns.
         """
+        # If nothing is dirty just return. While the loop below wouldn't do
+        # anything anyway, this avoids sending a message to the client.
+        if not self._dirty_widgets:
+            return
+
         # Build all dirty widgets
         #
         # TODO: Start this at the root widget and continue recursively, to avoid
@@ -76,6 +85,9 @@ class Session:
         #       rebuilding.
         while self._dirty_widgets:
             widget = self._dirty_widgets.pop()
+
+            # Inject the session into the widget
+            widget._session = self
 
             # Keep track of this widget's existance
             self._weak_widgets_by_id[widget._id] = widget
@@ -100,10 +112,15 @@ class Session:
 
             # Yes, rescue state
             else:
+                widget_data.previous_build_result = build_result
                 pass  # TODO: Rescue state
 
             # Any freshly spawned widgets are dirty
             self._dirty_widgets.add(build_result)
+
+        # Send the new state to the client if necessary
+        foo = messages.ReplaceWidgets(self._serialize_widget(self.root_widget))
+        await self.send_message(foo)
 
     def _serialize_value(self, value: Any, type_: Type) -> Jsonable:
         """
@@ -233,3 +250,11 @@ class Session:
             return
 
         await widget._handle_message(msg)
+
+    async def send_message(self, msg: messages.OutgoingMessage) -> None:
+        """
+        Send a message to the client. This is the main entry point for messages
+        to the client.
+        """
+        pprint.pprint(msg.as_json())
+        await self.websocket.send_json(msg.as_json())

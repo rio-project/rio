@@ -127,15 +127,12 @@ class App:
         # Create a session instance to hold all of this state in an organized
         # fashion
         root_widget = self.build()
-        sess = session.Session(root_widget)
+        sess = session.Session(root_widget, websocket)
 
-        # Trigger an initial build
+        # Trigger an initial build. This will also send the initial state to
+        # the frontend.
         sess.register_dirty_widget(root_widget)
-        sess.refresh()
-
-        # Building has spawned widgets. Send those to the client
-        widget_json = sess._serialize_widget(root_widget)
-        await websocket.send_json(messages.ReplaceWidgets(widget=widget_json).as_json())
+        await sess.refresh()
 
         # Listen for incoming messages and react to them
         while True:

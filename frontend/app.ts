@@ -6,7 +6,6 @@ import { StackWidget } from './stack';
 import { MarginWidget } from './margin';
 import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
-import { ButtonWidget } from './button';
 import { MouseEventListener } from './mouse_event_listener';
 
 const initialMessages = '{initial_messages}';
@@ -48,7 +47,6 @@ export function fillToCss(fill: Fill): string {
 
 const widgetClasses = {
     align: AlignWidget,
-    button: ButtonWidget,
     column: ColumnWidget,
     margin: MarginWidget,
     rectangle: RectangleWidget,

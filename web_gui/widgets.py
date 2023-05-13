@@ -11,6 +11,7 @@ from typing import (
     Dict,
     Generic,
     Optional,
+    Set,
     Tuple,
     TypeVar,
     Union,
@@ -23,7 +24,7 @@ from web_gui import messages
 from web_gui.common import Jsonable
 from web_gui.styling import Dict, Jsonable
 
-from . import event_classes, messages
+from . import event_classes, messages, session
 from .common import Jsonable
 from .styling import *
 
@@ -40,25 +41,35 @@ def _make_unique_id() -> int:
     return _unique_id_counter
 
 
-async def call_event_handler(
+async def call_event_handler_and_refresh(
+    widget: "Widget",
     event_data: T,
     handler: EventHandler[T],
 ) -> None:
     """
     Call an event handler, if one is present. Await it if necessary
     """
+    assert widget._session is not None
+
+    # Event handlers are optionsl
     if handler is None:
         return
 
+    # If the handler is available, call it and await it if necessary
     try:
         result = handler(event_data)
 
         if inspect.isawaitable(result):
             await result
 
+    # Display and discard exceptions
     except Exception:
         print("Exception in event handler:")
         traceback.print_exc()
+
+    # Refresh the session if necessary. A rebuild might be in order
+    assert widget._session is not None, widget
+    await widget._session.refresh()
 
 
 @dataclass_transform()
@@ -68,6 +79,14 @@ class Widget(ABC):
     width_override: Optional[float] = None
     height_override: Optional[float] = None
 
+    # Injected by the session when the widget is refreshed
+    _session: Optional["session.Session"] = None
+
+    # Keep track of all changed properties
+    _dirty_properties: Set["StateProperty"] = dataclasses.field(
+        default_factory=set, init=False
+    )
+
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
@@ -76,6 +95,9 @@ class Widget(ABC):
 
         # Replace all properties with custom state properties
         for attr in vars(cls).get("__annotations__", ()):
+            if attr.startswith("_"):
+                continue
+
             setattr(cls, attr, StateProperty(attr))
 
         # Widgets must be hashable, because sessions use weak dicts & sets to
@@ -175,6 +197,15 @@ class StateProperty(Generic[T]):
 
     def __set__(self, instance: Widget, value: T) -> None:
         vars(instance)[self.name] = value
+
+        # Mark the widget as dirty
+        instance._dirty_properties.add(self)
+
+        # If a session is known notify the session that the widget is dirty. If
+        # the session is not known yet, the widget will be processed by the
+        # session anyway, as if dirty.
+        if instance._session is not None:
+            instance._session.register_dirty_widget(instance)
 
 
 class Text(FundamentalWidget):
@@ -325,16 +356,6 @@ class Align(FundamentalWidget):
         return cls(child, align_x=1, align_y=1)
 
 
-class Button(FundamentalWidget):
-    text: str
-    on_click: Optional[Callable[[], Any]]
-
-    def __init__(self, text: str, *, on_click: Optional[Callable[[], Any]] = None):
-        super().__init__()
-        self.text = text
-        self.on_click = on_click
-
-
 class MouseEventListener(FundamentalWidget):
     child: Widget
     _: KW_ONLY
@@ -355,7 +376,8 @@ class MouseEventListener(FundamentalWidget):
 
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
         if isinstance(msg, messages.MouseDownEvent):
-            await call_event_handler(
+            await call_event_handler_and_refresh(
+                self,
                 event_classes.MouseDownEvent(
                     x=msg.x,
                     y=msg.y,
@@ -365,7 +387,8 @@ class MouseEventListener(FundamentalWidget):
             )
 
         elif isinstance(msg, messages.MouseUpEvent):
-            await call_event_handler(
+            await call_event_handler_and_refresh(
+                self,
                 event_classes.MouseUpEvent(
                     x=msg.x,
                     y=msg.y,

@@ -321,32 +321,6 @@ var AlignWidget = /** @class */function () {
   return AlignWidget;
 }();
 exports.AlignWidget = AlignWidget;
-},{"./app":"EVxB"}],"zONe":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ButtonWidget = void 0;
-var app_1 = require("./app");
-var ButtonWidget = /** @class */function () {
-  function ButtonWidget() {}
-  ButtonWidget.build = function (data) {
-    var element = document.createElement('button');
-    element.type = 'button';
-    element.onclick = function () {
-      (0, app_1.sendEvent)(element, 'buttonPressedEvent', {});
-    };
-    return element;
-  };
-  ButtonWidget.update = function (element, deltaState) {
-    if (deltaState.text !== undefined) {
-      element.textContent = deltaState.text;
-    }
-  };
-  return ButtonWidget;
-}();
-exports.ButtonWidget = ButtonWidget;
 },{"./app":"EVxB"}],"LKOD":[function(require,module,exports) {
 "use strict";
 
@@ -428,7 +402,6 @@ var rectangle_1 = require("./rectangle");
 var stack_1 = require("./stack");
 var margin_1 = require("./margin");
 var align_1 = require("./align");
-var button_1 = require("./button");
 var mouse_event_listener_1 = require("./mouse_event_listener");
 var initialMessages = '{initial_messages}';
 var socket = null;
@@ -465,7 +438,6 @@ function fillToCss(fill) {
 exports.fillToCss = fillToCss;
 var widgetClasses = {
   align: align_1.AlignWidget,
-  button: button_1.ButtonWidget,
   column: column_1.ColumnWidget,
   margin: margin_1.MarginWidget,
   rectangle: rectangle_1.RectangleWidget,
@@ -559,5 +531,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./button":"zONe","./mouse_event_listener":"LKOD"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouse_event_listener":"LKOD"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

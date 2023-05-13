@@ -3,6 +3,8 @@ from typing import Any, Literal
 
 import uniserde
 
+from .common import Jsonable
+
 
 @uniserde.as_child
 class OutgoingMessage(uniserde.Serde):
@@ -17,7 +19,7 @@ class ReplaceWidgets(OutgoingMessage):
     Replace all widgets in the UI with the given one.
     """
 
-    widget: Any
+    widget: Any  # The already serialized widget
 
 
 @uniserde.as_child
