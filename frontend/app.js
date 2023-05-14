@@ -129,6 +129,7 @@ var TextWidget = /** @class */function () {
   function TextWidget() {}
   TextWidget.build = function (data) {
     var element = document.createElement('div');
+    element.classList.add('pygui-text');
     return element;
   };
   TextWidget.update = function (element, deltaState) {
@@ -277,11 +278,17 @@ var MarginWidget = /** @class */function () {
     return element;
   };
   MarginWidget.update = function (element, state) {
-    if (state.margin !== undefined) {
-      element.style.marginLeft = "".concat(state.margin[0], "em");
-      element.style.marginTop = "".concat(state.margin[1], "em");
-      element.style.marginRight = "".concat(state.margin[2], "em");
-      element.style.marginBottom = "".concat(state.margin[3], "em");
+    if (state.margin_left !== undefined) {
+      element.style.marginLeft = "".concat(state.margin_left, "em");
+    }
+    if (state.margin_top !== undefined) {
+      element.style.marginTop = "".concat(state.margin_top, "em");
+    }
+    if (state.margin_right !== undefined) {
+      element.style.marginRight = "".concat(state.margin_right, "em");
+    }
+    if (state.margin_bottom !== undefined) {
+      element.style.marginBottom = "".concat(state.margin_bottom, "em");
     }
   };
   return MarginWidget;
@@ -354,6 +361,7 @@ var MouseEventListener = /** @class */function () {
   function MouseEventListener() {}
   MouseEventListener.build = function (data) {
     var element = document.createElement('div');
+    element.classList.add('pygui-mouse-event-listener');
     element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };

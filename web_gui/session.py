@@ -256,5 +256,4 @@ class Session:
         Send a message to the client. This is the main entry point for messages
         to the client.
         """
-        pprint.pprint(msg.as_json())
         await self.websocket.send_json(msg.as_json())

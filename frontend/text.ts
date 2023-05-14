@@ -4,6 +4,7 @@ import { colorToCss } from "./app";
 export class TextWidget {
     static build(data: JsonText): HTMLElement {
         let element = document.createElement('div');
+        element.classList.add('pygui-text');
         return element;
     }
 

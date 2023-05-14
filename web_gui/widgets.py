@@ -95,7 +95,10 @@ class Widget(ABC):
 
         # Replace all properties with custom state properties
         for attr in vars(cls).get("__annotations__", ()):
-            if attr.startswith("_"):
+            if attr in (
+                "_session",
+                "_dirty_properties",
+            ):
                 continue
 
             setattr(cls, attr, StateProperty(attr))

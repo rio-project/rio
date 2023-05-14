@@ -1,105 +1,108 @@
 import asyncio
 import json
 from pathlib import Path
+from typing import Any, Callable, Optional
 
 import PIL.Image
 
-import web_gui.widgets as widgets
-from web_gui import *
+import web_gui as wg
 
 
-class Buttons(Widget):
+class Button(wg.Widget):
+    text: str
+    on_press: Optional[Callable[[], Any]] = None
+    _is_pressed: bool = False
+
+    def _on_mouse_down(self, event: wg.MouseDownEvent) -> None:
+        self._is_pressed = True
+
+    def _on_mouse_up(self, event: wg.MouseUpEvent) -> None:
+        if self.on_press is None:
+            return
+
+        self.on_press()
+        self._is_pressed = False
+
+    def build(self) -> wg.Widget:
+        return wg.MouseEventListener(
+            wg.Stack(
+                [
+                    wg.Rectangle(wg.Color.RED if self._is_pressed else wg.Color.GREEN),
+                    wg.Margin(
+                        wg.Text(self.text),
+                        margin=0.3,
+                    ),
+                ]
+            ),
+            on_mouse_down=self._on_mouse_down,
+            on_mouse_up=self._on_mouse_up,
+        )
+
+
+class Buttons(wg.Widget):
     counter: int = 0
 
-    def inc(self, event: MouseDownEvent) -> None:
+    def inc(self, event: wg.MouseDownEvent) -> None:
         print("clickedy")
         self.counter += 1
 
-    def dec(self, event: MouseDownEvent) -> None:
+    def dec(self, event: wg.MouseDownEvent) -> None:
         print("clickedy")
         self.counter -= 1
 
-    def build(self) -> Widget:
-        return Column(
+    def build(self) -> wg.Widget:
+        return wg.Column(
             [
-                MouseEventListener(
-                    Text(f"You clicked me {self.counter} time(s)!"),
+                wg.MouseEventListener(
+                    wg.Text(f"You clicked me {self.counter} time(s)!"),
                     on_mouse_down=self.inc,
                 ),
-                MouseEventListener(
-                    Text(f"------------"),
+                wg.MouseEventListener(
+                    wg.Text(f"------------"),
                     on_mouse_down=self.dec,
+                ),
+                Button(
+                    text="Click me!",
+                    on_press=lambda: print("Clicked!"),
                 ),
             ]
         )
 
 
-class LsdWidget(Widget):
-    def build(self) -> Widget:
-        lsd_fill = LinearGradientFill(
-            (Color.RED, 0.0),
-            (Color.GREEN, 0.5),
-            (Color.BLUE, 1.0),
+class LsdWidget(wg.Widget):
+    def build(self) -> wg.Widget:
+        lsd_fill = wg.LinearGradientFill(
+            (wg.Color.RED, 0.0),
+            (wg.Color.GREEN, 0.5),
+            (wg.Color.BLUE, 1.0),
             angle_degrees=45,
         )
 
-        return Column(
+        return wg.Column(
             children=[
-                Text("Foo", font_weight="bold"),
-                Rectangle(fill=Color.BLUE),
-                Row(
+                wg.Text("Foo", font_weight="bold"),
+                wg.Rectangle(fill=wg.Color.BLUE),
+                wg.Row(
                     children=[
-                        Rectangle(fill=Color.RED),
-                        Rectangle(fill=Color.GREY),
+                        wg.Rectangle(fill=wg.Color.RED),
+                        wg.Rectangle(fill=wg.Color.GREY),
                     ],
                 ),
-                Stack(
+                wg.Stack(
                     children=[
-                        Text("Bar"),
-                        Text("Baz"),
-                        Rectangle(fill=Color.GREEN),
+                        wg.Text("Bar"),
+                        wg.Text("Baz"),
+                        wg.Rectangle(fill=wg.Color.GREEN),
                     ]
                 ),
-                Rectangle(fill=lsd_fill),
+                wg.Rectangle(fill=lsd_fill),
                 Buttons(),
             ]
         )
 
 
-class DiffusionWidget(Widget):
-    def build(self) -> Widget:
-        return Stack(
-            [
-                Rectangle(
-                    fill=Color.RED,
-                    corner_radius=(2.0, 2.0, 2.0, 2.0),
-                ),
-                Column(
-                    children=[
-                        Text(
-                            "Positive Prompt Example, Lorem Ipsum dolor sit amet",
-                            multiline=True,
-                        ),
-                        Text(
-                            "Negative Prompt Example, Lorem Ipsum dolor sit amet",
-                            multiline=True,
-                        ),
-                        Row(
-                            children=[
-                                Text("Euler A"),
-                                Text("20 Steps"),
-                            ],
-                        ),
-                        Text("CFG 7.0"),
-                        Text("Tilable"),
-                    ],
-                ),
-            ]
-        )
-
-
 def main():
-    app = App(
+    app = wg.App(
         "Super Dynamic Website!",
         LsdWidget,
         icon=PIL.Image.open("./prototyping/icon.png"),
