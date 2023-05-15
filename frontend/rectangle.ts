@@ -1,10 +1,15 @@
-import { fillToCss } from "./app";
-import { JsonRectangle } from "./models";
+import { buildWidget, fillToCss } from './app';
+import { JsonRectangle } from './models';
 
 export class RectangleWidget {
     static build(data: JsonRectangle): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('pygui-rectangle');
+
+        if (data.child !== undefined && data.child !== null) {
+            element.appendChild(buildWidget(data.child));
+        }
+
         return element;
     }
 
@@ -13,9 +18,9 @@ export class RectangleWidget {
             element.style.background = fillToCss(deltaState.fill);
         }
 
-        if (deltaState.cornerRadius !== undefined) {
+        if (deltaState.corner_radius !== undefined) {
             const [topLeft, topRight, bottomRight, bottomLeft] =
-                deltaState.cornerRadius;
+                deltaState.corner_radius;
             element.style.borderRadius = `${topLeft}em ${topRight}em ${bottomRight}em ${bottomLeft}em`;
         }
     }

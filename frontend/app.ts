@@ -8,6 +8,7 @@ import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
 import { MouseEventListener } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
+import { OverrideWidget } from './override';
 
 const initialMessages = '{initial_messages}';
 var socket: WebSocket | null = null;
@@ -56,6 +57,7 @@ const widgetClasses = {
     text: TextWidget,
     mouseEventListener: MouseEventListener,
     textInput: TextInputWidget,
+    override: OverrideWidget,
 };
 
 export function buildWidget(widget: JsonWidget): HTMLElement {
@@ -72,6 +74,9 @@ export function buildWidget(widget: JsonWidget): HTMLElement {
 
     // Add a unique ID to the widget
     result.id = 'pygui-id-' + widget.id;
+
+    // Add the common css class to the widget
+    result.classList.add('pygui-widget');
 
     // Store the widget's type in the element. This is used by the update
     // function to determine the correct update function to call.

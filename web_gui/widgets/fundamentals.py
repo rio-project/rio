@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Set,
     Tuple,
+    Type,
     TypeVar,
     Union,
     overload,
@@ -42,6 +43,7 @@ __all__ = [
     "Align",
     "MouseEventListener",
     "TextInput",
+    "Override",
 ]
 
 
@@ -68,7 +70,7 @@ async def call_event_handler_and_refresh(
     """
     assert widget._session is not None
 
-    # Event handlers are optionsl
+    # Event handlers are optional
     if handler is None:
         return
 
@@ -89,13 +91,15 @@ async def call_event_handler_and_refresh(
     await widget._session.refresh()
 
 
+def is_widget_class(cls: Type[Any]) -> bool:
+    return inspect.isclass(cls) and issubclass(cls, Widget)
+
+
 @dataclass_transform()
 @dataclass(unsafe_hash=True)
 class Widget(ABC):
     _: KW_ONLY
     key: Optional[str] = None
-    width_override: Optional[float] = None
-    height_override: Optional[float] = None
 
     # Injected by the session when the widget is refreshed
     _session: Optional["session.Session"] = None
@@ -114,6 +118,7 @@ class Widget(ABC):
         # Replace all properties with custom state properties
         for attr in vars(cls).get("__annotations__", ()):
             if attr in (
+                "_",
                 "_session",
                 "_dirty_properties",
             ):
@@ -153,35 +158,20 @@ class Widget(ABC):
     def build(self) -> "Widget":
         raise NotImplementedError()
 
-    def _map_direct_children(self, callback: Callable[["Widget"], "Widget"]):
-        for name, typ in typing.get_type_hints(self.__class__).items():
-            origin, args = typing.get_origin(typ), typing.get_args(typ)
-
-            # Remap directly contained widgets
-            if origin is Widget:
-                child = getattr(self, name)
-                setattr(self, name, callback(child))
-
-            # Iterate over lists of widgets, remapping their values
-            elif origin is list and args[0] is Widget:
-                children = getattr(self, name)
-                setattr(self, name, [callback(child) for child in children])
-
-            # TODO: What about other containers
-
     def _iter_direct_children(self) -> Iterable["Widget"]:
-        for name, typ in typing.get_type_hints(self.__class__).items():
-            origin, args = typing.get_origin(typ), typing.get_args(typ)
+        for name in typing.get_type_hints(self.__class__):
+            try:
+                value = getattr(self, name)
+            except AttributeError:
+                continue
 
-            # Remap directly contained widgets
-            if origin is Widget:
-                child = getattr(self, name)
-                yield child
+            if isinstance(value, Widget):
+                yield value
 
-            # Iterate over lists of widgets, remapping their values
-            elif origin is list and args[0] is Widget:
-                children = getattr(self, name)
-                yield from children
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, Widget):
+                        yield item
 
             # TODO: What about other containers
 
@@ -244,7 +234,7 @@ class StateProperty(Generic[T]):
     def __set__(self, instance: Widget, value: T) -> None:
         # If the value is a state property, wrap it in a binding
         if type(value) is StateProperty:
-            new_value = StateBinding(self, None)
+            new_value = StateBinding(value, None)
         else:
             new_value = value
 
@@ -300,6 +290,7 @@ class Column(FundamentalWidget):
 
 class Rectangle(FundamentalWidget):
     fill: FillLike
+    child: Optional[Widget] = None
     _: KW_ONLY
     corner_radius: Tuple[float, float, float, float] = (0, 0, 0, 0)
 
@@ -488,3 +479,9 @@ class TextInput(FundamentalWidget):
 
         else:
             raise RuntimeError(f"TextInput received unexpected message `{msg}`")
+
+
+class Override(FundamentalWidget):
+    child: Widget
+    width: Optional[float] = None
+    height: Optional[float] = None

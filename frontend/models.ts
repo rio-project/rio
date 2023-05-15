@@ -40,7 +40,8 @@ export type JsonRectangle = {
     type: 'rectangle';
     id: string;
     fill?: Fill;
-    cornerRadius?: [number, number, number, number];
+    child?: JsonWidget;
+    corner_radius?: [number, number, number, number];
 };
 
 export type JsonStack = {
@@ -83,7 +84,15 @@ export type JsonTextInput = {
     id: string;
     text?: string;
     placeholder?: string;
-}
+};
+
+export type JsonOverride = {
+    type: 'override';
+    id: string;
+    child?: JsonWidget;
+    width?: number;
+    height?: number;
+};
 
 export type JsonWidget =
     | JsonText
@@ -93,4 +102,6 @@ export type JsonWidget =
     | JsonStack
     | JsonMargin
     | JsonAlign
-    | JsonMouseEventListener;
+    | JsonMouseEventListener
+    | JsonTextInput
+    | JsonOverride;

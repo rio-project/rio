@@ -220,14 +220,17 @@ var RectangleWidget = /** @class */function () {
   RectangleWidget.build = function (data) {
     var element = document.createElement('div');
     element.classList.add('pygui-rectangle');
+    if (data.child !== undefined && data.child !== null) {
+      element.appendChild((0, app_1.buildWidget)(data.child));
+    }
     return element;
   };
   RectangleWidget.update = function (element, deltaState) {
     if (deltaState.fill !== undefined) {
       element.style.background = (0, app_1.fillToCss)(deltaState.fill);
     }
-    if (deltaState.cornerRadius !== undefined) {
-      var _a = deltaState.cornerRadius,
+    if (deltaState.corner_radius !== undefined) {
+      var _a = deltaState.corner_radius,
         topLeft = _a[0],
         topRight = _a[1],
         bottomRight = _a[2],
@@ -306,24 +309,32 @@ var AlignWidget = /** @class */function () {
   function AlignWidget() {}
   AlignWidget.build = function (data) {
     var element = document.createElement('div');
+    element.classList.add('pygui-align');
     element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };
   AlignWidget.update = function (element, state) {
+    var transform_x;
     if (state.align_x !== undefined) {
       if (state.align_x === null) {
-        element.style.justifyContent = 'unset';
+        element.style.left = 'unset';
+        transform_x = '0%';
       } else {
-        element.style.justifyContent = state.align_x * 100 + '%';
+        element.style.left = "".concat(state.align_x * 100, "%");
+        transform_x = "".concat(state.align_x * -100, "%");
       }
     }
+    var transform_y;
     if (state.align_y !== undefined) {
       if (state.align_y === null) {
-        element.style.alignItems = 'unset';
+        element.style.top = 'unset';
+        transform_y = '0%';
       } else {
-        element.style.alignItems = state.align_y * 100 + '%';
+        element.style.top = "".concat(state.align_y * 100, "%");
+        transform_y = "".concat(state.align_y * -100, "%");
       }
     }
+    element.style.transform = "translate(".concat(transform_x, ", ").concat(transform_y, ")");
   };
   return AlignWidget;
 }();
@@ -419,6 +430,40 @@ var TextInputWidget = /** @class */function () {
   return TextInputWidget;
 }();
 exports.TextInputWidget = TextInputWidget;
+},{"./app":"EVxB"}],"X9Uo":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OverrideWidget = void 0;
+var app_1 = require("./app");
+var OverrideWidget = /** @class */function () {
+  function OverrideWidget() {}
+  OverrideWidget.build = function (data) {
+    var element = document.createElement('div');
+    element.appendChild((0, app_1.buildWidget)(data.child));
+    return element;
+  };
+  OverrideWidget.update = function (element, deltaState) {
+    if (deltaState.width !== undefined) {
+      if (deltaState.width === null) {
+        element.style.removeProperty('width');
+      } else {
+        element.style.width = "".concat(deltaState.width, "em");
+      }
+    }
+    if (deltaState.height !== undefined) {
+      if (deltaState.height === null) {
+        element.style.removeProperty('height');
+      } else {
+        element.style.height = "".concat(deltaState.height, "em");
+      }
+    }
+  };
+  return OverrideWidget;
+}();
+exports.OverrideWidget = OverrideWidget;
 },{"./app":"EVxB"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
@@ -445,6 +490,7 @@ var margin_1 = require("./margin");
 var align_1 = require("./align");
 var mouseEventListener_1 = require("./mouseEventListener");
 var textInput_1 = require("./textInput");
+var override_1 = require("./override");
 var initialMessages = '{initial_messages}';
 var socket = null;
 exports.pixelsPerEm = 16;
@@ -487,7 +533,8 @@ var widgetClasses = {
   stack: stack_1.StackWidget,
   text: text_1.TextWidget,
   mouseEventListener: mouseEventListener_1.MouseEventListener,
-  textInput: textInput_1.TextInputWidget
+  textInput: textInput_1.TextInputWidget,
+  override: override_1.OverrideWidget
 };
 function buildWidget(widget) {
   // Get the class for this widget
@@ -500,6 +547,8 @@ function buildWidget(widget) {
   var result = widgetClass.build(widget);
   // Add a unique ID to the widget
   result.id = 'pygui-id-' + widget.id;
+  // Add the common css class to the widget
+  result.classList.add('pygui-widget');
   // Store the widget's type in the element. This is used by the update
   // function to determine the correct update function to call.
   result.setAttribute('data-pygui-type', widget.type);
@@ -574,5 +623,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb","./override":"X9Uo"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

@@ -7,86 +7,18 @@ import PIL.Image
 
 import web_gui as wg
 
-
-class Buttons(wg.Widget):
-    counter: int = 0
-
-    def inc(self, event: wg.MouseDownEvent) -> None:
-        print("clickedy +")
-        self.counter += 1
-
-    def dec(self, event: wg.MouseDownEvent) -> None:
-        print("clickedy -")
-        self.counter -= 1
-
-    def build(self) -> wg.Widget:
-        return wg.Column(
-            [
-                wg.MouseEventListener(
-                    wg.Text(f"You clicked me {self.counter} time(s)!"),
-                    on_mouse_down=self.inc,
-                ),
-                wg.MouseEventListener(
-                    wg.Text(f"------------"),
-                    on_mouse_down=self.dec,
-                ),
-            ]
-        )
-
-
-class LsdWidget(wg.Widget):
-    text: str = "Hello, World"
-
-    def more_louder(self) -> None:
-        self.text += "!"
-
-    def build(self) -> wg.Widget:
-        lsd_fill = wg.LinearGradientFill(
-            (wg.Color.RED, 0.0),
-            (wg.Color.GREEN, 0.5),
-            (wg.Color.BLUE, 1.0),
-            angle_degrees=45,
-        )
-
-        return wg.Column(
-            children=[
-                wg.Text("Foo", font_weight="bold"),
-                wg.Rectangle(fill=wg.Color.BLUE),
-                wg.Row(
-                    children=[
-                        wg.Rectangle(fill=wg.Color.RED),
-                        wg.Rectangle(fill=wg.Color.GREY),
-                    ],
-                ),
-                wg.Stack(
-                    children=[
-                        wg.Text("Bar"),
-                        wg.Text("Baz"),
-                        wg.Rectangle(fill=wg.Color.GREEN),
-                    ]
-                ),
-                wg.Rectangle(fill=lsd_fill),
-                Buttons(),
-                wg.Button(
-                    text=self.text,
-                    on_press=self.more_louder,
-                ),
-                wg.TextInput(
-                    text=__class__.text,
-                    placeholder="Type here!",
-                ),
-            ]
-        )
+CORPOPRATE_YELLOW = wg.Color.from_rgb(0.98, 0.91, 0.0)
 
 
 class LoginWidget(wg.Widget):
-    username: str
-    password: str
+    username: str = ""
+    password: str = ""
 
-    session_token: str = ""
+    sap_session_token: str = ""
 
     async def login(self) -> None:
-        self.session_token = "..."
+        print("CLICKEDY!")
+        self.sap_session_token = "..."
 
     def build(self) -> wg.Widget:
         return wg.Column(
@@ -101,10 +33,32 @@ class LoginWidget(wg.Widget):
         )
 
 
+class MainPage(wg.Widget):
+    sap_session_token: str = ""
+
+    def build(self) -> wg.Widget:
+        return wg.Rectangle(
+            fill=CORPOPRATE_YELLOW,
+            child=wg.Align(
+                wg.Override(
+                    wg.Margin(
+                        LoginWidget(
+                            sap_session_token=MainPage.sap_session_token,
+                        ),
+                        margin_left=4,
+                    ),
+                    width=30,
+                    height=15,
+                ),
+                align_y=0.35,
+            ),
+        )
+
+
 def main():
     app = wg.App(
         "Super Dynamic Website!",
-        LsdWidget,
+        MainPage,
         icon=PIL.Image.open("./prototyping/icon.png"),
     )
     app.run(quiet=False)

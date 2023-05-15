@@ -17,10 +17,6 @@ from .styling import *
 from .widgets import fundamentals
 
 
-def is_widget_class(cls: Type[Any]) -> bool:
-    return inspect.isclass(cls) and issubclass(cls, wg.Widget)
-
-
 @dataclass
 class WidgetData:
     previous_build_result: wg.Widget
@@ -58,7 +54,10 @@ class Session:
         Returns the widget data for the given widget. Raises `KeyError` if no
         data is present for the widget.
         """
-        return self._weak_widget_data_by_widget[widget]
+        try:
+            return self._weak_widget_data_by_widget[widget]
+        except KeyError:
+            raise KeyError(widget) from None
 
     def lookup_widget(self, widget_id: int) -> wg.Widget:
         """
@@ -131,7 +130,10 @@ class Session:
                     for state_property in child._dirty_properties:
                         value = child_vars[state_property.name]
 
-                        if isinstance(value, fundamentals.StateBinding):
+                        if (
+                            isinstance(value, fundamentals.StateBinding)
+                            and value.widget is None
+                        ):
                             value.widget = widget
 
                 # Any freshly spawned widgets are dirty
@@ -142,8 +144,8 @@ class Session:
             widget._dirty_properties.clear()
 
         # Send the new state to the client if necessary
-        foo = messages.ReplaceWidgets(self._serialize_widget(self.root_widget))
-        await self.send_message(foo)
+        msg = messages.ReplaceWidgets(self._serialize_widget(self.root_widget))
+        await self.send_message(msg)
 
     def _serialize_value(self, value: Any, type_: Type) -> Jsonable:
         """
@@ -196,6 +198,9 @@ class Session:
                 if isinstance(arg, Callable) and callable(value):
                     raise WontSerialize()
 
+                if arg is float and isinstance(value, int):
+                    return value
+
                 if isinstance(value, arg):  # type: ignore
                     return self._serialize_value(value, arg)
 
@@ -206,7 +211,7 @@ class Session:
             return self._serialize_value(value, type(value))
 
         # Widgets
-        if is_widget_class(type_):
+        if fundamentals.is_widget_class(type_):
             return self._serialize_widget(value)
 
         # Invalid type
@@ -319,14 +324,14 @@ class Session:
                 origin, args = typing.get_origin(typ), typing.get_args(typ)
 
                 # Remap directly contained widgets
-                if is_widget_class(origin):
+                if fundamentals.is_widget_class(origin):
                     worker(
                         getattr(old_widget, name),
                         getattr(new_widget, name),
                     )
 
                 # Iterate over lists of widgets, remapping their values
-                elif origin is list and is_widget_class(args[0]):
+                elif origin is list and fundamentals.is_widget_class(args[0]):
                     old_children = getattr(old_widget, name)
                     new_children = getattr(new_widget, name)
 
