@@ -185,6 +185,16 @@ class Widget(ABC):
 
             # TODO: What about other containers
 
+    def _iter_direct_and_indirect_children(
+        self,
+        include_self: bool,
+    ) -> Iterable["Widget"]:
+        if include_self:
+            yield self
+
+        for child in self._iter_direct_children():
+            yield from child._iter_direct_and_indirect_children(True)
+
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
@@ -192,6 +202,12 @@ class Widget(ABC):
 class FundamentalWidget(Widget):
     def build(self) -> "Widget":
         raise RuntimeError(f"Attempted to call `build` on fundamental widget {self}")
+
+
+@dataclass
+class StateBinding:
+    state_property: "StateProperty"
+    widget: Optional["Widget"]
 
 
 class StateProperty(Generic[T]):
@@ -214,10 +230,40 @@ class StateProperty(Generic[T]):
         if instance is None:
             return self
 
-        return vars(instance)[self.name]
+        # Get the value assigned to the property in the widget instance
+        value = vars(instance)[self.name]
+
+        # If the value is a binding return the binding's value
+        if type(value) is StateBinding:
+            assert value.widget is not None
+            return value.state_property.__get__(value.widget)  # type: ignore
+
+        # Otherwise return the value
+        return value
 
     def __set__(self, instance: Widget, value: T) -> None:
-        vars(instance)[self.name] = value
+        # If the value is a state property, wrap it in a binding
+        if type(value) is StateProperty:
+            new_value = StateBinding(self, None)
+        else:
+            new_value = value
+
+        # If this property is part of a state binding update the parent's value
+        instance_vars = vars(instance)
+        old_value = instance_vars.get(self.name)
+
+        if type(old_value) is StateBinding:
+            if isinstance(new_value, StateBinding):
+                # This should virtually never happen. So don't handle it,
+                # scream and die
+                raise RuntimeError(
+                    "State bindings can only be created when the widget is constructed"
+                )
+
+            old_value.state_property.__set__(old_value.widget, new_value)  # type: ignore
+
+        else:
+            instance_vars[self.name] = new_value
 
         # Mark the widget as dirty
         instance._dirty_properties.add(self)
@@ -227,6 +273,9 @@ class StateProperty(Generic[T]):
         # session anyway, as if dirty.
         if instance._session is not None:
             instance._session.register_dirty_widget(instance)
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__} {self.name}>"
 
 
 class Text(FundamentalWidget):

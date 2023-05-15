@@ -100,31 +100,46 @@ class Session:
             # Keep track of this widget's existance
             self._weak_widgets_by_id[widget._id] = widget
 
-            # Fundamental widgets just need their children looked at
+            # Fundamental widgets require little treatment
             if isinstance(widget, fundamentals.FundamentalWidget):
                 self._dirty_widgets.update(widget._iter_direct_children())
-                continue
 
-            # Other children need to be built
-            build_result = widget.build()
-
-            # Has this widget been built before?
-            try:
-                widget_data = self.lookup_widget_data(widget)
-
-            # No, this is the first time
-            except KeyError:
-                widget_data = WidgetData(build_result)
-                self._weak_widget_data_by_widget[widget] = widget_data
-                self._weak_widgets_by_id[widget._id] = widget
-
-            # Yes, rescue state
+            # Others need to be built
             else:
-                widget_data.previous_build_result = build_result
-                self.rescue_state(widget_data.previous_build_result, build_result)
+                build_result = widget.build()
 
-            # Any freshly spawned widgets are dirty
-            self._dirty_widgets.add(build_result)
+                # Has this widget been built before?
+                try:
+                    widget_data = self.lookup_widget_data(widget)
+
+                # No, this is the first time
+                except KeyError:
+                    widget_data = WidgetData(build_result)
+                    self._weak_widget_data_by_widget[widget] = widget_data
+                    self._weak_widgets_by_id[widget._id] = widget
+
+                # Yes, rescue state
+                else:
+                    widget_data.previous_build_result = build_result
+                    self.rescue_state(widget_data.previous_build_result, build_result)
+
+                # Inject the building widget into the state bindings of all
+                # generated widgets
+                for child in build_result._iter_direct_and_indirect_children(True):
+                    child_vars = vars(child)
+
+                    for state_property in child._dirty_properties:
+                        value = child_vars[state_property.name]
+
+                        if isinstance(value, fundamentals.StateBinding):
+                            value.widget = widget
+
+                # Any freshly spawned widgets are dirty
+                self._dirty_widgets.add(build_result)
+
+            # As the widget has just been processed, its properties are no
+            # longer dirty
+            widget._dirty_properties.clear()
 
         # Send the new state to the client if necessary
         foo = messages.ReplaceWidgets(self._serialize_widget(self.root_widget))

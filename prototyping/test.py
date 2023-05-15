@@ -12,11 +12,11 @@ class Buttons(wg.Widget):
     counter: int = 0
 
     def inc(self, event: wg.MouseDownEvent) -> None:
-        print("clickedy")
+        print("clickedy +")
         self.counter += 1
 
     def dec(self, event: wg.MouseDownEvent) -> None:
-        print("clickedy")
+        print("clickedy -")
         self.counter -= 1
 
     def build(self) -> wg.Widget:
