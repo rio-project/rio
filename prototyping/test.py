@@ -8,37 +8,6 @@ import PIL.Image
 import web_gui as wg
 
 
-class Button(wg.Widget):
-    text: str
-    on_press: Optional[Callable[[], Any]] = None
-    _is_pressed: bool = False
-
-    def _on_mouse_down(self, event: wg.MouseDownEvent) -> None:
-        self._is_pressed = True
-
-    def _on_mouse_up(self, event: wg.MouseUpEvent) -> None:
-        if self.on_press is None:
-            return
-
-        self.on_press()
-        self._is_pressed = False
-
-    def build(self) -> wg.Widget:
-        return wg.MouseEventListener(
-            wg.Stack(
-                [
-                    wg.Rectangle(wg.Color.RED if self._is_pressed else wg.Color.GREEN),
-                    wg.Margin(
-                        wg.Text(self.text),
-                        margin=0.3,
-                    ),
-                ]
-            ),
-            on_mouse_down=self._on_mouse_down,
-            on_mouse_up=self._on_mouse_up,
-        )
-
-
 class Buttons(wg.Widget):
     counter: int = 0
 
@@ -61,15 +30,16 @@ class Buttons(wg.Widget):
                     wg.Text(f"------------"),
                     on_mouse_down=self.dec,
                 ),
-                Button(
-                    text="Click me!",
-                    on_press=lambda: print("Clicked!"),
-                ),
             ]
         )
 
 
 class LsdWidget(wg.Widget):
+    text: str = "Hello, World"
+
+    def more_louder(self) -> None:
+        self.text += "!"
+
     def build(self) -> wg.Widget:
         lsd_fill = wg.LinearGradientFill(
             (wg.Color.RED, 0.0),
@@ -97,7 +67,37 @@ class LsdWidget(wg.Widget):
                 ),
                 wg.Rectangle(fill=lsd_fill),
                 Buttons(),
+                wg.Button(
+                    text=self.text,
+                    on_press=self.more_louder,
+                ),
+                wg.TextInput(
+                    text=__class__.text,
+                    placeholder="Type here!",
+                ),
             ]
+        )
+
+
+class LoginWidget(wg.Widget):
+    username: str
+    password: str
+
+    session_token: str = ""
+
+    async def login(self) -> None:
+        self.session_token = "..."
+
+    def build(self) -> wg.Widget:
+        return wg.Column(
+            children=[
+                wg.TextInput(text=LoginWidget.username),
+                wg.TextInput(text=LoginWidget.password),
+                wg.Button(
+                    "Login",
+                    on_press=self.login,
+                ),
+            ],
         )
 
 

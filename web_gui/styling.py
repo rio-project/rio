@@ -4,6 +4,15 @@ from typing import Dict, Iterable, List, Literal, Tuple, Union
 
 from .common import Jsonable
 
+__all__ = [
+    "Color",
+    "Fill",
+    "FillLike",
+    "SolidFill",
+    "LinearGradientFill",
+]
+
+
 FillLike = Union["Fill", "Color"]
 
 

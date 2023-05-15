@@ -328,7 +328,7 @@ var AlignWidget = /** @class */function () {
   return AlignWidget;
 }();
 exports.AlignWidget = AlignWidget;
-},{"./app":"EVxB"}],"LKOD":[function(require,module,exports) {
+},{"./app":"EVxB"}],"K1Om":[function(require,module,exports) {
 "use strict";
 
 var __assign = this && this.__assign || function () {
@@ -386,6 +386,39 @@ var MouseEventListener = /** @class */function () {
   return MouseEventListener;
 }();
 exports.MouseEventListener = MouseEventListener;
+},{"./app":"EVxB"}],"g2Fb":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TextInputWidget = void 0;
+var app_1 = require("./app");
+var TextInputWidget = /** @class */function () {
+  function TextInputWidget() {}
+  TextInputWidget.build = function (data) {
+    var element = document.createElement('input');
+    element.type = 'text';
+    element.classList.add('pygui-text-input');
+    element.addEventListener('blur', function () {
+      (0, app_1.sendEvent)(element, 'textInputBlurEvent', {
+        text: element.value
+      });
+    });
+    return element;
+  };
+  TextInputWidget.update = function (element, deltaState) {
+    var cast_element = element;
+    if (deltaState.text !== undefined) {
+      cast_element.value = deltaState.text;
+    }
+    if (deltaState.placeholder !== undefined) {
+      cast_element.placeholder = deltaState.placeholder;
+    }
+  };
+  return TextInputWidget;
+}();
+exports.TextInputWidget = TextInputWidget;
 },{"./app":"EVxB"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
@@ -410,7 +443,8 @@ var rectangle_1 = require("./rectangle");
 var stack_1 = require("./stack");
 var margin_1 = require("./margin");
 var align_1 = require("./align");
-var mouse_event_listener_1 = require("./mouse_event_listener");
+var mouseEventListener_1 = require("./mouseEventListener");
+var textInput_1 = require("./textInput");
 var initialMessages = '{initial_messages}';
 var socket = null;
 exports.pixelsPerEm = 16;
@@ -452,7 +486,8 @@ var widgetClasses = {
   row: row_1.RowWidget,
   stack: stack_1.StackWidget,
   text: text_1.TextWidget,
-  mouseEventListener: mouse_event_listener_1.MouseEventListener
+  mouseEventListener: mouseEventListener_1.MouseEventListener,
+  textInput: textInput_1.TextInputWidget
 };
 function buildWidget(widget) {
   // Get the class for this widget
@@ -539,5 +574,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouse_event_listener":"LKOD"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

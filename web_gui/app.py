@@ -9,8 +9,9 @@ import PIL.Image
 import uniserde
 import uvicorn
 
-from . import common, messages, session, widgets
+from . import common, messages, session
 from .common import Jsonable
+from .widgets import fundamentals
 
 
 @functools.lru_cache(maxsize=None)
@@ -26,7 +27,7 @@ class App:
     def __init__(
         self,
         name: str,
-        build: Callable[[], widgets.Widget],
+        build: Callable[[], fundamentals.Widget],
         *,
         host: str = "127.0.0.1",
         port: int = 8000,

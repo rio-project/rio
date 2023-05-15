@@ -10,6 +10,9 @@ from typing import (
     Callable,
     Dict,
     Generic,
+    Iterable,
+    List,
+    Literal,
     Optional,
     Set,
     Tuple,
@@ -24,9 +27,23 @@ from web_gui import messages
 from web_gui.common import Jsonable
 from web_gui.styling import Dict, Jsonable
 
-from . import event_classes, messages, session
-from .common import Jsonable
-from .styling import *
+from .. import event_classes, messages, session
+from ..common import Jsonable
+from ..styling import *
+
+__all__ = [
+    "Widget",
+    "Text",
+    "Row",
+    "Column",
+    "Rectangle",
+    "Stack",
+    "Margin",
+    "Align",
+    "MouseEventListener",
+    "TextInput",
+]
+
 
 T = TypeVar("T")
 EventHandler = Optional[Callable[[T], Any | Awaitable[Any]]]
@@ -76,6 +93,7 @@ async def call_event_handler_and_refresh(
 @dataclass(unsafe_hash=True)
 class Widget(ABC):
     _: KW_ONLY
+    key: Optional[str] = None
     width_override: Optional[float] = None
     height_override: Optional[float] = None
 
@@ -252,6 +270,7 @@ class Margin(FundamentalWidget):
         self,
         child: Widget,
         *,
+        key: Optional[str] = None,
         margin: float = 0,
         margin_horizontal: float = 0,
         margin_vertical: float = 0,
@@ -260,7 +279,7 @@ class Margin(FundamentalWidget):
         margin_right: float = 0,
         margin_bottom: float = 0,
     ):
-        super().__init__()
+        super().__init__(key=key)
 
         self.child = child
 
@@ -298,10 +317,11 @@ class Align(FundamentalWidget):
         self,
         child: Widget,
         *,
+        key: Optional[str] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):
-        super().__init__()
+        super().__init__(key=key)
         self.child = child
         self.align_x = align_x
         self.align_y = align_y
@@ -404,3 +424,18 @@ class MouseEventListener(FundamentalWidget):
             raise RuntimeError(
                 f"MouseEventListener received unexpected message `{msg}`"
             )
+
+
+class TextInput(FundamentalWidget):
+    text: str = ""
+    placeholder: str = ""
+
+    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
+        assert self._session is not None
+
+        if isinstance(msg, messages.TextInputBlurEvent):
+            self.text = msg.text
+            await self._session.refresh()
+
+        else:
+            raise RuntimeError(f"TextInput received unexpected message `{msg}`")

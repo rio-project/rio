@@ -48,3 +48,9 @@ class MouseUpEvent(IncomingMessage):
     button: Literal["left", "middle", "right"]
     x: float
     y: float
+
+
+@dataclass
+class TextInputBlurEvent(IncomingMessage):
+    widget_id: int
+    text: str

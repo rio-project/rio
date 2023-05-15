@@ -78,6 +78,13 @@ export type JsonMouseEventListener = {
     reportMouseLeave?: boolean;
 };
 
+export type JsonTextInput = {
+    type: 'textInput';
+    id: string;
+    text?: string;
+    placeholder?: string;
+}
+
 export type JsonWidget =
     | JsonText
     | JsonRow

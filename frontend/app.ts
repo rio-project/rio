@@ -6,7 +6,8 @@ import { StackWidget } from './stack';
 import { MarginWidget } from './margin';
 import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
-import { MouseEventListener } from './mouse_event_listener';
+import { MouseEventListener } from './mouseEventListener';
+import { TextInputWidget } from './textInput';
 
 const initialMessages = '{initial_messages}';
 var socket: WebSocket | null = null;
@@ -54,6 +55,7 @@ const widgetClasses = {
     stack: StackWidget,
     text: TextWidget,
     mouseEventListener: MouseEventListener,
+    textInput: TextInputWidget,
 };
 
 export function buildWidget(widget: JsonWidget): HTMLElement {
