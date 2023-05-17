@@ -469,6 +469,8 @@ class MouseEventListener(FundamentalWidget):
 class TextInput(FundamentalWidget):
     text: str = ""
     placeholder: str = ""
+    _: KW_ONLY
+    secret: bool = False
 
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
         assert self._session is not None

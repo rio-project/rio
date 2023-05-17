@@ -35,9 +35,11 @@ class Color:
         blue: float = 1.0,
         alpha: float = 1.0,
         *,
-        gamma: Union[float, Literal["srgb"]] = 1.0,
+        gamma: Union[float, Literal["linear", "srgb"]] = 1.0,
     ) -> "Color":
-        if gamma == "srgb":
+        if gamma == "linear":
+            gamma = 1.0
+        elif gamma == "srgb":
             gamma = 2.2
 
         self = object.__new__(cls)
@@ -149,12 +151,12 @@ class LinearGradientFill(Fill):
         *stops: Tuple[Color, float],
         angle_degrees: float = 0.0,
     ):
-        # Sort and store the stops
-        self.stops = tuple(sorted(stops, key=lambda x: x[1]))
-
         # Make sure there's at least one stop
         if not self.stops:
             raise ValueError("Gradients must have at least 1 stop")
+
+        # Sort and store the stops
+        self.stops = tuple(sorted(stops, key=lambda x: x[1]))
 
         self.angle_degrees = angle_degrees
 

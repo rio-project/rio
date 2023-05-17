@@ -82,6 +82,7 @@ class LoginWidget(rx.Widget):
                         rx.TextInput(
                             text=LoginWidget.password,
                             placeholder="Passwort",
+                            secret=True,
                         ),
                         margin_bottom=1,
                     ),

@@ -84,6 +84,7 @@ export type JsonTextInput = {
     id: string;
     text?: string;
     placeholder?: string;
+    secret?: boolean;
 };
 
 export type JsonOverride = {

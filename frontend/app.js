@@ -409,7 +409,6 @@ var TextInputWidget = /** @class */function () {
   function TextInputWidget() {}
   TextInputWidget.build = function (data) {
     var element = document.createElement('input');
-    element.type = 'text';
     element.classList.add('reflex-text-input');
     element.addEventListener('blur', function () {
       (0, app_1.sendEvent)(element, 'textInputBlurEvent', {
@@ -420,6 +419,9 @@ var TextInputWidget = /** @class */function () {
   };
   TextInputWidget.update = function (element, deltaState) {
     var cast_element = element;
+    if (deltaState.secret !== undefined) {
+      cast_element.type = deltaState.secret ? 'password' : 'text';
+    }
     if (deltaState.text !== undefined) {
       cast_element.value = deltaState.text;
     }
