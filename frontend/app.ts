@@ -75,14 +75,14 @@ export function buildWidget(widget: JsonWidget): HTMLElement {
     const result = widgetClass.build(widget as any);
 
     // Add a unique ID to the widget
-    result.id = 'pygui-id-' + widget.id;
+    result.id = 'reflex-id-' + widget.id;
 
     // Add the common css class to the widget
-    result.classList.add('pygui-widget');
+    result.classList.add('reflex-widget');
 
     // Store the widget's type in the element. This is used by the update
     // function to determine the correct update function to call.
-    result.setAttribute('data-pygui-type', widget.type);
+    result.setAttribute('data-reflex-type', widget.type);
 
     // Update the widget to match its state
     widgetClass.update(result, widget as any);
@@ -167,8 +167,8 @@ export function sendEvent(
 ) {
     sendJson({
         type: eventType,
-        // Remove the leading `pygui-id-` from the element's ID
-        widgetId: parseInt(element.id.substring(9)),
+        // Remove the leading `reflex-id-` from the element's ID
+        widgetId: parseInt(element.id.substring(10)),
         ...eventArgs,
     });
 }

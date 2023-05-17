@@ -4,7 +4,7 @@ import { JsonRectangle } from './models';
 export class RectangleWidget {
     static build(data: JsonRectangle): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-rectangle');
+        element.classList.add('reflex-rectangle');
 
         if (data.child !== undefined && data.child !== null) {
             element.appendChild(buildWidget(data.child));

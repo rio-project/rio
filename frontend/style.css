@@ -9,33 +9,33 @@ body {
     background-color: #ffffff;
 }
 
-.pygui-widget{
+.reflex-widget{
     width: 100%;
     height: 100%;
     display: flex;
 }
 
-.pygui-text {
+.reflex-text {
     justify-content: center;
     align-items: center;
 }
 
-.pygui-column {
+.reflex-column {
     flex-direction: column;
 }
 
-.pygui-rectangle {
+.reflex-rectangle {
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-.pygui-stack {
+.reflex-stack {
     flex-grow: 1;
     flex-shrink: 1;
     position: relative;
 }
 
-.pygui-stack>* {
+.reflex-stack>* {
     position: absolute;
 
     left: 0;
@@ -44,7 +44,7 @@ body {
     bottom: 0;
 }
 
-.pygui-align {
+.reflex-align {
     position: absolute;
 
     width: unset !important;

@@ -24,9 +24,9 @@ from typing import (
 
 from typing_extensions import Self, dataclass_transform
 
-from web_gui import messages
-from web_gui.common import Jsonable
-from web_gui.styling import Dict, Jsonable
+from reflex import messages
+from reflex.common import Jsonable
+from reflex.styling import Dict, Jsonable
 
 from .. import event_classes, messages, session
 from ..common import Jsonable

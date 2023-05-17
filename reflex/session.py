@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Literal, Tuple, Type, Un
 
 from fastapi import WebSocket
 
-import web_gui as wg
+import reflex as rx
 
 from . import messages
 from .common import Jsonable
@@ -18,7 +18,7 @@ from .widgets import fundamentals
 
 @dataclass
 class WidgetData:
-    previous_build_result: wg.Widget
+    previous_build_result: rx.Widget
 
 
 class WontSerialize(Exception):
@@ -26,7 +26,7 @@ class WontSerialize(Exception):
 
 
 class Session:
-    def __init__(self, root_widget: wg.Widget, websocket: WebSocket):
+    def __init__(self, root_widget: rx.Widget, websocket: WebSocket):
         self.root_widget = root_widget
         self.websocket = websocket
 
@@ -38,17 +38,17 @@ class Session:
         # - `lookup_widget`
         # - `lookup_widget_id`
         self._weak_widgets_by_id: weakref.WeakValueDictionary[
-            int, wg.Widget
+            int, rx.Widget
         ] = weakref.WeakValueDictionary()
 
         self._weak_widget_data_by_widget: weakref.WeakKeyDictionary[
-            wg.Widget, WidgetData
+            rx.Widget, WidgetData
         ] = weakref.WeakKeyDictionary()
 
         # Keep track of all dirty widgets, once again, weakly
-        self._dirty_widgets: weakref.WeakSet[wg.Widget] = weakref.WeakSet()
+        self._dirty_widgets: weakref.WeakSet[rx.Widget] = weakref.WeakSet()
 
-    def lookup_widget_data(self, widget: wg.Widget) -> WidgetData:
+    def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
         data is present for the widget.
@@ -58,14 +58,14 @@ class Session:
         except KeyError:
             raise KeyError(widget) from None
 
-    def lookup_widget(self, widget_id: int) -> wg.Widget:
+    def lookup_widget(self, widget_id: int) -> rx.Widget:
         """
         Returns the widget and its data for the given widget ID. Raises
         `KeyError` if no widget is present for the ID.
         """
         return self._weak_widgets_by_id[widget_id]
 
-    def register_dirty_widget(self, widget: wg.Widget) -> None:
+    def register_dirty_widget(self, widget: rx.Widget) -> None:
         self._dirty_widgets.add(widget)
 
     async def refresh(self) -> None:
@@ -216,7 +216,7 @@ class Session:
         # Invalid type
         raise WontSerialize()
 
-    def _serialize_widget(self, widget: wg.Widget) -> Jsonable:
+    def _serialize_widget(self, widget: rx.Widget) -> Jsonable:
         """
         Recursively serialize a widget and all of its children.
 
@@ -285,24 +285,24 @@ class Session:
         """
         await self.websocket.send_json(msg.as_json())
 
-    def rescue_state(self, old_build: wg.Widget, new_build: wg.Widget) -> None:
+    def rescue_state(self, old_build: rx.Widget, new_build: rx.Widget) -> None:
         # for old_widget, new_widget in self.find_widget_pairs_to_rescue(old_build, new_build):
 
         pass
 
     def find_widget_pairs_to_rescue_state(
-        self, old_build: wg.Widget, new_build: wg.Widget
-    ) -> Iterable[Tuple[wg.Widget, wg.Widget]]:
-        old_widgets_by_key: Dict[str, wg.Widget] = {}
-        new_widgets_by_key: Dict[str, wg.Widget] = {}
+        self, old_build: rx.Widget, new_build: rx.Widget
+    ) -> Iterable[Tuple[rx.Widget, rx.Widget]]:
+        old_widgets_by_key: Dict[str, rx.Widget] = {}
+        new_widgets_by_key: Dict[str, rx.Widget] = {}
 
-        matches_by_topology: List[Tuple[wg.Widget, wg.Widget]] = []
+        matches_by_topology: List[Tuple[rx.Widget, rx.Widget]] = []
 
         # First scan all widgets for topological matches, and also keep track of
         # each widget by its key
         def key_scan(
-            widgets_by_key: Dict[str, wg.Widget],
-            widget: wg.Widget,
+            widgets_by_key: Dict[str, rx.Widget],
+            widget: rx.Widget,
         ) -> None:
             if widget.key is not None:
                 if widget.key in widgets_by_key:
@@ -316,8 +316,8 @@ class Session:
                 key_scan(widgets_by_key, child)
 
         def chain_to_children(
-            old_widget: wg.Widget,
-            new_widget: wg.Widget,
+            old_widget: rx.Widget,
+            new_widget: rx.Widget,
         ) -> None:
             for name, typ in typing.get_type_hints(self.__class__).items():
                 origin, args = typing.get_origin(typ), typing.get_args(typ)
@@ -346,7 +346,7 @@ class Session:
 
                 # TODO: What about other containers
 
-        def worker(old_widget: wg.Widget, new_widget: wg.Widget) -> None:
+        def worker(old_widget: rx.Widget, new_widget: rx.Widget) -> None:
             # Do the widget types match?
             if type(old_widget) is type(new_widget):
                 matches_by_topology.append((old_widget, new_widget))

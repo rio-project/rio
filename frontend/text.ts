@@ -1,10 +1,10 @@
-import { JsonText } from "./models";
-import { colorToCss } from "./app";
+import { JsonText } from './models';
+import { colorToCss } from './app';
 
 export class TextWidget {
     static build(data: JsonText): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-text');
+        element.classList.add('reflex-text');
         return element;
     }
 
@@ -14,7 +14,9 @@ export class TextWidget {
         }
 
         if (deltaState.multiline !== undefined) {
-            element.style.whiteSpace = deltaState.multiline ? 'normal' : 'nowrap';
+            element.style.whiteSpace = deltaState.multiline
+                ? 'normal'
+                : 'nowrap';
         }
 
         if (deltaState.font !== undefined) {

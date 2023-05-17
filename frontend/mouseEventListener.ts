@@ -17,7 +17,7 @@ function eventMousePositionToString(event: any): object {
 export class MouseEventListener {
     static build(data: JsonMouseEventListener): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-mouse-event-listener');
+        element.classList.add('reflex-mouse-event-listener');
         element.appendChild(buildWidget(data.child));
         return element;
     }

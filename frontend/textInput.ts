@@ -5,7 +5,7 @@ export class TextInputWidget {
     static build(data: JsonTextInput): HTMLElement {
         let element = document.createElement('input');
         element.type = 'text';
-        element.classList.add('pygui-text-input');
+        element.classList.add('reflex-text-input');
 
         element.addEventListener('blur', () => {
             sendEvent(element, 'textInputBlurEvent', {

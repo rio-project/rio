@@ -129,7 +129,7 @@ var TextWidget = /** @class */function () {
   function TextWidget() {}
   TextWidget.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-text');
+    element.classList.add('reflex-text');
     return element;
   };
   TextWidget.update = function (element, deltaState) {
@@ -173,7 +173,7 @@ var RowWidget = /** @class */function () {
   function RowWidget() {}
   RowWidget.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-row');
+    element.classList.add('reflex-row');
     for (var _i = 0, _a = data.children; _i < _a.length; _i++) {
       var child = _a[_i];
       element.appendChild((0, app_1.buildWidget)(child));
@@ -196,7 +196,7 @@ var ColumnWidget = /** @class */function () {
   function ColumnWidget() {}
   ColumnWidget.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-column');
+    element.classList.add('reflex-column');
     for (var _i = 0, _a = data.children; _i < _a.length; _i++) {
       var child = _a[_i];
       element.appendChild((0, app_1.buildWidget)(child));
@@ -219,7 +219,7 @@ var RectangleWidget = /** @class */function () {
   function RectangleWidget() {}
   RectangleWidget.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-rectangle');
+    element.classList.add('reflex-rectangle');
     if (data.child !== undefined && data.child !== null) {
       element.appendChild((0, app_1.buildWidget)(data.child));
     }
@@ -253,7 +253,7 @@ var StackWidget = /** @class */function () {
   function StackWidget() {}
   StackWidget.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-stack');
+    element.classList.add('reflex-stack');
     for (var ii = 0; ii < data.children.length; ii++) {
       var childElement = (0, app_1.buildWidget)(data.children[ii]);
       childElement.style.zIndex = "".concat(ii + 1);
@@ -309,7 +309,7 @@ var AlignWidget = /** @class */function () {
   function AlignWidget() {}
   AlignWidget.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-align');
+    element.classList.add('reflex-align');
     element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };
@@ -372,7 +372,7 @@ var MouseEventListener = /** @class */function () {
   function MouseEventListener() {}
   MouseEventListener.build = function (data) {
     var element = document.createElement('div');
-    element.classList.add('pygui-mouse-event-listener');
+    element.classList.add('reflex-mouse-event-listener');
     element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };
@@ -410,7 +410,7 @@ var TextInputWidget = /** @class */function () {
   TextInputWidget.build = function (data) {
     var element = document.createElement('input');
     element.type = 'text';
-    element.classList.add('pygui-text-input');
+    element.classList.add('reflex-text-input');
     element.addEventListener('blur', function () {
       (0, app_1.sendEvent)(element, 'textInputBlurEvent', {
         text: element.value
@@ -547,12 +547,12 @@ function buildWidget(widget) {
   // Build the widget
   var result = widgetClass.build(widget);
   // Add a unique ID to the widget
-  result.id = 'pygui-id-' + widget.id;
+  result.id = 'reflex-id-' + widget.id;
   // Add the common css class to the widget
-  result.classList.add('pygui-widget');
+  result.classList.add('reflex-widget');
   // Store the widget's type in the element. This is used by the update
   // function to determine the correct update function to call.
-  result.setAttribute('data-pygui-type', widget.type);
+  result.setAttribute('data-reflex-type', widget.type);
   // Update the widget to match its state
   widgetClass.update(result, widget);
   return result;
@@ -618,8 +618,8 @@ exports.sendJson = sendJson;
 function sendEvent(element, eventType, eventArgs) {
   sendJson(__assign({
     type: eventType,
-    // Remove the leading `pygui-id-` from the element's ID
-    widgetId: parseInt(element.id.substring(9))
+    // Remove the leading `reflex-id-` from the element's ID
+    widgetId: parseInt(element.id.substring(10))
   }, eventArgs));
 }
 exports.sendEvent = sendEvent;

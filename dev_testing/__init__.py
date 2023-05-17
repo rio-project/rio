@@ -1,41 +1,37 @@
-import asyncio
-import json
-from pathlib import Path
-from typing import Any, Callable, List, Optional, Tuple, Type
+from typing import Any, List, Optional
 
 import PIL.Image
 
-import web_gui as wg
-from web_gui.widgets.fundamentals import Widget
+import reflex as rx
 
-CORPOPRATE_YELLOW = wg.Color.from_rgb(0.98, 0.91, 0.0)
-CORPORATE_GREY = wg.Color.from_rgb(0.69, 0.69, 0.69)
-CORPORATE_BLUE = wg.Color.from_rgb(0.0, 0.47, 0.78)
+CORPOPRATE_YELLOW = rx.Color.from_rgb(0.98, 0.91, 0.0)
+CORPORATE_GREY = rx.Color.from_rgb(0.69, 0.69, 0.69)
+CORPORATE_BLUE = rx.Color.from_rgb(0.0, 0.47, 0.78)
 
 
-class CorporateCard(wg.Widget):
-    child: wg.Widget
+class CorporateCard(rx.Widget):
+    child: rx.Widget
     heading: Optional[str] = None
 
-    def build(self) -> wg.Widget:
+    def build(self) -> rx.Widget:
         radius = 0.0
         margin = 0.5
 
         if self.heading is None:
-            heading_child = wg.Override(
-                wg.Rectangle(
-                    fill=wg.Color.BLACK,
+            heading_child = rx.Override(
+                rx.Rectangle(
+                    fill=rx.Color.BLACK,
                     corner_radius=(radius, radius, 0, 0),
                 ),
                 height=0.5,
             )
         else:
-            heading_child = wg.Rectangle(
-                fill=wg.Color.BLACK,
-                child=wg.Margin(
-                    wg.Text(
+            heading_child = rx.Rectangle(
+                fill=rx.Color.BLACK,
+                child=rx.Margin(
+                    rx.Text(
                         self.heading,
-                        font_color=wg.Color.WHITE,
+                        font_color=rx.Color.WHITE,
                         font_weight="bold",
                         font_size=1.2,
                     ),
@@ -44,12 +40,12 @@ class CorporateCard(wg.Widget):
                 corner_radius=(radius, radius, 0, 0),
             )
 
-        return wg.Column(
+        return rx.Column(
             [
                 heading_child,
-                wg.Rectangle(
+                rx.Rectangle(
                     fill=CORPOPRATE_YELLOW,
-                    child=wg.Margin(
+                    child=rx.Margin(
                         self.child,
                         margin=margin,
                     ),
@@ -59,37 +55,37 @@ class CorporateCard(wg.Widget):
         )
 
 
-class LoginWidget(wg.Widget):
+class LoginWidget(rx.Widget):
     username: str = ""
     password: str = ""
 
     sap_session_token: Optional[str] = None
 
-    on_login: wg.EventHandler[[]] = None
+    on_login: rx.EventHandler[[]] = None
 
     async def login(self) -> None:
         self.sap_session_token = "<totally-legit-session-token>"
-        await wg.call_event_handler(self.on_login)
+        await rx.call_event_handler(self.on_login)
 
-    def build(self) -> wg.Widget:
+    def build(self) -> rx.Widget:
         return CorporateCard(
-            wg.Column(
+            rx.Column(
                 children=[
-                    wg.Margin(
-                        wg.TextInput(
+                    rx.Margin(
+                        rx.TextInput(
                             text=LoginWidget.username,
                             placeholder="Benuztername",
                         ),
                         margin_bottom=1,
                     ),
-                    wg.Margin(
-                        wg.TextInput(
+                    rx.Margin(
+                        rx.TextInput(
                             text=LoginWidget.password,
                             placeholder="Passwort",
                         ),
                         margin_bottom=1,
                     ),
-                    wg.Button(
+                    rx.Button(
                         "Login",
                         on_press=self.login,
                     ),
@@ -99,17 +95,17 @@ class LoginWidget(wg.Widget):
         )
 
 
-class SimpleMenu(wg.Widget):
+class SimpleMenu(rx.Widget):
     heading: str
     children: List[str]
 
-    def build(self) -> Widget:
+    def build(self) -> rx.Widget:
         child_widgets = []
 
         for ii, name in enumerate(self.children):
             child_widgets.append(
-                wg.Margin(
-                    wg.Button(
+                rx.Margin(
+                    rx.Button(
                         name,
                         on_press=lambda: print(f"Pressed {name}"),
                     ),
@@ -117,25 +113,25 @@ class SimpleMenu(wg.Widget):
                 )
             )
 
-        return wg.Override(
+        return rx.Override(
             CorporateCard(
                 heading=self.heading,
-                child=wg.Column(child_widgets),
+                child=rx.Column(child_widgets),
             ),
             width=30,
         )
 
 
-class MainPage(wg.Widget):
+class MainPage(rx.Widget):
     sap_session_token: Optional[str] = None
 
     def on_login(self) -> None:
         print(f"Logged in! The session token is {self.sap_session_token}.")
 
-    def build_login_view(self) -> wg.Widget:
-        return wg.Align(
-            wg.Override(
-                wg.Margin(
+    def build_login_view(self) -> rx.Widget:
+        return rx.Align(
+            rx.Override(
+                rx.Margin(
                     LoginWidget(
                         sap_session_token=MainPage.sap_session_token,
                         on_login=self.on_login,
@@ -149,8 +145,8 @@ class MainPage(wg.Widget):
         )
 
     def build_menu(self):
-        return wg.Align(
-            wg.Column(
+        return rx.Align(
+            rx.Column(
                 [
                     SimpleMenu(
                         "Reports",
@@ -159,7 +155,7 @@ class MainPage(wg.Widget):
                             "Zustellbericht",
                         ],
                     ),
-                    wg.Margin(
+                    rx.Margin(
                         SimpleMenu(
                             "Tasks",
                             [
@@ -175,26 +171,26 @@ class MainPage(wg.Widget):
             align_y=0.3,
         )
 
-    def build(self) -> wg.Widget:
+    def build(self) -> rx.Widget:
         if self.sap_session_token is None:
             child = self.build_login_view()
         else:
             child = self.build_menu()
 
-        return wg.Rectangle(
-            fill=wg.Color.GREY,
+        return rx.Rectangle(
+            fill=rx.Color.GREY,
             child=child,
         )
 
 
-wg_app = wg.App(
+rx_app = rx.App(
     "Super Dynamic Website!",
     MainPage,
     icon=PIL.Image.open("./dev_testing/icon.png"),
     port=3000,
 )
-app = wg_app.api
+app = rx_app.api
 
 
 if __name__ == "__main__":
-    wg_app.run_as_website(quiet=False)
+    rx_app.run_as_website(quiet=False)

@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "gtk-wrapper"
+name = "reflex-ui"
 version = "0.1.0"
 description = ""
 authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "web_gui" }]
+packages = [{ include = "reflex" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"

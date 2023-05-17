@@ -1,10 +1,10 @@
-import { buildWidget } from "./app";
-import { JsonStack } from "./models";
+import { buildWidget } from './app';
+import { JsonStack } from './models';
 
 export class StackWidget {
     static build(data: JsonStack): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-stack');
+        element.classList.add('reflex-stack');
 
         for (let ii = 0; ii < data.children.length; ii++) {
             const childElement = buildWidget(data.children[ii]);
@@ -15,6 +15,5 @@ export class StackWidget {
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonStack): void { }
-
+    static update(element: HTMLElement, deltaState: JsonStack): void {}
 }

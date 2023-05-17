@@ -4,7 +4,7 @@ import { JsonAlign } from './models';
 export class AlignWidget {
     static build(data: JsonAlign): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-align');
+        element.classList.add('reflex-align');
         element.appendChild(buildWidget(data.child));
         return element;
     }
