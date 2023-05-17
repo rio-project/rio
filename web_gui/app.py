@@ -2,6 +2,7 @@ import functools
 import io
 import json
 import weakref
+from pathlib import Path
 from typing import Callable, List, Optional
 
 import fastapi
@@ -9,7 +10,7 @@ import PIL.Image
 import uniserde
 import uvicorn
 
-from . import common, messages, session
+from . import assets, common, messages, session
 from .common import Jsonable
 from .widgets import fundamentals
 
@@ -45,14 +46,22 @@ class App:
             icon.save(icon_ico, format="ICO")
             self.icon_as_ico_blob = icon_ico.getvalue()
 
+        # All assets that have been registered with this session. They are held
+        # weakly, meaning the session will host assets for as long as their
+        # corresponding Python objects are alive.
+        self._assets: weakref.WeakValueDictionary[
+            str, assets.HostedAsset
+        ] = weakref.WeakValueDictionary()
+
         # Fastapi
         self.api = fastapi.FastAPI()
         self.api.add_api_route("/", self._serve_index, methods=["GET"])
         self.api.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
         self.api.add_api_route("/favicon.ico", self._serve_favicon, methods=["GET"])
+        self.api.add_api_route("/asset/{asset_id}", self._serve_asset, methods=["GET"])
         self.api.add_api_websocket_route("/ws", self._serve_websocket)
 
-    def run(self, *, quiet: bool = True) -> None:
+    def run_as_website(self, *, quiet: bool = True) -> None:
         # Supress stdout messages
         kwargs = {}
 
@@ -71,6 +80,14 @@ class App:
             port=self.port,
             **kwargs,
         )
+
+    def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
+        """
+        Register an asset with this session. The asset will be held weakly,
+        meaning the session will host assets for as long as their corresponding
+        Python objects are alive.
+        """
+        self._assets[asset.secret_id] = asset
 
     async def _serve_index(self) -> fastapi.responses.HTMLResponse:
         # Create a list of all messages the frontend should process immediately
@@ -115,6 +132,26 @@ class App:
             media_type="image/x-icon",
         )
 
+    async def _serve_asset(self, asset_id: str) -> fastapi.responses.Response:
+        # Get the asset instance. The asset's id acts as a secret, so no further
+        # authentication is required.
+        try:
+            asset = self._assets[asset_id]
+        except KeyError:
+            return fastapi.responses.Response(status_code=404)
+
+        # Fetch the asset's content and respond
+        if isinstance(asset.data, bytes):
+            return fastapi.responses.Response(
+                content=asset.data,
+                media_type=asset.media_type,
+            )
+        else:
+            return fastapi.responses.FileResponse(
+                asset.data,
+                media_type=asset.media_type,
+            )
+
     async def _serve_websocket(
         self,
         websocket: fastapi.WebSocket,
@@ -140,13 +177,21 @@ class App:
             try:
                 message_json = await websocket.receive_json()
                 message = messages.IncomingMessage.from_json(message_json)
+
+            # Don't spam when a client disconnects
+            except fastapi.websockets.WebSocketDisconnect:
+                return
+
+            # Handle invalid JSON
             except (
                 uniserde.SerdeError,
                 json.JSONDecodeError,
                 UnicodeDecodeError,
             ) as err:
-                # TODO what if invalid json is received
-                raise NotImplementedError(err)
+                raise fastapi.HTTPException(
+                    status_code=fastapi.status.HTTP_400_BAD_REQUEST,
+                    detail="Received invalid JSON in websocket message",
+                )
 
             # Delegate to the session
             await sess.handle_message(message)
