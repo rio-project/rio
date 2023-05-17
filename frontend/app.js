@@ -491,6 +491,7 @@ var align_1 = require("./align");
 var mouseEventListener_1 = require("./mouseEventListener");
 var textInput_1 = require("./textInput");
 var override_1 = require("./override");
+var sessionToken = '{session_token}';
 var initialMessages = '{initial_messages}';
 var socket = null;
 exports.pixelsPerEm = 16;
@@ -582,7 +583,7 @@ function main() {
     processMessage(message);
   }
   // Connect to the websocket
-  var url = new URL('/ws', window.location.href);
+  var url = new URL("/ws?sessionToken=".concat(sessionToken), window.location.href);
   url.protocol = url.protocol.replace('http', 'ws');
   console.log("Connecting websocket to ".concat(url.href));
   socket = new WebSocket(url.href);

@@ -10,7 +10,9 @@ import { MouseEventListener } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
 import { OverrideWidget } from './override';
 
+const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
+
 var socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
 
@@ -116,7 +118,7 @@ function main() {
     }
 
     // Connect to the websocket
-    var url = new URL('/ws', window.location.href);
+    var url = new URL(`/ws?sessionToken=${sessionToken}`, window.location.href);
     url.protocol = url.protocol.replace('http', 'ws');
     console.log(`Connecting websocket to ${url.href}`);
     socket = new WebSocket(url.href);

@@ -9,6 +9,8 @@ import web_gui as wg
 from web_gui.widgets.fundamentals import Widget
 
 CORPOPRATE_YELLOW = wg.Color.from_rgb(0.98, 0.91, 0.0)
+CORPORATE_GREY = wg.Color.from_rgb(0.69, 0.69, 0.69)
+CORPORATE_BLUE = wg.Color.from_rgb(0.0, 0.47, 0.78)
 
 
 class CorporateCard(wg.Widget):

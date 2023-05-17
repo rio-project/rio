@@ -1,6 +1,9 @@
 import functools
+import secrets
+from datetime import timedelta
 import io
 import json
+import timer_dict
 import weakref
 from pathlib import Path
 from typing import Callable, List, Optional
@@ -46,6 +49,13 @@ class App:
             icon.save(icon_ico, format="ICO")
             self.icon_as_ico_blob = icon_ico.getvalue()
 
+        # The session tokens for all active sessions. These allow clients to
+        # identify themselves, for example to reconnect in case of a lost
+        # connection.
+        self._active_session_tokens = timer_dict.TimerDict[str, None](
+            default_duration=timedelta(minutes=60),
+        )
+
         # All assets that have been registered with this session. They are held
         # weakly, meaning the session will host assets for as long as their
         # corresponding Python objects are alive.
@@ -89,7 +99,32 @@ class App:
         """
         self._assets[asset.secret_id] = asset
 
+    def check_and_refresh_session(self, session_token: str) -> None:
+        """
+        Look up the session token. If it is valid the session's duration
+        is refreshed so it doesn't expire. If the token is not valid,
+        a HttpException is raised.
+        """
+
+        if session_token not in self._active_session_tokens:
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid session token.",
+            )
+
+        self._active_session_tokens[session_token] = None
+
+    def refresh_session(self, session_token: str) -> None:
+        """
+        Refresh the session's duration to prevent timeout.
+        """
+        self._active_session_tokens[session_token] = None
+
     async def _serve_index(self) -> fastapi.responses.HTMLResponse:
+        # Create a new session token
+        session_token = secrets.token_urlsafe()
+        self._active_session_tokens[session_token] = None
+
         # Create a list of all messages the frontend should process immediately
         initial_messages: List[Jsonable] = [m.as_json() for m in []]
 
@@ -99,6 +134,7 @@ class App:
         css = read_frontend_template("style.css")
 
         # Fill in all placeholders
+        js = js.replace("{session_token}", session_token)
         js = js.replace(
             "'{initial_messages}'",
             json.dumps(initial_messages, indent=4),
@@ -155,9 +191,14 @@ class App:
     async def _serve_websocket(
         self,
         websocket: fastapi.WebSocket,
+        sessionToken: str,
     ):
-        # FIXME: Instead of reusing the root widget over and over, make sure
-        #        each session gets a fresh, independent copy.
+        # Blah, naming conventions
+        session_token = sessionToken
+        del sessionToken
+
+        # Make sure the session token is valid
+        self.check_and_refresh_session(session_token)
 
         # Accept the socket
         await websocket.accept()
@@ -172,8 +213,11 @@ class App:
         sess.register_dirty_widget(root_widget)
         await sess.refresh()
 
-        # Listen for incoming messages and react to them
         while True:
+            # Refresh the session's duration
+            self._active_session_tokens[session_token] = None
+
+            # Listen for incoming messages and react to them
             try:
                 message_json = await websocket.receive_json()
                 message = messages.IncomingMessage.from_json(message_json)
