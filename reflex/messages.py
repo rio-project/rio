@@ -56,6 +56,27 @@ class MouseUpEvent(IncomingMessage):
 
 
 @dataclass
+class MouseMoveEvent(IncomingMessage):
+    widget_id: int
+    x: float
+    y: float
+
+
+@dataclass
+class MouseEnterEvent(IncomingMessage):
+    widget_id: int
+    x: float
+    y: float
+
+
+@dataclass
+class MouseLeaveEvent(IncomingMessage):
+    widget_id: int
+    x: float
+    y: float
+
+
+@dataclass
 class TextInputBlurEvent(IncomingMessage):
     widget_id: int
     text: str

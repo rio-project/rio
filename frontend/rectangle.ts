@@ -1,8 +1,4 @@
-import {
-    fillToCss,
-    replaceChildren,
-    replaceOnlyChild,
-} from './app';
+import { fillToCss, replaceOnlyChild } from './app';
 import { JsonRectangle } from './models';
 
 export class RectangleWidget {

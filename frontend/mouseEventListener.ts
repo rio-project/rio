@@ -1,13 +1,13 @@
 import { JsonMouseEventListener } from './models';
 import { pixelsPerEm, replaceOnlyChild, sendEvent } from './app';
 
-function eventMouseButtonToString(event: any): object {
+function eventMouseButtonToString(event: MouseEvent): object {
     return {
         button: ['left', 'middle', 'right'][event.button],
     };
 }
 
-function eventMousePositionToString(event: any): object {
+function eventMousePositionToString(event: MouseEvent): object {
     return {
         x: event.clientX / pixelsPerEm,
         y: event.clientY / pixelsPerEm,
@@ -49,6 +49,34 @@ export class MouseEventListener {
             element.onmouseup = null;
         }
 
-        // TODO
+        if (deltaState.reportMouseMove) {
+            element.onmousemove = (e) => {
+                sendEvent(element, 'mouseMoveEvent', {
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            element.onmousemove = null;
+        }
+
+        if (deltaState.reportMouseEnter) {
+            element.onmouseenter = (e) => {
+                sendEvent(element, 'mouseEnterEvent', {
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            element.onmouseenter = null;
+        }
+
+        if (deltaState.reportMouseLeave) {
+            element.onmouseleave = (e) => {
+                sendEvent(element, 'mouseLeaveEvent', {
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            element.onmouseleave = null;
+        }
     }
 }

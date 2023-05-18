@@ -24,19 +24,18 @@ class MouseUpEvent(_MouseUpDownEvent):
 
 
 @dataclass
-class MouseMoveEvent:
+class _MousePositionedEvent:
     x: float
     y: float
 
 
-@dataclass
-class _MouseEnterLeaveEvent:
+class MouseMoveEvent(_MousePositionedEvent):
     pass
 
 
-class MouseEnterEvent(_MouseEnterLeaveEvent):
+class MouseEnterEvent(_MousePositionedEvent):
     pass
 
 
-class MouseLeaveEvent(_MouseEnterLeaveEvent):
+class MouseLeaveEvent(_MousePositionedEvent):
     pass

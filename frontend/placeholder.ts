@@ -1,5 +1,5 @@
-import { fillToCss, replaceOnlyChild } from './app';
-import { JsonPlaceholder, JsonRectangle } from './models';
+import { replaceOnlyChild } from './app';
+import { JsonPlaceholder } from './models';
 
 export class PlaceholderWidget {
     static build(): HTMLElement {

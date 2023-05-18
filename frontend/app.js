@@ -390,9 +390,28 @@ var MouseEventListener = /** @class */function () {
     } else {
       element.onmouseup = null;
     }
-    // TODO
+    if (deltaState.reportMouseMove) {
+      element.onmousemove = function (e) {
+        (0, app_1.sendEvent)(element, 'mouseMoveEvent', __assign({}, eventMousePositionToString(e)));
+      };
+    } else {
+      element.onmousemove = null;
+    }
+    if (deltaState.reportMouseEnter) {
+      element.onmouseenter = function (e) {
+        (0, app_1.sendEvent)(element, 'mouseEnterEvent', __assign({}, eventMousePositionToString(e)));
+      };
+    } else {
+      element.onmouseenter = null;
+    }
+    if (deltaState.reportMouseLeave) {
+      element.onmouseleave = function (e) {
+        (0, app_1.sendEvent)(element, 'mouseLeaveEvent', __assign({}, eventMousePositionToString(e)));
+      };
+    } else {
+      element.onmouseleave = null;
+    }
   };
-
   return MouseEventListener;
 }();
 exports.MouseEventListener = MouseEventListener;

@@ -490,6 +490,36 @@ class MouseEventListener(FundamentalWidget):
                 self.on_mouse_up,
             )
 
+        elif isinstance(msg, messages.MouseMoveEvent):
+            await call_event_handler_and_refresh(
+                self,
+                event_classes.MouseMoveEvent(
+                    x=msg.x,
+                    y=msg.y,
+                ),
+                self.on_mouse_move,
+            )
+
+        elif isinstance(msg, messages.MouseEnterEvent):
+            await call_event_handler_and_refresh(
+                self,
+                event_classes.MouseEnterEvent(
+                    x=msg.x,
+                    y=msg.y,
+                ),
+                self.on_mouse_enter,
+            )
+
+        elif isinstance(msg, messages.MouseLeaveEvent):
+            await call_event_handler_and_refresh(
+                self,
+                event_classes.MouseLeaveEvent(
+                    x=msg.x,
+                    y=msg.y,
+                ),
+                self.on_mouse_leave,
+            )
+
         else:
             raise RuntimeError(
                 f"MouseEventListener received unexpected message `{msg}`"
