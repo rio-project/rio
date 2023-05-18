@@ -1,6 +1,5 @@
-import enum
 from abc import ABC, abstractmethod
-from typing import Dict, Iterable, List, Literal, Tuple, Union
+from typing import Dict, Literal, Tuple, Union
 
 from .common import Jsonable
 

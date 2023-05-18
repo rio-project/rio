@@ -3,8 +3,6 @@ from typing import Any, Dict, Literal, Optional
 
 import uniserde
 
-from .common import Jsonable
-
 
 @uniserde.as_child
 class OutgoingMessage(uniserde.Serde):
