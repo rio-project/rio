@@ -1,5 +1,5 @@
 import { JsonMouseEventListener } from './models';
-import { buildWidget, pixelsPerEm, sendEvent } from './app';
+import { pixelsPerEm, replaceOnlyChild, sendEvent } from './app';
 
 function eventMouseButtonToString(event: any): object {
     return {
@@ -15,10 +15,9 @@ function eventMousePositionToString(event: any): object {
 }
 
 export class MouseEventListener {
-    static build(data: JsonMouseEventListener): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-mouse-event-listener');
-        element.appendChild(buildWidget(data.child));
         return element;
     }
 
@@ -26,6 +25,8 @@ export class MouseEventListener {
         element: HTMLElement,
         deltaState: JsonMouseEventListener
     ): void {
+        replaceOnlyChild(element, deltaState.child);
+
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
                 sendEvent(element, 'mouseDownEvent', {

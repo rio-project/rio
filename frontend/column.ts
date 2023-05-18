@@ -1,17 +1,15 @@
-import { buildWidget } from './app';
+import { replaceChildren } from './app';
 import { JsonColumn } from './models';
 
 export class ColumnWidget {
-    static build(data: JsonColumn): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-column');
-
-        for (const child of data.children) {
-            element.appendChild(buildWidget(child));
-        }
 
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonColumn): void {}
+    static update(element: HTMLElement, deltaState: JsonColumn): void {
+        replaceChildren(element, deltaState.children);
+    }
 }

@@ -1,15 +1,16 @@
-import { buildWidget } from './app';
+import { replaceOnlyChild } from './app';
 import { JsonAlign } from './models';
 
 export class AlignWidget {
-    static build(data: JsonAlign): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-align');
-        element.appendChild(buildWidget(data.child));
         return element;
     }
 
     static update(element: HTMLElement, state: JsonAlign): void {
+        replaceOnlyChild(element, state.child);
+
         let transform_x;
         if (state.align_x !== undefined) {
             if (state.align_x === null) {

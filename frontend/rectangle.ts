@@ -1,19 +1,20 @@
-import { buildWidget, fillToCss } from './app';
+import {
+    fillToCss,
+    replaceChildren,
+    replaceOnlyChild,
+} from './app';
 import { JsonRectangle } from './models';
 
 export class RectangleWidget {
-    static build(data: JsonRectangle): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');
-
-        if (data.child !== undefined && data.child !== null) {
-            element.appendChild(buildWidget(data.child));
-        }
-
         return element;
     }
 
     static update(element: HTMLElement, deltaState: JsonRectangle): void {
+        replaceOnlyChild(element, deltaState.child);
+
         if (deltaState.fill !== undefined) {
             element.style.background = fillToCss(deltaState.fill);
         }

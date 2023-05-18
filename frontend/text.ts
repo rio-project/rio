@@ -2,7 +2,7 @@ import { JsonText } from './models';
 import { colorToCss } from './app';
 
 export class TextWidget {
-    static build(data: JsonText): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-text');
         return element;

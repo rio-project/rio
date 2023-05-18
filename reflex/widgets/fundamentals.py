@@ -69,7 +69,7 @@ async def call_event_handler_and_refresh(
     """
     Call an event handler, if one is present. Await it if necessary
     """
-    assert widget._session is not None
+    assert widget._session_ is not None
 
     # Event handlers are optional
     if handler is None:
@@ -88,8 +88,8 @@ async def call_event_handler_and_refresh(
         traceback.print_exc()
 
     # Refresh the session if necessary. A rebuild might be in order
-    assert widget._session is not None, widget
-    await widget._session.refresh()
+    assert widget._session_ is not None, widget
+    await widget._session_.refresh()
 
 
 def is_widget_class(cls: Type[Any]) -> bool:
@@ -103,10 +103,10 @@ class Widget(ABC):
     key: Optional[str] = None
 
     # Injected by the session when the widget is refreshed
-    _session: Optional["session.Session"] = None
+    _session_: Optional["session.Session"] = None
 
     # Keep track of all changed properties
-    _dirty_properties: Set["StateProperty"] = dataclasses.field(
+    _dirty_properties_: Set["StateProperty"] = dataclasses.field(
         default_factory=set, init=False
     )
 
@@ -120,8 +120,8 @@ class Widget(ABC):
         for attr in vars(cls).get("__annotations__", ()):
             if attr in (
                 "_",
-                "_session",
-                "_dirty_properties",
+                "_session_",
+                "_dirty_properties_",
             ):
                 continue
 
@@ -286,13 +286,13 @@ class StateProperty(Generic[T]):
             instance_vars[self.name] = new_value
 
         # Mark the property as dirty inside of the widget
-        instance._dirty_properties.add(self)
+        instance._dirty_properties_.add(self)
 
         # If a session is known also notify the session that the widget is
         # dirty. If the session is not known yet, the widget will be processed
         # by the session anyway, as if dirty.
-        if instance._session is not None:
-            instance._session.register_dirty_widget(instance)
+        if instance._session_ is not None:
+            instance._session_.register_dirty_widget(instance)
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"
@@ -503,11 +503,11 @@ class TextInput(FundamentalWidget):
     secret: bool = False
 
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
-        assert self._session is not None
+        assert self._session_ is not None
 
         if isinstance(msg, messages.TextInputBlurEvent):
             self.text = msg.text
-            await self._session.refresh()
+            await self._session_.refresh()
 
         else:
             raise RuntimeError(f"TextInput received unexpected message `{msg}`")

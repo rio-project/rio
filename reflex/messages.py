@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, Dict, Literal, Optional
 
 import uniserde
 
@@ -14,12 +14,17 @@ class OutgoingMessage(uniserde.Serde):
 
 
 @dataclass
-class ReplaceWidgets(OutgoingMessage):
+class UpdateWidgetStates(OutgoingMessage):
     """
     Replace all widgets in the UI with the given one.
     """
 
-    widget: Any  # The already serialized widget
+    # Maps widget ids to serialized widgets. The widgets may be partial, i.e.
+    # any property may be missing.
+    delta_states: Dict[int, Any]
+
+    # Tells the client to make the given widget the new root widget.
+    root_widget_id: Optional[int]
 
 
 @uniserde.as_child

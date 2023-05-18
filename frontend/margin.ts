@@ -1,14 +1,15 @@
-import { buildWidget } from './app';
+import { replaceOnlyChild } from './app';
 import { JsonMargin } from './models';
 
 export class MarginWidget {
-    static build(widget: JsonMargin): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
-        element.appendChild(buildWidget(widget.child));
         return element;
     }
 
     static update(element: HTMLElement, state: JsonMargin): void {
+        replaceOnlyChild(element, state.child);
+
         if (state.margin_left !== undefined) {
             element.style.marginLeft = `${state.margin_left}em`;
         }

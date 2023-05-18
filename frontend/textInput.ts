@@ -1,8 +1,8 @@
 import { JsonMouseEventListener, JsonTextInput } from './models';
-import { buildWidget, pixelsPerEm, sendEvent } from './app';
+import { pixelsPerEm, sendEvent } from './app';
 
 export class TextInputWidget {
-    static build(data: JsonTextInput): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('input');
         element.classList.add('reflex-text-input');
 

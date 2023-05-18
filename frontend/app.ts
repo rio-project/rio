@@ -9,6 +9,7 @@ import { Color, Fill, JsonWidget } from './models';
 import { MouseEventListener } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
 import { OverrideWidget } from './override';
+import { PlaceholderWidget } from './placeholder';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
@@ -60,46 +61,173 @@ const widgetClasses = {
     mouseEventListener: MouseEventListener,
     textInput: TextInputWidget,
     override: OverrideWidget,
+    placeholder: PlaceholderWidget,
 };
 
-export function buildWidget(widget: JsonWidget): HTMLElement {
-    // Get the class for this widget
-    const widgetClass = widgetClasses[widget.type];
-
-    // Make sure the widget type is valid (Just helpful for debugging)
-    if (!widgetClass) {
-        throw `Encountered unknown widget type: ${widget.type}`;
-    }
-
-    // Build the widget
-    const result = widgetClass.build(widget as any);
-
-    // Add a unique ID to the widget
-    result.id = 'reflex-id-' + widget.id;
-
-    // Add the common css class to the widget
-    result.classList.add('reflex-widget');
-
-    // Store the widget's type in the element. This is used by the update
-    // function to determine the correct update function to call.
-    result.setAttribute('data-reflex-type', widget.type);
-
-    // Update the widget to match its state
-    widgetClass.update(result, widget as any);
-
-    return result;
-}
-
 function processMessage(message: any) {
-    if (message.type == 'replaceWidgets') {
-        // Clear any previous widgets
-        let body = document.getElementsByTagName('body')[0];
-        body.innerHTML = '';
+    console.log('Received message: ', message);
 
-        // Build the HTML document
-        body.appendChild(buildWidget(message.widget));
+    if (message.type == 'updateWidgetStates') {
+        updateWidgetStates(message.deltaStates, message.rootWidgetId);
     } else {
         throw `Encountered unknown message type: ${message}`;
+    }
+}
+
+function updateWidgetStates(
+    message: { [id: number]: JsonWidget },
+    rootWidgetId: number | null
+) {
+    // Create a HTML element to hold all latent widgets, so they aren't
+    // garbage collected while updating the DOM.
+    let latentWidgets = document.createElement('div');
+    document.body.appendChild(latentWidgets);
+    latentWidgets.id = 'reflex-latent-widgets';
+    latentWidgets.style.display = 'none';
+
+    // Make sure all widgets mentioned in the message have a corresponding HTML
+    // element
+    for (let id in message) {
+        let deltaState = message[id];
+        let element = document.getElementById('reflex-id-' + id);
+
+        // This is a reused element, nothing to do
+        if (element) {
+            continue;
+        }
+
+        // Get the class for this widget
+        const widgetClass = widgetClasses[deltaState._type_];
+
+        // Make sure the widget type is valid (Just helpful for debugging)
+        if (!widgetClass) {
+            throw `Encountered unknown widget type: ${deltaState._type_}`;
+        }
+
+        // Build the widget
+        element = widgetClass.build();
+
+        // Add a unique ID to the widget
+        element.id = 'reflex-id-' + id;
+
+        // Add the common css class to the widget
+        element.classList.add('reflex-widget');
+
+        // Store the widget's class name in the element. Useful for debugging.
+        element.setAttribute('data-class-name', deltaState._python_type_);
+
+        // Keep the widget alive
+        latentWidgets.appendChild(element);
+    }
+
+    // Update all widgets mentioned in the message
+    for (let id in message) {
+        let deltaState = message[id];
+        let element = document.getElementById('reflex-id-' + id);
+
+        if (!element) {
+            throw `Failed to find widget with id ${id}, despite only just creating it!?`;
+        }
+
+        const widgetClass = widgetClasses[deltaState._type_];
+        widgetClass.update(element!, deltaState as any);
+    }
+
+    // Replace the root widget if requested
+    if (rootWidgetId !== null) {
+        let rootElement = document.getElementById(`reflex-id-${rootWidgetId}`);
+        document.body.innerHTML = '';
+        document.body.appendChild(rootElement!);
+    }
+
+    // Remove the latent widgets
+    latentWidgets.remove();
+}
+
+export function replaceOnlyChild(
+    parentElement: HTMLElement,
+    childId: null | undefined | number
+) {
+    // If undefined, do nothing
+    if (childId === undefined) {
+        return;
+    }
+
+    // If null, remove the child
+    if (childId === null) {
+        parentElement.innerHTML = '';
+        return;
+    }
+
+    // Move the child element to a latent container, so it isn't garbage
+    // collected
+    if (parentElement.firstElementChild !== null) {
+        let latentWidgets = document.getElementById('reflex-latent-widgets');
+        latentWidgets?.appendChild(parentElement.firstElementChild);
+    }
+
+    // Add the replacement widget
+    let newElement = document.getElementById('reflex-id-' + childId);
+
+    if (!newElement) {
+        throw `Failed to find replacement widget with id ${childId}`;
+    }
+
+    parentElement?.appendChild(newElement);
+}
+
+export function replaceChildren(
+    parentElement: HTMLElement,
+    childIds: undefined | number[]
+) {
+    // If undefined, do nothing
+    if (childIds === undefined) {
+        return;
+    }
+
+    let latentWidgets = document.getElementById('reflex-latent-widgets')!;
+
+    let curElement = parentElement.firstElementChild;
+    let curIdIndex = 0;
+
+    while (true) {
+        // If there are no more children in the DOM element, add the remaining
+        // children
+        if (curElement === null) {
+            while (curIdIndex < childIds.length) {
+                let curId = childIds[curIdIndex];
+                let newElement = document.getElementById('reflex-id-' + curId);
+                parentElement.appendChild(newElement!);
+                curIdIndex++;
+            }
+            break;
+        }
+
+        // If there are no more children in the message, remove the remaining
+        // DOM children
+        if (curIdIndex >= childIds.length) {
+            while (curElement !== null) {
+                let nextElement = curElement.nextElementSibling;
+                latentWidgets.appendChild(curElement);
+                curElement = nextElement;
+            }
+            break;
+        }
+
+        // This element is the correct element, move on
+        let curId = childIds[curIdIndex];
+        if (curElement.id === 'reflex-id-' + curId) {
+            curElement = curElement.nextElementSibling;
+            curIdIndex++;
+            continue;
+        }
+
+        // This element is not the correct element, insert the correct one
+        // instead
+        let newElement = document.getElementById('reflex-id-' + curId);
+        parentElement.insertBefore(newElement!, curElement);
+        curElement = newElement;
+        curIdIndex++;
     }
 }
 

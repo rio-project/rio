@@ -127,7 +127,7 @@ exports.TextWidget = void 0;
 var app_1 = require("./app");
 var TextWidget = /** @class */function () {
   function TextWidget() {}
-  TextWidget.build = function (data) {
+  TextWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-text');
     return element;
@@ -171,16 +171,14 @@ exports.RowWidget = void 0;
 var app_1 = require("./app");
 var RowWidget = /** @class */function () {
   function RowWidget() {}
-  RowWidget.build = function (data) {
+  RowWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-row');
-    for (var _i = 0, _a = data.children; _i < _a.length; _i++) {
-      var child = _a[_i];
-      element.appendChild((0, app_1.buildWidget)(child));
-    }
     return element;
   };
-  RowWidget.update = function (element, deltaState) {};
+  RowWidget.update = function (element, deltaState) {
+    (0, app_1.replaceChildren)(element, deltaState.children);
+  };
   return RowWidget;
 }();
 exports.RowWidget = RowWidget;
@@ -194,16 +192,14 @@ exports.ColumnWidget = void 0;
 var app_1 = require("./app");
 var ColumnWidget = /** @class */function () {
   function ColumnWidget() {}
-  ColumnWidget.build = function (data) {
+  ColumnWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-column');
-    for (var _i = 0, _a = data.children; _i < _a.length; _i++) {
-      var child = _a[_i];
-      element.appendChild((0, app_1.buildWidget)(child));
-    }
     return element;
   };
-  ColumnWidget.update = function (element, deltaState) {};
+  ColumnWidget.update = function (element, deltaState) {
+    (0, app_1.replaceChildren)(element, deltaState.children);
+  };
   return ColumnWidget;
 }();
 exports.ColumnWidget = ColumnWidget;
@@ -217,15 +213,13 @@ exports.RectangleWidget = void 0;
 var app_1 = require("./app");
 var RectangleWidget = /** @class */function () {
   function RectangleWidget() {}
-  RectangleWidget.build = function (data) {
+  RectangleWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-rectangle');
-    if (data.child !== undefined && data.child !== null) {
-      element.appendChild((0, app_1.buildWidget)(data.child));
-    }
     return element;
   };
   RectangleWidget.update = function (element, deltaState) {
+    (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.fill !== undefined) {
       element.style.background = (0, app_1.fillToCss)(deltaState.fill);
     }
@@ -251,17 +245,22 @@ exports.StackWidget = void 0;
 var app_1 = require("./app");
 var StackWidget = /** @class */function () {
   function StackWidget() {}
-  StackWidget.build = function (data) {
+  StackWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-stack');
-    for (var ii = 0; ii < data.children.length; ii++) {
-      var childElement = (0, app_1.buildWidget)(data.children[ii]);
-      childElement.style.zIndex = "".concat(ii + 1);
-      element.appendChild(childElement);
-    }
     return element;
   };
-  StackWidget.update = function (element, deltaState) {};
+  StackWidget.update = function (element, deltaState) {
+    if (deltaState.children !== undefined) {
+      (0, app_1.replaceChildren)(element, deltaState.children);
+      var zIndex = 0;
+      for (var _i = 0, _a = element.children; _i < _a.length; _i++) {
+        var child = _a[_i];
+        child.style.zIndex = "".concat(zIndex);
+        zIndex += 1;
+      }
+    }
+  };
   return StackWidget;
 }();
 exports.StackWidget = StackWidget;
@@ -275,12 +274,12 @@ exports.MarginWidget = void 0;
 var app_1 = require("./app");
 var MarginWidget = /** @class */function () {
   function MarginWidget() {}
-  MarginWidget.build = function (widget) {
+  MarginWidget.build = function () {
     var element = document.createElement('div');
-    element.appendChild((0, app_1.buildWidget)(widget.child));
     return element;
   };
   MarginWidget.update = function (element, state) {
+    (0, app_1.replaceOnlyChild)(element, state.child);
     if (state.margin_left !== undefined) {
       element.style.marginLeft = "".concat(state.margin_left, "em");
     }
@@ -307,13 +306,13 @@ exports.AlignWidget = void 0;
 var app_1 = require("./app");
 var AlignWidget = /** @class */function () {
   function AlignWidget() {}
-  AlignWidget.build = function (data) {
+  AlignWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-align');
-    element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };
   AlignWidget.update = function (element, state) {
+    (0, app_1.replaceOnlyChild)(element, state.child);
     var transform_x;
     if (state.align_x !== undefined) {
       if (state.align_x === null) {
@@ -370,13 +369,13 @@ function eventMousePositionToString(event) {
 }
 var MouseEventListener = /** @class */function () {
   function MouseEventListener() {}
-  MouseEventListener.build = function (data) {
+  MouseEventListener.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-mouse-event-listener');
-    element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };
   MouseEventListener.update = function (element, deltaState) {
+    (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.reportMouseDown) {
       element.onmousedown = function (e) {
         (0, app_1.sendEvent)(element, 'mouseDownEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
@@ -407,7 +406,7 @@ exports.TextInputWidget = void 0;
 var app_1 = require("./app");
 var TextInputWidget = /** @class */function () {
   function TextInputWidget() {}
-  TextInputWidget.build = function (data) {
+  TextInputWidget.build = function () {
     var element = document.createElement('input');
     element.classList.add('reflex-text-input');
     element.addEventListener('blur', function () {
@@ -442,12 +441,12 @@ exports.OverrideWidget = void 0;
 var app_1 = require("./app");
 var OverrideWidget = /** @class */function () {
   function OverrideWidget() {}
-  OverrideWidget.build = function (data) {
+  OverrideWidget.build = function () {
     var element = document.createElement('div');
-    element.appendChild((0, app_1.buildWidget)(data.child));
     return element;
   };
   OverrideWidget.update = function (element, deltaState) {
+    (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.width !== undefined) {
       if (deltaState.width === null) {
         element.style.removeProperty('width');
@@ -466,6 +465,26 @@ var OverrideWidget = /** @class */function () {
   return OverrideWidget;
 }();
 exports.OverrideWidget = OverrideWidget;
+},{"./app":"EVxB"}],"When":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PlaceholderWidget = void 0;
+var app_1 = require("./app");
+var PlaceholderWidget = /** @class */function () {
+  function PlaceholderWidget() {}
+  PlaceholderWidget.build = function () {
+    var element = document.createElement('div');
+    return element;
+  };
+  PlaceholderWidget.update = function (element, deltaState) {
+    (0, app_1.replaceOnlyChild)(element, deltaState._child_);
+  };
+  return PlaceholderWidget;
+}();
+exports.PlaceholderWidget = PlaceholderWidget;
 },{"./app":"EVxB"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
@@ -482,7 +501,7 @@ var __assign = this && this.__assign || function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.sendEvent = exports.sendJson = exports.buildWidget = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
+exports.sendEvent = exports.sendJson = exports.replaceChildren = exports.replaceOnlyChild = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
 var text_1 = require("./text");
 var row_1 = require("./row");
 var column_1 = require("./column");
@@ -493,6 +512,7 @@ var align_1 = require("./align");
 var mouseEventListener_1 = require("./mouseEventListener");
 var textInput_1 = require("./textInput");
 var override_1 = require("./override");
+var placeholder_1 = require("./placeholder");
 var sessionToken = '{session_token}';
 var initialMessages = '{initial_messages}';
 var socket = null;
@@ -537,40 +557,139 @@ var widgetClasses = {
   text: text_1.TextWidget,
   mouseEventListener: mouseEventListener_1.MouseEventListener,
   textInput: textInput_1.TextInputWidget,
-  override: override_1.OverrideWidget
+  override: override_1.OverrideWidget,
+  placeholder: placeholder_1.PlaceholderWidget
 };
-function buildWidget(widget) {
-  // Get the class for this widget
-  var widgetClass = widgetClasses[widget.type];
-  // Make sure the widget type is valid (Just helpful for debugging)
-  if (!widgetClass) {
-    throw "Encountered unknown widget type: ".concat(widget.type);
-  }
-  // Build the widget
-  var result = widgetClass.build(widget);
-  // Add a unique ID to the widget
-  result.id = 'reflex-id-' + widget.id;
-  // Add the common css class to the widget
-  result.classList.add('reflex-widget');
-  // Store the widget's type in the element. This is used by the update
-  // function to determine the correct update function to call.
-  result.setAttribute('data-reflex-type', widget.type);
-  // Update the widget to match its state
-  widgetClass.update(result, widget);
-  return result;
-}
-exports.buildWidget = buildWidget;
 function processMessage(message) {
-  if (message.type == 'replaceWidgets') {
-    // Clear any previous widgets
-    var body = document.getElementsByTagName('body')[0];
-    body.innerHTML = '';
-    // Build the HTML document
-    body.appendChild(buildWidget(message.widget));
+  console.log('Received message: ', message);
+  if (message.type == 'updateWidgetStates') {
+    updateWidgetStates(message.deltaStates, message.rootWidgetId);
   } else {
     throw "Encountered unknown message type: ".concat(message);
   }
 }
+function updateWidgetStates(message, rootWidgetId) {
+  // Create a HTML element to hold all latent widgets, so they aren't
+  // garbage collected while updating the DOM.
+  var latentWidgets = document.createElement('div');
+  document.body.appendChild(latentWidgets);
+  latentWidgets.id = 'reflex-latent-widgets';
+  latentWidgets.style.display = 'none';
+  // Make sure all widgets mentioned in the message have a corresponding HTML
+  // element
+  for (var id in message) {
+    var deltaState = message[id];
+    var element = document.getElementById('reflex-id-' + id);
+    // This is a reused element, nothing to do
+    if (element) {
+      continue;
+    }
+    // Get the class for this widget
+    var widgetClass = widgetClasses[deltaState._type_];
+    // Make sure the widget type is valid (Just helpful for debugging)
+    if (!widgetClass) {
+      throw "Encountered unknown widget type: ".concat(deltaState._type_);
+    }
+    // Build the widget
+    element = widgetClass.build();
+    // Add a unique ID to the widget
+    element.id = 'reflex-id-' + id;
+    // Add the common css class to the widget
+    element.classList.add('reflex-widget');
+    // Store the widget's class name in the element. Useful for debugging.
+    element.setAttribute('data-class-name', deltaState._python_type_);
+    // Keep the widget alive
+    latentWidgets.appendChild(element);
+  }
+  // Update all widgets mentioned in the message
+  for (var id in message) {
+    var deltaState = message[id];
+    var element = document.getElementById('reflex-id-' + id);
+    if (!element) {
+      throw "Failed to find widget with id ".concat(id, ", despite only just creating it!?");
+    }
+    var widgetClass = widgetClasses[deltaState._type_];
+    widgetClass.update(element, deltaState);
+  }
+  // Replace the root widget if requested
+  if (rootWidgetId !== null) {
+    var rootElement = document.getElementById("reflex-id-".concat(rootWidgetId));
+    document.body.innerHTML = '';
+    document.body.appendChild(rootElement);
+  }
+  // Remove the latent widgets
+  latentWidgets.remove();
+}
+function replaceOnlyChild(parentElement, childId) {
+  // If undefined, do nothing
+  if (childId === undefined) {
+    return;
+  }
+  // If null, remove the child
+  if (childId === null) {
+    parentElement.innerHTML = '';
+    return;
+  }
+  // Move the child element to a latent container, so it isn't garbage
+  // collected
+  if (parentElement.firstElementChild !== null) {
+    var latentWidgets = document.getElementById('reflex-latent-widgets');
+    latentWidgets === null || latentWidgets === void 0 ? void 0 : latentWidgets.appendChild(parentElement.firstElementChild);
+  }
+  // Add the replacement widget
+  var newElement = document.getElementById('reflex-id-' + childId);
+  if (!newElement) {
+    throw "Failed to find replacement widget with id ".concat(childId);
+  }
+  parentElement === null || parentElement === void 0 ? void 0 : parentElement.appendChild(newElement);
+}
+exports.replaceOnlyChild = replaceOnlyChild;
+function replaceChildren(parentElement, childIds) {
+  // If undefined, do nothing
+  if (childIds === undefined) {
+    return;
+  }
+  var latentWidgets = document.getElementById('reflex-latent-widgets');
+  var curElement = parentElement.firstElementChild;
+  var curIdIndex = 0;
+  while (true) {
+    // If there are no more children in the DOM element, add the remaining
+    // children
+    if (curElement === null) {
+      while (curIdIndex < childIds.length) {
+        var curId_1 = childIds[curIdIndex];
+        var newElement_1 = document.getElementById('reflex-id-' + curId_1);
+        parentElement.appendChild(newElement_1);
+        curIdIndex++;
+      }
+      break;
+    }
+    // If there are no more children in the message, remove the remaining
+    // DOM children
+    if (curIdIndex >= childIds.length) {
+      while (curElement !== null) {
+        var nextElement = curElement.nextElementSibling;
+        latentWidgets.appendChild(curElement);
+        curElement = nextElement;
+      }
+      break;
+    }
+    // This element is the correct element, move on
+    var curId = childIds[curIdIndex];
+    if (curElement.id === 'reflex-id-' + curId) {
+      curElement = curElement.nextElementSibling;
+      curIdIndex++;
+      continue;
+    }
+    // This element is not the correct element, insert the correct one
+    // instead
+    var newElement = document.getElementById('reflex-id-' + curId);
+    parentElement.insertBefore(newElement, curElement);
+    curElement = newElement;
+    curIdIndex++;
+  }
+}
+exports.replaceChildren = replaceChildren;
 function main() {
   // Determine the browser's font size
   var measure = document.createElement('div');
@@ -626,5 +745,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb","./override":"X9Uo"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb","./override":"X9Uo","./placeholder":"When"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

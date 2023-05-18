@@ -1,14 +1,14 @@
-import { buildWidget } from './app';
+import { replaceOnlyChild } from './app';
 import { JsonOverride } from './models';
 
 export class OverrideWidget {
-    static build(data: JsonOverride): HTMLElement {
+    static build(): HTMLElement {
         let element = document.createElement('div');
-        element.appendChild(buildWidget(data.child));
         return element;
     }
 
     static update(element: HTMLElement, deltaState: JsonOverride): void {
+        replaceOnlyChild(element, deltaState.child);
 
         if (deltaState.width !== undefined) {
             if (deltaState.width === null) {

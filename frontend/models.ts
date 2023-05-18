@@ -12,8 +12,8 @@ export type Fill =
       };
 
 export type JsonText = {
-    type: 'text';
-    id: string;
+    _type_: 'text';
+    _python_type_: string;
     text?: string;
     multiline?: boolean;
     font?: string;
@@ -25,35 +25,35 @@ export type JsonText = {
 };
 
 export type JsonRow = {
-    type: 'row';
-    id: string;
-    children?: JsonWidget[];
+    _type_: 'row';
+    _python_type_: string;
+    children?: number[];
 };
 
 export type JsonColumn = {
-    type: 'column';
-    id: string;
-    children?: JsonWidget[];
+    _type_: 'column';
+    _python_type_: string;
+    children?: number[];
 };
 
 export type JsonRectangle = {
-    type: 'rectangle';
-    id: string;
+    _type_: 'rectangle';
+    _python_type_: string;
     fill?: Fill;
-    child?: JsonWidget;
+    child?: number;
     corner_radius?: [number, number, number, number];
 };
 
 export type JsonStack = {
-    type: 'stack';
-    id: string;
-    children?: JsonWidget[];
+    _type_: 'stack';
+    _python_type_: string;
+    children?: number[];
 };
 
 export type JsonMargin = {
-    type: 'margin';
-    id: string;
-    child?: JsonWidget;
+    _type_: 'margin';
+    _python_type_: string;
+    child?: number;
     margin_left?: number;
     margin_right?: number;
     margin_top?: number;
@@ -61,17 +61,17 @@ export type JsonMargin = {
 };
 
 export type JsonAlign = {
-    type: 'align';
-    id: string;
-    child?: JsonWidget;
+    _type_: 'align';
+    _python_type_: string;
+    child?: number;
     align_x?: number;
     align_y?: number;
 };
 
 export type JsonMouseEventListener = {
-    type: 'mouseEventListener';
-    id: string;
-    child?: JsonWidget;
+    _type_: 'mouseEventListener';
+    _python_type_: string;
+    child?: number;
     reportMouseDown?: boolean;
     reportMouseUp?: boolean;
     reportMouseMove?: boolean;
@@ -80,19 +80,25 @@ export type JsonMouseEventListener = {
 };
 
 export type JsonTextInput = {
-    type: 'textInput';
-    id: string;
+    _type_: 'textInput';
+    _python_type_: string;
     text?: string;
     placeholder?: string;
     secret?: boolean;
 };
 
 export type JsonOverride = {
-    type: 'override';
-    id: string;
-    child?: JsonWidget;
+    _type_: 'override';
+    _python_type_: string;
+    child?: number;
     width?: number;
     height?: number;
+};
+
+export type JsonPlaceholder = {
+    _type_: 'placeholder';
+    _python_type_: string;
+    _child_?: number;
 };
 
 export type JsonWidget =
@@ -105,4 +111,5 @@ export type JsonWidget =
     | JsonAlign
     | JsonMouseEventListener
     | JsonTextInput
-    | JsonOverride;
+    | JsonOverride
+    | JsonPlaceholder;

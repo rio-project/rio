@@ -4,7 +4,7 @@ import logging
 import typing
 import weakref
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Literal, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterable, List, Literal, Set, Tuple, Type, Union
 
 from fastapi import WebSocket
 
@@ -18,7 +18,7 @@ from .widgets import fundamentals
 
 @dataclass
 class WidgetData:
-    previous_build_result: rx.Widget
+    build_result: rx.Widget
 
 
 class WontSerialize(Exception):
@@ -100,20 +100,23 @@ class Session:
         if not self._dirty_widgets:
             return
 
+        # Keep track of all widgets which are visited. Only they will be sent to
+        # the client.
+        visited_widgets: Set[fundamentals.Widget] = set()
+
         # Build all dirty widgets
-        #
-        # TODO: Start this at the root widget and continue recursively, to avoid
-        #       building widgets that are about to be replaced by their parents
-        #       rebuilding.
         while self._dirty_widgets:
             widget = self._dirty_widgets.pop()
+
+            # Remember that this widget has been visited
+            visited_widgets.add(widget)
 
             # Inject the session into the widget
             #
             # Widgets need to know the session they are part of, so that any
             # contained `StateProperty` instances can inform the session that
             # their widget is dirty, among other things.
-            widget._session = self
+            widget._session_ = self
 
             # Keep track of this widget's existence
             #
@@ -141,15 +144,15 @@ class Session:
 
                 # Yes, rescue state
                 else:
-                    widget_data.previous_build_result = build_result
-                    self.rescue_state(widget_data.previous_build_result, build_result)
+                    widget_data.build_result = build_result
+                    self.rescue_state(widget_data.build_result, build_result)
 
                 # Inject the building widget into the state bindings of all
                 # generated widgets
                 for child in build_result._iter_direct_and_indirect_children(True):
                     child_vars = vars(child)
 
-                    for state_property in child._dirty_properties:
+                    for state_property in child._dirty_properties_:
                         value = child_vars[state_property.name]
 
                         if (
@@ -163,11 +166,22 @@ class Session:
 
             # As the widget has just been processed, its properties are no
             # longer dirty
-            widget._dirty_properties.clear()
+            widget._dirty_properties_.clear()
 
         # Send the new state to the client if necessary
-        msg = messages.ReplaceWidgets(self._serialize_widget(self.root_widget))
-        await self.send_message(msg)
+        delta_states: Dict[int, Any] = {
+            widget._id: self._serialize_widget(widget) for widget in visited_widgets
+        }
+
+        # Check whether the root widget needs replacing
+        if self.root_widget in visited_widgets:
+            root_widget_id = self.root_widget._id
+        else:
+            root_widget_id = None
+
+        await self.send_message(
+            messages.UpdateWidgetStates(delta_states, root_widget_id)
+        )
 
     def _serialize_value(self, value: Any, type_: Type) -> Jsonable:
         """
@@ -234,48 +248,50 @@ class Session:
 
         # Widgets
         if fundamentals.is_widget_class(type_):
-            return self._serialize_widget(value)
+            return value._id
 
         # Invalid type
         raise WontSerialize()
 
     def _serialize_widget(self, widget: rx.Widget) -> Jsonable:
         """
-        Recursively serialize a widget and all of its children.
+        Serializes the widget, non-recursively. Children are serialized just by
+        their `_id`.
 
-        Fundamental widgets are serialized as expected. Non-fundamental widgets
-        must be built, and thus be present in the session's dictionary caches.
-        They are serialized as the fundamental widgets that result when built.
+        Non-fundamental widgets must have been built, and their output cached in
+        the session.
         """
+        result: Dict[str, Jsonable]
 
-        # Get the effective fundamental widget to serialize
-        fundamental_widget = widget
+        # Encode any internal state
+        if isinstance(widget, fundamentals.FundamentalWidget):
+            type_name = type(widget).__name__
+            type_name_camel_case = type_name[0].lower() + type_name[1:]
 
-        while not isinstance(fundamental_widget, fundamentals.FundamentalWidget):
-            widget_data = self.lookup_widget_data(fundamental_widget)
-            fundamental_widget = widget_data.previous_build_result
+            result = {
+                "_type_": type_name_camel_case,
+                "_python_type_": type_name,
+            }
+            result.update(widget._custom_serialize())
 
-        # Serialize the obtained fundamental widget
-        type_name = type(fundamental_widget).__name__
-        type_name_camel_case = type_name[0].lower() + type_name[1:]
+        else:
+            # Take care to add underscores to any properties here, as the
+            # user-defined state is also added and could clash
+            result = {
+                "_type_": "placeholder",
+                "_python_type_": type(widget).__name__,
+                "_child_": self.lookup_widget_data(widget).build_result._id,
+            }
 
-        result = {
-            "id": fundamental_widget._id,  # TODO: Avoid name clashes
-            "type": type_name_camel_case,  # TODO: Avoid name clashes
-        }
-
-        result.update(fundamental_widget._custom_serialize())
-
-        for name, type_ in typing.get_type_hints(type(fundamental_widget)).items():
+        # Add user-defined state
+        for name, type_ in typing.get_type_hints(type(widget)).items():
             # Skip some values
             if name in ("_",):  # Used to mark keyword-only arguments in dataclasses
                 continue
 
             # Let the serialization function handle the value
             try:
-                result[name] = self._serialize_value(
-                    getattr(fundamental_widget, name), type_
-                )
+                result[name] = self._serialize_value(getattr(widget, name), type_)
             except WontSerialize:
                 pass
 
