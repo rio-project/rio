@@ -4,7 +4,6 @@ import json
 import secrets
 import weakref
 from datetime import timedelta
-from pathlib import Path
 from typing import Callable, List, Optional
 
 import fastapi
@@ -16,6 +15,10 @@ import uvicorn
 from . import assets, common, messages, session
 from .common import Jsonable
 from .widgets import fundamentals
+
+__all__ = [
+    "App",
+]
 
 
 @functools.lru_cache(maxsize=None)
@@ -72,7 +75,7 @@ class App:
         self.api.add_api_websocket_route("/ws", self._serve_websocket)
 
     def run_as_website(self, *, quiet: bool = True) -> None:
-        # Supress stdout messages
+        # Suppress stdout messages
         kwargs = {}
 
         if quiet:
@@ -121,6 +124,9 @@ class App:
         self._active_session_tokens[session_token] = None
 
     async def _serve_index(self) -> fastapi.responses.HTMLResponse:
+        """
+        Handler for serving the index HTML page via fastapi.
+        """
         # Create a new session token
         session_token = secrets.token_urlsafe()
         self._active_session_tokens[session_token] = None
@@ -154,12 +160,18 @@ class App:
         return fastapi.responses.HTMLResponse(html)
 
     async def _serve_js_map(self) -> fastapi.responses.Response:
+        """
+        Handler for serving the `app.js.map` file via fastapi.
+        """
         return fastapi.responses.Response(
             content=read_frontend_template("app.js.map"),
             media_type="application/json",
         )
 
     async def _serve_favicon(self) -> fastapi.responses.Response:
+        """
+        Handler for serving the favicon via fastapi, if one is set.
+        """
         if self.icon_as_ico_blob is None:
             return fastapi.responses.Response(status_code=404)
 
@@ -169,6 +181,11 @@ class App:
         )
 
     async def _serve_asset(self, asset_id: str) -> fastapi.responses.Response:
+        """
+        Handler for serving registered assets via fastapi. The app only
+        references assets weakly, meaning trying to access an asset that has
+        been garbage collected will result in a 404 error.
+        """
         # Get the asset instance. The asset's id acts as a secret, so no further
         # authentication is required.
         try:
@@ -193,6 +210,10 @@ class App:
         websocket: fastapi.WebSocket,
         sessionToken: str,
     ):
+        """
+        Handler for establishing the websocket connection and handling any
+        messages.
+        """
         # Blah, naming conventions
         session_token = sessionToken
         del sessionToken
@@ -231,7 +252,7 @@ class App:
                 uniserde.SerdeError,
                 json.JSONDecodeError,
                 UnicodeDecodeError,
-            ) as err:
+            ):
                 raise fastapi.HTTPException(
                     status_code=fastapi.status.HTTP_400_BAD_REQUEST,
                     detail="Received invalid JSON in websocket message",

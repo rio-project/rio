@@ -26,6 +26,11 @@ class WontSerialize(Exception):
 
 
 class Session:
+    """
+    A session corresponds to a single connection to a client. It maintains all
+    state related to this client including the GUI.
+    """
+
     def __init__(self, root_widget: rx.Widget, websocket: WebSocket):
         self.root_widget = root_widget
         self.websocket = websocket
@@ -36,7 +41,7 @@ class Session:
         #
         # Never access these directly. Instead, use helper functions
         # - `lookup_widget`
-        # - `lookup_widget_id`
+        # - `lookup_widget_data`
         self._weak_widgets_by_id: weakref.WeakValueDictionary[
             int, rx.Widget
         ] = weakref.WeakValueDictionary()
@@ -45,7 +50,13 @@ class Session:
             rx.Widget, WidgetData
         ] = weakref.WeakKeyDictionary()
 
-        # Keep track of all dirty widgets, once again, weakly
+        # Keep track of all dirty widgets, once again, weakly.
+        #
+        # Widgets are dirty if any of their properties have changed since the
+        # last time they were built. Newly created widgets are also considered
+        # dirty.
+        #
+        # Use `register_dirty_widget` to add a widget to this set.
         self._dirty_widgets: weakref.WeakSet[rx.Widget] = weakref.WeakSet()
 
     def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
@@ -66,6 +77,10 @@ class Session:
         return self._weak_widgets_by_id[widget_id]
 
     def register_dirty_widget(self, widget: rx.Widget) -> None:
+        """
+        Add the widget to the set of dirty widgets. The widget is only held
+        weakly by the session.
+        """
         self._dirty_widgets.add(widget)
 
     async def refresh(self) -> None:
@@ -76,8 +91,9 @@ class Session:
         - Recursively do this for all freshly spawned widgets
         - mark all widgets as clean
 
-        Thus the session is up to date and ready for display to the user after
-        this method returns.
+        Afterwards, the client is also informed of any changes, meaning that
+        after this method returns there are no more dirty widgets in the
+        session, and Python's state and the client's state are in sync.
         """
         # If nothing is dirty just return. While the loop below wouldn't do
         # anything anyway, this avoids sending a message to the client.
@@ -93,9 +109,16 @@ class Session:
             widget = self._dirty_widgets.pop()
 
             # Inject the session into the widget
+            #
+            # Widgets need to know the session they are part of, so that any
+            # contained `StateProperty` instances can inform the session that
+            # their widget is dirty, among other things.
             widget._session = self
 
-            # Keep track of this widget's existance
+            # Keep track of this widget's existence
+            #
+            # Widgets must be known by their id, so any messages addressed to
+            # them can be passed on correctly.
             self._weak_widgets_by_id[widget._id] = widget
 
             # Fundamental widgets require little treatment

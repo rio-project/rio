@@ -28,9 +28,10 @@ from reflex import messages
 from reflex.common import Jsonable
 from reflex.styling import Dict, Jsonable
 
-from .. import event_classes, messages, session
+from .. import messages, session
 from ..common import Jsonable
 from ..styling import *
+from . import event_classes
 
 __all__ = [
     "Widget",
@@ -201,6 +202,26 @@ class StateBinding:
 
 
 class StateProperty(Generic[T]):
+    """
+    StateProperties act like regular properties, with additional considerations:
+
+    - When a state property is assigned to, the widget owning it is marked as
+      dirty in the session
+
+    - State properties have the ability to share their value with other state
+      property instances. If state property `A` is assigned to state property
+      `B`, then `B` creates a `StateBinding` and any future access to `B` will
+      be routed to `A` instead:
+
+    ```
+    class Foo(Widget):
+        foo_text = "Hello"
+
+        def build(self) -> Widget:
+            return Bar(bar_text=Foo.foo_text)  # Note `Foo` instead of `self`
+    ```
+    """
+
     def __init__(self, name: str):
         self.name = name
 
@@ -217,11 +238,17 @@ class StateProperty(Generic[T]):
         instance: Optional[Widget],
         owner: Optional[type] = None,
     ) -> Union[T, Self]:
+        # If accessed through the class, rather than instance, return the
+        # StateProperty itself
         if instance is None:
             return self
 
-        # Get the value assigned to the property in the widget instance
-        value = vars(instance)[self.name]
+        # Otherwise get the value assigned to the property in the widget
+        # instance
+        try:
+            value = vars(instance)[self.name]
+        except KeyError:
+            raise AttributeError(self.name) from None
 
         # If the value is a binding return the binding's value
         if type(value) is StateBinding:
@@ -232,35 +259,38 @@ class StateProperty(Generic[T]):
         return value
 
     def __set__(self, instance: Widget, value: T) -> None:
-        # If the value is a state property, wrap it in a binding
+        # When assigning a StateProperty to another StateProperty, a
+        # `StateBinding` is created. Otherwise just assign the value as-is.
         if type(value) is StateProperty:
+            # The binding's widget isn't known yet, and is injected later by the
+            # `Session`.
             new_value = StateBinding(value, None)
         else:
             new_value = value
 
         # If this property is part of a state binding update the parent's value
         instance_vars = vars(instance)
-        old_value = instance_vars.get(self.name)
+        local_value = instance_vars.get(self.name)
 
-        if type(old_value) is StateBinding:
+        if type(local_value) is StateBinding:
             if isinstance(new_value, StateBinding):
-                # This should virtually never happen. So don't handle it,
-                # scream and die
+                # This should virtually never happen. So don't handle it, scream
+                # and die
                 raise RuntimeError(
                     "State bindings can only be created when the widget is constructed"
                 )
 
-            old_value.state_property.__set__(old_value.widget, new_value)  # type: ignore
+            local_value.state_property.__set__(local_value.widget, new_value)  # type: ignore
 
         else:
             instance_vars[self.name] = new_value
 
-        # Mark the widget as dirty
+        # Mark the property as dirty inside of the widget
         instance._dirty_properties.add(self)
 
-        # If a session is known notify the session that the widget is dirty. If
-        # the session is not known yet, the widget will be processed by the
-        # session anyway, as if dirty.
+        # If a session is known also notify the session that the widget is
+        # dirty. If the session is not known yet, the widget will be processed
+        # by the session anyway, as if dirty.
         if instance._session is not None:
             instance._session.register_dirty_widget(instance)
 

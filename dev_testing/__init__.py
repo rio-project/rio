@@ -4,7 +4,7 @@ import PIL.Image
 
 import reflex as rx
 
-CORPOPRATE_YELLOW = rx.Color.from_rgb(0.98, 0.91, 0.0)
+CORPORATE_YELLOW = rx.Color.from_rgb(0.98, 0.91, 0.0)
 CORPORATE_GREY = rx.Color.from_rgb(0.69, 0.69, 0.69)
 CORPORATE_BLUE = rx.Color.from_rgb(0.0, 0.47, 0.78)
 
@@ -44,7 +44,7 @@ class CorporateCard(rx.Widget):
             [
                 heading_child,
                 rx.Rectangle(
-                    fill=CORPOPRATE_YELLOW,
+                    fill=CORPORATE_YELLOW,
                     child=rx.Margin(
                         self.child,
                         margin=margin,
@@ -74,7 +74,7 @@ class LoginWidget(rx.Widget):
                     rx.Margin(
                         rx.TextInput(
                             text=LoginWidget.username,
-                            placeholder="Benuztername",
+                            placeholder="Benutzername",
                         ),
                         margin_bottom=1,
                     ),
@@ -193,5 +193,5 @@ rx_app = rx.App(
 app = rx_app.api
 
 
-if __name__ == "__main__":
-    rx_app.run_as_website(quiet=False)
+# if __name__ == "__main__":
+# rx_app.run_as_website(quiet=False)
