@@ -16,6 +16,7 @@ pillow = "^9.5.0"
 websocket = "^0.2.1"
 websockets = "^11.0.3"
 timer-dict = "^1.0.0"
+introspection = "^1.5.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

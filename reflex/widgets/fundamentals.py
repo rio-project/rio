@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import inspect
 import traceback
@@ -8,6 +10,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    ClassVar,
     Dict,
     Generic,
     Iterable,
@@ -22,11 +25,8 @@ from typing import (
     overload,
 )
 
+import introspection
 from typing_extensions import Self, dataclass_transform
-
-from reflex import messages
-from reflex.common import Jsonable
-from reflex.styling import Dict, Jsonable
 
 from .. import messages, session
 from ..common import Jsonable
@@ -94,105 +94,6 @@ async def call_event_handler_and_refresh(
 
 def is_widget_class(cls: Type[Any]) -> bool:
     return inspect.isclass(cls) and issubclass(cls, Widget)
-
-
-@dataclass_transform()
-@dataclass(unsafe_hash=True)
-class Widget(ABC):
-    _: KW_ONLY
-    key: Optional[str] = None
-
-    # Injected by the session when the widget is refreshed
-    _session_: Optional["session.Session"] = None
-
-    # Keep track of all changed properties
-    _dirty_properties_: Set["StateProperty"] = dataclasses.field(
-        default_factory=set, init=False
-    )
-
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-
-        # Apply the dataclass transform
-        dataclasses.dataclass(unsafe_hash=True)(cls)
-
-        # Replace all properties with custom state properties
-        for attr in vars(cls).get("__annotations__", ()):
-            if attr in (
-                "_",
-                "_session_",
-                "_dirty_properties_",
-            ):
-                continue
-
-            setattr(cls, attr, StateProperty(attr))
-
-        # Widgets must be hashable, because sessions use weak dicts & sets to
-        # keep track of them. However, unlike dataclasses, instances should only
-        # be equal to themselves.
-        #
-        # -> Replace the dataclass implementations of `__eq__` and `__hash__`
-        cls.__eq__ = lambda self, other: self._id == other._id  # type: ignore
-        cls.__hash__ = lambda self: self._id  # type: ignore
-
-    @property
-    def _id(self) -> int:
-        """
-        Return an unchanging, unique ID for this widget, so it can be identified
-        over the API.
-        """
-        try:
-            return vars(self)["_id"]
-        except KeyError:
-            _id = _make_unique_id()
-            vars(self)["_id"] = _id
-            return _id
-
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
-        """
-        Return any additional properties to be serialized, which cannot be
-        deduced automatically from the type annotations.
-        """
-        return {}
-
-    @abstractmethod
-    def build(self) -> "Widget":
-        raise NotImplementedError()
-
-    def _iter_direct_children(self) -> Iterable["Widget"]:
-        for name in typing.get_type_hints(self.__class__):
-            try:
-                value = getattr(self, name)
-            except AttributeError:
-                continue
-
-            if isinstance(value, Widget):
-                yield value
-
-            if isinstance(value, list):
-                for item in value:
-                    if isinstance(item, Widget):
-                        yield item
-
-            # TODO: What about other containers
-
-    def _iter_direct_and_indirect_children(
-        self,
-        include_self: bool,
-    ) -> Iterable["Widget"]:
-        if include_self:
-            yield self
-
-        for child in self._iter_direct_children():
-            yield from child._iter_direct_and_indirect_children(True)
-
-    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
-        raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
-
-
-class FundamentalWidget(Widget):
-    def build(self) -> "Widget":
-        raise RuntimeError(f"Attempted to call `build` on fundamental widget {self}")
 
 
 @dataclass
@@ -285,9 +186,6 @@ class StateProperty(Generic[T]):
         else:
             instance_vars[self.name] = new_value
 
-        # Mark the property as dirty inside of the widget
-        instance._dirty_properties_.add(self)
-
         # If a session is known also notify the session that the widget is
         # dirty. If the session is not known yet, the widget will be processed
         # by the session anyway, as if dirty.
@@ -296,6 +194,173 @@ class StateProperty(Generic[T]):
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"
+
+
+@dataclass_transform()
+@dataclass(unsafe_hash=True)
+class Widget(ABC):
+    _: KW_ONLY
+    key: Optional[str] = None
+
+    # Injected by the session when the widget is refreshed
+    _session_: Optional["session.Session"] = dataclasses.field(default=None, init=False)
+
+    # Remember which properties were explicitly set in the constructor. This is
+    # filled in by `__new__`
+    _explicitly_set_properties_: Set[str] = dataclasses.field(
+        default_factory=set, init=False
+    )
+
+    # Cache for the function's `__init__` parameters. This is used to determine
+    # which parameters were explicitly set in the constructor.
+    _init_signature_: ClassVar[introspection.Signature]
+
+    # Cache for the set of all `StateProperty` instances in this class
+    _state_properties_: ClassVar[Set["StateProperty"]]
+
+    def __new__(cls, *args, **kwargs) -> Self:
+        self = super().__new__(cls)
+
+        # Keep track of which properties were explicitly set in the constructor.
+        bound_args = cls._init_signature_.bind(None, *args, **kwargs)
+        self._explicitly_set_properties_ = set(bound_args.arguments)
+
+        return self
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
+        # All widgets must be direct subclasses of Widget
+        if cls.__base__ is not Widget and cls.__base__ is not FundamentalWidget:
+            raise TypeError(
+                f"Widget subclasses must be direct subclasses of Widget, not {cls.__base__!r}"
+            )
+
+        # Apply the dataclass transform
+        dataclasses.dataclass(unsafe_hash=True)(cls)
+
+        # Replace all properties with custom state properties
+        cls._initialize_state_properties(Widget._state_properties_)
+
+        # Widgets must be hashable, because sessions use weak dicts & sets to
+        # keep track of them. However, unlike dataclasses, instances should only
+        # be equal to themselves.
+        #
+        # -> Replace the dataclass implementations of `__eq__` and `__hash__`
+        cls.__eq__ = lambda self, other: self._id == other._id  # type: ignore
+        cls.__hash__ = lambda self: self._id  # type: ignore
+
+        # Determine and cache the `__init__` signature
+        cls._init_signature_ = introspection.Signature.for_method(cls, "__init__")
+
+    @classmethod
+    def _initialize_state_properties(
+        cls, parent_state_properties: Set["StateProperty"]
+    ) -> None:
+        """
+        Spawn `StateProperty` instances for all annotated properties in this
+        class.
+        """
+        cls._state_properties_ = parent_state_properties.copy()
+
+        # Placeholder function, until a better one is implemented in the
+        # `introspection` package.
+        def is_classvar(annotation: Any) -> bool:
+            if isinstance(annotation, str):
+                return annotation.startswith(("ClassVar", "typing.ClassVar"))
+
+            return typing.get_origin(annotation) is ClassVar
+
+        for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
+            # Skip `ClassVar` annotations
+            if is_classvar(annotation):
+                continue
+
+            # Skip internal properties. These aren't supposed to be wrapped in
+            # `StateProperty`
+            if attr_name in (
+                "_",
+                "_session_",
+                "_explicitly_set_properties_",
+                "_init_signature_",
+            ):
+                continue
+
+            # Create the `StateProperty`
+            state_property = StateProperty(attr_name)
+            setattr(cls, attr_name, state_property)
+
+            # Add it to the set of all state properties for rapid lookup
+            cls._state_properties_.add(state_property)
+
+    @property
+    def _id(self) -> int:
+        """
+        Return an unchanging, unique ID for this widget, so it can be identified
+        over the API.
+        """
+        try:
+            return vars(self)["_id"]
+        except KeyError:
+            _id = _make_unique_id()
+            vars(self)["_id"] = _id
+            return _id
+
+    def _custom_serialize(self) -> Dict[str, Jsonable]:
+        """
+        Return any additional properties to be serialized, which cannot be
+        deduced automatically from the type annotations.
+        """
+        return {}
+
+    @abstractmethod
+    def build(self) -> "Widget":
+        raise NotImplementedError()
+
+    def _iter_direct_children(self) -> Iterable["Widget"]:
+        for name in typing.get_type_hints(self.__class__):
+            try:
+                value = getattr(self, name)
+            except AttributeError:
+                continue
+
+            if isinstance(value, Widget):
+                yield value
+
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, Widget):
+                        yield item
+
+            # TODO: What about other containers
+
+    def _iter_direct_and_indirect_children(
+        self,
+        include_self: bool,
+    ) -> Iterable["Widget"]:
+        if include_self:
+            yield self
+
+        for child in self._iter_direct_children():
+            yield from child._iter_direct_and_indirect_children(True)
+
+    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
+        raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
+
+
+def initialize_module():
+    # Most classes have their state proprties initielized in
+    # `Widget.__init_subclass__`. However, since `Widget` isn't a subclass of
+    # itself this needs to be done manually.
+    Widget._initialize_state_properties(set())
+
+
+initialize_module()
+
+
+class FundamentalWidget(Widget):
+    def build(self) -> "Widget":
+        raise RuntimeError(f"Attempted to call `build` on fundamental widget {self}")
 
 
 class Text(FundamentalWidget):

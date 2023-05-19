@@ -152,7 +152,7 @@ class Session:
                 for child in build_result._iter_direct_and_indirect_children(True):
                     child_vars = vars(child)
 
-                    for state_property in child._dirty_properties_:
+                    for state_property in child._state_properties_:
                         value = child_vars[state_property.name]
 
                         if (
@@ -163,10 +163,6 @@ class Session:
 
                 # Any freshly spawned widgets are dirty
                 self._dirty_widgets.add(build_result)
-
-            # As the widget has just been processed, its properties are no
-            # longer dirty
-            widget._dirty_properties_.clear()
 
         # Send the new state to the client if necessary
         delta_states: Dict[int, Any] = {
