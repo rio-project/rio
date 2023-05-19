@@ -14,7 +14,7 @@ import uvicorn
 
 from . import assets, common, messages, session
 from .common import Jsonable
-from .widgets import fundamentals
+from .widgets import widget_base
 
 __all__ = [
     "App",
@@ -34,7 +34,7 @@ class App:
     def __init__(
         self,
         name: str,
-        build: Callable[[], fundamentals.Widget],
+        build: Callable[[], widget_base.Widget],
         *,
         host: str = "127.0.0.1",
         port: int = 8000,

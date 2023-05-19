@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import reflex as rx
 
-from . import fundamentals
+from . import widget_base
 
 __all__ = ["Button"]
 
 
-class Button(fundamentals.Widget):
+class Button(widget_base.Widget):
     text: str
     on_press: rx.EventHandler[[]] = None
     _is_pressed: bool = False

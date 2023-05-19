@@ -13,7 +13,7 @@ import reflex as rx
 from . import messages
 from .common import Jsonable
 from .styling import *
-from .widgets import fundamentals
+from .widgets import widget_base
 
 
 @dataclass
@@ -102,7 +102,7 @@ class Session:
 
         # Keep track of all widgets which are visited. Only they will be sent to
         # the client.
-        visited_widgets: Set[fundamentals.Widget] = set()
+        visited_widgets: Set[widget_base.Widget] = set()
 
         # Build all dirty widgets
         while self._dirty_widgets:
@@ -125,7 +125,7 @@ class Session:
             self._weak_widgets_by_id[widget._id] = widget
 
             # Fundamental widgets require little treatment
-            if isinstance(widget, fundamentals.FundamentalWidget):
+            if isinstance(widget, widget_base.FundamentalWidget):
                 self._dirty_widgets.update(widget._iter_direct_children())
 
             # Others need to be built
@@ -156,7 +156,7 @@ class Session:
                         value = child_vars[state_property.name]
 
                         if (
-                            isinstance(value, fundamentals.StateBinding)
+                            isinstance(value, widget_base.StateBinding)
                             and value.widget is None
                         ):
                             value.widget = widget
@@ -243,7 +243,7 @@ class Session:
             return self._serialize_value(value, type(value))
 
         # Widgets
-        if fundamentals.is_widget_class(type_):
+        if widget_base.is_widget_class(type_):
             return value._id
 
         # Invalid type
@@ -260,7 +260,7 @@ class Session:
         result: Dict[str, Jsonable]
 
         # Encode any internal state
-        if isinstance(widget, fundamentals.FundamentalWidget):
+        if isinstance(widget, widget_base.FundamentalWidget):
             type_name = type(widget).__name__
             type_name_camel_case = type_name[0].lower() + type_name[1:]
 
@@ -358,14 +358,14 @@ class Session:
                 origin, args = typing.get_origin(typ), typing.get_args(typ)
 
                 # Remap directly contained widgets
-                if fundamentals.is_widget_class(origin):
+                if widget_base.is_widget_class(origin):
                     worker(
                         getattr(old_widget, name),
                         getattr(new_widget, name),
                     )
 
                 # Iterate over lists of widgets, remapping their values
-                elif origin is list and fundamentals.is_widget_class(args[0]):
+                elif origin is list and widget_base.is_widget_class(args[0]):
                     old_children = getattr(old_widget, name)
                     new_children = getattr(new_widget, name)
 
@@ -387,7 +387,7 @@ class Session:
                 matches_by_topology.append((old_widget, new_widget))
 
                 # If the widget is fundamental, chain down
-                if isinstance(old_widget, fundamentals.FundamentalWidget):
+                if isinstance(old_widget, widget_base.FundamentalWidget):
                     chain_to_children(old_widget, new_widget)
                     return
 
