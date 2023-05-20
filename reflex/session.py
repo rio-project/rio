@@ -76,12 +76,22 @@ class Session:
         """
         return self._weak_widgets_by_id[widget_id]
 
-    def register_dirty_widget(self, widget: rx.Widget) -> None:
+    def register_dirty_widget(
+        self,
+        widget: rx.Widget,
+        *,
+        include_children_recursively: bool,
+    ) -> None:
         """
         Add the widget to the set of dirty widgets. The widget is only held
         weakly by the session.
         """
-        self._dirty_widgets.add(widget)
+        if include_children_recursively:
+            self._dirty_widgets.update(
+                widget._iter_direct_and_indirect_children(include_self=True)
+            )
+        else:
+            self._dirty_widgets.add(widget)
 
     async def refresh(self) -> None:
         """
@@ -124,45 +134,58 @@ class Session:
             # them can be passed on correctly.
             self._weak_widgets_by_id[widget._id] = widget
 
-            # Fundamental widgets require little treatment
+            # Fundamental widgets require no further treatment
             if isinstance(widget, widget_base.FundamentalWidget):
-                self._dirty_widgets.update(widget._iter_direct_children())
+                continue
 
             # Others need to be built
+            build_result = widget.build()
+
+            # Inject the building widget into the state bindings of all
+            # generated widgets.
+            #
+            # Take care to do this before reconciliation, because reconciliation
+            # needs to access state bindings, which is only possible once the
+            # bindings are aware of their widget.
+            for child in build_result._iter_direct_and_indirect_children(True):
+                child_vars = vars(child)
+
+                for state_property in child._state_properties_:
+                    value = child_vars[state_property.name]
+
+                    if (
+                        isinstance(value, widget_base.StateBinding)
+                        and value.widget is None
+                    ):
+                        value.widget = widget
+
+            # Has this widget been built before?
+            try:
+                widget_data = self.lookup_widget_data(widget)
+
+            # No, this is the first time
+            except KeyError:
+                # Create the widget data and cache it
+                widget_data = WidgetData(build_result)
+                self._weak_widget_data_by_widget[widget] = widget_data
+                self._weak_widgets_by_id[widget._id] = widget
+
+                # Mark all fresh widgets as dirty
+                self.register_dirty_widget(
+                    build_result, include_children_recursively=True
+                )
+
+            # Yes, rescue state
+            #
+            # This will look for widgets in the build output, which correspond
+            # to widgets in the previous build output, and transfers state from
+            # the old to the new widget.
+            #
+            # Furthermore, this adds any dirty widgets from the built output
+            # (new, or old but changed) to the dirty set.
             else:
-                build_result = widget.build()
-
-                # Has this widget been built before?
-                try:
-                    widget_data = self.lookup_widget_data(widget)
-
-                # No, this is the first time
-                except KeyError:
-                    widget_data = WidgetData(build_result)
-                    self._weak_widget_data_by_widget[widget] = widget_data
-                    self._weak_widgets_by_id[widget._id] = widget
-
-                # Yes, rescue state
-                else:
-                    widget_data.build_result = build_result
-                    self.rescue_state(widget_data.build_result, build_result)
-
-                # Inject the building widget into the state bindings of all
-                # generated widgets
-                for child in build_result._iter_direct_and_indirect_children(True):
-                    child_vars = vars(child)
-
-                    for state_property in child._state_properties_:
-                        value = child_vars[state_property.name]
-
-                        if (
-                            isinstance(value, widget_base.StateBinding)
-                            and value.widget is None
-                        ):
-                            value.widget = widget
-
-                # Any freshly spawned widgets are dirty
-                self._dirty_widgets.add(build_result)
+                self.reconciliate_tree(widget_data.build_result, build_result)
+                widget_data.build_result = build_result
 
         # Send the new state to the client if necessary
         delta_states: Dict[int, Any] = {
@@ -320,14 +343,107 @@ class Session:
         """
         await self.websocket.send_json(msg.as_json())
 
-    def rescue_state(self, old_build: rx.Widget, new_build: rx.Widget) -> None:
-        # for old_widget, new_widget in self.find_widget_pairs_to_rescue(old_build, new_build):
+    def reconciliate_tree(self, old_build: rx.Widget, new_build: rx.Widget) -> None:
+        # Find all pairs of widgets which should be reconciliated
+        matched_pairs = self.find_widgets_for_reconciliation(old_build, new_build)
 
-        pass
+        # Reconciliate all matched pairs
+        reconciliated_widgets: Set[rx.Widget] = set()
+        for old_widget, new_widget in matched_pairs:
+            reconciliated_widgets.add(new_widget)
+            self.reconciliate_widget(old_widget, new_widget)
 
-    def find_widget_pairs_to_rescue_state(
-        self, old_build: rx.Widget, new_build: rx.Widget
+        # Any new widgets which haven't found a match are new and must be
+        # processed by the session
+        for widget in new_build._iter_direct_and_indirect_children(include_self=True):
+            if widget in reconciliated_widgets:
+                continue
+
+            self.register_dirty_widget(widget, include_children_recursively=False)
+
+    def reconciliate_widget(self, old_widget: rx.Widget, new_widget: rx.Widget) -> None:
+        """
+        Given two widgets of the same type, copy relevant state from the old one
+        to the new one.
+
+        Specifically:
+
+        - Any state which was explicitly set by the user in the new widget's
+          constructor is considered explicitly set, and will not be overwritten
+        - Any other values are copied from the old widget to the new one
+        - If any values were changed, the new widget is registered as dirty
+          with the session
+
+        This function also handles `StateBinding`s, for details see comments.
+        """
+        assert type(old_widget) is type(new_widget), (old_widget, new_widget)
+
+        # First, determine which properties will be taken from the new widget
+        overridden_values = {}
+        new_widget_dict = vars(new_widget)
+        old_widget_dict = vars(old_widget)
+
+        for prop in new_widget._state_properties_:
+            if prop.name not in new_widget._explicitly_set_properties_:
+                continue
+
+            overridden_values[prop.name] = new_widget_dict[prop.name]
+
+        # Check if any of the widget's values have changed. If so, it is
+        # considered dirty
+        def values_equal(a: object, b: object) -> bool:
+            try:
+                return a == b
+            except Exception:
+                return a is b
+
+        for prop_name in overridden_values:
+            old_value = getattr(old_widget, prop_name)
+            new_value = getattr(new_widget, prop_name)
+
+            if not values_equal(old_value, new_value):
+                self.register_dirty_widget(
+                    new_widget, include_children_recursively=False
+                )
+                break
+
+        # Override the key now. It should never be preserved, but doesn't make
+        # the widget dirty
+        overridden_values["key"] = new_widget.key
+
+        # Now combine the old and new dictionaries
+        old_widget_dict.update(overridden_values)
+        new_widget.__dict__ = old_widget_dict
+
+        # The new widget is supposed to take the old widget's place. Part of
+        # this is, that the old widget's `WidgetData` is now associated with the
+        # new widget
+        #
+        # (Only do this if the widget isn't fundamental, as those aren't in the
+        # cache.)
+        try:
+            self._weak_widget_data_by_widget[
+                new_widget
+            ] = self._weak_widget_data_by_widget.pop(old_widget)
+        except KeyError:
+            assert isinstance(new_widget, widget_base.FundamentalWidget), new_widget
+
+    def find_widgets_for_reconciliation(
+        self,
+        old_build: rx.Widget,
+        new_build: rx.Widget,
     ) -> Iterable[Tuple[rx.Widget, rx.Widget]]:
+        """
+        Given two widget trees, find pairs of widgets which can be
+        reconciliated, i.e. which represent the "same" widget. When exactly
+        widgets are considered to be the same is up to the implementation and
+        best-effort.
+
+        Returns an iterable over (old_widget, new_widget) pairs, as well as a
+        list of all widgets occurring in the new tree, which did not have a match
+        in the old tree.
+        """
+
         old_widgets_by_key: Dict[str, rx.Widget] = {}
         new_widgets_by_key: Dict[str, rx.Widget] = {}
 
@@ -335,53 +451,85 @@ class Session:
 
         # First scan all widgets for topological matches, and also keep track of
         # each widget by its key
-        def key_scan(
+        def register_widget_by_key(
             widgets_by_key: Dict[str, rx.Widget],
             widget: rx.Widget,
         ) -> None:
-            if widget.key is not None:
-                if widget.key in widgets_by_key:
-                    raise RuntimeError(
-                        f'Multiple widgets share the key "{widget.key}": {widgets_by_key[widget.key]} and {widget}'
-                    )
+            if widget.key is None:
+                return
 
-                widgets_by_key[widget.key] = widget
+            if widget.key in widgets_by_key:
+                raise RuntimeError(
+                    f'Multiple widgets share the key "{widget.key}": {widgets_by_key[widget.key]} and {widget}'
+                )
 
-            for child in widget._iter_direct_children():
-                key_scan(widgets_by_key, child)
+            widgets_by_key[widget.key] = widget
 
         def chain_to_children(
             old_widget: rx.Widget,
             new_widget: rx.Widget,
         ) -> None:
+            # Iterate over the children, but make sure to preserve the topology.
+            # Can't just use `iter_direct_children` here, since that would
+            # discard topological information.
             for name, typ in typing.get_type_hints(self.__class__).items():
                 origin, args = typing.get_origin(typ), typing.get_args(typ)
 
-                # Remap directly contained widgets
+                old_widgets: List[rx.Widget]
+                new_widgets: List[rx.Widget]
+
+                # Widget
                 if widget_base.is_widget_class(origin):
-                    worker(
-                        getattr(old_widget, name),
-                        getattr(new_widget, name),
+                    old_widgets = [getattr(old_widget, name)]
+                    new_widgets = [getattr(new_widget, name)]
+
+                # Union[Widget, ...]
+                elif origin is typing.Union and any(
+                    widget_base.is_widget_class(arg) for arg in args
+                ):
+                    old_child = getattr(old_widget, name)
+                    new_child = getattr(new_widget, name)
+
+                    old_widgets = (
+                        [old_child] if widget_base.is_widget_class(old_child) else []
+                    )
+                    new_widgets = (
+                        [new_child] if widget_base.is_widget_class(new_child) else []
                     )
 
-                # Iterate over lists of widgets, remapping their values
+                # List[Widget]
                 elif origin is list and widget_base.is_widget_class(args[0]):
-                    old_children = getattr(old_widget, name)
-                    new_children = getattr(new_widget, name)
+                    old_widgets = getattr(old_widget, name)
+                    new_widgets = getattr(new_widget, name)
 
-                    common = min(len(old_children), len(new_children))
-                    for old_child, new_child in zip(old_children, new_children):
-                        worker(old_child, new_child)
+                # Anything else
+                #
+                # TODO: What about other containers?
+                else:
+                    continue
 
-                    for old_child in old_children[common:]:
-                        key_scan(old_widgets_by_key, old_child)
+                # Chain to the children
+                common = min(len(old_widgets), len(new_widgets))
+                for old_child, new_child in zip(old_widgets, new_widgets):
+                    worker(old_child, new_child)
 
-                    for new_child in new_children[common:]:
-                        key_scan(new_widgets_by_key, new_child)
+                for old_child in old_widgets[common:]:
+                    for child in old_child._iter_direct_and_indirect_children(
+                        include_self=True
+                    ):
+                        register_widget_by_key(old_widgets_by_key, child)
 
-                # TODO: What about other containers
+                for new_child in new_widgets[common:]:
+                    for child in new_child._iter_direct_and_indirect_children(
+                        include_self=True
+                    ):
+                        register_widget_by_key(new_widgets_by_key, child)
 
         def worker(old_widget: rx.Widget, new_widget: rx.Widget) -> None:
+            # Register the widget by key
+            register_widget_by_key(old_widgets_by_key, old_widget)
+            register_widget_by_key(new_widgets_by_key, new_widget)
+
             # Do the widget types match?
             if type(old_widget) is type(new_widget):
                 matches_by_topology.append((old_widget, new_widget))
@@ -393,8 +541,15 @@ class Session:
 
             # Otherwise neither they, nor their children can be topological
             # matches.  Just keep track of the children's keys.
-            key_scan(old_widgets_by_key, old_widget)
-            key_scan(new_widgets_by_key, new_widget)
+            for child in old_widget._iter_direct_and_indirect_children(
+                include_self=False
+            ):
+                register_widget_by_key(old_widgets_by_key, child)
+
+            for child in new_widget._iter_direct_and_indirect_children(
+                include_self=False
+            ):
+                register_widget_by_key(new_widgets_by_key, child)
 
         worker(old_build, new_build)
 

@@ -15,7 +15,6 @@ from typing import (
     Generic,
     Iterable,
     List,
-    Literal,
     Optional,
     Set,
     Tuple,
@@ -31,7 +30,6 @@ from typing_extensions import Self, dataclass_transform
 from .. import messages, session
 from ..common import Jsonable
 from ..styling import *
-from . import event_classes
 
 __all__ = [
     "Widget",
@@ -180,7 +178,10 @@ class StateProperty(Generic[T]):
         # dirty. If the session is not known yet, the widget will be processed
         # by the session anyway, as if dirty.
         if instance._session_ is not None:
-            instance._session_.register_dirty_widget(instance)
+            instance._session_.register_dirty_widget(
+                instance,
+                include_children_recursively=False,
+            )
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"
@@ -197,9 +198,7 @@ class Widget(ABC):
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
-    _explicitly_set_properties_: Set[str] = dataclasses.field(
-        default_factory=set, init=False
-    )
+    _explicitly_set_properties_: Set[str] = dataclasses.field(init=False)
 
     # Cache for the function's `__init__` parameters. This is used to determine
     # which parameters were explicitly set in the constructor.
@@ -212,7 +211,7 @@ class Widget(ABC):
         self = super().__new__(cls)
 
         # Keep track of which properties were explicitly set in the constructor.
-        bound_args = cls._init_signature_.bind(None, *args, **kwargs)
+        bound_args = cls._init_signature_.bind(*args, **kwargs)
         self._explicitly_set_properties_ = set(bound_args.arguments)
 
         return self
@@ -241,7 +240,11 @@ class Widget(ABC):
         cls.__hash__ = lambda self: self._id  # type: ignore
 
         # Determine and cache the `__init__` signature
-        cls._init_signature_ = introspection.Signature.for_method(cls, "__init__")
+        #
+        # Make sure to strip `self`
+        cls._init_signature_ = introspection.Signature.for_method(
+            cls, "__init__"
+        ).without_parameters(0)
 
     @classmethod
     def _initialize_state_properties(

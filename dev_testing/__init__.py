@@ -53,7 +53,8 @@ class CorporateCard(rx.Widget):
                     ),
                     corner_radius=(0, 0, radius, radius),
                 ),
-            ]
+            ],
+            key="you",
         )
 
 
@@ -180,6 +181,8 @@ class MainPage(rx.Widget):
         )
 
     def build(self) -> rx.Widget:
+        print(f"Rebuilding. The session token is {self.sap_session_token}.")
+
         if self.sap_session_token is None:
             child = self.build_login_view()
         else:

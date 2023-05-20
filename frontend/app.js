@@ -615,8 +615,13 @@ function updateWidgetStates(message, rootWidgetId) {
     element.id = 'reflex-id-' + id;
     // Add the common css class to the widget
     element.classList.add('reflex-widget');
-    // Store the widget's class name in the element. Useful for debugging.
-    element.setAttribute('data-class-name', deltaState._python_type_);
+    // Store the widget's class name in the element. Used for debugging.
+    element.setAttribute('dbg-py-class', deltaState._python_type_);
+    // Set the widget's key, if it has one. Used for debugging.
+    var key = deltaState['key'];
+    if (key !== undefined) {
+      element.setAttribute('dbg-key', "".concat(key));
+    }
     // Keep the widget alive
     latentWidgets.appendChild(element);
   }
@@ -704,7 +709,6 @@ function replaceChildren(parentElement, childIds) {
     // instead
     var newElement = document.getElementById('reflex-id-' + curId);
     parentElement.insertBefore(newElement, curElement);
-    curElement = newElement;
     curIdIndex++;
   }
 }
