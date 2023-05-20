@@ -152,13 +152,7 @@ class App:
         html = html.replace("/*{style}*/", css)
         html = html.replace("/*{script}*/", js)
 
-        # DELETEME / TODO / FIXME
-        #
-        # Dump the html to a file for debugging
-        out_dir = common.PACKAGE_ROOT_DIR.parent / "generated"
-        out_dir.mkdir(exist_ok=True)
-        (out_dir / "index.html").write_text(html)
-
+        # Respond
         return fastapi.responses.HTMLResponse(html)
 
     async def _serve_js_map(self) -> fastapi.responses.Response:
