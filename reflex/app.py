@@ -39,13 +39,13 @@ class App:
         host: str = "127.0.0.1",
         port: int = 8000,
         icon: Optional[PIL.Image.Image] = None,
-        _use_validator: bool = False,
+        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
     ):
         self.name = name
         self.build = build
         self.host = host
         self.port = port
-        self._use_validator = _use_validator
+        self._validator_factory = _validator_factory
 
         if icon is None:
             self.icon_as_ico_blob = None
@@ -226,9 +226,22 @@ class App:
         # Accept the socket
         await websocket.accept()
 
-        # Create a function for sending messages to the frontend
-        async def send_message(message: messages.OutgoingMessage) -> None:
-            await websocket.send_json(message.as_json())
+        # Optionally create a validator
+        validator = (
+            None if self._validator_factory is None else self._validator_factory()
+        )
+
+        # Create a function for sending messages to the frontend. This function
+        # will also pipe the message to the validator if one is present.
+        async def send_message(
+            msg: messages.OutgoingMessage,
+        ) -> None:
+            nonlocal validator
+
+            if validator is not None:
+                await validator.handle_outgoing_message(msg)
+
+            await websocket.send_json(msg.as_json())
 
         # Create a session instance to hold all of this state in an organized
         # fashion
@@ -236,7 +249,6 @@ class App:
         sess = session.Session(
             root_widget,
             send_message,
-            _validator=validator.Validator() if self._use_validator else None,
         )
 
         # Trigger an initial build. This will also send the initial state to
@@ -267,6 +279,10 @@ class App:
                     status_code=fastapi.status.HTTP_400_BAD_REQUEST,
                     detail="Received invalid JSON in websocket message",
                 )
+
+            # Invoke the validator if one is present
+            if validator is not None:
+                await validator.handle_incoming_message(message)
 
             # Delegate to the session
             await sess.handle_message(message)

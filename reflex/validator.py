@@ -1,5 +1,7 @@
 import copy
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from pprint import pprint
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
 
@@ -7,6 +9,13 @@ import reflex as rx
 
 from . import messages
 from .common import Jsonable
+
+__all__ = [
+    "ClientWidget",
+    "ValidationError",
+    "Validator",
+]
+
 
 # Given a widget type, this dict contains the attribute names which contain
 # children / child ids
@@ -104,9 +113,49 @@ class ValidationError(Exception):
 
 
 class Validator:
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        dump_client_state_path: Optional[Path] = None,
+    ):
+        self.dump_client_state_path = dump_client_state_path
+
         self.root_widget: Optional[ClientWidget] = None
         self.widgets_by_id: Dict[int, ClientWidget] = {}
+
+    def dump_client_state(
+        self,
+        widget: Optional[ClientWidget] = None,
+        path: Optional[Path] = None,
+    ) -> None:
+        """
+        Dump the client state to a JSON file.
+
+        If no widget is specified, the root widget is used.
+
+        If no path is used the Validator's `dump_client_state_path` is used. If
+        no path is used and no path set in the validator, this function does
+        nothing.
+        """
+        if path is None:
+            path = self.dump_client_state_path
+
+        if path is None:
+            return
+
+        if widget is None:
+            assert self.root_widget is not None
+            widget = self.root_widget
+
+        with open(path, "w") as f:
+            json.dump(
+                self.as_json(widget),
+                f,
+                indent=4,
+                # The keys are intentionally in a legible order. Don't destroy
+                # that.
+                sort_keys=False,
+            )
 
     def prune_widgets(self) -> None:
         """
@@ -147,6 +196,10 @@ class Validator:
         }
 
     def as_json(self, widget: Optional[ClientWidget] = None) -> Dict[str, Jsonable]:
+        """
+        Return a JSON-serializable representation of the client state.
+        """
+
         if widget is None:
             assert self.root_widget is not None
             widget = self.root_widget
@@ -174,6 +227,13 @@ class Validator:
         return result
 
     async def handle_incoming_message(self, msg: messages.IncomingMessage) -> None:
+        """
+        Process a message passed from Client -> Server.
+
+        This will update the `Validator`'s internal client state and validate
+        the message, raising a `ValidationError` if any issues are detected.
+        """
+
         # Delegate to the appropriate handler
         handler_name = f"_handle_incoming_{type(msg).__name__}"
 
@@ -185,6 +245,13 @@ class Validator:
         await handler(msg)
 
     async def handle_outgoing_message(self, msg: messages.OutgoingMessage) -> None:
+        """
+        Process a message passed from Server -> Client.
+
+        This will update the `Validator`'s internal client state and validate
+        the message, raising a `ValidationError` if any issues are detected.
+        """
+
         # Delegate to the appropriate handler
         handler_name = f"_handle_outgoing_{type(msg).__name__}"
 
@@ -251,3 +318,6 @@ class Validator:
 
         # Prune the widget tree
         self.prune_widgets()
+
+        # Dump the client state if requested
+        self.dump_client_state()

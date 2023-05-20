@@ -1,8 +1,14 @@
+from pathlib import Path
 from typing import Any, List, Optional
 
 import PIL.Image
 
 import reflex as rx
+import reflex.validator
+
+PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
+GENERATED_DIR = PROJECT_ROOT_DIR / "generated"
+
 
 CORPORATE_YELLOW = rx.Color.from_rgb(0.98, 0.91, 0.0)
 CORPORATE_GREY = rx.Color.from_rgb(0.69, 0.69, 0.69)
@@ -198,7 +204,9 @@ rx_app = rx.App(
     "Super Dynamic Website!",
     MainPage,
     icon=PIL.Image.open("./dev_testing/icon.png"),
-    _use_validator=True,
+    _validator_factory=lambda: reflex.validator.Validator(
+        dump_client_state_path=GENERATED_DIR / "client-state.json",
+    ),
 )
 app = rx_app.api
 

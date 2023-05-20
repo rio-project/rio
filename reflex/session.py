@@ -46,24 +46,9 @@ class Session:
         self,
         root_widget: rx.Widget,
         send_message: Callable[[messages.OutgoingMessage], Awaitable[None]],
-        _validator: Optional[validator.Validator] = None,
     ):
         self.root_widget = root_widget
-        self.validator = _validator
-
-        # When using a validator, wrap any outgoing messages
-        if self.validator is None:
-            self.send_message = send_message
-        else:
-
-            async def send_message_with_validator(
-                msg: messages.OutgoingMessage,
-            ) -> None:
-                assert self.validator is not None
-                await self.validator.handle_outgoing_message(msg)
-                await send_message(msg)
-
-            self.send_message = send_message_with_validator
+        self.send_message = send_message
 
         # Weak dictionaries to hold additional information about widgets. These
         # are split in two to avoid the dictionaries keeping the widgets alive.
@@ -351,10 +336,6 @@ class Session:
         Handle a message from the client. This is the main entry point for
         messages from the client.
         """
-        # If using a validator, pass on the message
-        if self.validator is not None:
-            await self.validator.handle_incoming_message(msg)
-
         # Get the widget this message is addressed to
         try:
             widget_id = msg.widget_id  # type: ignore
