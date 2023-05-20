@@ -42,7 +42,6 @@ class CorporateCard(rx.Widget):
                         font_size=1.2,
                     ),
                     margin=margin,
-                    key="m1",
                 ),
                 corner_radius=(radius, radius, 0, 0),
             )
@@ -55,7 +54,6 @@ class CorporateCard(rx.Widget):
                     child=rx.Margin(
                         self.child,
                         margin=margin,
-                        key="m2",
                     ),
                     corner_radius=(0, 0, radius, radius),
                 ),
@@ -86,7 +84,6 @@ class LoginWidget(rx.Widget):
                             placeholder="Benutzername",
                         ),
                         margin_bottom=1,
-                        key="m3",
                     ),
                     rx.Margin(
                         rx.TextInput(
@@ -95,7 +92,6 @@ class LoginWidget(rx.Widget):
                             secret=True,
                         ),
                         margin_bottom=1,
-                        key="m4",
                     ),
                     rx.Button(
                         "Login",
@@ -122,7 +118,6 @@ class SimpleMenu(rx.Widget):
                         on_press=lambda: print(f"Pressed {name}"),
                     ),
                     margin_top=0 if ii == 0 else 0.5,
-                    key="m5",
                 )
             )
 
@@ -150,7 +145,6 @@ class MainPage(rx.Widget):
                         on_login=self.on_login,
                     ),
                     margin_left=4,
-                    key="m6",
                 ),
                 width=30,
                 height=15,
@@ -178,7 +172,6 @@ class MainPage(rx.Widget):
                             ],
                         ),
                         margin_top=1,
-                        key="m7",
                     ),
                 ]
             ),
@@ -200,16 +193,27 @@ class MainPage(rx.Widget):
         )
 
 
+def validator_factory() -> reflex.validator.Validator:
+    return reflex.validator.Validator(
+        dump_client_state_path=GENERATED_DIR / "client-state.json",
+    )
+
+
 rx_app = rx.App(
     "Super Dynamic Website!",
     MainPage,
     icon=PIL.Image.open("./dev_testing/icon.png"),
-    _validator_factory=lambda: reflex.validator.Validator(
-        dump_client_state_path=GENERATED_DIR / "client-state.json",
-    ),
 )
-app = rx_app.api
 
 
 if __name__ == "__main__":
-    rx_app.run_as_website(quiet=False)
+    rx_app.run_as_web_server(
+        external_url=f"http://localhost:8000",
+        quiet=False,
+        _validator_factory=validator_factory,
+    )
+else:
+    app = rx_app.as_fastapi(
+        external_url=f"http://localhost:8000",
+        _validator_factory=validator_factory,
+    )

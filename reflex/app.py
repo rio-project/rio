@@ -1,33 +1,18 @@
-import functools
-import io
-import json
-import secrets
-import weakref
-from datetime import timedelta
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+import webbrowser
+from typing import Awaitable, Callable, Optional
 
 import fastapi
 import PIL.Image
-import timer_dict
-import uniserde
 import uvicorn
 
-from . import assets, common, messages, session, validator
-from .common import Jsonable
+from . import app_server, validator
 from .widgets import widget_base
 
 __all__ = [
     "App",
 ]
-
-
-@functools.lru_cache(maxsize=None)
-def read_frontend_template(template_name: str) -> str:
-    """
-    Read a text file from the frontend directory and return its content. The
-    results are cached to avoid repeated disk access.
-    """
-    return (common.FRONTEND_DIR / template_name).read_text()
 
 
 class App:
@@ -36,48 +21,35 @@ class App:
         name: str,
         build: Callable[[], widget_base.Widget],
         *,
-        host: str = "127.0.0.1",
-        port: int = 8000,
         icon: Optional[PIL.Image.Image] = None,
-        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
     ):
         self.name = name
         self.build = build
-        self.host = host
-        self.port = port
-        self._validator_factory = _validator_factory
+        self.icon = icon
 
-        if icon is None:
-            self.icon_as_ico_blob = None
-        else:
-            icon_ico = io.BytesIO()
-            icon.save(icon_ico, format="ICO")
-            self.icon_as_ico_blob = icon_ico.getvalue()
-
-        # The session tokens for all active sessions. These allow clients to
-        # identify themselves, for example to reconnect in case of a lost
-        # connection.
-        self._active_session_tokens = timer_dict.TimerDict[str, None](
-            default_duration=timedelta(minutes=60),
+    def as_fastapi(
+        self,
+        external_url: str,
+        *,
+        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
+    ) -> fastapi.FastAPI:
+        return app_server.AppServer(
+            self,
+            external_url=external_url,
+            validator_factory=_validator_factory,
         )
 
-        # All assets that have been registered with this session. They are held
-        # weakly, meaning the session will host assets for as long as their
-        # corresponding Python objects are alive.
-        self._assets: weakref.WeakValueDictionary[
-            str, assets.HostedAsset
-        ] = weakref.WeakValueDictionary()
-
-        # Fastapi
-        self.api = fastapi.FastAPI()
-        self.api.add_api_route("/", self._serve_index, methods=["GET"])
-        self.api.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
-        self.api.add_api_route("/favicon.ico", self._serve_favicon, methods=["GET"])
-        self.api.add_api_route("/asset/{asset_id}", self._serve_asset, methods=["GET"])
-        self.api.add_api_websocket_route("/ws", self._serve_websocket)
-
-    def run_as_website(self, *, quiet: bool = True) -> None:
-        # Suppress stdout messages
+    def run_as_web_server(
+        self,
+        external_url: str,
+        *,
+        host: str = "localhost",
+        port: int = 8000,
+        quiet: bool = True,
+        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
+        _on_startup: Optional[Callable[[], Awaitable[None]]] = None,
+    ) -> None:
+        # Suppress stdout messages if requested
         kwargs = {}
 
         if quiet:
@@ -89,194 +61,44 @@ class App:
                 "loggers": {},
             }
 
+        # Create the FastAPI server
+        fastapi_server = self.as_fastapi(
+            external_url=external_url,
+            _validator_factory=_validator_factory,
+        )
+
+        # Register the startup event
+        if _on_startup is not None:
+            fastapi_server.add_event_handler("startup", _on_startup)
+
+        # Serve
         uvicorn.run(
-            self.api,
-            host=self.host,
-            port=self.port,
+            fastapi_server,
+            host=host,
+            port=port,
             **kwargs,
         )
 
-    def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
-        """
-        Register an asset with this session. The asset will be held weakly,
-        meaning the session will host assets for as long as their corresponding
-        Python objects are alive.
-        """
-        self._assets[asset.secret_id] = asset
-
-    def check_and_refresh_session(self, session_token: str) -> None:
-        """
-        Look up the session token. If it is valid the session's duration
-        is refreshed so it doesn't expire. If the token is not valid,
-        a HttpException is raised.
-        """
-
-        if session_token not in self._active_session_tokens:
-            raise fastapi.HTTPException(
-                status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid session token.",
-            )
-
-        self._active_session_tokens[session_token] = None
-
-    def refresh_session(self, session_token: str) -> None:
-        """
-        Refresh the session's duration to prevent timeout.
-        """
-        self._active_session_tokens[session_token] = None
-
-    async def _serve_index(self) -> fastapi.responses.HTMLResponse:
-        """
-        Handler for serving the index HTML page via fastapi.
-        """
-        # Create a new session token
-        session_token = secrets.token_urlsafe()
-        self._active_session_tokens[session_token] = None
-
-        # Create a list of all messages the frontend should process immediately
-        initial_messages: List[Jsonable] = [m.as_json() for m in []]
-
-        # Load the templates
-        html = read_frontend_template("index.html")
-        js = read_frontend_template("app.js")
-        css = read_frontend_template("style.css")
-
-        # Fill in all placeholders
-        js = js.replace("{session_token}", session_token)
-        js = js.replace(
-            "'{initial_messages}'",
-            json.dumps(initial_messages, indent=4),
-        )
-
-        html = html.replace("{title}", self.name)
-        html = html.replace("/*{style}*/", css)
-        html = html.replace("/*{script}*/", js)
-
-        # Respond
-        return fastapi.responses.HTMLResponse(html)
-
-    async def _serve_js_map(self) -> fastapi.responses.Response:
-        """
-        Handler for serving the `app.js.map` file via fastapi.
-        """
-        return fastapi.responses.Response(
-            content=read_frontend_template("app.js.map"),
-            media_type="application/json",
-        )
-
-    async def _serve_favicon(self) -> fastapi.responses.Response:
-        """
-        Handler for serving the favicon via fastapi, if one is set.
-        """
-        if self.icon_as_ico_blob is None:
-            return fastapi.responses.Response(status_code=404)
-
-        return fastapi.responses.Response(
-            content=self.icon_as_ico_blob,
-            media_type="image/x-icon",
-        )
-
-    async def _serve_asset(self, asset_id: str) -> fastapi.responses.Response:
-        """
-        Handler for serving registered assets via fastapi. The app only
-        references assets weakly, meaning trying to access an asset that has
-        been garbage collected will result in a 404 error.
-        """
-        # Get the asset instance. The asset's id acts as a secret, so no further
-        # authentication is required.
-        try:
-            asset = self._assets[asset_id]
-        except KeyError:
-            return fastapi.responses.Response(status_code=404)
-
-        # Fetch the asset's content and respond
-        if isinstance(asset.data, bytes):
-            return fastapi.responses.Response(
-                content=asset.data,
-                media_type=asset.media_type,
-            )
-        else:
-            return fastapi.responses.FileResponse(
-                asset.data,
-                media_type=asset.media_type,
-            )
-
-    async def _serve_websocket(
+    def run_in_browser(
         self,
-        websocket: fastapi.WebSocket,
-        sessionToken: str,
+        *,
+        external_url: Optional[str] = None,
+        host: str = "localhost",
+        port: int = 8000,
+        quiet: bool = True,
+        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
     ):
-        """
-        Handler for establishing the websocket connection and handling any
-        messages.
-        """
-        # Blah, naming conventions
-        session_token = sessionToken
-        del sessionToken
+        if external_url is None:
+            external_url = f"http://{host}:{port}"
 
-        # Make sure the session token is valid
-        self.check_and_refresh_session(session_token)
+        async def on_startup(*args, **kwargs) -> None:
+            webbrowser.open(external_url)
 
-        # Accept the socket
-        await websocket.accept()
-
-        # Optionally create a validator
-        validator = (
-            None if self._validator_factory is None else self._validator_factory()
+        self.run_as_web_server(
+            external_url=external_url,
+            host=host,
+            port=port,
+            quiet=quiet,
+            _validator_factory=_validator_factory,
+            _on_startup=on_startup,
         )
-
-        # Create a function for sending messages to the frontend. This function
-        # will also pipe the message to the validator if one is present.
-        async def send_message(
-            msg: messages.OutgoingMessage,
-        ) -> None:
-            nonlocal validator
-
-            if validator is not None:
-                await validator.handle_outgoing_message(msg)
-
-            await websocket.send_json(msg.as_json())
-
-        # Create a session instance to hold all of this state in an organized
-        # fashion
-        root_widget = self.build()
-        sess = session.Session(
-            root_widget,
-            send_message,
-        )
-
-        # Trigger an initial build. This will also send the initial state to
-        # the frontend.
-        sess.register_dirty_widget(root_widget, include_children_recursively=True)
-        await sess.refresh()
-
-        while True:
-            # Refresh the session's duration
-            self._active_session_tokens[session_token] = None
-
-            # Listen for incoming messages and react to them
-            try:
-                message_json = await websocket.receive_json()
-                message = messages.IncomingMessage.from_json(message_json)
-
-            # Don't spam when a client disconnects
-            except fastapi.websockets.WebSocketDisconnect:
-                return
-
-            # Handle invalid JSON
-            except (
-                uniserde.SerdeError,
-                json.JSONDecodeError,
-                UnicodeDecodeError,
-            ):
-                raise fastapi.HTTPException(
-                    status_code=fastapi.status.HTTP_400_BAD_REQUEST,
-                    detail="Received invalid JSON in websocket message",
-                )
-
-            # Invoke the validator if one is present
-            if validator is not None:
-                await validator.handle_incoming_message(message)
-
-            # Delegate to the session
-            await sess.handle_message(message)
