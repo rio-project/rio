@@ -12,7 +12,7 @@ import timer_dict
 import uniserde
 import uvicorn
 
-from . import assets, common, messages, session
+from . import assets, common, messages, session, validator
 from .common import Jsonable
 from .widgets import widget_base
 
@@ -39,11 +39,13 @@ class App:
         host: str = "127.0.0.1",
         port: int = 8000,
         icon: Optional[PIL.Image.Image] = None,
+        _use_validator: bool = False,
     ):
         self.name = name
         self.build = build
         self.host = host
         self.port = port
+        self._use_validator = _use_validator
 
         if icon is None:
             self.icon_as_ico_blob = None
@@ -224,10 +226,18 @@ class App:
         # Accept the socket
         await websocket.accept()
 
+        # Create a function for sending messages to the frontend
+        async def send_message(message: messages.OutgoingMessage) -> None:
+            await websocket.send_json(message.as_json())
+
         # Create a session instance to hold all of this state in an organized
         # fashion
         root_widget = self.build()
-        sess = session.Session(root_widget, websocket)
+        sess = session.Session(
+            root_widget,
+            send_message,
+            _validator=validator.Validator() if self._use_validator else None,
+        )
 
         # Trigger an initial build. This will also send the initial state to
         # the frontend.

@@ -4,13 +4,24 @@ import logging
 import typing
 import weakref
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Literal, Set, Tuple, Type, Union
-
-from fastapi import WebSocket
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 
 import reflex as rx
 
-from . import messages
+from . import messages, validator
 from .common import Jsonable
 from .styling import *
 from .widgets import widget_base
@@ -31,9 +42,28 @@ class Session:
     state related to this client including the GUI.
     """
 
-    def __init__(self, root_widget: rx.Widget, websocket: WebSocket):
+    def __init__(
+        self,
+        root_widget: rx.Widget,
+        send_message: Callable[[messages.OutgoingMessage], Awaitable[None]],
+        _validator: Optional[validator.Validator] = None,
+    ):
         self.root_widget = root_widget
-        self.websocket = websocket
+        self.validator = _validator
+
+        # When using a validator, wrap any outgoing messages
+        if self.validator is None:
+            self.send_message = send_message
+        else:
+
+            async def send_message_with_validator(
+                msg: messages.OutgoingMessage,
+            ) -> None:
+                assert self.validator is not None
+                await self.validator.handle_outgoing_message(msg)
+                await send_message(msg)
+
+            self.send_message = send_message_with_validator
 
         # Weak dictionaries to hold additional information about widgets. These
         # are split in two to avoid the dictionaries keeping the widgets alive.
@@ -321,11 +351,17 @@ class Session:
         Handle a message from the client. This is the main entry point for
         messages from the client.
         """
+        # If using a validator, pass on the message
+        if self.validator is not None:
+            await self.validator.handle_incoming_message(msg)
+
+        # Get the widget this message is addressed to
         try:
             widget_id = msg.widget_id  # type: ignore
         except AttributeError:
             raise NotImplementedError("Encountered message without widget ID")
 
+        # Let the widget handle the message
         try:
             widget = self.lookup_widget(widget_id)
         except KeyError:
@@ -335,13 +371,6 @@ class Session:
             return
 
         await widget._handle_message(msg)
-
-    async def send_message(self, msg: messages.OutgoingMessage) -> None:
-        """
-        Send a message to the client. This is the main entry point for messages
-        to the client.
-        """
-        await self.websocket.send_json(msg.as_json())
 
     def reconciliate_tree(self, old_build: rx.Widget, new_build: rx.Widget) -> None:
         # Find all pairs of widgets which should be reconciliated

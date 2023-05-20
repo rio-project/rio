@@ -198,6 +198,7 @@ rx_app = rx.App(
     "Super Dynamic Website!",
     MainPage,
     icon=PIL.Image.open("./dev_testing/icon.png"),
+    _use_validator=True,
 )
 app = rx_app.api
 
