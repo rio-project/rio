@@ -180,7 +180,7 @@ class StateProperty(Generic[T]):
         if instance._session_ is not None:
             instance._session_.register_dirty_widget(
                 instance,
-                include_children_recursively=False,
+                include_fundamental_children_recursively=False,
             )
 
     def __repr__(self) -> str:
@@ -236,8 +236,8 @@ class Widget(ABC):
         # be equal to themselves.
         #
         # -> Replace the dataclass implementations of `__eq__` and `__hash__`
-        cls.__eq__ = lambda self, other: self._id == other._id  # type: ignore
-        cls.__hash__ = lambda self: self._id  # type: ignore
+        cls.__eq__ = lambda self, other: self is other  # type: ignore
+        cls.__hash__ = lambda self: id(self)  # type: ignore
 
         # Determine and cache the `__init__` signature
         #

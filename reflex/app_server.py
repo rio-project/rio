@@ -219,7 +219,9 @@ class AppServer(fastapi.FastAPI):
 
         # Trigger an initial build. This will also send the initial state to
         # the frontend.
-        sess.register_dirty_widget(root_widget, include_children_recursively=True)
+        sess.register_dirty_widget(
+            root_widget, include_fundamental_children_recursively=True
+        )
         await sess.refresh()
 
         while True:

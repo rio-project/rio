@@ -95,18 +95,30 @@ class Session:
         self,
         widget: rx.Widget,
         *,
-        include_children_recursively: bool,
+        include_fundamental_children_recursively: bool,
     ) -> None:
         """
         Add the widget to the set of dirty widgets. The widget is only held
         weakly by the session.
+
+        If `include_fundamental_children_recursively` is true, all children of
+        the widget that are fundamental widgets are also added.
+
+        The children of non-fundamental widgets are not added, since they will
+        be added after the parent is built anyway.
         """
-        if include_children_recursively:
-            self._dirty_widgets.update(
-                widget._iter_direct_and_indirect_children(include_self=True)
+        self._dirty_widgets.add(widget)
+
+        if not include_fundamental_children_recursively or not isinstance(
+            widget, widget_base.FundamentalWidget
+        ):
+            return
+
+        for child in widget._iter_direct_children():
+            self.register_dirty_widget(
+                child,
+                include_fundamental_children_recursively=True,
             )
-        else:
-            self._dirty_widgets.add(widget)
 
     async def refresh(self) -> None:
         """
@@ -187,7 +199,7 @@ class Session:
 
                 # Mark all fresh widgets as dirty
                 self.register_dirty_widget(
-                    build_result, include_children_recursively=True
+                    build_result, include_fundamental_children_recursively=True
                 )
 
             # Yes, rescue state
@@ -355,23 +367,40 @@ class Session:
 
     def reconciliate_tree(self, old_build: rx.Widget, new_build: rx.Widget) -> None:
         # Find all pairs of widgets which should be reconciliated
-        matched_pairs = self.find_widgets_for_reconciliation(old_build, new_build)
+        matched_pairs = list(self.find_widgets_for_reconciliation(old_build, new_build))
+
+        # Reconciliating individual widgets requires knowledge of which other
+        # widgets are being reconciliated.
+        #
+        # -> Collect them into a set first.
+        reconciled_widgets: Set[rx.Widget] = set()
+        for old_widget, new_widget in matched_pairs:
+            reconciled_widgets.add(new_widget)
 
         # Reconciliate all matched pairs
-        reconciliated_widgets: Set[rx.Widget] = set()
         for old_widget, new_widget in matched_pairs:
-            reconciliated_widgets.add(new_widget)
-            self.reconciliate_widget(old_widget, new_widget)
+            self.reconciliate_widget(
+                old_widget,
+                new_widget,
+                reconciled_widgets,
+            )
 
         # Any new widgets which haven't found a match are new and must be
         # processed by the session
         for widget in new_build._iter_direct_and_indirect_children(include_self=True):
-            if widget in reconciliated_widgets:
+            if widget in reconciled_widgets:
                 continue
 
-            self.register_dirty_widget(widget, include_children_recursively=False)
+            self.register_dirty_widget(
+                widget, include_fundamental_children_recursively=False
+            )
 
-    def reconciliate_widget(self, old_widget: rx.Widget, new_widget: rx.Widget) -> None:
+    def reconciliate_widget(
+        self,
+        old_widget: rx.Widget,
+        new_widget: rx.Widget,
+        reconciliated_widgets: Set[rx.Widget],
+    ) -> None:
         """
         Given two widgets of the same type, copy relevant state from the old one
         to the new one.
@@ -401,11 +430,30 @@ class Session:
 
         # Check if any of the widget's values have changed. If so, it is
         # considered dirty
-        def values_equal(a: object, b: object) -> bool:
+        def values_equal(old: object, new: object) -> bool:
+            # Widgets are a special case. Widget attributes are dirty iff the
+            # widget isn't reconciliated, i.e. it is a new widget
+            if isinstance(new, rx.Widget):
+                return new in reconciliated_widgets
+
+            if isinstance(new, list):
+                if not isinstance(old, list):
+                    return False
+
+                if len(old) != len(new):
+                    return False
+
+                for old_item, new_item in zip(old, new):
+                    if not values_equal(old_item, new_item):
+                        return False
+
+                return True
+
+            # Otherwise attempt to compare the values
             try:
-                return a == b
+                return old == new
             except Exception:
-                return a is b
+                return old is new
 
         for prop_name in overridden_values:
             old_value = getattr(old_widget, prop_name)
@@ -413,7 +461,7 @@ class Session:
 
             if not values_equal(old_value, new_value):
                 self.register_dirty_widget(
-                    new_widget, include_children_recursively=False
+                    new_widget, include_fundamental_children_recursively=False
                 )
                 break
 
@@ -475,6 +523,16 @@ class Session:
 
             widgets_by_key[widget.key] = widget
 
+        def key_scan(
+            widgets_by_key: Dict[str, rx.Widget],
+            widget: rx.Widget,
+            include_self: bool = True,
+        ) -> None:
+            for child in widget._iter_direct_and_indirect_children(
+                include_self=include_self
+            ):
+                register_widget_by_key(widgets_by_key, child)
+
         def chain_to_children(
             old_widget: rx.Widget,
             new_widget: rx.Widget,
@@ -482,14 +540,14 @@ class Session:
             # Iterate over the children, but make sure to preserve the topology.
             # Can't just use `iter_direct_children` here, since that would
             # discard topological information.
-            for name, typ in typing.get_type_hints(self.__class__).items():
+            for name, typ in typing.get_type_hints(type(new_widget)).items():
                 origin, args = typing.get_origin(typ), typing.get_args(typ)
 
                 old_widgets: List[rx.Widget]
                 new_widgets: List[rx.Widget]
 
                 # Widget
-                if widget_base.is_widget_class(origin):
+                if widget_base.is_widget_class(typ):
                     old_widgets = [getattr(old_widget, name)]
                     new_widgets = [getattr(new_widget, name)]
 
@@ -524,16 +582,10 @@ class Session:
                     worker(old_child, new_child)
 
                 for old_child in old_widgets[common:]:
-                    for child in old_child._iter_direct_and_indirect_children(
-                        include_self=True
-                    ):
-                        register_widget_by_key(old_widgets_by_key, child)
+                    key_scan(old_widgets_by_key, old_child, include_self=True)
 
                 for new_child in new_widgets[common:]:
-                    for child in new_child._iter_direct_and_indirect_children(
-                        include_self=True
-                    ):
-                        register_widget_by_key(new_widgets_by_key, child)
+                    key_scan(new_widgets_by_key, new_child, include_self=True)
 
         def worker(old_widget: rx.Widget, new_widget: rx.Widget) -> None:
             # Register the widget by key
@@ -543,23 +595,13 @@ class Session:
             # Do the widget types match?
             if type(old_widget) is type(new_widget):
                 matches_by_topology.append((old_widget, new_widget))
-
-                # If the widget is fundamental, chain down
-                if isinstance(old_widget, widget_base.FundamentalWidget):
-                    chain_to_children(old_widget, new_widget)
-                    return
+                chain_to_children(old_widget, new_widget)
+                return
 
             # Otherwise neither they, nor their children can be topological
             # matches.  Just keep track of the children's keys.
-            for child in old_widget._iter_direct_and_indirect_children(
-                include_self=False
-            ):
-                register_widget_by_key(old_widgets_by_key, child)
-
-            for child in new_widget._iter_direct_and_indirect_children(
-                include_self=False
-            ):
-                register_widget_by_key(new_widgets_by_key, child)
+            key_scan(old_widgets_by_key, old_widget, include_self=False)
+            key_scan(new_widgets_by_key, new_widget, include_self=False)
 
         worker(old_build, new_build)
 
