@@ -4,6 +4,7 @@ import logging
 import typing
 import weakref
 from dataclasses import dataclass
+from pathlib import Path
 from typing import (
     Any,
     Awaitable,
@@ -19,9 +20,11 @@ from typing import (
     Union,
 )
 
+from PIL.Image import Image
+
 import reflex as rx
 
-from . import messages, validator
+from . import app_server, assets, image_source, messages, validator
 from .common import Jsonable
 from .styling import *
 from .widgets import widget_base
@@ -46,9 +49,11 @@ class Session:
         self,
         root_widget: rx.Widget,
         send_message: Callable[[messages.OutgoingMessage], Awaitable[None]],
+        app_server_: app_server.AppServer,
     ):
         self.root_widget = root_widget
         self.send_message = send_message
+        self.app_server = app_server_
 
         # Weak dictionaries to hold additional information about widgets. These
         # are split in two to avoid the dictionaries keeping the widgets alive.
@@ -216,7 +221,8 @@ class Session:
 
         # Send the new state to the client if necessary
         delta_states: Dict[int, Any] = {
-            widget._id: self._serialize_widget(widget) for widget in visited_widgets
+            widget._id: self._serialize_and_host_widget(widget)
+            for widget in visited_widgets
         }
 
         # Check whether the root widget needs replacing
@@ -229,7 +235,7 @@ class Session:
             messages.UpdateWidgetStates(delta_states, root_widget_id)
         )
 
-    def _serialize_value(self, value: Any, type_: Type) -> Jsonable:
+    def _serialize_and_host_value(self, value: Any, type_: Type) -> Jsonable:
         """
         Which values are serialized for state depends on the annotated datatypes.
         There is no point in sending fancy values over to the client which it can't
@@ -252,19 +258,20 @@ class Session:
 
         # Tuples or lists of serializable values
         if origin is tuple or origin is list:
-            return [self._serialize_value(v, args[0]) for v in value]
+            return [self._serialize_and_host_value(v, args[0]) for v in value]
 
         # Special case: `FillLike`
         #
         # TODO: Is there a nicer way to detect these?
-        if (
-            origin is Union
-            and len(args) == 2
-            and (args[0] is Fill or args[1] is Fill)
-            and (args[0] is Color or args[1] is Color)
-        ):
-            value = Fill._try_from(value)
-            return value._serialize()
+        if origin is Union and set(args) == {Fill, Color}:
+            as_fill = Fill._try_from(value)
+
+            # Image fills may contain an image source which needs to be hosted
+            # by the server so the client can access it
+            if isinstance(as_fill, ImageFill) and as_fill._image._asset is not None:
+                self.app_server.weakly_host_asset(as_fill._image._asset)
+
+            return as_fill._serialize()
 
         # Colors
         if type_ is Color:
@@ -284,13 +291,13 @@ class Session:
                     return value
 
                 if isinstance(value, arg):  # type: ignore
-                    return self._serialize_value(value, arg)
+                    return self._serialize_and_host_value(value, arg)
 
             assert False, f'Value "{value}" is not of any of the union types {args}'
 
         # Literal
         if origin is Literal:
-            return self._serialize_value(value, type(value))
+            return self._serialize_and_host_value(value, type(value))
 
         # Widgets
         if widget_base.is_widget_class(type_):
@@ -299,7 +306,7 @@ class Session:
         # Invalid type
         raise WontSerialize()
 
-    def _serialize_widget(self, widget: rx.Widget) -> Jsonable:
+    def _serialize_and_host_widget(self, widget: rx.Widget) -> Jsonable:
         """
         Serializes the widget, non-recursively. Children are serialized just by
         their `_id`.
@@ -337,7 +344,9 @@ class Session:
 
             # Let the serialization function handle the value
             try:
-                result[name] = self._serialize_value(getattr(widget, name), type_)
+                result[name] = self._serialize_and_host_value(
+                    getattr(widget, name), type_
+                )
             except WontSerialize:
                 pass
 

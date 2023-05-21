@@ -3,14 +3,18 @@ from __future__ import annotations
 import functools
 import io
 import json
+import mimetypes
 import secrets
 import weakref
 from datetime import timedelta
+from pathlib import Path
 from typing import Callable, List, Optional
 
+import aiohttp
 import fastapi
 import timer_dict
 import uniserde
+from PIL import Image
 
 from . import app, assets, common, messages, session, validator
 from .common import Jsonable
@@ -42,12 +46,8 @@ class AppServer(fastapi.FastAPI):
         self.external_url = external_url
         self.validator_factory = validator_factory
 
-        if self.app.icon is None:
-            self.icon_as_ico_blob = None
-        else:
-            icon_ico = io.BytesIO()
-            self.app.icon.save(icon_ico, format="ICO")
-            self.icon_as_ico_blob = icon_ico.getvalue()
+        # Initialized lazily, when the favicon is first requested.
+        self._icon_as_ico_blob: Optional[bytes] = None
 
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
@@ -142,11 +142,32 @@ class AppServer(fastapi.FastAPI):
         """
         Handler for serving the favicon via fastapi, if one is set.
         """
-        if self.icon_as_ico_blob is None:
+        # If an icon is set, make sure a cached version exists
+        if self._icon_as_ico_blob is None and self.app._icon is not None:
+            try:
+                icon_blob, _ = await self.app._icon._try_fetch_as_blob()
+
+                input_buffer = io.BytesIO(icon_blob)
+                output_buffer = io.BytesIO()
+
+                with Image.open(input_buffer) as image:
+                    image.save(output_buffer, format="ico")
+
+            except Exception as err:
+                raise fastapi.HTTPException(
+                    status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Could not fetch the app's icon.",
+                ) from err
+
+            self._icon_as_ico_blob = output_buffer.getvalue()
+
+        # No icon set or fetching failed
+        if self._icon_as_ico_blob is None:
             return fastapi.responses.Response(status_code=404)
 
+        # There is an icon, respond
         return fastapi.responses.Response(
-            content=self.icon_as_ico_blob,
+            content=self._icon_as_ico_blob,
             media_type="image/x-icon",
         )
 
@@ -215,6 +236,7 @@ class AppServer(fastapi.FastAPI):
         sess = session.Session(
             root_widget,
             send_message,
+            self,
         )
 
         # Trigger an initial build. This will also send the initial state to

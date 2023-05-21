@@ -2,13 +2,15 @@ from abc import ABC, abstractmethod
 from typing import Dict, Literal, Tuple, Union
 
 from .common import Jsonable
+from .image_source import ImageLike, ImageSource
 
 __all__ = [
     "Color",
     "Fill",
     "FillLike",
-    "SolidFill",
+    "ImageFill",
     "LinearGradientFill",
+    "SolidFill",
 ]
 
 
@@ -165,3 +167,21 @@ class LinearGradientFill(Fill):
             "stops": [(color.rgba, position) for color, position in self.stops],
             "angleDegrees": self.angle_degrees,
         }
+
+
+class ImageFill(Fill):
+    def __init__(self, image: ImageLike):
+        self._image = ImageSource(image)
+
+    def _serialize(self) -> Dict[str, Jsonable]:
+        if self._image._url is not None:
+            return {
+                "type": "image",
+                "url": self._image._url,
+            }
+        else:
+            assert self._image._asset is not None
+            return {
+                "type": "image",
+                "assetId": self._image._asset.secret_id,
+            }

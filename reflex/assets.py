@@ -6,8 +6,7 @@ from typing import Union
 class HostedAsset:
     def __init__(
         self,
-        name: str,
-        mime_type: str,
+        media_type: str,
         data: Union[bytes, Path],
     ):
         # The asset's id both uniquely identifies the asset, and is used as part
@@ -15,11 +14,8 @@ class HostedAsset:
         # accessing assets without permission.
         self.secret_id = secrets.token_urlsafe()
 
-        # Human-readable name of the asset. This is used for debugging purposes
-        self.name = name
-
         # The MIME type of the asset
-        self.media_type = mime_type
+        self.media_type = media_type
 
         # The asset's data. This can either be a bytes object, or a path to a
         # file containing the asset's data. The file must exist for the duration

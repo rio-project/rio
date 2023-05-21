@@ -202,8 +202,11 @@ def validator_factory() -> reflex.validator.Validator:
 rx_app = rx.App(
     "Super Dynamic Website!",
     MainPage,
-    icon=PIL.Image.open("./dev_testing/icon.png"),
+    icon=Path("./dev_testing/icon.png"),
 )
+
+
+# rx_app.run_in_window()
 
 
 if __name__ == "__main__":

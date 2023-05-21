@@ -17,6 +17,8 @@ websocket = "^0.2.1"
 websockets = "^11.0.3"
 timer-dict = "^1.0.0"
 introspection = "^1.5.2"
+pywebview = "^4.1"
+aiohttp = "^3.8.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
