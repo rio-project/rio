@@ -5,6 +5,7 @@ import io
 import json
 import mimetypes
 import secrets
+import traceback
 import weakref
 from datetime import timedelta
 from pathlib import Path
@@ -265,6 +266,7 @@ class AppServer(fastapi.FastAPI):
                 json.JSONDecodeError,
                 UnicodeDecodeError,
             ):
+                traceback.print_exc()
                 raise fastapi.HTTPException(
                     status_code=fastapi.status.HTTP_400_BAD_REQUEST,
                     detail="Received invalid JSON in websocket message",

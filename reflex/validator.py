@@ -23,6 +23,7 @@ _CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "text": set(),
     "row": {"children"},
     "column": {"children"},
+    "dropdown": set(),
     "rectangle": {"child"},
     "stack": {"children"},
     "margin": {"child"},
@@ -31,6 +32,7 @@ _CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "textInput": set(),
     "override": {"child"},
     "placeholder": {"_child_"},
+    "switch": set(),
 }
 
 

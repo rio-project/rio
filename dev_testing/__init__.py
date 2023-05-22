@@ -70,7 +70,7 @@ class LoginWidget(rx.Widget):
 
     on_login: rx.EventHandler[[]] = None
 
-    async def login(self) -> None:
+    async def login(self, _: rx.ButtonPressedEvent) -> None:
         self.sap_session_token = "<totally-legit-session-token>"
         await rx.call_event_handler(self.on_login)
 
@@ -97,6 +97,8 @@ class LoginWidget(rx.Widget):
                         "Login",
                         on_press=self.login,
                     ),
+                    rx.Switch(),
+                    rx.Dropdown({"foo": 1, "bar": 2}, on_change=print),
                 ],
             ),
             heading="Login",
@@ -115,7 +117,7 @@ class SimpleMenu(rx.Widget):
                 rx.Margin(
                     rx.Button(
                         name,
-                        on_press=lambda: print(f"Pressed {name}"),
+                        on_press=lambda _: print(f"Pressed {name}"),
                     ),
                     margin_top=0 if ii == 0 else 0.5,
                 )

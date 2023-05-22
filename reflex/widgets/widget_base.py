@@ -25,10 +25,11 @@ from typing import (
 )
 
 import introspection
+import introspection.typing
 from typing_extensions import Self, dataclass_transform
 
 from .. import messages, session
-from ..common import Jsonable
+from ..common import Jsonable, Readonly
 from ..styling import *
 
 __all__ = [
@@ -36,7 +37,16 @@ __all__ = [
 ]
 
 
-T = TypeVar("T")
+@dataclass
+class WidgetEvent:
+    """
+    Base class for widget events.
+    """
+
+    widget: Widget
+
+
+T = TypeVar("T", bound=WidgetEvent)
 EventHandler = Optional[Callable[[T], Any | Awaitable[Any]]]
 
 
@@ -60,22 +70,20 @@ async def call_event_handler_and_refresh(
     assert widget._session_ is not None
 
     # Event handlers are optional
-    if handler is None:
-        return
+    if handler is not None:
+        # If the handler is available, call it and await it if necessary
+        try:
+            result = handler(event_data)
 
-    # If the handler is available, call it and await it if necessary
-    try:
-        result = handler(event_data)
+            if inspect.isawaitable(result):
+                await result
 
-        if inspect.isawaitable(result):
-            await result
+        # Display and discard exceptions
+        except Exception:
+            print("Exception in event handler:")
+            traceback.print_exc()
 
-    # Display and discard exceptions
-    except Exception:
-        print("Exception in event handler:")
-        traceback.print_exc()
-
-    # Refresh the session if necessary. A rebuild might be in order
+    # Refresh the session. A rebuild might be in order
     assert widget._session_ is not None, widget
     await widget._session_.refresh()
 
@@ -111,8 +119,9 @@ class StateProperty(Generic[T]):
     ```
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, readonly: bool):
         self.name = name
+        self.readonly = readonly
 
     @overload
     def __get__(self, instance: Widget, owner: Optional[type] = None) -> T:
@@ -148,6 +157,12 @@ class StateProperty(Generic[T]):
         return value
 
     def __set__(self, instance: Widget, value: T) -> None:
+        if self.readonly:
+            cls_name = type(instance).__name__
+            raise AttributeError(
+                f"Cannot assign to readonly property {cls_name}.{self.name}"
+            )
+
         # When assigning a StateProperty to another StateProperty, a
         # `StateBinding` is created. Otherwise just assign the value as-is.
         if type(value) is StateProperty:
@@ -280,7 +295,9 @@ class Widget(ABC):
                 continue
 
             # Create the `StateProperty`
-            state_property = StateProperty(attr_name)
+            # readonly = introspection.typing.has_annotation(annotation, Readonly
+            readonly = False  # FIXME
+            state_property = StateProperty(attr_name, readonly)
             setattr(cls, attr_name, state_property)
 
             # Add it to the set of all state properties for rapid lookup

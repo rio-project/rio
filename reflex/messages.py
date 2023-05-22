@@ -78,3 +78,15 @@ class MouseLeaveEvent(IncomingMessage):
 class TextInputBlurEvent(IncomingMessage):
     widget_id: int
     text: str
+
+
+@dataclass
+class DropdownChangeEvent(IncomingMessage):
+    widget_id: int
+    value: str
+
+
+@dataclass
+class SwitchChangeEvent(IncomingMessage):
+    widget_id: int
+    is_on: bool

@@ -1,22 +1,32 @@
 from __future__ import annotations
 
+from dataclasses import KW_ONLY
+
 import reflex as rx
 
 from . import widget_base
 
-__all__ = ["Button"]
+__all__ = ["Button", "ButtonPressedEvent"]
+
+
+class ButtonPressedEvent(widget_base.WidgetEvent):
+    pass
 
 
 class Button(widget_base.Widget):
     text: str
-    on_press: rx.EventHandler[[]] = None
+    on_press: rx.EventHandler[ButtonPressedEvent]
+    _: KW_ONLY
     _is_pressed: bool = False
 
     def _on_mouse_down(self, event: rx.MouseDownEvent) -> None:
         self._is_pressed = True
 
     async def _on_mouse_up(self, event: rx.MouseUpEvent) -> None:
-        await rx.call_event_handler(self.on_press)
+        await rx.call_event_handler(
+            self.on_press,
+            ButtonPressedEvent(self),
+        )
         self._is_pressed = False
 
     def build(self) -> rx.Widget:

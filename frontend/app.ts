@@ -1,15 +1,17 @@
 import { TextWidget } from './text';
 import { RowWidget } from './row';
 import { ColumnWidget } from './column';
+import { DropdownWidget } from './dropdown';
 import { RectangleWidget } from './rectangle';
 import { StackWidget } from './stack';
 import { MarginWidget } from './margin';
 import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
-import { MouseEventListener } from './mouseEventListener';
+import { MouseEventListenerWidget } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
 import { OverrideWidget } from './override';
 import { PlaceholderWidget } from './placeholder';
+import { SwitchWidget } from './switch';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
@@ -78,10 +80,12 @@ const widgetClasses = {
     row: RowWidget,
     stack: StackWidget,
     text: TextWidget,
-    mouseEventListener: MouseEventListener,
+    mouseEventListener: MouseEventListenerWidget,
     textInput: TextInputWidget,
     override: OverrideWidget,
     placeholder: PlaceholderWidget,
+    dropdown: DropdownWidget,
+    switch: SwitchWidget,
 };
 
 function processMessage(message: any) {

@@ -6,7 +6,6 @@ from typing import Dict, List, Literal, Optional, Tuple
 from .. import messages
 from ..common import Jsonable
 from ..styling import *
-from . import event_classes
 from .widget_base import (
     EventHandler,
     FundamentalWidget,

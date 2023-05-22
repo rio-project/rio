@@ -100,6 +100,18 @@ export type JsonOverride = {
     height?: number;
 };
 
+export type JsonDropdown = {
+    _type_: 'dropdown';
+    _python_type_: string;
+    optionNames?: string[];
+};
+
+export type JsonSwitch = {
+    _type_: 'switch';
+    _python_type_: string;
+    is_on?: boolean;
+};
+
 export type JsonPlaceholder = {
     _type_: 'placeholder';
     _python_type_: string;
@@ -117,4 +129,6 @@ export type JsonWidget =
     | JsonMouseEventListener
     | JsonTextInput
     | JsonOverride
+    | JsonDropdown
+    | JsonSwitch
     | JsonPlaceholder;

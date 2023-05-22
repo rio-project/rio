@@ -203,6 +203,41 @@ var ColumnWidget = /** @class */function () {
   return ColumnWidget;
 }();
 exports.ColumnWidget = ColumnWidget;
+},{"./app":"EVxB"}],"aj59":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DropdownWidget = void 0;
+var app_1 = require("./app");
+var DropdownWidget = /** @class */function () {
+  function DropdownWidget() {}
+  DropdownWidget.build = function () {
+    var element = document.createElement('select');
+    element.classList.add('reflex-dropdown');
+    element.addEventListener('input', function () {
+      (0, app_1.sendEvent)(element, 'dropdownChangeEvent', {
+        value: element.value
+      });
+    });
+    return element;
+  };
+  DropdownWidget.update = function (element, deltaState) {
+    if (deltaState.optionNames !== undefined) {
+      element.innerHTML = '';
+      for (var _i = 0, _a = deltaState.optionNames; _i < _a.length; _i++) {
+        var optionName = _a[_i];
+        var option = document.createElement('option');
+        option.value = optionName;
+        option.text = optionName;
+        element.appendChild(option);
+      }
+    }
+  };
+  return DropdownWidget;
+}();
+exports.DropdownWidget = DropdownWidget;
 },{"./app":"EVxB"}],"u1gD":[function(require,module,exports) {
 "use strict";
 
@@ -354,7 +389,7 @@ var __assign = this && this.__assign || function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MouseEventListener = void 0;
+exports.MouseEventListenerWidget = void 0;
 var app_1 = require("./app");
 function eventMouseButtonToString(event) {
   return {
@@ -367,14 +402,14 @@ function eventMousePositionToString(event) {
     y: event.clientY / app_1.pixelsPerEm
   };
 }
-var MouseEventListener = /** @class */function () {
-  function MouseEventListener() {}
-  MouseEventListener.build = function () {
+var MouseEventListenerWidget = /** @class */function () {
+  function MouseEventListenerWidget() {}
+  MouseEventListenerWidget.build = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-mouse-event-listener');
     return element;
   };
-  MouseEventListener.update = function (element, deltaState) {
+  MouseEventListenerWidget.update = function (element, deltaState) {
     (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.reportMouseDown) {
       element.onmousedown = function (e) {
@@ -412,9 +447,9 @@ var MouseEventListener = /** @class */function () {
       element.onmouseleave = null;
     }
   };
-  return MouseEventListener;
+  return MouseEventListenerWidget;
 }();
-exports.MouseEventListener = MouseEventListener;
+exports.MouseEventListenerWidget = MouseEventListenerWidget;
 },{"./app":"EVxB"}],"g2Fb":[function(require,module,exports) {
 "use strict";
 
@@ -504,6 +539,35 @@ var PlaceholderWidget = /** @class */function () {
   return PlaceholderWidget;
 }();
 exports.PlaceholderWidget = PlaceholderWidget;
+},{"./app":"EVxB"}],"RrmF":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SwitchWidget = void 0;
+var app_1 = require("./app");
+var SwitchWidget = /** @class */function () {
+  function SwitchWidget() {}
+  SwitchWidget.build = function () {
+    var element = document.createElement('div');
+    element.classList.add('reflex-switch');
+    element.addEventListener('click', function () {
+      (0, app_1.sendEvent)(element, 'switchChangeEvent', {
+        isOn: element.textContent !== 'true'
+      });
+    });
+    return element;
+  };
+  SwitchWidget.update = function (element, deltaState) {
+    if (deltaState.is_on !== undefined) {
+      element.textContent = deltaState.is_on.toString();
+      element.style.backgroundColor = deltaState.is_on ? 'green' : 'red';
+    }
+  };
+  return SwitchWidget;
+}();
+exports.SwitchWidget = SwitchWidget;
 },{"./app":"EVxB"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
@@ -524,6 +588,7 @@ exports.sendEvent = exports.sendJson = exports.replaceChildren = exports.replace
 var text_1 = require("./text");
 var row_1 = require("./row");
 var column_1 = require("./column");
+var dropdown_1 = require("./dropdown");
 var rectangle_1 = require("./rectangle");
 var stack_1 = require("./stack");
 var margin_1 = require("./margin");
@@ -532,6 +597,7 @@ var mouseEventListener_1 = require("./mouseEventListener");
 var textInput_1 = require("./textInput");
 var override_1 = require("./override");
 var placeholder_1 = require("./placeholder");
+var switch_1 = require("./switch");
 var sessionToken = '{session_token}';
 var initialMessages = '{initial_messages}';
 var socket = null;
@@ -592,10 +658,12 @@ var widgetClasses = {
   row: row_1.RowWidget,
   stack: stack_1.StackWidget,
   text: text_1.TextWidget,
-  mouseEventListener: mouseEventListener_1.MouseEventListener,
+  mouseEventListener: mouseEventListener_1.MouseEventListenerWidget,
   textInput: textInput_1.TextInputWidget,
   override: override_1.OverrideWidget,
-  placeholder: placeholder_1.PlaceholderWidget
+  placeholder: placeholder_1.PlaceholderWidget,
+  dropdown: dropdown_1.DropdownWidget,
+  switch: switch_1.SwitchWidget
 };
 function processMessage(message) {
   console.log('Received message: ', message);
@@ -794,5 +862,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb","./override":"X9Uo","./placeholder":"When"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb","./override":"X9Uo","./placeholder":"When","./switch":"RrmF"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

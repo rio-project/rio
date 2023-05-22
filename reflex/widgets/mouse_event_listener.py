@@ -1,32 +1,78 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
+import enum
+from dataclasses import KW_ONLY, dataclass
 from typing import Dict, List, Literal, Optional, Tuple
 
 from .. import messages
 from ..common import Jsonable
 from ..styling import *
-from . import event_classes
 from .widget_base import (
     EventHandler,
     FundamentalWidget,
     Widget,
+    WidgetEvent,
     call_event_handler_and_refresh,
 )
 
 __all__ = [
     "MouseEventListener",
+    "MouseButton",
+    "MouseDownEvent",
+    "MouseUpEvent",
+    "MouseMoveEvent",
+    "MouseEnterEvent",
+    "MouseLeaveEvent",
 ]
+
+
+class MouseButton(enum.Enum):
+    LEFT = "left"
+    MIDDLE = "middle"
+    RIGHT = "right"
+
+
+@dataclass
+class _MouseUpDownEvent(WidgetEvent):
+    button: MouseButton
+    x: float
+    y: float
+
+
+class MouseDownEvent(_MouseUpDownEvent):
+    pass
+
+
+class MouseUpEvent(_MouseUpDownEvent):
+    pass
+
+
+@dataclass
+class _MousePositionedEvent(WidgetEvent):
+    x: float
+    y: float
+
+
+class MouseMoveEvent(_MousePositionedEvent):
+    pass
+
+
+class MouseEnterEvent(_MousePositionedEvent):
+    pass
+
+
+class MouseLeaveEvent(_MousePositionedEvent):
+    pass
 
 
 class MouseEventListener(FundamentalWidget):
     child: Widget
     _: KW_ONLY
-    on_mouse_down: EventHandler[event_classes.MouseDownEvent] = None
-    on_mouse_up: EventHandler[event_classes.MouseUpEvent] = None
-    on_mouse_move: EventHandler[event_classes.MouseMoveEvent] = None
-    on_mouse_enter: EventHandler[event_classes.MouseEnterEvent] = None
-    on_mouse_leave: EventHandler[event_classes.MouseLeaveEvent] = None
+    on_mouse_down: EventHandler[MouseDownEvent] = None
+    on_mouse_up: EventHandler[MouseUpEvent] = None
+    on_mouse_move: EventHandler[MouseMoveEvent] = None
+    on_mouse_enter: EventHandler[MouseEnterEvent] = None
+    on_mouse_leave: EventHandler[MouseLeaveEvent] = None
 
     def _custom_serialize(self) -> Dict[str, Jsonable]:
         return {
@@ -41,10 +87,11 @@ class MouseEventListener(FundamentalWidget):
         if isinstance(msg, messages.MouseDownEvent):
             await call_event_handler_and_refresh(
                 self,
-                event_classes.MouseDownEvent(
+                MouseDownEvent(
+                    self,
                     x=msg.x,
                     y=msg.y,
-                    button=event_classes.MouseButton(msg.button),
+                    button=MouseButton(msg.button),
                 ),
                 self.on_mouse_down,
             )
@@ -52,10 +99,11 @@ class MouseEventListener(FundamentalWidget):
         elif isinstance(msg, messages.MouseUpEvent):
             await call_event_handler_and_refresh(
                 self,
-                event_classes.MouseUpEvent(
+                MouseUpEvent(
+                    self,
                     x=msg.x,
                     y=msg.y,
-                    button=event_classes.MouseButton(msg.button),
+                    button=MouseButton(msg.button),
                 ),
                 self.on_mouse_up,
             )
@@ -63,7 +111,8 @@ class MouseEventListener(FundamentalWidget):
         elif isinstance(msg, messages.MouseMoveEvent):
             await call_event_handler_and_refresh(
                 self,
-                event_classes.MouseMoveEvent(
+                MouseMoveEvent(
+                    self,
                     x=msg.x,
                     y=msg.y,
                 ),
@@ -73,7 +122,8 @@ class MouseEventListener(FundamentalWidget):
         elif isinstance(msg, messages.MouseEnterEvent):
             await call_event_handler_and_refresh(
                 self,
-                event_classes.MouseEnterEvent(
+                MouseEnterEvent(
+                    self,
                     x=msg.x,
                     y=msg.y,
                 ),
@@ -83,7 +133,8 @@ class MouseEventListener(FundamentalWidget):
         elif isinstance(msg, messages.MouseLeaveEvent):
             await call_event_handler_and_refresh(
                 self,
-                event_classes.MouseLeaveEvent(
+                MouseLeaveEvent(
+                    self,
                     x=msg.x,
                     y=msg.y,
                 ),

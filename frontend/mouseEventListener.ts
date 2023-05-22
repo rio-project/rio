@@ -14,7 +14,7 @@ function eventMousePositionToString(event: MouseEvent): object {
     };
 }
 
-export class MouseEventListener {
+export class MouseEventListenerWidget {
     static build(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-mouse-event-listener');
