@@ -46,8 +46,28 @@ export function fillToCss(fill: Fill): string {
         )})`;
     }
 
+    // Image
+    if (fill.type === 'image') {
+        let cssUrl = `url('${fill.imageUrl}')`;
+
+        if (fill.fillMode == 'fit') {
+            return `${cssUrl} center/contain no-repeat`;
+        } else if (fill.fillMode == 'stretch') {
+            return `${cssUrl} top left / 100% 100%`;
+        } else if (fill.fillMode == 'tile') {
+            return `${cssUrl} left top repeat`;
+        } else if (fill.fillMode == 'zoom') {
+            return `${cssUrl} center/cover no-repeat`;
+        } else {
+            // Invalid fill mode
+            // @ts-ignore
+            throw `Invalid fill mode for image fill: ${fill.type}`;
+        }
+    }
+
     // Invalid fill type
-    throw `Invalid fill type: ${fill}`;
+    // @ts-ignore
+    throw `Invalid fill type: ${fill.type}`;
 }
 
 const widgetClasses = {

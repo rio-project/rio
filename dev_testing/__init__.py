@@ -188,7 +188,11 @@ class MainPage(rx.Widget):
             child = self.build_menu()
 
         return rx.Rectangle(
-            fill=rx.Color.GREY,
+            # fill=rx.Color.GREY,
+            fill=rx.ImageFill(
+                Path("./dev_testing/test.png"),
+                fill_mode="stretch",
+            ),
             child=child,
         )
 
@@ -202,7 +206,7 @@ def validator_factory() -> reflex.validator.Validator:
 rx_app = rx.App(
     "Super Dynamic Website!",
     MainPage,
-    icon=Path("./dev_testing/icon.png"),
+    icon=Path("./dev_testing/test.png"),
 )
 
 

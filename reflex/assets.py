@@ -24,3 +24,11 @@ class HostedAsset:
 
         if isinstance(data, Path):
             assert data.exists(), f"Asset file {data} does not exist"
+
+    def url(self, server_external_url: str) -> str:
+        # TODO document this and/or enfoce it in the `AppServer` class already
+        assert not server_external_url.endswith(
+            "/"
+        ), "server_external_url must not end with a slash"
+
+        return f"{server_external_url}/asset/{self.secret_id}"

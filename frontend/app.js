@@ -562,8 +562,26 @@ function fillToCss(fill) {
     }
     return "linear-gradient(".concat(fill.angleDegrees, "deg, ").concat(stopStrings.join(', '), ")");
   }
+  // Image
+  if (fill.type === 'image') {
+    var cssUrl = "url('".concat(fill.imageUrl, "')");
+    if (fill.fillMode == 'fit') {
+      return "".concat(cssUrl, " center/contain no-repeat");
+    } else if (fill.fillMode == 'stretch') {
+      return "".concat(cssUrl, " top left / 100% 100%");
+    } else if (fill.fillMode == 'tile') {
+      return "".concat(cssUrl, " left top repeat");
+    } else if (fill.fillMode == 'zoom') {
+      return "".concat(cssUrl, " center/cover no-repeat");
+    } else {
+      // Invalid fill mode
+      // @ts-ignore
+      throw "Invalid fill mode for image fill: ".concat(fill.type);
+    }
+  }
   // Invalid fill type
-  throw "Invalid fill type: ".concat(fill);
+  // @ts-ignore
+  throw "Invalid fill type: ".concat(fill.type);
 }
 exports.fillToCss = fillToCss;
 var widgetClasses = {

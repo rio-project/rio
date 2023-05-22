@@ -271,7 +271,7 @@ class Session:
             if isinstance(as_fill, ImageFill) and as_fill._image._asset is not None:
                 self.app_server.weakly_host_asset(as_fill._image._asset)
 
-            return as_fill._serialize()
+            return as_fill._serialize(self.app_server.external_url)
 
         # Colors
         if type_ is Color:

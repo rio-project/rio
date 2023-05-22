@@ -129,7 +129,7 @@ class Fill(ABC):
         raise TypeError(f"Expected Fill or Color, got {type(value)}")
 
     @abstractmethod
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
         raise NotImplementedError()
 
 
@@ -139,7 +139,7 @@ class SolidFill(Fill):
     def __init__(self, color: Color):
         self.color = color
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
         return {
             "type": "solid",
             "color": self.color.rgba,
@@ -161,7 +161,7 @@ class LinearGradientFill(Fill):
 
         self.angle_degrees = angle_degrees
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
         return {
             "type": "linearGradient",
             "stops": [(color.rgba, position) for color, position in self.stops],
@@ -170,18 +170,26 @@ class LinearGradientFill(Fill):
 
 
 class ImageFill(Fill):
-    def __init__(self, image: ImageLike):
+    def __init__(
+        self,
+        image: ImageLike,
+        *,
+        fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit",
+        keep_aspect_ratio: bool = True,
+        fill_entire_shape: bool = False,
+    ):
         self._image = ImageSource(image)
+        self._fill_mode = fill_mode
 
-    def _serialize(self) -> Dict[str, Jsonable]:
-        if self._image._url is not None:
-            return {
-                "type": "image",
-                "url": self._image._url,
-            }
-        else:
-            assert self._image._asset is not None
-            return {
-                "type": "image",
-                "assetId": self._image._asset.secret_id,
-            }
+    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
+        image_url = (
+            self._image._asset.url(server_external_url)
+            if self._image._asset is not None
+            else self._image._url
+        )
+
+        return {
+            "type": "image",
+            "imageUrl": image_url,
+            "fillMode": self._fill_mode,
+        }

@@ -9,6 +9,11 @@ export type Fill =
           type: 'linearGradient';
           angleDegrees: number;
           stops: [Color, number][];
+      }
+    | {
+          type: 'image';
+          imageUrl: string;
+          fillMode: 'fit' | 'stretch' | 'tile' | 'zoom';
       };
 
 export type JsonText = {
