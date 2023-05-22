@@ -200,7 +200,6 @@ class Session:
                 # Create the widget data and cache it
                 widget_data = WidgetData(build_result)
                 self._weak_widget_data_by_widget[widget] = widget_data
-                self._weak_widgets_by_id[widget._id] = widget
 
                 # Mark all fresh widgets as dirty
                 self.register_dirty_widget(
@@ -488,6 +487,8 @@ class Session:
         #
         # (Only do this if the widget isn't fundamental, as those aren't in the
         # cache.)
+        self._weak_widgets_by_id[new_widget._id] = new_widget
+
         try:
             self._weak_widget_data_by_widget[
                 new_widget

@@ -185,11 +185,21 @@ export function replaceOnlyChild(
         return;
     }
 
-    // Move the child element to a latent container, so it isn't garbage
-    // collected
-    if (parentElement.firstElementChild !== null) {
+    const currentChildElement = parentElement.firstElementChild;
+
+    // If a child already exists, either move it to the latent container or
+    // leave it alone if it's already the correct element
+    if (currentChildElement !== null) {
+        // Don't reparent the child if not necessary. This way things like
+        // keyboard focus are preserved
+        if (currentChildElement.id === `reflex-id-${childId}`) {
+            return;
+        }
+
+        // Move the child element to a latent container, so it isn't garbage
+        // collected
         let latentWidgets = document.getElementById('reflex-latent-widgets');
-        latentWidgets?.appendChild(parentElement.firstElementChild);
+        latentWidgets?.appendChild(currentChildElement);
     }
 
     // Add the replacement widget

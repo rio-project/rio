@@ -672,11 +672,19 @@ function replaceOnlyChild(parentElement, childId) {
     parentElement.innerHTML = '';
     return;
   }
-  // Move the child element to a latent container, so it isn't garbage
-  // collected
-  if (parentElement.firstElementChild !== null) {
+  var currentChildElement = parentElement.firstElementChild;
+  // If a child already exists, either move it to the latent container or
+  // leave it alone if it's already the correct element
+  if (currentChildElement !== null) {
+    // Don't reparent the child if not necessary. This way things like
+    // keyboard focus are preserved
+    if (currentChildElement.id === "reflex-id-".concat(childId)) {
+      return;
+    }
+    // Move the child element to a latent container, so it isn't garbage
+    // collected
     var latentWidgets = document.getElementById('reflex-latent-widgets');
-    latentWidgets === null || latentWidgets === void 0 ? void 0 : latentWidgets.appendChild(parentElement.firstElementChild);
+    latentWidgets === null || latentWidgets === void 0 ? void 0 : latentWidgets.appendChild(currentChildElement);
   }
   // Add the replacement widget
   var newElement = document.getElementById('reflex-id-' + childId);
