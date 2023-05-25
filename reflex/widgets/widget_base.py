@@ -94,8 +94,8 @@ def is_widget_class(cls: Type[Any]) -> bool:
 
 @dataclass
 class StateBinding:
-    state_property: "StateProperty"
-    widget: Optional["Widget"]
+    state_property: StateProperty
+    widget: Optional[Widget]
 
 
 class StateProperty(Generic[T]):
@@ -156,7 +156,7 @@ class StateProperty(Generic[T]):
         # Otherwise return the value
         return value
 
-    def __set__(self, instance: Widget, value: T) -> None:
+    def set_value(self, instance: Widget, value: T, mark_dirty: bool) -> None:
         if self.readonly:
             cls_name = type(instance).__name__
             raise AttributeError(
@@ -176,7 +176,7 @@ class StateProperty(Generic[T]):
         instance_vars = vars(instance)
         local_value = instance_vars.get(self.name)
 
-        if type(local_value) is StateBinding:
+        if isinstance(local_value, StateBinding):
             if isinstance(new_value, StateBinding):
                 # This should virtually never happen. So don't handle it, scream
                 # and die
@@ -184,7 +184,7 @@ class StateProperty(Generic[T]):
                     "State bindings can only be created when the widget is constructed"
                 )
 
-            local_value.state_property.__set__(local_value.widget, new_value)  # type: ignore
+            local_value.state_property.set_value(local_value.widget, new_value, mark_dirty)  # type: ignore
 
         else:
             instance_vars[self.name] = new_value
@@ -192,11 +192,14 @@ class StateProperty(Generic[T]):
         # If a session is known also notify the session that the widget is
         # dirty. If the session is not known yet, the widget will be processed
         # by the session anyway, as if dirty.
-        if instance._session_ is not None:
+        if instance._session_ is not None and mark_dirty:
             instance._session_.register_dirty_widget(
                 instance,
                 include_fundamental_children_recursively=False,
             )
+
+    def __set__(self, instance: Widget, value: T) -> None:
+        self.set_value(instance, value, mark_dirty=True)
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"
@@ -241,7 +244,7 @@ class Widget(ABC):
             )
 
         # Apply the dataclass transform
-        dataclasses.dataclass(unsafe_hash=True)(cls)
+        dataclasses.dataclass(unsafe_hash=True, repr=False)(cls)
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)
@@ -356,6 +359,14 @@ class Widget(ABC):
 
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
+
+    def __repr__(self) -> str:
+        result = f"<{type(self).__name__} id:{self._id} -"
+
+        for child in self._iter_direct_children():
+            result += f" {type(child).__name__}:{child._id}"
+
+        return result + ">"
 
 
 # Most classes have their state proprties initielized in

@@ -201,7 +201,7 @@ class MainPage(rx.Widget):
 
 def validator_factory() -> reflex.validator.Validator:
     return reflex.validator.Validator(
-        dump_client_state_path=GENERATED_DIR / "client-state.json",
+        dump_directory_path=GENERATED_DIR,
     )
 
 

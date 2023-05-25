@@ -27,6 +27,7 @@ class Button(widget_base.Widget):
             self.on_press,
             ButtonPressedEvent(self),
         )
+
         self._is_pressed = False
 
     def build(self) -> rx.Widget:

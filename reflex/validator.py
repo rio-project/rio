@@ -118,12 +118,40 @@ class Validator:
     def __init__(
         self,
         *,
-        dump_client_state_path: Optional[Path] = None,
+        dump_directory_path: Optional[Path] = None,
     ):
-        self.dump_client_state_path = dump_client_state_path
+        if dump_directory_path is not None:
+            assert dump_directory_path.exists(), dump_directory_path
+            assert dump_directory_path.is_dir(), dump_directory_path
+
+        self.dump_directory_path = dump_directory_path
 
         self.root_widget: Optional[ClientWidget] = None
         self.widgets_by_id: Dict[int, ClientWidget] = {}
+
+    def dump_message(
+        self,
+        msg: Union[messages.IncomingMessage, messages.OutgoingMessage],
+    ):
+        """
+        Dump the message to a JSON file.
+
+        If no path is set in the validator, this function does nothing.
+        """
+        if self.dump_directory_path is None:
+            return
+
+        direction = (
+            "incoming" if isinstance(msg, messages.IncomingMessage) else "outgoing"
+        )
+        path = self.dump_directory_path / f"message-{direction}.json"
+
+        with open(path, "w") as f:
+            json.dump(
+                msg.as_json(),
+                f,
+                indent=4,
+            )
 
     def dump_client_state(
         self,
@@ -139,8 +167,8 @@ class Validator:
         no path is used and no path set in the validator, this function does
         nothing.
         """
-        if path is None:
-            path = self.dump_client_state_path
+        if path is None and self.dump_directory_path is not None:
+            path = self.dump_directory_path / "client-state.json"
 
         if path is None:
             return
@@ -268,6 +296,9 @@ class Validator:
         self,
         msg: messages.UpdateWidgetStates,
     ) -> None:
+        # Dump the message, if requested
+        self.dump_message(msg)
+
         # Update the individual widget states
         for widget_id, delta_state in msg.delta_states.items():
             # Get the widget's existing state
@@ -320,6 +351,17 @@ class Validator:
 
         # Prune the widget tree
         self.prune_widgets()
+
+        # Look for any widgets which were sent in the message, but are not
+        # actually used in the widget tree
+        ids_sent = set(msg.delta_states.keys())
+        ids_existing = set(self.widgets_by_id.keys())
+        ids_superfluous = sorted(ids_sent - ids_existing)
+
+        if ids_superfluous:
+            print(
+                f"Validator Warning: Message contained superfluous widget ids: {ids_superfluous}"
+            )
 
         # Dump the client state if requested
         self.dump_client_state()

@@ -4,27 +4,24 @@ import logging
 import typing
 import weakref
 from dataclasses import dataclass
-from pathlib import Path
 from typing import (
     Any,
     Awaitable,
     Callable,
+    Container,
     Dict,
     Iterable,
     List,
     Literal,
-    Optional,
     Set,
     Tuple,
     Type,
     Union,
 )
 
-from PIL.Image import Image
-
 import reflex as rx
 
-from . import app_server, assets, image_source, messages, validator
+from . import app_server, messages
 from .common import Jsonable
 from .styling import *
 from .widgets import widget_base
@@ -206,17 +203,22 @@ class Session:
                     build_result, include_fundamental_children_recursively=True
                 )
 
-            # Yes, rescue state
+            # Yes, rescue state. This will:
             #
-            # This will look for widgets in the build output, which correspond
-            # to widgets in the previous build output, and transfers state from
-            # the old to the new widget.
+            # - Look for widgets in the build output which correspond to widgets
+            #   in the previous build output, and transfers state from the new
+            #   to the old widget ("reconciliation")
             #
-            # Furthermore, this adds any dirty widgets from the built output
-            # (new, or old but changed) to the dirty set.
+            # - Replace any references to new, reconciled widgets in the build
+            #   output with the old widgets instead
+            #
+            # - Add any dirty widgets from the build output (new, or old but
+            #   changed) to the dirty set.
+            #
+            # - Update the widget data with the build output resulting from the
+            #   operations above
             else:
-                self.reconciliate_tree(widget_data.build_result, build_result)
-                widget_data.build_result = build_result
+                self.reconcile_tree(widget_data, build_result)
 
         # Send the new state to the client if necessary
         delta_states: Dict[int, Any] = {
@@ -373,59 +375,103 @@ class Session:
 
         await widget._handle_message(msg)
 
-    def reconciliate_tree(self, old_build: rx.Widget, new_build: rx.Widget) -> None:
-        # Find all pairs of widgets which should be reconciliated
-        matched_pairs = list(self.find_widgets_for_reconciliation(old_build, new_build))
+    def reconcile_tree(self, old_build_data: WidgetData, new_build: rx.Widget) -> None:
+        # Find all pairs of widgets which should be reconciled
+        matched_pairs = list(
+            self.find_widgets_for_reconciliation(old_build_data.build_result, new_build)
+        )
 
         # Reconciliating individual widgets requires knowledge of which other
-        # widgets are being reconciliated.
+        # widgets are being reconciled.
         #
         # -> Collect them into a set first.
-        reconciled_widgets: Set[rx.Widget] = set()
-        for old_widget, new_widget in matched_pairs:
-            reconciled_widgets.add(new_widget)
+        reconciled_widgets_new_to_old: Dict[rx.Widget, rx.Widget] = {
+            new_widget: old_widget for old_widget, new_widget in matched_pairs
+        }
 
-        # Reconciliate all matched pairs
-        for old_widget, new_widget in matched_pairs:
-            self.reconciliate_widget(
-                old_widget,
-                new_widget,
-                reconciled_widgets,
+        # Reconcile all matched pairs
+        for new_widget, old_widget in reconciled_widgets_new_to_old.items():
+            self.reconcile_widget(
+                old_widget, new_widget, reconciled_widgets_new_to_old.keys()
             )
+
+        # Update the widget data. If the root widget was not reconciled, the new
+        # widget is the new build result.
+        try:
+            reconciled_build_result = reconciled_widgets_new_to_old[new_build]
+        except KeyError:
+            reconciled_build_result = new_build
+            old_build_data.build_result = new_build
+
+        # Replace any references to new reconciled widgets to old ones instead
+        def remap_widgets(parent: rx.Widget) -> None:
+            parent_vars = vars(parent)
+
+            for attr_name, attr_value in parent_vars.items():
+                # Just a widget
+                if isinstance(attr_value, rx.Widget):
+                    try:
+                        attr_value = reconciled_widgets_new_to_old[attr_value]
+                    except KeyError:
+                        pass
+                    else:
+                        parent_vars[attr_name] = attr_value
+
+                    remap_widgets(attr_value)
+
+                # List
+                elif isinstance(attr_value, list):
+                    for ii, item in enumerate(attr_value):
+                        if isinstance(item, rx.Widget):
+                            try:
+                                attr_value[ii] = reconciled_widgets_new_to_old[item]
+                            except KeyError:
+                                pass
+
+                            remap_widgets(item)
+
+        remap_widgets(reconciled_build_result)
 
         # Any new widgets which haven't found a match are new and must be
         # processed by the session
-        for widget in new_build._iter_direct_and_indirect_children(include_self=True):
-            if widget in reconciled_widgets:
+        #
+        # Note that new widgets cannot possibly have been reconciled, as
+        # reconciliation replaces new instances with their old counterparts.
+        # Thus, only look up the widgets in a set of old widgets.
+        reconciled_widgets_old = set(reconciled_widgets_new_to_old.values())
+
+        for widget in reconciled_build_result._iter_direct_and_indirect_children(
+            include_self=True
+        ):
+            if widget in reconciled_widgets_old:
                 continue
 
             self.register_dirty_widget(
                 widget, include_fundamental_children_recursively=False
             )
 
-    def reconciliate_widget(
+    def reconcile_widget(
         self,
         old_widget: rx.Widget,
         new_widget: rx.Widget,
-        reconciliated_widgets: Set[rx.Widget],
+        reconciled_new_widgets: Container[rx.Widget],
     ) -> None:
         """
-        Given two widgets of the same type, copy relevant state from the old one
-        to the new one.
+        Given two widgets of the same type, reconcile them. Specifically:
 
-        Specifically:
-
+        - Replace the new widget with the old one in the widget tree (using
+          `new_widget_replacer`)
         - Any state which was explicitly set by the user in the new widget's
-          constructor is considered explicitly set, and will not be overwritten
-        - Any other values are copied from the old widget to the new one
-        - If any values were changed, the new widget is registered as dirty
-          with the session
+          constructor is considered explicitly set, and will be copied into the
+          old widget
+        - If any values were changed, the widget is registered as dirty with the
+          session
 
         This function also handles `StateBinding`s, for details see comments.
         """
         assert type(old_widget) is type(new_widget), (old_widget, new_widget)
 
-        # First, determine which properties will be taken from the new widget
+        # Determine which properties will be taken from the new widget
         overridden_values = {}
         new_widget_dict = vars(new_widget)
         old_widget_dict = vars(old_widget)
@@ -440,9 +486,9 @@ class Session:
         # considered dirty
         def values_equal(old: object, new: object) -> bool:
             # Widgets are a special case. Widget attributes are dirty iff the
-            # widget isn't reconciliated, i.e. it is a new widget
+            # widget isn't reconciled, i.e. it is a new widget
             if isinstance(new, rx.Widget):
-                return new in reconciliated_widgets
+                return new in reconciled_new_widgets
 
             if isinstance(new, list):
                 if not isinstance(old, list):
@@ -451,7 +497,7 @@ class Session:
                 if len(old) != len(new):
                     return False
 
-                for old_item, new_item in zip(old, new):
+                for old_item, new_item in zip(old, new):  # type: ignore
                     if not values_equal(old_item, new_item):
                         return False
 
@@ -469,7 +515,8 @@ class Session:
 
             if not values_equal(old_value, new_value):
                 self.register_dirty_widget(
-                    new_widget, include_fundamental_children_recursively=False
+                    old_widget,
+                    include_fundamental_children_recursively=False,
                 )
                 break
 
@@ -479,22 +526,6 @@ class Session:
 
         # Now combine the old and new dictionaries
         old_widget_dict.update(overridden_values)
-        new_widget.__dict__ = old_widget_dict
-
-        # The new widget is supposed to take the old widget's place. Part of
-        # this is, that the old widget's `WidgetData` is now associated with the
-        # new widget
-        #
-        # (Only do this if the widget isn't fundamental, as those aren't in the
-        # cache.)
-        self._weak_widgets_by_id[new_widget._id] = new_widget
-
-        try:
-            self._weak_widget_data_by_widget[
-                new_widget
-            ] = self._weak_widget_data_by_widget.pop(old_widget)
-        except KeyError:
-            assert isinstance(new_widget, widget_base.FundamentalWidget), new_widget
 
     def find_widgets_for_reconciliation(
         self,
@@ -503,7 +534,7 @@ class Session:
     ) -> Iterable[Tuple[rx.Widget, rx.Widget]]:
         """
         Given two widget trees, find pairs of widgets which can be
-        reconciliated, i.e. which represent the "same" widget. When exactly
+        reconciled, i.e. which represent the "same" widget. When exactly
         widgets are considered to be the same is up to the implementation and
         best-effort.
 
@@ -569,10 +600,10 @@ class Session:
                     new_child = getattr(new_widget, name)
 
                     old_widgets = (
-                        [old_child] if widget_base.is_widget_class(old_child) else []
+                        [old_child] if isinstance(old_child, rx.Widget) else []
                     )
                     new_widgets = (
-                        [new_child] if widget_base.is_widget_class(new_child) else []
+                        [new_child] if isinstance(new_child, rx.Widget) else []
                     )
 
                 # List[Widget]
@@ -619,7 +650,11 @@ class Session:
         key_matches = old_widgets_by_key.keys() & new_widgets_by_key.keys()
 
         for key in key_matches:
-            yield old_widgets_by_key[key], new_widgets_by_key[key]
+            new_widget = new_widgets_by_key[key]
+            yield (
+                old_widgets_by_key[key],
+                new_widget,
+            )
 
         # Yield topological matches, taking care to not those matches which were
         # already matched by key.
