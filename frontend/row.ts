@@ -1,14 +1,20 @@
 import { replaceChildren } from './app';
-import { JsonRow } from './models';
+import { WidgetState } from './widgetBase';
+
+export type RowState = WidgetState & {
+    _type_: 'row';
+    children?: number[];
+    spacing?: number;
+};
 
 export class RowWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-row');
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonRow): void {
+    updateElement(element: HTMLElement, deltaState: RowState): void {
         replaceChildren(element, deltaState.children);
 
         if (deltaState.spacing !== undefined) {

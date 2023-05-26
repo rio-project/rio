@@ -1,8 +1,16 @@
-import { JsonMouseEventListener, JsonTextInput } from './models';
 import { pixelsPerEm, sendEvent } from './app';
+import { WidgetState } from './widgetBase';
+
+
+export type TextInputState = WidgetState & {
+    _type_: 'textInput';
+    text?: string;
+    placeholder?: string;
+    secret?: boolean;
+};
 
 export class TextInputWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('input');
         element.classList.add('reflex-text-input');
 
@@ -15,7 +23,7 @@ export class TextInputWidget {
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonTextInput): void {
+    updateElement(element: HTMLElement, deltaState: TextInputState): void {
         let cast_element = element as HTMLInputElement;
 
         if (deltaState.secret !== undefined) {

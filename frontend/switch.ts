@@ -1,9 +1,14 @@
-import { JsonSwitch } from './models';
 import { sendEvent } from './app';
+import { WidgetState } from './widgetBase';
 
+
+export type SwitchJson = WidgetState & {
+    _type_: 'switch';
+    is_on?: boolean;
+};
 
 export class SwitchWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-switch');
 
@@ -16,7 +21,7 @@ export class SwitchWidget {
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonSwitch): void {
+    updateElement(element: HTMLElement, deltaState: SwitchJson): void {
         if (deltaState.is_on !== undefined) {
             element.textContent = deltaState.is_on.toString();
             element.style.backgroundColor = deltaState.is_on ? 'green' : 'red';

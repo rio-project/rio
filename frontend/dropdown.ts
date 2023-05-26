@@ -1,8 +1,14 @@
-import { JsonDropdown } from './models';
 import { sendEvent } from './app';
+import { WidgetState } from './widgetBase';
+
+
+export type DropdownState = WidgetState & {
+    _type_: 'dropdown';
+    optionNames?: string[];
+};
 
 export class DropdownWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('select');
         element.classList.add('reflex-dropdown');
 
@@ -15,7 +21,7 @@ export class DropdownWidget {
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonDropdown): void {
+    updateElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
             element.innerHTML = '';
 

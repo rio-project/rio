@@ -1,5 +1,5 @@
-import { JsonMouseEventListener } from './models';
 import { pixelsPerEm, replaceOnlyChild, sendEvent } from './app';
+import { WidgetState } from './widgetBase';
 
 function eventMouseButtonToString(event: MouseEvent): object {
     return {
@@ -14,16 +14,26 @@ function eventMousePositionToString(event: MouseEvent): object {
     };
 }
 
+export type MouseEventListenerState = WidgetState & {
+    _type_: 'mouseEventListener';
+    child?: number;
+    reportMouseDown?: boolean;
+    reportMouseUp?: boolean;
+    reportMouseMove?: boolean;
+    reportMouseEnter?: boolean;
+    reportMouseLeave?: boolean;
+};
+
 export class MouseEventListenerWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-mouse-event-listener');
         return element;
     }
 
-    static update(
+    updateElement(
         element: HTMLElement,
-        deltaState: JsonMouseEventListener
+        deltaState: MouseEventListenerState
     ): void {
         replaceOnlyChild(element, deltaState.child);
 

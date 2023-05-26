@@ -1,14 +1,19 @@
 import { replaceChildren } from './app';
-import { JsonStack } from './models';
+import { WidgetState } from './widgetBase';
+
+export type StackState = WidgetState & {
+    _type_: 'stack';
+    children?: number[];
+};
 
 export class StackWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-stack');
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonStack): void {
+    updateElement(element: HTMLElement, deltaState: StackState): void {
         if (deltaState.children !== undefined) {
             replaceChildren(element, deltaState.children);
 

@@ -1,13 +1,19 @@
 import { replaceOnlyChild } from './app';
-import { JsonPlaceholder } from './models';
+import { WidgetState } from './widgetBase';
+
+
+export type PlaceholderState = WidgetState & {
+    _type_: 'placeholder';
+    _child_?: number;
+};
 
 export class PlaceholderWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonPlaceholder): void {
+    updateElement(element: HTMLElement, deltaState: PlaceholderState): void {
         replaceOnlyChild(element, deltaState._child_);
     }
 }

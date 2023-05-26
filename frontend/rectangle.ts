@@ -1,14 +1,24 @@
 import { colorToCss, fillToCss, replaceOnlyChild } from './app';
-import { JsonRectangle } from './models';
+import { Color, Fill } from './models';
+import { WidgetState } from './widgetBase';
+
+export type RectangleState = WidgetState & {
+    _type_: 'rectangle';
+    fill?: Fill;
+    child?: number;
+    corner_radius?: [number, number, number, number];
+    stroke_width?: number;
+    stroke_color?: Color;
+};
 
 export class RectangleWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonRectangle): void {
+    updateElement(element: HTMLElement, deltaState: RectangleState): void {
         replaceOnlyChild(element, deltaState.child);
 
         if (deltaState.fill !== undefined) {

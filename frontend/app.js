@@ -127,12 +127,12 @@ exports.TextWidget = void 0;
 var app_1 = require("./app");
 var TextWidget = /** @class */function () {
   function TextWidget() {}
-  TextWidget.build = function () {
+  TextWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-text');
     return element;
   };
-  TextWidget.update = function (element, deltaState) {
+  TextWidget.prototype.updateElement = function (element, deltaState) {
     if (deltaState.text !== undefined) {
       element.innerText = deltaState.text;
     }
@@ -171,12 +171,12 @@ exports.RowWidget = void 0;
 var app_1 = require("./app");
 var RowWidget = /** @class */function () {
   function RowWidget() {}
-  RowWidget.build = function () {
+  RowWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-row');
     return element;
   };
-  RowWidget.update = function (element, deltaState) {
+  RowWidget.prototype.updateElement = function (element, deltaState) {
     (0, app_1.replaceChildren)(element, deltaState.children);
     if (deltaState.spacing !== undefined) {
       element.style.gap = "".concat(deltaState.spacing, "rem");
@@ -185,31 +185,81 @@ var RowWidget = /** @class */function () {
   return RowWidget;
 }();
 exports.RowWidget = RowWidget;
-},{"./app":"EVxB"}],"FDPZ":[function(require,module,exports) {
+},{"./app":"EVxB"}],"DUgK":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.WidgetBase = void 0;
+var WidgetBase = /** @class */function () {
+  function WidgetBase(elementId, state) {
+    this.elementId = elementId;
+    this.state = state;
+  }
+  Object.defineProperty(WidgetBase.prototype, "element", {
+    get: function get() {
+      var element = document.getElementById(this.elementId);
+      if (element === null) {
+        throw new Error("Instance for element with id ".concat(this.elementId, " cannot find its element"));
+      }
+      return element;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  return WidgetBase;
+}();
+exports.WidgetBase = WidgetBase;
+},{}],"FDPZ":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.ColumnWidget = void 0;
 var app_1 = require("./app");
-var ColumnWidget = /** @class */function () {
-  function ColumnWidget() {}
-  ColumnWidget.build = function () {
+var widgetBase_1 = require("./widgetBase");
+var ColumnWidget = /** @class */function (_super) {
+  __extends(ColumnWidget, _super);
+  function ColumnWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  ColumnWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-column');
     return element;
   };
-  ColumnWidget.update = function (element, deltaState) {
+  ColumnWidget.prototype.updateElement = function (element, deltaState) {
     (0, app_1.replaceChildren)(element, deltaState.children);
     if (deltaState.spacing !== undefined) {
       element.style.gap = "".concat(deltaState.spacing, "rem");
     }
   };
   return ColumnWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.ColumnWidget = ColumnWidget;
-},{"./app":"EVxB"}],"aj59":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"aj59":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -219,7 +269,7 @@ exports.DropdownWidget = void 0;
 var app_1 = require("./app");
 var DropdownWidget = /** @class */function () {
   function DropdownWidget() {}
-  DropdownWidget.build = function () {
+  DropdownWidget.prototype.createElement = function () {
     var element = document.createElement('select');
     element.classList.add('reflex-dropdown');
     element.addEventListener('input', function () {
@@ -229,7 +279,7 @@ var DropdownWidget = /** @class */function () {
     });
     return element;
   };
-  DropdownWidget.update = function (element, deltaState) {
+  DropdownWidget.prototype.updateElement = function (element, deltaState) {
     if (deltaState.optionNames !== undefined) {
       element.innerHTML = '';
       for (var _i = 0, _a = deltaState.optionNames; _i < _a.length; _i++) {
@@ -254,12 +304,12 @@ exports.RectangleWidget = void 0;
 var app_1 = require("./app");
 var RectangleWidget = /** @class */function () {
   function RectangleWidget() {}
-  RectangleWidget.build = function () {
+  RectangleWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-rectangle');
     return element;
   };
-  RectangleWidget.update = function (element, deltaState) {
+  RectangleWidget.prototype.updateElement = function (element, deltaState) {
     (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.fill !== undefined) {
       element.style.background = (0, app_1.fillToCss)(deltaState.fill);
@@ -296,12 +346,12 @@ exports.StackWidget = void 0;
 var app_1 = require("./app");
 var StackWidget = /** @class */function () {
   function StackWidget() {}
-  StackWidget.build = function () {
+  StackWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-stack');
     return element;
   };
-  StackWidget.update = function (element, deltaState) {
+  StackWidget.prototype.updateElement = function (element, deltaState) {
     if (deltaState.children !== undefined) {
       (0, app_1.replaceChildren)(element, deltaState.children);
       var zIndex = 0;
@@ -346,12 +396,12 @@ function eventMousePositionToString(event) {
 }
 var MouseEventListenerWidget = /** @class */function () {
   function MouseEventListenerWidget() {}
-  MouseEventListenerWidget.build = function () {
+  MouseEventListenerWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-mouse-event-listener');
     return element;
   };
-  MouseEventListenerWidget.update = function (element, deltaState) {
+  MouseEventListenerWidget.prototype.updateElement = function (element, deltaState) {
     (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.reportMouseDown) {
       element.onmousedown = function (e) {
@@ -402,7 +452,7 @@ exports.TextInputWidget = void 0;
 var app_1 = require("./app");
 var TextInputWidget = /** @class */function () {
   function TextInputWidget() {}
-  TextInputWidget.build = function () {
+  TextInputWidget.prototype.createElement = function () {
     var element = document.createElement('input');
     element.classList.add('reflex-text-input');
     element.addEventListener('blur', function () {
@@ -412,7 +462,7 @@ var TextInputWidget = /** @class */function () {
     });
     return element;
   };
-  TextInputWidget.update = function (element, deltaState) {
+  TextInputWidget.prototype.updateElement = function (element, deltaState) {
     var cast_element = element;
     if (deltaState.secret !== undefined) {
       cast_element.type = deltaState.secret ? 'password' : 'text';
@@ -437,11 +487,11 @@ exports.PlaceholderWidget = void 0;
 var app_1 = require("./app");
 var PlaceholderWidget = /** @class */function () {
   function PlaceholderWidget() {}
-  PlaceholderWidget.build = function () {
+  PlaceholderWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     return element;
   };
-  PlaceholderWidget.update = function (element, deltaState) {
+  PlaceholderWidget.prototype.updateElement = function (element, deltaState) {
     (0, app_1.replaceOnlyChild)(element, deltaState._child_);
   };
   return PlaceholderWidget;
@@ -457,7 +507,7 @@ exports.SwitchWidget = void 0;
 var app_1 = require("./app");
 var SwitchWidget = /** @class */function () {
   function SwitchWidget() {}
-  SwitchWidget.build = function () {
+  SwitchWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-switch');
     element.addEventListener('click', function () {
@@ -467,7 +517,7 @@ var SwitchWidget = /** @class */function () {
     });
     return element;
   };
-  SwitchWidget.update = function (element, deltaState) {
+  SwitchWidget.prototype.updateElement = function (element, deltaState) {
     if (deltaState.is_on !== undefined) {
       element.textContent = deltaState.is_on.toString();
       element.style.backgroundColor = deltaState.is_on ? 'green' : 'red';
@@ -507,6 +557,7 @@ var sessionToken = '{session_token}';
 var initialMessages = '{initial_messages}';
 var socket = null;
 exports.pixelsPerEm = 16;
+var elementsToInstances = new WeakMap();
 function colorToCss(color) {
   var r = color[0],
     g = color[1],
@@ -586,7 +637,8 @@ function updateWidgetStates(message, rootWidgetId) {
   // element
   for (var id in message) {
     var deltaState = message[id];
-    var element = document.getElementById('reflex-id-' + id);
+    var elementId = "reflex-id-".concat(id);
+    var element = document.getElementById(elementId);
     // This is a reused element, nothing to do
     if (element) {
       continue;
@@ -597,10 +649,12 @@ function updateWidgetStates(message, rootWidgetId) {
     if (!widgetClass) {
       throw "Encountered unknown widget type: ".concat(deltaState._type_);
     }
+    // Create an instance for this widget
+    var instance = new widgetClass(elementId, deltaState);
     // Build the widget
-    element = widgetClass.build();
+    element = instance.createElement();
     // Add a unique ID to the widget
-    element.id = 'reflex-id-' + id;
+    element.id = elementId;
     // Add the common css class to the widget
     element.classList.add('reflex-widget');
     // Store the widget's class name in the element. Used for debugging.
@@ -610,6 +664,8 @@ function updateWidgetStates(message, rootWidgetId) {
     if (key !== undefined) {
       element.setAttribute('dbg-key', "".concat(key));
     }
+    // Create a mapping from the element to the widget instance
+    elementsToInstances.set(element, instance);
     // Keep the widget alive
     latentWidgets.appendChild(element);
   }
@@ -620,9 +676,13 @@ function updateWidgetStates(message, rootWidgetId) {
     if (!element) {
       throw "Failed to find widget with id ".concat(id, ", despite only just creating it!?");
     }
+    // Perform updates common to all widgets
     commonUpdate(element, deltaState);
-    var widgetClass = widgetClasses[deltaState._type_];
-    widgetClass.update(element, deltaState);
+    // Perform updates specific to this widget type
+    var instance = elementsToInstances.get(element);
+    instance.updateElement(element, deltaState);
+    // Update the widget's state
+    instance.state = __assign(__assign({}, instance.state), deltaState);
   }
   // Replace the root widget if requested
   if (rootWidgetId !== null) {

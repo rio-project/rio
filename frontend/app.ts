@@ -4,17 +4,20 @@ import { ColumnWidget } from './column';
 import { DropdownWidget } from './dropdown';
 import { RectangleWidget } from './rectangle';
 import { StackWidget } from './stack';
-import { Color, Fill, JsonWidget } from './models';
+import { Color, Fill } from './models';
 import { MouseEventListenerWidget } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
 import { PlaceholderWidget } from './placeholder';
 import { SwitchWidget } from './switch';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
 
-var socket: WebSocket | null = null;
+let socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
+
+const elementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
 
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
@@ -93,7 +96,7 @@ function processMessage(message: any) {
 }
 
 function updateWidgetStates(
-    message: { [id: number]: JsonWidget },
+    message: { [id: number]: WidgetState },
     rootWidgetId: number | null
 ) {
     // Create a HTML element to hold all latent widgets, so they aren't
@@ -107,7 +110,8 @@ function updateWidgetStates(
     // element
     for (let id in message) {
         let deltaState = message[id];
-        let element = document.getElementById('reflex-id-' + id);
+        let elementId = `reflex-id-${id}`;
+        let element = document.getElementById(elementId);
 
         // This is a reused element, nothing to do
         if (element) {
@@ -122,11 +126,14 @@ function updateWidgetStates(
             throw `Encountered unknown widget type: ${deltaState._type_}`;
         }
 
+        // Create an instance for this widget
+        let instance: WidgetBase = new widgetClass(elementId, deltaState);
+
         // Build the widget
-        element = widgetClass.build() as HTMLElement;
+        element = instance.createElement();
 
         // Add a unique ID to the widget
-        element.id = 'reflex-id-' + id;
+        element.id = elementId;
 
         // Add the common css class to the widget
         element.classList.add('reflex-widget');
@@ -139,6 +146,9 @@ function updateWidgetStates(
         if (key !== undefined) {
             element.setAttribute('dbg-key', `${key}`);
         }
+
+        // Create a mapping from the element to the widget instance
+        elementsToInstances.set(element, instance);
 
         // Keep the widget alive
         latentWidgets.appendChild(element);
@@ -153,10 +163,18 @@ function updateWidgetStates(
             throw `Failed to find widget with id ${id}, despite only just creating it!?`;
         }
 
+        // Perform updates common to all widgets
         commonUpdate(element!, deltaState);
 
-        const widgetClass = widgetClasses[deltaState._type_];
-        widgetClass.update(element!, deltaState as any);
+        // Perform updates specific to this widget type
+        let instance = elementsToInstances.get(element!) as WidgetBase;
+        instance.updateElement(element, deltaState);
+
+        // Update the widget's state
+        instance.state = {
+            ...instance.state,
+            ...deltaState,
+        };
     }
 
     // Replace the root widget if requested
@@ -170,7 +188,7 @@ function updateWidgetStates(
     latentWidgets.remove();
 }
 
-function commonUpdate(element: HTMLElement, state: JsonWidget) {
+function commonUpdate(element: HTMLElement, state: WidgetState) {
     if (state._margin_ !== undefined) {
         let [left, top, right, bottom] = state._margin_;
 

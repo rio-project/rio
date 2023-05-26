@@ -1,14 +1,26 @@
-import { JsonText } from './models';
+import { Color } from './models';
 import { colorToCss } from './app';
+import { WidgetState } from './widgetBase';
+
+export type TextState = WidgetState & {
+    text?: string;
+    multiline?: boolean;
+    font?: string;
+    font_color?: Color;
+    font_size?: number;
+    font_weight?: string;
+    italic?: boolean;
+    underlined?: boolean;
+};
 
 export class TextWidget {
-    static build(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-text');
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonText): void {
+    updateElement(element: HTMLElement, deltaState: TextState): void {
         if (deltaState.text !== undefined) {
             element.innerText = deltaState.text;
         }
