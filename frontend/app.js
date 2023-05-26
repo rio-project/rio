@@ -146,7 +146,7 @@ var TextWidget = /** @class */function () {
       element.style.color = (0, app_1.colorToCss)(deltaState.font_color);
     }
     if (deltaState.font_size !== undefined) {
-      element.style.fontSize = deltaState.font_size + 'em';
+      element.style.fontSize = deltaState.font_size + 'rem';
     }
     if (deltaState.font_weight !== undefined) {
       element.style.fontWeight = deltaState.font_weight;
@@ -178,6 +178,9 @@ var RowWidget = /** @class */function () {
   };
   RowWidget.update = function (element, deltaState) {
     (0, app_1.replaceChildren)(element, deltaState.children);
+    if (deltaState.spacing !== undefined) {
+      element.style.gap = "".concat(deltaState.spacing, "rem");
+    }
   };
   return RowWidget;
 }();
@@ -199,6 +202,9 @@ var ColumnWidget = /** @class */function () {
   };
   ColumnWidget.update = function (element, deltaState) {
     (0, app_1.replaceChildren)(element, deltaState.children);
+    if (deltaState.spacing !== undefined) {
+      element.style.gap = "".concat(deltaState.spacing, "rem");
+    }
   };
   return ColumnWidget;
 }();
@@ -264,7 +270,17 @@ var RectangleWidget = /** @class */function () {
         topRight = _a[1],
         bottomRight = _a[2],
         bottomLeft = _a[3];
-      element.style.borderRadius = "".concat(topLeft, "em ").concat(topRight, "em ").concat(bottomRight, "em ").concat(bottomLeft, "em");
+      element.style.borderRadius = "".concat(topLeft, "rem ").concat(topRight, "rem ").concat(bottomRight, "rem ").concat(bottomLeft, "rem");
+    }
+    if (deltaState.stroke_width !== undefined) {
+      element.style.borderWidth = "".concat(deltaState.stroke_width, "rem");
+    }
+    if (deltaState.stroke_color !== undefined) {
+      if (deltaState.stroke_color === null) {
+        element.style.borderColor = 'transparent';
+      } else {
+        element.style.borderColor = (0, app_1.colorToCss)(deltaState.stroke_color);
+      }
     }
   };
   return RectangleWidget;
@@ -316,16 +332,16 @@ var MarginWidget = /** @class */function () {
   MarginWidget.update = function (element, state) {
     (0, app_1.replaceOnlyChild)(element, state.child);
     if (state.margin_left !== undefined) {
-      element.style.marginLeft = "".concat(state.margin_left, "em");
+      element.style.marginLeft = "".concat(state.margin_left, "rem");
     }
     if (state.margin_top !== undefined) {
-      element.style.marginTop = "".concat(state.margin_top, "em");
+      element.style.marginTop = "".concat(state.margin_top, "rem");
     }
     if (state.margin_right !== undefined) {
-      element.style.marginRight = "".concat(state.margin_right, "em");
+      element.style.marginRight = "".concat(state.margin_right, "rem");
     }
     if (state.margin_bottom !== undefined) {
-      element.style.marginBottom = "".concat(state.margin_bottom, "em");
+      element.style.marginBottom = "".concat(state.margin_bottom, "rem");
     }
   };
   return MarginWidget;
@@ -505,14 +521,14 @@ var OverrideWidget = /** @class */function () {
       if (deltaState.width === null) {
         element.style.removeProperty('width');
       } else {
-        element.style.width = "".concat(deltaState.width, "em");
+        element.style.width = "".concat(deltaState.width, "rem");
       }
     }
     if (deltaState.height !== undefined) {
       if (deltaState.height === null) {
         element.style.removeProperty('height');
       } else {
-        element.style.height = "".concat(deltaState.height, "em");
+        element.style.height = "".concat(deltaState.height, "rem");
       }
     }
   };

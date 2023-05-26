@@ -32,3 +32,15 @@ class HostedAsset:
         ), "server_external_url must not end with a slash"
 
         return f"{server_external_url}/asset/{self.secret_id}"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, HostedAsset):
+            return NotImplemented
+
+        if self.media_type != other.media_type:
+            return False
+
+        if isinstance(self.data, bytes) and isinstance(other.data, bytes):
+            return self.data is other.data
+
+        return self.data == other.data

@@ -1,4 +1,4 @@
-import { fillToCss, replaceOnlyChild } from './app';
+import { colorToCss, fillToCss, replaceOnlyChild } from './app';
 import { JsonRectangle } from './models';
 
 export class RectangleWidget {
@@ -18,7 +18,19 @@ export class RectangleWidget {
         if (deltaState.corner_radius !== undefined) {
             const [topLeft, topRight, bottomRight, bottomLeft] =
                 deltaState.corner_radius;
-            element.style.borderRadius = `${topLeft}em ${topRight}em ${bottomRight}em ${bottomLeft}em`;
+            element.style.borderRadius = `${topLeft}rem ${topRight}rem ${bottomRight}rem ${bottomLeft}rem`;
+        }
+
+        if (deltaState.stroke_width !== undefined) {
+            element.style.borderWidth = `${deltaState.stroke_width}rem`;
+        }
+
+        if (deltaState.stroke_color !== undefined) {
+            if (deltaState.stroke_color === null) {
+                element.style.borderColor = 'transparent';
+            } else {
+                element.style.borderColor = colorToCss(deltaState.stroke_color);
+            }
         }
     }
 }

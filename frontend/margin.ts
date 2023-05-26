@@ -11,19 +11,19 @@ export class MarginWidget {
         replaceOnlyChild(element, state.child);
 
         if (state.margin_left !== undefined) {
-            element.style.marginLeft = `${state.margin_left}em`;
+            element.style.marginLeft = `${state.margin_left}rem`;
         }
 
         if (state.margin_top !== undefined) {
-            element.style.marginTop = `${state.margin_top}em`;
+            element.style.marginTop = `${state.margin_top}rem`;
         }
 
         if (state.margin_right !== undefined) {
-            element.style.marginRight = `${state.margin_right}em`;
+            element.style.marginRight = `${state.margin_right}rem`;
         }
 
         if (state.margin_bottom !== undefined) {
-            element.style.marginBottom = `${state.margin_bottom}em`;
+            element.style.marginBottom = `${state.margin_bottom}rem`;
         }
     }
 }

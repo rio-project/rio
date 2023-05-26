@@ -28,7 +28,7 @@ export class TextWidget {
         }
 
         if (deltaState.font_size !== undefined) {
-            element.style.fontSize = deltaState.font_size + 'em';
+            element.style.fontSize = deltaState.font_size + 'rem';
         }
 
         if (deltaState.font_weight !== undefined) {

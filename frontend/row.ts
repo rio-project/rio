@@ -10,5 +10,9 @@ export class RowWidget {
 
     static update(element: HTMLElement, deltaState: JsonRow): void {
         replaceChildren(element, deltaState.children);
+
+        if (deltaState.spacing !== undefined) {
+            element.style.gap = `${deltaState.spacing}rem`;
+        }
     }
 }

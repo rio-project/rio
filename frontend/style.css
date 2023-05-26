@@ -1,3 +1,16 @@
+:root {
+  --color-dim: #dddddd;
+  --color-light: #eeeeee;
+  --color-font: #000000;
+  --color-accent: #e80265;
+
+  --corner-radius: 0.4rem;
+
+  --transition-slow: .6s;
+  --transition-med: 0.2s;
+  --transition-fast: 0.1s;
+}
+
 body {
     width: 100vw;
     height: 100vh;
@@ -27,6 +40,7 @@ body {
 .reflex-rectangle {
     flex-grow: 1;
     flex-shrink: 1;
+    border-style: solid;
 }
 
 .reflex-stack {
@@ -50,3 +64,58 @@ body {
     width: unset !important;
     height: unset !important;
 }
+
+/* Text Input */
+.reflex-text-input {
+  height: 1.2rem;
+
+  background-color: var(--color-dim);
+  color: black;
+  caret-color: var(--color-accent);
+
+  border-radius: var(--corner-radius);
+  border: 1.5px solid transparent;
+
+  padding: 0.3rem 0.5rem;
+  text-align: center;
+  outline: none;
+
+  transition: background-color var(--transition-slow) ease-in-out;
+  -moz-transition: background-color var(--transition-slow) ease-in-out;
+
+  transition: border var(--transition-fast) ease-in-out;
+  -moz-transition: border var(--transition-fast) ease-in-out;
+}
+
+.reflex-text-input:hover {
+  background-color: var(--color-light);
+  border: 1.5px solid var(--color-accent);
+}
+
+.reflex-text-input:focus {
+  background-color: var(--color-light);
+  border: 1.5px solid var(--color-accent);
+}
+
+
+/* Dropdown */
+.reflex-dropdown {
+  height: 2.0rem;
+
+  background-color: var(--color-dim);
+  color: black;
+  caret-color: var(--color-accent);
+
+  border-radius: var(--corner-radius);
+  border: 1.5px solid transparent;
+
+  padding: 0.3rem 0.5rem;
+  text-align: center;
+  outline: none;
+}
+
+.reflex-dropdown:hover {
+  background-color: var(--color-light);
+  border: 1.5px solid var(--color-accent);
+}
+

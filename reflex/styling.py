@@ -1,6 +1,7 @@
 import colorsys
 from abc import ABC, abstractmethod
-from typing import Callable, ClassVar, Dict, Literal, Tuple, Union
+from dataclasses import dataclass
+from typing import Callable, ClassVar, Dict, Iterable, Literal, Tuple, Union
 
 from .common import Jsonable
 from .image_source import ImageLike, ImageSource
@@ -78,7 +79,6 @@ class Color:
             green=int(hex_color[2:4], 16) / 255,
             blue=int(hex_color[4:6], 16) / 255,
             alpha=int(hex_color[6:8], 16) / 255 if len(hex_color) == 8 else 1.0,
-            gamma="srgb",
         )
 
     @classmethod
@@ -224,6 +224,29 @@ class Color:
 
         return Color._map_rgb(self, lambda x: max(x - amount, 0))
 
+    def contrasting(self, scale: float = 0.5) -> "Color":
+        if scale < 0.0 or scale > 1.0:
+            raise ValueError("`scale` must be between 0.0 and 1.0")
+
+        brightness = self.value
+
+        if brightness > 0.5:
+            return self._map_rgb(lambda x: x * (1 - scale))
+
+        return self.brighter((1 - brightness) * (1 - scale))
+
+    def __repr__(self) -> str:
+        return f"<Color {self.hex}>"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Color):
+            return NotImplemented
+
+        return self.rgba == other.rgba
+
+    def __hash__(self) -> int:
+        return hash(self.rgba)
+
     # Greys
     BLACK: ClassVar["Color"]
     GREY: ClassVar["Color"]
@@ -274,11 +297,9 @@ class Fill(ABC):
         raise NotImplementedError()
 
 
+@dataclass(frozen=True, eq=True)
 class SolidFill(Fill):
     color: Color
-
-    def __init__(self, color: Color):
-        self.color = color
 
     def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
         return {
@@ -287,7 +308,11 @@ class SolidFill(Fill):
         }
 
 
+@dataclass(frozen=True, eq=True)
 class LinearGradientFill(Fill):
+    stops: Iterable[Tuple[Color, float]]
+    angle_degrees: float = 0.0
+
     def __init__(
         self,
         *stops: Tuple[Color, float],
@@ -298,9 +323,10 @@ class LinearGradientFill(Fill):
             raise ValueError("Gradients must have at least 1 stop")
 
         # Sort and store the stops
-        self.stops = tuple(sorted(stops, key=lambda x: x[1]))
-
-        self.angle_degrees = angle_degrees
+        vars(self).update(
+            stops=tuple(sorted(stops, key=lambda x: x[1])),
+            angle_degrees=angle_degrees,
+        )
 
     def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
         return {
@@ -334,3 +360,12 @@ class ImageFill(Fill):
             "imageUrl": image_url,
             "fillMode": self._fill_mode,
         }
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ImageFill):
+            return NotImplemented
+
+        return self._image == other._image and self._fill_mode == other._fill_mode
+
+    def __hash__(self) -> int:
+        return hash((self._image, self._fill_mode))

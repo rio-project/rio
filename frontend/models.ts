@@ -33,12 +33,14 @@ export type JsonRow = {
     _type_: 'row';
     _python_type_: string;
     children?: number[];
+    spacing?: number;
 };
 
 export type JsonColumn = {
     _type_: 'column';
     _python_type_: string;
     children?: number[];
+    spacing?: number;
 };
 
 export type JsonRectangle = {
@@ -47,6 +49,8 @@ export type JsonRectangle = {
     fill?: Fill;
     child?: number;
     corner_radius?: [number, number, number, number];
+    stroke_width?: number;
+    stroke_color?: Color;
 };
 
 export type JsonStack = {

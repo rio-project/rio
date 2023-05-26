@@ -14,7 +14,7 @@ export class OverrideWidget {
             if (deltaState.width === null) {
                 element.style.removeProperty('width');
             } else {
-                element.style.width = `${deltaState.width}em`;
+                element.style.width = `${deltaState.width}rem`;
             }
         }
 
@@ -22,7 +22,7 @@ export class OverrideWidget {
             if (deltaState.height === null) {
                 element.style.removeProperty('height');
             } else {
-                element.style.height = `${deltaState.height}em`;
+                element.style.height = `${deltaState.height}rem`;
             }
         }
     }

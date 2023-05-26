@@ -284,6 +284,9 @@ class Session:
                 return None
 
             for arg in args:
+                if arg is None:
+                    continue
+
                 # Callable doesn't play nice with `isinstance`
                 if isinstance(arg, Callable) and callable(value):
                     raise WontSerialize()
@@ -340,7 +343,13 @@ class Session:
         # Add user-defined state
         for name, type_ in typing.get_type_hints(type(widget)).items():
             # Skip some values
-            if name in ("_",):  # Used to mark keyword-only arguments in dataclasses
+            if name in (
+                "_",
+                "_session_",
+                "_explicitly_set_properties_",
+                "_init_signature_",
+                "_state_properties_",
+            ):
                 continue
 
             # Let the serialization function handle the value

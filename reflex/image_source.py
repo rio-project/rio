@@ -49,6 +49,15 @@ class ImageSource:
                 data=buffer.getvalue(),
             )
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ImageSource):
+            return NotImplemented
+
+        return self._url == other._url and self._asset == other._asset
+
+    def __hash__(self) -> int:
+        return hash((self._url, self._asset))
+
     async def _try_fetch_as_blob(self) -> Tuple[bytes, str]:
         """
         Try to fetch the image as blob & media type. Raises a `ValueError` if

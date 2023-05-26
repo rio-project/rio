@@ -20,3 +20,5 @@ __all__ = [
 
 class Row(FundamentalWidget):
     children: List[Widget]
+    _: KW_ONLY
+    spacing: float = 0.0

@@ -11,5 +11,9 @@ export class ColumnWidget {
 
     static update(element: HTMLElement, deltaState: JsonColumn): void {
         replaceChildren(element, deltaState.children);
+
+        if (deltaState.spacing !== undefined) {
+            element.style.gap = `${deltaState.spacing}rem`;
+        }
     }
 }

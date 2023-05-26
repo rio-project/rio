@@ -96,6 +96,7 @@ class LoginWidget(rx.Widget):
                     rx.Button(
                         "Login",
                         on_press=self.login,
+                        major=True,
                     ),
                     rx.Switch(),
                     rx.Dropdown({"foo": 1, "bar": 2}, on_change=print),
@@ -118,6 +119,7 @@ class SimpleMenu(rx.Widget):
                     rx.Button(
                         name,
                         on_press=lambda _: print(f"Pressed {name}"),
+                        major=True,
                     ),
                     margin_top=0 if ii == 0 else 0.5,
                 )
