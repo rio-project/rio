@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import functools
 import inspect
 import traceback
 import typing
@@ -211,6 +212,21 @@ class Widget(ABC):
     _: KW_ONLY
     key: Optional[str] = None
 
+    margin: Optional[float] = None
+    margin_x: Optional[float] = None
+    margin_y: Optional[float] = None
+
+    margin_left: Optional[float] = None
+    margin_top: Optional[float] = None
+    margin_right: Optional[float] = None
+    margin_bottom: Optional[float] = None
+
+    width: Optional[float] = None
+    height: Optional[float] = None
+
+    align_x: Optional[float] = None
+    align_y: Optional[float] = None
+
     # Injected by the session when the widget is refreshed
     _session_: Optional["session.Session"] = dataclasses.field(default=None, init=False)
 
@@ -234,6 +250,19 @@ class Widget(ABC):
 
         return self
 
+    def _custom_init(self):
+        def elvis(*args):
+            for arg in args:
+                if arg is not None:
+                    return arg
+
+            assert False
+
+        self.margin_left = elvis(self.margin_left, self.margin_x, self.margin, 0)
+        self.margin_top = elvis(self.margin_top, self.margin_y, self.margin, 0)
+        self.margin_right = elvis(self.margin_right, self.margin_x, self.margin, 0)
+        self.margin_bottom = elvis(self.margin_bottom, self.margin_y, self.margin, 0)
+
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
@@ -245,6 +274,17 @@ class Widget(ABC):
 
         # Apply the dataclass transform
         dataclasses.dataclass(unsafe_hash=True, repr=False)(cls)
+
+        # Replace the `__init__` method, so custom code is called afterwards
+        if cls.__base__ is Widget:
+            original_init = cls.__init__
+
+            @functools.wraps(original_init)
+            def replacement_init(self, *args, **kwargs):
+                original_init(self, *args, **kwargs)
+                self._custom_init()
+
+            cls.__init__ = replacement_init
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)
@@ -294,6 +334,9 @@ class Widget(ABC):
                 "_session_",
                 "_explicitly_set_properties_",
                 "_init_signature_",
+                "margin",
+                "margin_x",
+                "margin_y",
             ):
                 continue
 

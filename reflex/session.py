@@ -340,6 +340,23 @@ class Session:
                 "_child_": self.lookup_widget_data(widget).build_result._id,
             }
 
+        # Add layout properties, in a more succinct way than sending them
+        # separately
+        result["_margin_"] = (
+            widget.margin_left,
+            widget.margin_right,
+            widget.margin_top,
+            widget.margin_bottom,
+        )
+        result["_size_"] = (
+            widget.width,
+            widget.height,
+        )
+        result["_align_"] = (
+            widget.align_x,
+            widget.align_y,
+        )
+
         # Add user-defined state
         for name, type_ in typing.get_type_hints(type(widget)).items():
             # Skip some values
@@ -349,6 +366,17 @@ class Session:
                 "_explicitly_set_properties_",
                 "_init_signature_",
                 "_state_properties_",
+                "margin",
+                "margin_x",
+                "margin_y",
+                "margin_left",
+                "margin_right",
+                "margin_top",
+                "margin_bottom",
+                "width",
+                "height",
+                "align_x",
+                "align_y",
             ):
                 continue
 

@@ -73,12 +73,10 @@ class Button(widget_base.Widget):
         # Construct the result
         return rx.MouseEventListener(
             rx.Rectangle(
-                child=rx.Margin(
-                    rx.Text(
-                        self.text,
-                        font_weight="bold" if self.major else "normal",
-                        font_color=fill.contrasting(),
-                    ),
+                child=rx.Text(
+                    self.text,
+                    font_weight="bold" if self.major else "normal",
+                    font_color=fill.contrasting(),
                     margin=0.3,
                 ),
                 fill=fill,

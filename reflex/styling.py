@@ -225,6 +225,14 @@ class Color:
         return Color._map_rgb(self, lambda x: max(x - amount, 0))
 
     def contrasting(self, scale: float = 0.5) -> "Color":
+        """
+        Return a color which is similar to this one, but different enough to be
+        legible when used as text on top of this color.
+
+        `scale` controls just how different the color will be. A value of `0`
+        will return the same color, a value of `1` will return a color that is
+        as contrasting as possible.
+        """
         if scale < 0.0 or scale > 1.0:
             raise ValueError("`scale` must be between 0.0 and 1.0")
 

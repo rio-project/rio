@@ -24,23 +24,19 @@ class CorporateCard(rx.Widget):
         margin = 0.5
 
         if self.heading is None:
-            heading_child = rx.Override(
-                rx.Rectangle(
-                    fill=rx.Color.BLACK,
-                    corner_radius=(radius, radius, 0, 0),
-                ),
+            heading_child = rx.Rectangle(
+                fill=rx.Color.BLACK,
+                corner_radius=(radius, radius, 0, 0),
                 height=0.5,
             )
         else:
             heading_child = rx.Rectangle(
                 fill=rx.Color.BLACK,
-                child=rx.Margin(
-                    rx.Text(
-                        self.heading,
-                        font_color=rx.Color.WHITE,
-                        font_weight="bold",
-                        font_size=1.2,
-                    ),
+                child=rx.Text(
+                    self.heading,
+                    font_color=rx.Color.WHITE,
+                    font_weight="bold",
+                    font_size=1.2,
                     margin=margin,
                 ),
                 corner_radius=(radius, radius, 0, 0),
@@ -51,10 +47,7 @@ class CorporateCard(rx.Widget):
                 heading_child,
                 rx.Rectangle(
                     fill=CORPORATE_YELLOW,
-                    child=rx.Margin(
-                        self.child,
-                        margin=margin,
-                    ),
+                    child=self.child,
                     corner_radius=(0, 0, radius, radius),
                 ),
             ],
@@ -78,19 +71,15 @@ class LoginWidget(rx.Widget):
         return CorporateCard(
             rx.Column(
                 children=[
-                    rx.Margin(
-                        rx.TextInput(
-                            text=LoginWidget.username,
-                            placeholder="Benutzername",
-                        ),
+                    rx.TextInput(
+                        text=LoginWidget.username,
+                        placeholder="Benutzername",
                         margin_bottom=1,
                     ),
-                    rx.Margin(
-                        rx.TextInput(
-                            text=LoginWidget.password,
-                            placeholder="Passwort",
-                            secret=True,
-                        ),
+                    rx.TextInput(
+                        text=LoginWidget.password,
+                        placeholder="Passwort",
+                        secret=True,
                         margin_bottom=1,
                     ),
                     rx.Button(
@@ -115,21 +104,17 @@ class SimpleMenu(rx.Widget):
 
         for ii, name in enumerate(self.children):
             child_widgets.append(
-                rx.Margin(
-                    rx.Button(
-                        name,
-                        on_press=lambda _: print(f"Pressed {name}"),
-                        major=True,
-                    ),
+                rx.Button(
+                    name,
+                    on_press=lambda _: print(f"Pressed {name}"),
+                    major=True,
                     margin_top=0 if ii == 0 else 0.5,
                 )
             )
 
-        return rx.Override(
-            CorporateCard(
-                heading=self.heading,
-                child=rx.Column(child_widgets),
-            ),
+        return CorporateCard(
+            heading=self.heading,
+            child=rx.Column(child_widgets),
             width=30,
         )
 
@@ -141,44 +126,34 @@ class MainPage(rx.Widget):
         print(f"Logged in! The session token is {self.sap_session_token}.")
 
     def build_login_view(self) -> rx.Widget:
-        return rx.Align(
-            rx.Override(
-                rx.Margin(
-                    LoginWidget(
-                        sap_session_token=MainPage.sap_session_token,
-                        on_login=self.on_login,
-                    ),
-                    margin_left=4,
-                ),
-                width=30,
-                height=15,
-            ),
+        return LoginWidget(
+            sap_session_token=MainPage.sap_session_token,
+            on_login=self.on_login,
+            margin_left=4,
+            width=30,
+            height=15,
             align_y=0.35,
         )
 
     def build_menu(self):
-        return rx.Align(
-            rx.Column(
-                [
-                    SimpleMenu(
-                        "Reports",
-                        [
-                            "Personalbericht",
-                            "Zustellbericht",
-                        ],
-                    ),
-                    rx.Margin(
-                        SimpleMenu(
-                            "Tasks",
-                            [
-                                "Scheduler",
-                                "Laufende Tasks",
-                            ],
-                        ),
-                        margin_top=1,
-                    ),
-                ]
-            ),
+        return rx.Column(
+            [
+                SimpleMenu(
+                    "Reports",
+                    [
+                        "Personalbericht",
+                        "Zustellbericht",
+                    ],
+                ),
+                SimpleMenu(
+                    "Tasks",
+                    [
+                        "Scheduler",
+                        "Laufende Tasks",
+                    ],
+                    margin_top=1,
+                ),
+            ],
             align_x=0.5,
             align_y=0.3,
         )

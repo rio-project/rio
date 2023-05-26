@@ -315,80 +315,6 @@ var StackWidget = /** @class */function () {
   return StackWidget;
 }();
 exports.StackWidget = StackWidget;
-},{"./app":"EVxB"}],"JoLr":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.MarginWidget = void 0;
-var app_1 = require("./app");
-var MarginWidget = /** @class */function () {
-  function MarginWidget() {}
-  MarginWidget.build = function () {
-    var element = document.createElement('div');
-    return element;
-  };
-  MarginWidget.update = function (element, state) {
-    (0, app_1.replaceOnlyChild)(element, state.child);
-    if (state.margin_left !== undefined) {
-      element.style.marginLeft = "".concat(state.margin_left, "rem");
-    }
-    if (state.margin_top !== undefined) {
-      element.style.marginTop = "".concat(state.margin_top, "rem");
-    }
-    if (state.margin_right !== undefined) {
-      element.style.marginRight = "".concat(state.margin_right, "rem");
-    }
-    if (state.margin_bottom !== undefined) {
-      element.style.marginBottom = "".concat(state.margin_bottom, "rem");
-    }
-  };
-  return MarginWidget;
-}();
-exports.MarginWidget = MarginWidget;
-},{"./app":"EVxB"}],"cKKU":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.AlignWidget = void 0;
-var app_1 = require("./app");
-var AlignWidget = /** @class */function () {
-  function AlignWidget() {}
-  AlignWidget.build = function () {
-    var element = document.createElement('div');
-    element.classList.add('reflex-align');
-    return element;
-  };
-  AlignWidget.update = function (element, state) {
-    (0, app_1.replaceOnlyChild)(element, state.child);
-    var transform_x;
-    if (state.align_x !== undefined) {
-      if (state.align_x === null) {
-        element.style.left = 'unset';
-        transform_x = '0%';
-      } else {
-        element.style.left = "".concat(state.align_x * 100, "%");
-        transform_x = "".concat(state.align_x * -100, "%");
-      }
-    }
-    var transform_y;
-    if (state.align_y !== undefined) {
-      if (state.align_y === null) {
-        element.style.top = 'unset';
-        transform_y = '0%';
-      } else {
-        element.style.top = "".concat(state.align_y * 100, "%");
-        transform_y = "".concat(state.align_y * -100, "%");
-      }
-    }
-    element.style.transform = "translate(".concat(transform_x, ", ").concat(transform_y, ")");
-  };
-  return AlignWidget;
-}();
-exports.AlignWidget = AlignWidget;
 },{"./app":"EVxB"}],"K1Om":[function(require,module,exports) {
 "use strict";
 
@@ -501,40 +427,6 @@ var TextInputWidget = /** @class */function () {
   return TextInputWidget;
 }();
 exports.TextInputWidget = TextInputWidget;
-},{"./app":"EVxB"}],"X9Uo":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.OverrideWidget = void 0;
-var app_1 = require("./app");
-var OverrideWidget = /** @class */function () {
-  function OverrideWidget() {}
-  OverrideWidget.build = function () {
-    var element = document.createElement('div');
-    return element;
-  };
-  OverrideWidget.update = function (element, deltaState) {
-    (0, app_1.replaceOnlyChild)(element, deltaState.child);
-    if (deltaState.width !== undefined) {
-      if (deltaState.width === null) {
-        element.style.removeProperty('width');
-      } else {
-        element.style.width = "".concat(deltaState.width, "rem");
-      }
-    }
-    if (deltaState.height !== undefined) {
-      if (deltaState.height === null) {
-        element.style.removeProperty('height');
-      } else {
-        element.style.height = "".concat(deltaState.height, "rem");
-      }
-    }
-  };
-  return OverrideWidget;
-}();
-exports.OverrideWidget = OverrideWidget;
 },{"./app":"EVxB"}],"When":[function(require,module,exports) {
 "use strict";
 
@@ -607,11 +499,8 @@ var column_1 = require("./column");
 var dropdown_1 = require("./dropdown");
 var rectangle_1 = require("./rectangle");
 var stack_1 = require("./stack");
-var margin_1 = require("./margin");
-var align_1 = require("./align");
 var mouseEventListener_1 = require("./mouseEventListener");
 var textInput_1 = require("./textInput");
-var override_1 = require("./override");
 var placeholder_1 = require("./placeholder");
 var switch_1 = require("./switch");
 var sessionToken = '{session_token}';
@@ -667,16 +556,13 @@ function fillToCss(fill) {
 }
 exports.fillToCss = fillToCss;
 var widgetClasses = {
-  align: align_1.AlignWidget,
   column: column_1.ColumnWidget,
-  margin: margin_1.MarginWidget,
   rectangle: rectangle_1.RectangleWidget,
   row: row_1.RowWidget,
   stack: stack_1.StackWidget,
   text: text_1.TextWidget,
   mouseEventListener: mouseEventListener_1.MouseEventListenerWidget,
   textInput: textInput_1.TextInputWidget,
-  override: override_1.OverrideWidget,
   placeholder: placeholder_1.PlaceholderWidget,
   dropdown: dropdown_1.DropdownWidget,
   switch: switch_1.SwitchWidget
@@ -734,6 +620,7 @@ function updateWidgetStates(message, rootWidgetId) {
     if (!element) {
       throw "Failed to find widget with id ".concat(id, ", despite only just creating it!?");
     }
+    commonUpdate(element, deltaState);
     var widgetClass = widgetClasses[deltaState._type_];
     widgetClass.update(element, deltaState);
   }
@@ -745,6 +632,51 @@ function updateWidgetStates(message, rootWidgetId) {
   }
   // Remove the latent widgets
   latentWidgets.remove();
+}
+function commonUpdate(element, state) {
+  if (state._margin_ !== undefined) {
+    element.style.marginLeft = "".concat(state._margin_[0], "rem");
+    element.style.marginTop = "".concat(state._margin_[1], "rem");
+    element.style.marginRight = "".concat(state._margin_[2], "rem");
+    element.style.marginBottom = "".concat(state._margin_[3], "rem");
+  }
+  if (state._size_ !== undefined) {
+    var _a = state._size_,
+      width = _a[0],
+      height = _a[1];
+    if (width === null) {
+      element.style.removeProperty('width');
+    } else {
+      element.style.width = "".concat(width, "rem");
+    }
+    if (height === null) {
+      element.style.removeProperty('height');
+    } else {
+      element.style.height = "".concat(height, "rem");
+    }
+  }
+  if (state._align_ !== undefined) {
+    var _b = state._align_,
+      align_x = _b[0],
+      align_y = _b[1];
+    var transform_x = void 0;
+    if (align_x === null) {
+      element.style.left = 'unset';
+      transform_x = '0%';
+    } else {
+      element.style.left = "".concat(align_x * 100, "%");
+      transform_x = "".concat(align_x * -100, "%");
+    }
+    var transform_y = void 0;
+    if (align_y === null) {
+      element.style.top = 'unset';
+      transform_y = '0%';
+    } else {
+      element.style.top = "".concat(align_y * 100, "%");
+      transform_y = "".concat(align_y * -100, "%");
+    }
+    element.style.transform = "translate(".concat(transform_x, ", ").concat(transform_y, ")");
+  }
 }
 function replaceOnlyChild(parentElement, childId) {
   // If undefined, do nothing
@@ -878,5 +810,5 @@ function sendEvent(element, eventType, eventArgs) {
 }
 exports.sendEvent = sendEvent;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./margin":"JoLr","./align":"cKKU","./mouseEventListener":"K1Om","./textInput":"g2Fb","./override":"X9Uo","./placeholder":"When","./switch":"RrmF"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./mouseEventListener":"K1Om","./textInput":"g2Fb","./placeholder":"When","./switch":"RrmF"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

@@ -16,9 +16,16 @@ export type Fill =
           fillMode: 'fit' | 'stretch' | 'tile' | 'zoom';
       };
 
-export type JsonText = {
-    _type_: 'text';
+export type JsonWidget = {
+    _type_: string;
     _python_type_: string;
+    _key_?: string;
+    _margin_?: [number, number, number, number];
+    _size_?: [number | null, number | null];
+    _align_?: [number | null, number | null];
+};
+
+export type JsonText = JsonWidget & {
     text?: string;
     multiline?: boolean;
     font?: string;
@@ -29,23 +36,20 @@ export type JsonText = {
     underlined?: boolean;
 };
 
-export type JsonRow = {
+export type JsonRow = JsonWidget & {
     _type_: 'row';
-    _python_type_: string;
     children?: number[];
     spacing?: number;
 };
 
-export type JsonColumn = {
+export type JsonColumn = JsonWidget & {
     _type_: 'column';
-    _python_type_: string;
     children?: number[];
     spacing?: number;
 };
 
-export type JsonRectangle = {
+export type JsonRectangle = JsonWidget & {
     _type_: 'rectangle';
-    _python_type_: string;
     fill?: Fill;
     child?: number;
     corner_radius?: [number, number, number, number];
@@ -53,15 +57,13 @@ export type JsonRectangle = {
     stroke_color?: Color;
 };
 
-export type JsonStack = {
+export type JsonStack = JsonWidget & {
     _type_: 'stack';
-    _python_type_: string;
     children?: number[];
 };
 
-export type JsonMargin = {
+export type JsonMargin = JsonWidget & {
     _type_: 'margin';
-    _python_type_: string;
     child?: number;
     margin_left?: number;
     margin_right?: number;
@@ -69,17 +71,15 @@ export type JsonMargin = {
     margin_bottom?: number;
 };
 
-export type JsonAlign = {
+export type JsonAlign = JsonWidget & {
     _type_: 'align';
-    _python_type_: string;
     child?: number;
     align_x?: number;
     align_y?: number;
 };
 
-export type JsonMouseEventListener = {
+export type JsonMouseEventListener = JsonWidget & {
     _type_: 'mouseEventListener';
-    _python_type_: string;
     child?: number;
     reportMouseDown?: boolean;
     reportMouseUp?: boolean;
@@ -88,51 +88,31 @@ export type JsonMouseEventListener = {
     reportMouseLeave?: boolean;
 };
 
-export type JsonTextInput = {
+export type JsonTextInput = JsonWidget & {
     _type_: 'textInput';
-    _python_type_: string;
     text?: string;
     placeholder?: string;
     secret?: boolean;
 };
 
-export type JsonOverride = {
+export type JsonOverride = JsonWidget & {
     _type_: 'override';
-    _python_type_: string;
     child?: number;
     width?: number;
     height?: number;
 };
 
-export type JsonDropdown = {
+export type JsonDropdown = JsonWidget & {
     _type_: 'dropdown';
-    _python_type_: string;
     optionNames?: string[];
 };
 
-export type JsonSwitch = {
+export type JsonSwitch = JsonWidget & {
     _type_: 'switch';
-    _python_type_: string;
     is_on?: boolean;
 };
 
-export type JsonPlaceholder = {
+export type JsonPlaceholder = JsonWidget & {
     _type_: 'placeholder';
-    _python_type_: string;
     _child_?: number;
 };
-
-export type JsonWidget =
-    | JsonText
-    | JsonRow
-    | JsonColumn
-    | JsonRectangle
-    | JsonStack
-    | JsonMargin
-    | JsonAlign
-    | JsonMouseEventListener
-    | JsonTextInput
-    | JsonOverride
-    | JsonDropdown
-    | JsonSwitch
-    | JsonPlaceholder;

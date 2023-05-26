@@ -1,17 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Literal, Optional
 
-from .. import messages
-from ..common import Jsonable
 from ..styling import *
-from .widget_base import (
-    EventHandler,
-    FundamentalWidget,
-    Widget,
-    call_event_handler_and_refresh,
-)
+from .widget_base import FundamentalWidget
 
 __all__ = [
     "Text",

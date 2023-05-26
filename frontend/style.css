@@ -23,6 +23,7 @@ body {
 }
 
 .reflex-widget {
+    position: relative;
     width: 100%;
     height: 100%;
     display: flex;
@@ -46,7 +47,6 @@ body {
 .reflex-stack {
     flex-grow: 1;
     flex-shrink: 1;
-    position: relative;
 }
 
 .reflex-stack > * {
@@ -58,12 +58,6 @@ body {
     bottom: 0;
 }
 
-.reflex-align {
-    position: absolute;
-
-    width: unset !important;
-    height: unset !important;
-}
 
 /* Text Input */
 .reflex-text-input {

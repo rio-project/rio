@@ -4,12 +4,9 @@ import { ColumnWidget } from './column';
 import { DropdownWidget } from './dropdown';
 import { RectangleWidget } from './rectangle';
 import { StackWidget } from './stack';
-import { MarginWidget } from './margin';
-import { AlignWidget } from './align';
 import { Color, Fill, JsonWidget } from './models';
 import { MouseEventListenerWidget } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
-import { OverrideWidget } from './override';
 import { PlaceholderWidget } from './placeholder';
 import { SwitchWidget } from './switch';
 
@@ -73,16 +70,13 @@ export function fillToCss(fill: Fill): string {
 }
 
 const widgetClasses = {
-    align: AlignWidget,
     column: ColumnWidget,
-    margin: MarginWidget,
     rectangle: RectangleWidget,
     row: RowWidget,
     stack: StackWidget,
     text: TextWidget,
     mouseEventListener: MouseEventListenerWidget,
     textInput: TextInputWidget,
-    override: OverrideWidget,
     placeholder: PlaceholderWidget,
     dropdown: DropdownWidget,
     switch: SwitchWidget,
@@ -129,7 +123,7 @@ function updateWidgetStates(
         }
 
         // Build the widget
-        element = widgetClass.build();
+        element = widgetClass.build() as HTMLElement;
 
         // Add a unique ID to the widget
         element.id = 'reflex-id-' + id;
@@ -159,6 +153,8 @@ function updateWidgetStates(
             throw `Failed to find widget with id ${id}, despite only just creating it!?`;
         }
 
+        commonUpdate(element!, deltaState);
+
         const widgetClass = widgetClasses[deltaState._type_];
         widgetClass.update(element!, deltaState as any);
     }
@@ -172,6 +168,55 @@ function updateWidgetStates(
 
     // Remove the latent widgets
     latentWidgets.remove();
+}
+
+function commonUpdate(element: HTMLElement, state: JsonWidget) {
+    if (state._margin_ !== undefined) {
+        element.style.marginLeft = `${state._margin_[0]}rem`;
+        element.style.marginTop = `${state._margin_[1]}rem`;
+        element.style.marginRight = `${state._margin_[2]}rem`;
+        element.style.marginBottom = `${state._margin_[3]}rem`;
+    }
+
+    if (state._size_ !== undefined) {
+        let [width, height] = state._size_;
+
+        if (width === null) {
+            element.style.removeProperty('width');
+        } else {
+            element.style.width = `${width}rem`;
+        }
+
+        if (height === null) {
+            element.style.removeProperty('height');
+        } else {
+            element.style.height = `${height}rem`;
+        }
+    }
+
+    if (state._align_ !== undefined) {
+        let [align_x, align_y] = state._align_;
+
+        let transform_x;
+        if (align_x === null) {
+            element.style.left = 'unset';
+            transform_x = '0%';
+        } else {
+            element.style.left = `${align_x * 100}%`;
+            transform_x = `${align_x * -100}%`;
+        }
+
+        let transform_y;
+        if (align_y === null) {
+            element.style.top = 'unset';
+            transform_y = '0%';
+        } else {
+            element.style.top = `${align_y * 100}%`;
+            transform_y = `${align_y * -100}%`;
+        }
+
+        element.style.transform = `translate(${transform_x}, ${transform_y})`;
+    }
 }
 
 export function replaceOnlyChild(
