@@ -172,10 +172,31 @@ function updateWidgetStates(
 
 function commonUpdate(element: HTMLElement, state: JsonWidget) {
     if (state._margin_ !== undefined) {
-        element.style.marginLeft = `${state._margin_[0]}rem`;
-        element.style.marginTop = `${state._margin_[1]}rem`;
-        element.style.marginRight = `${state._margin_[2]}rem`;
-        element.style.marginBottom = `${state._margin_[3]}rem`;
+        let [left, top, right, bottom] = state._margin_;
+
+        if (left === null) {
+            element.style.removeProperty('margin-left');
+        } else {
+            element.style.marginLeft = `${left}rem`;
+        }
+
+        if (top === null) {
+            element.style.removeProperty('margin-top');
+        } else {
+            element.style.marginTop = `${top}rem`;
+        }
+
+        if (right === null) {
+            element.style.removeProperty('margin-right');
+        } else {
+            element.style.marginRight = `${right}rem`;
+        }
+
+        if (bottom === null) {
+            element.style.removeProperty('margin-bottom');
+        } else {
+            element.style.marginBottom = `${bottom}rem`;
+        }
     }
 
     if (state._size_ !== undefined) {
@@ -199,23 +220,43 @@ function commonUpdate(element: HTMLElement, state: JsonWidget) {
 
         let transform_x;
         if (align_x === null) {
-            element.style.left = 'unset';
-            transform_x = '0%';
+            element.style.removeProperty('left');
+            transform_x = 0;
+
+            if (element.style.width === 'max-content') {
+                element.style.removeProperty('width');
+            }
         } else {
             element.style.left = `${align_x * 100}%`;
-            transform_x = `${align_x * -100}%`;
+            transform_x = align_x * -100;
+
+            if (!element.style.width) {
+                element.style.width = 'max-content';
+            }
         }
 
         let transform_y;
         if (align_y === null) {
-            element.style.top = 'unset';
-            transform_y = '0%';
+            element.style.removeProperty('top');
+            transform_y = 0;
+
+            if (element.style.height === 'max-content') {
+                element.style.removeProperty('height');
+            }
         } else {
             element.style.top = `${align_y * 100}%`;
-            transform_y = `${align_y * -100}%`;
+            transform_y = align_y * -100;
+
+            if (!element.style.height) {
+                element.style.height = 'max-content';
+            }
         }
 
-        element.style.transform = `translate(${transform_x}, ${transform_y})`;
+        if (transform_x === 0 && transform_y === 0) {
+            element.style.removeProperty('transform');
+        } else {
+            element.style.transform = `translate(${transform_x}%, ${transform_y}%)`;
+        }
     }
 }
 

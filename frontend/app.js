@@ -635,15 +635,36 @@ function updateWidgetStates(message, rootWidgetId) {
 }
 function commonUpdate(element, state) {
   if (state._margin_ !== undefined) {
-    element.style.marginLeft = "".concat(state._margin_[0], "rem");
-    element.style.marginTop = "".concat(state._margin_[1], "rem");
-    element.style.marginRight = "".concat(state._margin_[2], "rem");
-    element.style.marginBottom = "".concat(state._margin_[3], "rem");
+    var _a = state._margin_,
+      left = _a[0],
+      top = _a[1],
+      right = _a[2],
+      bottom = _a[3];
+    if (left === null) {
+      element.style.removeProperty('margin-left');
+    } else {
+      element.style.marginLeft = "".concat(left, "rem");
+    }
+    if (top === null) {
+      element.style.removeProperty('margin-top');
+    } else {
+      element.style.marginTop = "".concat(top, "rem");
+    }
+    if (right === null) {
+      element.style.removeProperty('margin-right');
+    } else {
+      element.style.marginRight = "".concat(right, "rem");
+    }
+    if (bottom === null) {
+      element.style.removeProperty('margin-bottom');
+    } else {
+      element.style.marginBottom = "".concat(bottom, "rem");
+    }
   }
   if (state._size_ !== undefined) {
-    var _a = state._size_,
-      width = _a[0],
-      height = _a[1];
+    var _b = state._size_,
+      width = _b[0],
+      height = _b[1];
     if (width === null) {
       element.style.removeProperty('width');
     } else {
@@ -656,26 +677,42 @@ function commonUpdate(element, state) {
     }
   }
   if (state._align_ !== undefined) {
-    var _b = state._align_,
-      align_x = _b[0],
-      align_y = _b[1];
+    var _c = state._align_,
+      align_x = _c[0],
+      align_y = _c[1];
     var transform_x = void 0;
     if (align_x === null) {
-      element.style.left = 'unset';
-      transform_x = '0%';
+      element.style.removeProperty('left');
+      transform_x = 0;
+      if (element.style.width === 'max-content') {
+        element.style.removeProperty('width');
+      }
     } else {
       element.style.left = "".concat(align_x * 100, "%");
-      transform_x = "".concat(align_x * -100, "%");
+      transform_x = align_x * -100;
+      if (!element.style.width) {
+        element.style.width = 'max-content';
+      }
     }
     var transform_y = void 0;
     if (align_y === null) {
-      element.style.top = 'unset';
-      transform_y = '0%';
+      element.style.removeProperty('top');
+      transform_y = 0;
+      if (element.style.height === 'max-content') {
+        element.style.removeProperty('height');
+      }
     } else {
       element.style.top = "".concat(align_y * 100, "%");
-      transform_y = "".concat(align_y * -100, "%");
+      transform_y = align_y * -100;
+      if (!element.style.height) {
+        element.style.height = 'max-content';
+      }
     }
-    element.style.transform = "translate(".concat(transform_x, ", ").concat(transform_y, ")");
+    if (transform_x === 0 && transform_y === 0) {
+      element.style.removeProperty('transform');
+    } else {
+      element.style.transform = "translate(".concat(transform_x, "%, ").concat(transform_y, "%)");
+    }
   }
 }
 function replaceOnlyChild(parentElement, childId) {

@@ -16,9 +16,9 @@ class ButtonPressedEvent(widget_base.WidgetEvent):
 
 class Button(widget_base.Widget):
     text: str
-    major: bool
     on_press: rx.EventHandler[ButtonPressedEvent] = None
     _: KW_ONLY
+    major: bool = True
     _is_entered: bool = False
     _is_pressed: bool = False
 
