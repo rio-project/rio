@@ -1,6 +1,5 @@
-import { pixelsPerEm, sendEvent } from './app';
-import { WidgetState } from './widgetBase';
-
+import { sendEventOverWebsocket } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 export type TextInputState = WidgetState & {
     _type_: 'textInput';
@@ -9,13 +8,13 @@ export type TextInputState = WidgetState & {
     secret?: boolean;
 };
 
-export class TextInputWidget {
+export class TextInputWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('input');
         element.classList.add('reflex-text-input');
 
         element.addEventListener('blur', () => {
-            sendEvent(element, 'textInputBlurEvent', {
+            sendEventOverWebsocket(element, 'textInputBlurEvent', {
                 text: element.value,
             });
         });

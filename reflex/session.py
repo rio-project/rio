@@ -76,6 +76,11 @@ class Session:
         # Use `register_dirty_widget` to add a widget to this set.
         self._dirty_widgets: weakref.WeakSet[rx.Widget] = weakref.WeakSet()
 
+        # HTML widgets have source code which must be evaluated by the client
+        # exactly once. Keep track of which widgets have already sent their
+        # source code.
+        self._initialized_html_widgets: Set[Type[rx.HtmlWidget]] = set()
+
     def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
@@ -122,22 +127,21 @@ class Session:
                 include_fundamental_children_recursively=True,
             )
 
-    async def refresh(self) -> None:
+    def refresh_sync(self) -> Set[rx.Widget]:
         """
-        Make sure the session state is up to date. Specifically:
+        See `refresh` for details on what this function does.
 
-        - Call build on all widgets marked as dirty
-        - Recursively do this for all freshly spawned widgets
-        - mark all widgets as clean
+        The refresh process must be performed atomically, without ever yielding
+        control flow to the async event loop. TODO WHY
 
-        Afterwards, the client is also informed of any changes, meaning that
-        after this method returns there are no more dirty widgets in the
-        session, and Python's state and the client's state are in sync.
+        To make sure async isn't used unintentionally this part of the refresh
+        function is split into a separate, synchronous function.
         """
+
         # If nothing is dirty just return. While the loop below wouldn't do
         # anything anyway, this avoids sending a message to the client.
         if not self._dirty_widgets:
-            return
+            return set()
 
         # Keep track of all widgets which are visited. Only they will be sent to
         # the client.
@@ -219,6 +223,36 @@ class Session:
             #   operations above
             else:
                 self.reconcile_tree(widget_data, build_result)
+
+        return visited_widgets
+
+    async def refresh(self) -> None:
+        """
+        Make sure the session state is up to date. Specifically:
+
+        - Call build on all widgets marked as dirty
+        - Recursively do this for all freshly spawned widgets
+        - mark all widgets as clean
+
+        Afterwards, the client is also informed of any changes, meaning that
+        after this method returns there are no more dirty widgets in the
+        session, and Python's state and the client's state are in sync.
+        """
+        # Refresh and get a set of all widgets which have been visited
+        visited_widgets = self.refresh_sync()
+
+        # Initialize all HTML widgets
+        for widget in visited_widgets:
+            if (
+                not isinstance(widget, rx.HtmlWidget)
+                or type(widget) in self._initialized_html_widgets
+            ):
+                continue
+
+            for msg in widget._build_initialization_messages():
+                await self.send_message(msg)
+
+            self._initialized_html_widgets.add(type(widget))
 
         # Send the new state to the client if necessary
         delta_states: Dict[int, Any] = {

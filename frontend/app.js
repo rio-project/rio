@@ -117,16 +117,82 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"EmPY":[function(require,module,exports) {
+})({"DUgK":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.WidgetBase = void 0;
+var app_1 = require("./app");
+/// Base class for all widgets
+var WidgetBase = /** @class */function () {
+  function WidgetBase(elementId, state) {
+    this.elementId = elementId;
+    this.state = state;
+  }
+  Object.defineProperty(WidgetBase.prototype, "element", {
+    /// Fetches the HTML element associated with this widget. This is a slow
+    /// operation and should be avoided if possible.
+    get: function get() {
+      var element = document.getElementById(this.elementId);
+      if (element === null) {
+        throw new Error("Instance for element with id ".concat(this.elementId, " cannot find its element"));
+      }
+      return element;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  /// Send a message to the python instance corresponding to this widget. The
+  /// message is an arbitrary JSON object and will be passed to the instance's
+  /// `_on_message` method.
+  WidgetBase.prototype.sendMessage = function (message) {
+    (0, app_1.sendMessageToBackend)({
+      type: 'widgetMessage',
+      // Remove the leading `reflex-id-` from the element's ID
+      widgetId: parseInt(this.elementId.substring(10)),
+      payload: message
+    });
+  };
+  return WidgetBase;
+}();
+exports.WidgetBase = WidgetBase;
+globalThis.WidgetBase = WidgetBase;
+},{"./app":"EVxB"}],"EmPY":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.TextWidget = void 0;
 var app_1 = require("./app");
-var TextWidget = /** @class */function () {
-  function TextWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var TextWidget = /** @class */function (_super) {
+  __extends(TextWidget, _super);
+  function TextWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   TextWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-text');
@@ -159,18 +225,42 @@ var TextWidget = /** @class */function () {
     }
   };
   return TextWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.TextWidget = TextWidget;
-},{"./app":"EVxB"}],"DCF0":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"DCF0":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RowWidget = void 0;
 var app_1 = require("./app");
-var RowWidget = /** @class */function () {
-  function RowWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var RowWidget = /** @class */function (_super) {
+  __extends(RowWidget, _super);
+  function RowWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   RowWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-row');
@@ -183,35 +273,9 @@ var RowWidget = /** @class */function () {
     }
   };
   return RowWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.RowWidget = RowWidget;
-},{"./app":"EVxB"}],"DUgK":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.WidgetBase = void 0;
-var WidgetBase = /** @class */function () {
-  function WidgetBase(elementId, state) {
-    this.elementId = elementId;
-    this.state = state;
-  }
-  Object.defineProperty(WidgetBase.prototype, "element", {
-    get: function get() {
-      var element = document.getElementById(this.elementId);
-      if (element === null) {
-        throw new Error("Instance for element with id ".concat(this.elementId, " cannot find its element"));
-      }
-      return element;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  return WidgetBase;
-}();
-exports.WidgetBase = WidgetBase;
-},{}],"FDPZ":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"FDPZ":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -262,18 +326,42 @@ exports.ColumnWidget = ColumnWidget;
 },{"./app":"EVxB","./widgetBase":"DUgK"}],"aj59":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DropdownWidget = void 0;
 var app_1 = require("./app");
-var DropdownWidget = /** @class */function () {
-  function DropdownWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var DropdownWidget = /** @class */function (_super) {
+  __extends(DropdownWidget, _super);
+  function DropdownWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   DropdownWidget.prototype.createElement = function () {
     var element = document.createElement('select');
     element.classList.add('reflex-dropdown');
     element.addEventListener('input', function () {
-      (0, app_1.sendEvent)(element, 'dropdownChangeEvent', {
+      (0, app_1.sendEventToBackend)(element, 'dropdownChangeEvent', {
         value: element.value
       });
     });
@@ -292,18 +380,42 @@ var DropdownWidget = /** @class */function () {
     }
   };
   return DropdownWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.DropdownWidget = DropdownWidget;
-},{"./app":"EVxB"}],"u1gD":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"u1gD":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RectangleWidget = void 0;
 var app_1 = require("./app");
-var RectangleWidget = /** @class */function () {
-  function RectangleWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var RectangleWidget = /** @class */function (_super) {
+  __extends(RectangleWidget, _super);
+  function RectangleWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   RectangleWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-rectangle');
@@ -334,18 +446,42 @@ var RectangleWidget = /** @class */function () {
     }
   };
   return RectangleWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.RectangleWidget = RectangleWidget;
-},{"./app":"EVxB"}],"E2Q9":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"E2Q9":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.StackWidget = void 0;
 var app_1 = require("./app");
-var StackWidget = /** @class */function () {
-  function StackWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var StackWidget = /** @class */function (_super) {
+  __extends(StackWidget, _super);
+  function StackWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   StackWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-stack');
@@ -363,11 +499,31 @@ var StackWidget = /** @class */function () {
     }
   };
   return StackWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.StackWidget = StackWidget;
-},{"./app":"EVxB"}],"K1Om":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"K1Om":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 var __assign = this && this.__assign || function () {
   __assign = Object.assign || function (t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -383,6 +539,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.MouseEventListenerWidget = void 0;
 var app_1 = require("./app");
+var widgetBase_1 = require("./widgetBase");
 function eventMouseButtonToString(event) {
   return {
     button: ['left', 'middle', 'right'][event.button]
@@ -394,8 +551,11 @@ function eventMousePositionToString(event) {
     y: event.clientY / app_1.pixelsPerEm
   };
 }
-var MouseEventListenerWidget = /** @class */function () {
-  function MouseEventListenerWidget() {}
+var MouseEventListenerWidget = /** @class */function (_super) {
+  __extends(MouseEventListenerWidget, _super);
+  function MouseEventListenerWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   MouseEventListenerWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-mouse-event-listener');
@@ -405,58 +565,82 @@ var MouseEventListenerWidget = /** @class */function () {
     (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.reportMouseDown) {
       element.onmousedown = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseDownEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
+        (0, app_1.sendEventToBackend)(element, 'mouseDownEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
       };
     } else {
       element.onmousedown = null;
     }
     if (deltaState.reportMouseUp) {
       element.onmouseup = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseUpEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
+        (0, app_1.sendEventToBackend)(element, 'mouseUpEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
       };
     } else {
       element.onmouseup = null;
     }
     if (deltaState.reportMouseMove) {
       element.onmousemove = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseMoveEvent', __assign({}, eventMousePositionToString(e)));
+        (0, app_1.sendEventToBackend)(element, 'mouseMoveEvent', __assign({}, eventMousePositionToString(e)));
       };
     } else {
       element.onmousemove = null;
     }
     if (deltaState.reportMouseEnter) {
       element.onmouseenter = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseEnterEvent', __assign({}, eventMousePositionToString(e)));
+        (0, app_1.sendEventToBackend)(element, 'mouseEnterEvent', __assign({}, eventMousePositionToString(e)));
       };
     } else {
       element.onmouseenter = null;
     }
     if (deltaState.reportMouseLeave) {
       element.onmouseleave = function (e) {
-        (0, app_1.sendEvent)(element, 'mouseLeaveEvent', __assign({}, eventMousePositionToString(e)));
+        (0, app_1.sendEventToBackend)(element, 'mouseLeaveEvent', __assign({}, eventMousePositionToString(e)));
       };
     } else {
       element.onmouseleave = null;
     }
   };
   return MouseEventListenerWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.MouseEventListenerWidget = MouseEventListenerWidget;
-},{"./app":"EVxB"}],"g2Fb":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"g2Fb":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TextInputWidget = void 0;
 var app_1 = require("./app");
-var TextInputWidget = /** @class */function () {
-  function TextInputWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var TextInputWidget = /** @class */function (_super) {
+  __extends(TextInputWidget, _super);
+  function TextInputWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   TextInputWidget.prototype.createElement = function () {
     var element = document.createElement('input');
     element.classList.add('reflex-text-input');
     element.addEventListener('blur', function () {
-      (0, app_1.sendEvent)(element, 'textInputBlurEvent', {
+      (0, app_1.sendEventToBackend)(element, 'textInputBlurEvent', {
         text: element.value
       });
     });
@@ -475,18 +659,42 @@ var TextInputWidget = /** @class */function () {
     }
   };
   return TextInputWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.TextInputWidget = TextInputWidget;
-},{"./app":"EVxB"}],"When":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"When":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.PlaceholderWidget = void 0;
 var app_1 = require("./app");
-var PlaceholderWidget = /** @class */function () {
-  function PlaceholderWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var PlaceholderWidget = /** @class */function (_super) {
+  __extends(PlaceholderWidget, _super);
+  function PlaceholderWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   PlaceholderWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     return element;
@@ -495,23 +703,47 @@ var PlaceholderWidget = /** @class */function () {
     (0, app_1.replaceOnlyChild)(element, deltaState._child_);
   };
   return PlaceholderWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.PlaceholderWidget = PlaceholderWidget;
-},{"./app":"EVxB"}],"RrmF":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"RrmF":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.SwitchWidget = void 0;
 var app_1 = require("./app");
-var SwitchWidget = /** @class */function () {
-  function SwitchWidget() {}
+var widgetBase_1 = require("./widgetBase");
+var SwitchWidget = /** @class */function (_super) {
+  __extends(SwitchWidget, _super);
+  function SwitchWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
   SwitchWidget.prototype.createElement = function () {
     var element = document.createElement('div');
     element.classList.add('reflex-switch');
     element.addEventListener('click', function () {
-      (0, app_1.sendEvent)(element, 'switchChangeEvent', {
+      (0, app_1.sendEventToBackend)(element, 'switchChangeEvent', {
         isOn: element.textContent !== 'true'
       });
     });
@@ -524,9 +756,9 @@ var SwitchWidget = /** @class */function () {
     }
   };
   return SwitchWidget;
-}();
+}(widgetBase_1.WidgetBase);
 exports.SwitchWidget = SwitchWidget;
-},{"./app":"EVxB"}],"EVxB":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
 var __assign = this && this.__assign || function () {
@@ -542,7 +774,7 @@ var __assign = this && this.__assign || function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.sendEvent = exports.sendJson = exports.replaceChildren = exports.replaceOnlyChild = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
+exports.sendEventToBackend = exports.sendMessageToBackend = exports.replaceChildren = exports.replaceOnlyChild = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
 var text_1 = require("./text");
 var row_1 = require("./row");
 var column_1 = require("./column");
@@ -618,10 +850,13 @@ var widgetClasses = {
   dropdown: dropdown_1.DropdownWidget,
   switch: switch_1.SwitchWidget
 };
+globalThis.widgetClasses = widgetClasses;
 function processMessage(message) {
   console.log('Received message: ', message);
   if (message.type == 'updateWidgetStates') {
     updateWidgetStates(message.deltaStates, message.rootWidgetId);
+  } else if (message.type == 'evaluateJavascript') {
+    eval(message.javascriptSource);
   } else {
     throw "Encountered unknown message type: ".concat(message);
   }
@@ -890,22 +1125,22 @@ function onError(event) {
 function onClose(event) {
   console.log("Connection closed: ".concat(event.reason));
 }
-function sendJson(message) {
+function sendMessageToBackend(message) {
   if (!socket) {
     console.log("Attempted to send message, but the websocket is not connected: ".concat(message));
     return;
   }
   socket.send(JSON.stringify(message));
 }
-exports.sendJson = sendJson;
-function sendEvent(element, eventType, eventArgs) {
-  sendJson(__assign({
+exports.sendMessageToBackend = sendMessageToBackend;
+function sendEventToBackend(element, eventType, eventArgs) {
+  sendMessageToBackend(__assign({
     type: eventType,
     // Remove the leading `reflex-id-` from the element's ID
     widgetId: parseInt(element.id.substring(10))
   }, eventArgs));
 }
-exports.sendEvent = sendEvent;
+exports.sendEventToBackend = sendEventToBackend;
 main();
 },{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./mouseEventListener":"K1Om","./textInput":"g2Fb","./placeholder":"When","./switch":"RrmF"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

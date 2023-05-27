@@ -1,19 +1,18 @@
-import { sendEvent } from './app';
-import { WidgetState } from './widgetBase';
-
+import { sendEventOverWebsocket } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 export type SwitchJson = WidgetState & {
     _type_: 'switch';
     is_on?: boolean;
 };
 
-export class SwitchWidget {
+export class SwitchWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-switch');
 
         element.addEventListener('click', () => {
-            sendEvent(element, 'switchChangeEvent', {
+            sendEventOverWebsocket(element, 'switchChangeEvent', {
                 isOn: element.textContent !== 'true',
             });
         });

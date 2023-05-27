@@ -25,6 +25,15 @@ class UpdateWidgetStates(OutgoingMessage):
     root_widget_id: Optional[int]
 
 
+@dataclass
+class EvaluateJavascript(OutgoingMessage):
+    """
+    Evaluate the given javascript code in the client.
+    """
+
+    javascript_source: str
+
+
 @uniserde.as_child
 class IncomingMessage(uniserde.Serde):
     """
@@ -90,3 +99,9 @@ class DropdownChangeEvent(IncomingMessage):
 class SwitchChangeEvent(IncomingMessage):
     widget_id: int
     is_on: bool
+
+
+@dataclass
+class WidgetMessage(IncomingMessage):
+    widget_id: int
+    payload: Any

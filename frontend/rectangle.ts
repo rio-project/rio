@@ -1,6 +1,6 @@
 import { colorToCss, fillToCss, replaceOnlyChild } from './app';
 import { Color, Fill } from './models';
-import { WidgetState } from './widgetBase';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 export type RectangleState = WidgetState & {
     _type_: 'rectangle';
@@ -11,7 +11,7 @@ export type RectangleState = WidgetState & {
     stroke_color?: Color;
 };
 
-export class RectangleWidget {
+export class RectangleWidget extends WidgetBase  {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');

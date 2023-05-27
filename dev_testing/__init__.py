@@ -10,48 +10,17 @@ PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
 GENERATED_DIR = PROJECT_ROOT_DIR / "generated"
 
 
-CORPORATE_YELLOW = rx.Color.from_rgb(0.98, 0.91, 0.0)
-CORPORATE_GREY = rx.Color.from_rgb(0.69, 0.69, 0.69)
-CORPORATE_BLUE = rx.Color.from_rgb(0.0, 0.47, 0.78)
-
-
-class CorporateCard(rx.Widget):
+class Card(rx.Widget):
     child: rx.Widget
-    heading: Optional[str] = None
 
     def build(self) -> rx.Widget:
         radius = 0.0
         margin = 0.5
 
-        if self.heading is None:
-            heading_child = rx.Rectangle(
-                fill=rx.Color.BLACK,
-                corner_radius=(radius, radius, 0, 0),
-                height=0.5,
-            )
-        else:
-            heading_child = rx.Rectangle(
-                fill=rx.Color.BLACK,
-                child=rx.Text(
-                    self.heading,
-                    font_color=rx.Color.WHITE,
-                    font_weight="bold",
-                    font_size=1.2,
-                    margin=margin,
-                ),
-                corner_radius=(radius, radius, 0, 0),
-            )
-
-        return rx.Column(
-            [
-                heading_child,
-                rx.Rectangle(
-                    fill=CORPORATE_YELLOW,
-                    child=self.child,
-                    corner_radius=(0, 0, radius, radius),
-                ),
-            ],
-            key="you",
+        return rx.Rectangle(
+            fill=rx.Color.WHITE.darker(0.15),
+            child=self.child,
+            corner_radius=(0, 0, radius, radius),
         )
 
 
@@ -68,7 +37,7 @@ class LoginWidget(rx.Widget):
         await rx.call_event_handler(self.on_login)
 
     def build(self) -> rx.Widget:
-        return CorporateCard(
+        return Card(
             rx.Column(
                 children=[
                     rx.TextInput(
@@ -89,9 +58,22 @@ class LoginWidget(rx.Widget):
                     ),
                     rx.Switch(),
                     rx.Dropdown({"foo": 1, "bar": 2}, on_change=print),
+                    rx.MarkdownView(
+                        text="""
+# Hello World
+
+This is a markdown view. It supports **bold** and *italic* text, as well as
+[links](https://www.google.com).
+
+There's also code blocks:
+
+```python
+print("Hello World")
+```
+"""
+                    ),
                 ],
             ),
-            heading="Login",
         )
 
 
@@ -112,8 +94,7 @@ class SimpleMenu(rx.Widget):
                 )
             )
 
-        return CorporateCard(
-            heading=self.heading,
+        return Card(
             child=rx.Column(child_widgets),
             width=30,
         )
@@ -167,7 +148,6 @@ class MainPage(rx.Widget):
             child = self.build_menu()
 
         return rx.Rectangle(
-            # fill=rx.Color.GREY,
             fill=rx.ImageFill(
                 Path("./dev_testing/test.png"),
                 fill_mode="stretch",

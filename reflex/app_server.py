@@ -227,7 +227,7 @@ class AppServer(fastapi.FastAPI):
             nonlocal validator
 
             if validator is not None:
-                await validator.handle_outgoing_message(msg)
+                validator.handle_outgoing_message(msg)
 
             await websocket.send_json(msg.as_json())
 
@@ -274,7 +274,7 @@ class AppServer(fastapi.FastAPI):
 
             # Invoke the validator if one is present
             if validator is not None:
-                await validator.handle_incoming_message(message)
+                validator.handle_incoming_message(message)
 
             # Delegate to the session
             await sess.handle_message(message)

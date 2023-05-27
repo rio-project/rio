@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import inspect
+import json
 import traceback
 import typing
 from abc import ABC, abstractmethod
@@ -22,20 +23,36 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    dataclass_transform,
     overload,
 )
 
 import introspection
-import introspection.typing
-from typing_extensions import Self, dataclass_transform
+from typing_extensions import Self
 
-from .. import messages, session
-from ..common import Jsonable, Readonly
-from ..styling import *
+from .. import common, messages, session
+from ..common import Jsonable
 
 __all__ = [
     "Widget",
+    "HtmlWidget",
 ]
+
+
+JAVASCRIPT_SOURCE_TEMPLATE = """
+%(js_source)s
+
+if (%(js_class_name)s !== undefined) {
+    window.widgetClasses['%(cls_unique_id)s'] = %(js_class_name)s;
+}
+"""
+
+
+CSS_SOURCE_TEMPLATE = """
+const style = document.createElement('style');
+style.innerHTML = %(escaped_css_source)s;
+document.head.appendChild(style);
+"""
 
 
 @dataclass
@@ -267,7 +284,11 @@ class Widget(ABC):
         super().__init_subclass__()
 
         # All widgets must be direct subclasses of Widget
-        if cls.__base__ is not Widget and cls.__base__ is not FundamentalWidget:
+        if (
+            cls.__base__ is not Widget
+            and cls.__base__ is not FundamentalWidget
+            and cls.__base__ is not HtmlWidget
+        ):
             raise TypeError(
                 f"Widget subclasses must be direct subclasses of Widget, not {cls.__base__!r}"
             )
@@ -412,7 +433,7 @@ class Widget(ABC):
         return result + ">"
 
 
-# Most classes have their state proprties initielized in
+# Most classes have their state properties initialized in
 # `Widget.__init_subclass__`. However, since `Widget` isn't a subclass of
 # itself this needs to be done manually.
 Widget._initialize_state_properties(set())
@@ -421,3 +442,72 @@ Widget._initialize_state_properties(set())
 class FundamentalWidget(Widget):
     def build(self) -> "Widget":
         raise RuntimeError(f"Attempted to call `build` on fundamental widget {self}")
+
+
+class HtmlWidget(FundamentalWidget, ABC):
+    javascript_source: ClassVar[str] = ""
+    css_source: ClassVar[str] = ""
+
+    # Unique id for identifying this class in the frontend.
+    _unique_id: ClassVar[str]
+
+    def __init_subclass__(cls):
+        hash_ = common.secure_string_hash(
+            cls.__module__,
+            cls.__qualname__,
+            hash_length=12,
+        )
+
+        cls._unique_id = f"{cls.__name__}-{hash_}"
+
+        super().__init_subclass__()
+
+    @classmethod
+    def _build_initialization_messages(cls) -> Iterable[messages.OutgoingMessage]:
+        message_source = ""
+
+        if cls.javascript_source:
+            message_source += JAVASCRIPT_SOURCE_TEMPLATE % {
+                "js_source": cls.javascript_source,
+                "js_class_name": cls.__name__,
+                "cls_unique_id": cls._unique_id,
+            }
+
+        if cls.css_source:
+            escaped_css_source = json.dumps(cls.css_source)
+            message_source += CSS_SOURCE_TEMPLATE % {
+                "escaped_css_source": escaped_css_source,
+            }
+
+        if message_source:
+            yield messages.EvaluateJavascript(javascript_source=message_source)
+
+    def _custom_serialize(self) -> Dict[str, Jsonable]:
+        # Normally, fundamental widgets are identified by their class name. This
+        # is fine, since users should never create any fundamental widgets
+        # themselves, but this doesn't hold for `HtmlWidget`s, since they are
+        # meant to be public.
+        #
+        # This is a problem, because multiple classes might share the same name,
+        # causing clashes in the type names.
+        #
+        # -> Use a unique id instead.
+
+        return {
+            "_type_": self._unique_id,
+        }
+
+    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
+        if isinstance(msg, messages.WidgetMessage):
+            await self._on_message(msg.payload)
+        else:
+            raise RuntimeError(
+                f"{__class__.__name__} received unexpected message `{msg}`"
+            )
+
+    async def _on_message(self, message: Jsonable) -> None:
+        """
+        This function is called when the frontend sends a message to this widget
+        via `sendMessage`.
+        """
+        pass

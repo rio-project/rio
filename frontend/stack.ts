@@ -1,12 +1,12 @@
 import { replaceChildren } from './app';
-import { WidgetState } from './widgetBase';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 export type StackState = WidgetState & {
     _type_: 'stack';
     children?: number[];
 };
 
-export class StackWidget {
+export class StackWidget extends WidgetBase  {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-stack');

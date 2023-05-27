@@ -1,6 +1,5 @@
 import { replaceChildren } from './app';
-import { WidgetState } from './models';
-import { WidgetBase } from './widgetBase';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 type ColumnState = WidgetState & {
     _type_: 'column';

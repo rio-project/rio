@@ -37,4 +37,6 @@ class TextInput(FundamentalWidget):
                 self.on_change,
             )
         else:
-            raise RuntimeError(f"TextInput received unexpected message `{msg}`")
+            raise RuntimeError(
+                f"{__class__.__name__} received unexpected message `{msg}`"
+            )

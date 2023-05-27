@@ -7,7 +7,10 @@ import reflex as rx
 from .. import theme
 from . import widget_base
 
-__all__ = ["Button", "ButtonPressedEvent"]
+__all__ = [
+    "Button",
+    "ButtonPressedEvent",
+]
 
 
 class ButtonPressedEvent(widget_base.WidgetEvent):

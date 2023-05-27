@@ -1,6 +1,6 @@
 import { Color } from './models';
 import { colorToCss } from './app';
-import { WidgetState } from './widgetBase';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 export type TextState = WidgetState & {
     text?: string;
@@ -13,7 +13,7 @@ export type TextState = WidgetState & {
     underlined?: boolean;
 };
 
-export class TextWidget {
+export class TextWidget  extends WidgetBase  {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-text');

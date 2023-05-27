@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
-from typing import Dict, Generic, List, Literal, Optional, Tuple, TypeVar
+from typing import Dict, Generic, Optional, TypeVar
 
 from .. import messages
 from ..common import Jsonable, Readonly
@@ -49,4 +49,8 @@ class Dropdown(FundamentalWidget, Generic[T]):
                 self,
                 DropdownChangeEvent(self, value),
                 self.on_change,
+            )
+        else:
+            raise RuntimeError(
+                f"{__class__.__name__} received unexpected message `{msg}`"
             )

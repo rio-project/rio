@@ -2,6 +2,7 @@ from .button import *
 from .column import *
 from .container import *
 from .dropdown import *
+from .markdown_view import *
 from .mouse_event_listener import *
 from .rectangle import *
 from .row import *

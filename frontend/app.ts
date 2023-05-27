@@ -85,11 +85,15 @@ const widgetClasses = {
     switch: SwitchWidget,
 };
 
+globalThis.widgetClasses = widgetClasses;
+
 function processMessage(message: any) {
     console.log('Received message: ', message);
 
     if (message.type == 'updateWidgetStates') {
         updateWidgetStates(message.deltaStates, message.rootWidgetId);
+    } else if (message.type == 'evaluateJavascript') {
+        eval(message.javascriptSource);
     } else {
         throw `Encountered unknown message type: ${message}`;
     }
@@ -420,7 +424,7 @@ function onClose(event: any) {
     console.log(`Connection closed: ${event.reason}`);
 }
 
-export function sendJson(message: object) {
+export function sendMessageOverWebsocket(message: object) {
     if (!socket) {
         console.log(
             `Attempted to send message, but the websocket is not connected: ${message}`
@@ -431,12 +435,12 @@ export function sendJson(message: object) {
     socket.send(JSON.stringify(message));
 }
 
-export function sendEvent(
+export function sendEventOverWebsocket(
     element: HTMLElement,
     eventType: string,
     eventArgs: object
 ) {
-    sendJson({
+    sendMessageOverWebsocket({
         type: eventType,
         // Remove the leading `reflex-id-` from the element's ID
         widgetId: parseInt(element.id.substring(10)),

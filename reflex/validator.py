@@ -1,11 +1,9 @@
 import copy
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from pprint import pprint
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
-
-import reflex as rx
+from typing import Dict, Iterable, List, Optional, Set, Union
 
 from . import messages
 from .common import Jsonable
@@ -43,7 +41,12 @@ class ClientWidget:
     state: Dict[str, Jsonable]
 
     @classmethod
-    def from_json(cls, id: int, delta_state: Dict[str, Jsonable]) -> "ClientWidget":
+    def from_json(
+        cls,
+        id: int,
+        delta_state: Dict[str, Jsonable],
+        registered_html_widgets: Set[str],
+    ) -> "ClientWidget":
         # Don't modify the original dict
         delta_state = copy.deepcopy(delta_state)
 
@@ -56,7 +59,7 @@ class ClientWidget:
         if not isinstance(type, str):
             raise ValidationError(f"Widget with id `{id}` has non-string type `{type}`")
 
-        if type not in _CHILD_ATTRIBUTE_NAMES:
+        if type not in _CHILD_ATTRIBUTE_NAMES and type not in registered_html_widgets:
             raise ValidationError(f"Widget with id `{id}` has unknown type `{type}`")
 
         # Construct the result
@@ -66,11 +69,17 @@ class ClientWidget:
             state=delta_state,
         )
 
+    def _get_child_attribute_names(self) -> Iterable[str]:
+        try:
+            return _CHILD_ATTRIBUTE_NAMES[self.type]
+        except KeyError:
+            return tuple()  # TODO: How to get the children of HTML widgets?
+
     @property
     def non_child_containing_properties(
         self,
     ) -> Dict[str, Jsonable]:
-        child_attribute_names = _CHILD_ATTRIBUTE_NAMES[self.type]
+        child_attribute_names = self._get_child_attribute_names()
 
         result = {}
         for name, value in self.state.items():
@@ -85,7 +94,7 @@ class ClientWidget:
     def child_containing_properties(
         self,
     ) -> Dict[str, Union[None, int, List[int]]]:
-        child_attribute_names = _CHILD_ATTRIBUTE_NAMES[self.type]
+        child_attribute_names = self._get_child_attribute_names()
 
         result = {}
         for name, value in self.state.items():
@@ -128,6 +137,21 @@ class Validator:
 
         self.root_widget: Optional[ClientWidget] = None
         self.widgets_by_id: Dict[int, ClientWidget] = {}
+
+        # HTML widgets must be registered with the frontend before use. This set
+        # contains the ids (`HtmlWidget._unique_id`) of all registered widgets.
+        self.registered_html_widgets: Set[str] = {
+            "column",
+            "rectangle",
+            "row",
+            "stack",
+            "text",
+            "mouseEventListener",
+            "textInput",
+            "placeholder",
+            "dropdown",
+            "switch",
+        }
 
     def dump_message(
         self,
@@ -256,7 +280,7 @@ class Validator:
 
         return result
 
-    async def handle_incoming_message(self, msg: messages.IncomingMessage) -> None:
+    def handle_incoming_message(self, msg: messages.IncomingMessage) -> None:
         """
         Process a message passed from Client -> Server.
 
@@ -272,9 +296,9 @@ class Validator:
         except AttributeError:
             return
 
-        await handler(msg)
+        handler(msg)
 
-    async def handle_outgoing_message(self, msg: messages.OutgoingMessage) -> None:
+    def handle_outgoing_message(self, msg: messages.OutgoingMessage) -> None:
         """
         Process a message passed from Server -> Client.
 
@@ -290,9 +314,9 @@ class Validator:
         except AttributeError:
             return
 
-        await handler(msg)
+        handler(msg)
 
-    async def _handle_outgoing_UpdateWidgetStates(
+    def _handle_outgoing_UpdateWidgetStates(
         self,
         msg: messages.UpdateWidgetStates,
     ) -> None:
@@ -305,7 +329,11 @@ class Validator:
             try:
                 widget = self.widgets_by_id[widget_id]
             except KeyError:
-                widget = ClientWidget.from_json(widget_id, delta_state)
+                widget = ClientWidget.from_json(
+                    widget_id,
+                    delta_state,
+                    self.registered_html_widgets,
+                )
                 self.widgets_by_id[widget_id] = widget
             else:
                 delta_state = delta_state.copy()
@@ -365,3 +393,13 @@ class Validator:
 
         # Dump the client state if requested
         self.dump_client_state()
+
+    def _handle_outgoing_EvaluateJavascript(self, msg: messages.EvaluateJavascript):
+        # Is this message registering a new widget class?
+        match = re.search(r"window.widgetClasses\['(.*)'\]", msg.javascript_source)
+
+        if match is None:
+            return
+
+        # Remember the widget class as registered
+        self.registered_html_widgets.add(match.group(1))

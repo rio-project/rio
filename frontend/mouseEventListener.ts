@@ -1,5 +1,5 @@
-import { pixelsPerEm, replaceOnlyChild, sendEvent } from './app';
-import { WidgetState } from './widgetBase';
+import { pixelsPerEm, replaceOnlyChild, sendEventOverWebsocket } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 function eventMouseButtonToString(event: MouseEvent): object {
     return {
@@ -24,7 +24,7 @@ export type MouseEventListenerState = WidgetState & {
     reportMouseLeave?: boolean;
 };
 
-export class MouseEventListenerWidget {
+export class MouseEventListenerWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-mouse-event-listener');
@@ -39,7 +39,7 @@ export class MouseEventListenerWidget {
 
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
-                sendEvent(element, 'mouseDownEvent', {
+                sendEventOverWebsocket(element, 'mouseDownEvent', {
                     ...eventMouseButtonToString(e),
                     ...eventMousePositionToString(e),
                 });
@@ -50,7 +50,7 @@ export class MouseEventListenerWidget {
 
         if (deltaState.reportMouseUp) {
             element.onmouseup = (e) => {
-                sendEvent(element, 'mouseUpEvent', {
+                sendEventOverWebsocket(element, 'mouseUpEvent', {
                     ...eventMouseButtonToString(e),
                     ...eventMousePositionToString(e),
                 });
@@ -61,7 +61,7 @@ export class MouseEventListenerWidget {
 
         if (deltaState.reportMouseMove) {
             element.onmousemove = (e) => {
-                sendEvent(element, 'mouseMoveEvent', {
+                sendEventOverWebsocket(element, 'mouseMoveEvent', {
                     ...eventMousePositionToString(e),
                 });
             };
@@ -71,7 +71,7 @@ export class MouseEventListenerWidget {
 
         if (deltaState.reportMouseEnter) {
             element.onmouseenter = (e) => {
-                sendEvent(element, 'mouseEnterEvent', {
+                sendEventOverWebsocket(element, 'mouseEnterEvent', {
                     ...eventMousePositionToString(e),
                 });
             };
@@ -81,7 +81,7 @@ export class MouseEventListenerWidget {
 
         if (deltaState.reportMouseLeave) {
             element.onmouseleave = (e) => {
-                sendEvent(element, 'mouseLeaveEvent', {
+                sendEventOverWebsocket(element, 'mouseLeaveEvent', {
                     ...eventMousePositionToString(e),
                 });
             };

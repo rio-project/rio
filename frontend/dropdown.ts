@@ -1,19 +1,18 @@
-import { sendEvent } from './app';
-import { WidgetState } from './widgetBase';
-
+import { sendEventOverWebsocket } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 export type DropdownState = WidgetState & {
     _type_: 'dropdown';
     optionNames?: string[];
 };
 
-export class DropdownWidget {
+export class DropdownWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('select');
         element.classList.add('reflex-dropdown');
 
         element.addEventListener('input', () => {
-            sendEvent(element, 'dropdownChangeEvent', {
+            sendEventOverWebsocket(element, 'dropdownChangeEvent', {
                 value: element.value,
             });
         });

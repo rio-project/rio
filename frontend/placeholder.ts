@@ -1,5 +1,5 @@
 import { replaceOnlyChild } from './app';
-import { WidgetState } from './widgetBase';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 
 export type PlaceholderState = WidgetState & {
@@ -7,7 +7,7 @@ export type PlaceholderState = WidgetState & {
     _child_?: number;
 };
 
-export class PlaceholderWidget {
+export class PlaceholderWidget extends WidgetBase  {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         return element;
