@@ -120,6 +120,16 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"DUgK":[function(require,module,exports) {
 "use strict";
 
+var __assign = this && this.__assign || function () {
+  __assign = Object.assign || function (t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+    return t;
+  };
+  return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -147,12 +157,24 @@ var WidgetBase = /** @class */function () {
   /// Send a message to the python instance corresponding to this widget. The
   /// message is an arbitrary JSON object and will be passed to the instance's
   /// `_on_message` method.
-  WidgetBase.prototype.sendMessage = function (message) {
-    (0, app_1.sendMessageToBackend)({
+  WidgetBase.prototype.sendMessageToBackend = function (message) {
+    (0, app_1.sendMessageOverWebsocket)({
       type: 'widgetMessage',
       // Remove the leading `reflex-id-` from the element's ID
       widgetId: parseInt(this.elementId.substring(10)),
       payload: message
+    });
+  };
+  WidgetBase.prototype._setStateDontNotifyBackend = function (deltaState) {
+    this.state = __assign(__assign({}, this.state), deltaState);
+  };
+  WidgetBase.prototype.setStateAndNotifyBackend = function (deltaState) {
+    this._setStateDontNotifyBackend(deltaState);
+    (0, app_1.sendMessageOverWebsocket)({
+      type: 'widgetStateUpdate',
+      // Remove the leading `reflex-id-` from the element's ID
+      widgetId: parseInt(this.elementId.substring(10)),
+      deltaState: deltaState
     });
   };
   return WidgetBase;
@@ -350,7 +372,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DropdownWidget = void 0;
-var app_1 = require("./app");
 var widgetBase_1 = require("./widgetBase");
 var DropdownWidget = /** @class */function (_super) {
   __extends(DropdownWidget, _super);
@@ -358,10 +379,11 @@ var DropdownWidget = /** @class */function (_super) {
     return _super !== null && _super.apply(this, arguments) || this;
   }
   DropdownWidget.prototype.createElement = function () {
+    var _this = this;
     var element = document.createElement('select');
     element.classList.add('reflex-dropdown');
     element.addEventListener('input', function () {
-      (0, app_1.sendEventToBackend)(element, 'dropdownChangeEvent', {
+      _this.setStateAndNotifyBackend({
         value: element.value
       });
     });
@@ -382,7 +404,7 @@ var DropdownWidget = /** @class */function (_super) {
   return DropdownWidget;
 }(widgetBase_1.WidgetBase);
 exports.DropdownWidget = DropdownWidget;
-},{"./app":"EVxB","./widgetBase":"DUgK"}],"u1gD":[function(require,module,exports) {
+},{"./widgetBase":"DUgK"}],"u1gD":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -562,38 +584,49 @@ var MouseEventListenerWidget = /** @class */function (_super) {
     return element;
   };
   MouseEventListenerWidget.prototype.updateElement = function (element, deltaState) {
+    var _this = this;
     (0, app_1.replaceOnlyChild)(element, deltaState.child);
     if (deltaState.reportMouseDown) {
       element.onmousedown = function (e) {
-        (0, app_1.sendEventToBackend)(element, 'mouseDownEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
+        _this.sendMessageToBackend(__assign(__assign({
+          type: 'mouseDown'
+        }, eventMouseButtonToString(e)), eventMousePositionToString(e)));
       };
     } else {
       element.onmousedown = null;
     }
     if (deltaState.reportMouseUp) {
       element.onmouseup = function (e) {
-        (0, app_1.sendEventToBackend)(element, 'mouseUpEvent', __assign(__assign({}, eventMouseButtonToString(e)), eventMousePositionToString(e)));
+        _this.sendMessageToBackend(__assign(__assign({
+          type: 'mouseUp'
+        }, eventMouseButtonToString(e)), eventMousePositionToString(e)));
       };
     } else {
       element.onmouseup = null;
     }
     if (deltaState.reportMouseMove) {
       element.onmousemove = function (e) {
-        (0, app_1.sendEventToBackend)(element, 'mouseMoveEvent', __assign({}, eventMousePositionToString(e)));
+        _this.sendMessageToBackend(__assign({
+          type: 'mouseMove'
+        }, eventMousePositionToString(e)));
       };
     } else {
       element.onmousemove = null;
     }
     if (deltaState.reportMouseEnter) {
       element.onmouseenter = function (e) {
-        (0, app_1.sendEventToBackend)(element, 'mouseEnterEvent', __assign({}, eventMousePositionToString(e)));
+        _this.sendMessageToBackend(__assign({
+          type: 'mouseEnter'
+        }, eventMousePositionToString(e)));
       };
     } else {
       element.onmouseenter = null;
     }
     if (deltaState.reportMouseLeave) {
       element.onmouseleave = function (e) {
-        (0, app_1.sendEventToBackend)(element, 'mouseLeaveEvent', __assign({}, eventMousePositionToString(e)));
+        _this.sendMessageToBackend(__assign({
+          type: 'mouseLeave'
+        }, eventMousePositionToString(e)));
       };
     } else {
       element.onmouseleave = null;
@@ -629,7 +662,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TextInputWidget = void 0;
-var app_1 = require("./app");
 var widgetBase_1 = require("./widgetBase");
 var TextInputWidget = /** @class */function (_super) {
   __extends(TextInputWidget, _super);
@@ -637,10 +669,11 @@ var TextInputWidget = /** @class */function (_super) {
     return _super !== null && _super.apply(this, arguments) || this;
   }
   TextInputWidget.prototype.createElement = function () {
+    var _this = this;
     var element = document.createElement('input');
     element.classList.add('reflex-text-input');
-    element.addEventListener('blur', function () {
-      (0, app_1.sendEventToBackend)(element, 'textInputBlurEvent', {
+    element.addEventListener('input', function () {
+      _this.setStateAndNotifyBackend({
         text: element.value
       });
     });
@@ -661,7 +694,7 @@ var TextInputWidget = /** @class */function (_super) {
   return TextInputWidget;
 }(widgetBase_1.WidgetBase);
 exports.TextInputWidget = TextInputWidget;
-},{"./app":"EVxB","./widgetBase":"DUgK"}],"When":[function(require,module,exports) {
+},{"./widgetBase":"DUgK"}],"When":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -732,7 +765,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.SwitchWidget = void 0;
-var app_1 = require("./app");
 var widgetBase_1 = require("./widgetBase");
 var SwitchWidget = /** @class */function (_super) {
   __extends(SwitchWidget, _super);
@@ -740,11 +772,12 @@ var SwitchWidget = /** @class */function (_super) {
     return _super !== null && _super.apply(this, arguments) || this;
   }
   SwitchWidget.prototype.createElement = function () {
+    var _this = this;
     var element = document.createElement('div');
     element.classList.add('reflex-switch');
     element.addEventListener('click', function () {
-      (0, app_1.sendEventToBackend)(element, 'switchChangeEvent', {
-        isOn: element.textContent !== 'true'
+      _this.setStateAndNotifyBackend({
+        is_on: element.textContent !== 'true'
       });
     });
     return element;
@@ -758,7 +791,7 @@ var SwitchWidget = /** @class */function (_super) {
   return SwitchWidget;
 }(widgetBase_1.WidgetBase);
 exports.SwitchWidget = SwitchWidget;
-},{"./app":"EVxB","./widgetBase":"DUgK"}],"EVxB":[function(require,module,exports) {
+},{"./widgetBase":"DUgK"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
 var __assign = this && this.__assign || function () {
@@ -774,7 +807,7 @@ var __assign = this && this.__assign || function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.sendEventToBackend = exports.sendMessageToBackend = exports.replaceChildren = exports.replaceOnlyChild = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
+exports.sendMessageOverWebsocket = exports.replaceChildren = exports.replaceOnlyChild = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
 var text_1 = require("./text");
 var row_1 = require("./row");
 var column_1 = require("./column");
@@ -839,16 +872,16 @@ function fillToCss(fill) {
 }
 exports.fillToCss = fillToCss;
 var widgetClasses = {
-  column: column_1.ColumnWidget,
-  rectangle: rectangle_1.RectangleWidget,
-  row: row_1.RowWidget,
-  stack: stack_1.StackWidget,
-  text: text_1.TextWidget,
-  mouseEventListener: mouseEventListener_1.MouseEventListenerWidget,
-  textInput: textInput_1.TextInputWidget,
-  placeholder: placeholder_1.PlaceholderWidget,
-  dropdown: dropdown_1.DropdownWidget,
-  switch: switch_1.SwitchWidget
+  'Column-builtin': column_1.ColumnWidget,
+  'Dropdown-builtin': dropdown_1.DropdownWidget,
+  'MouseEventListener-builtin': mouseEventListener_1.MouseEventListenerWidget,
+  Placeholder: placeholder_1.PlaceholderWidget,
+  'Rectangle-builtin': rectangle_1.RectangleWidget,
+  'Row-builtin': row_1.RowWidget,
+  'Stack-builtin': stack_1.StackWidget,
+  'Switch-builtin': switch_1.SwitchWidget,
+  'Text-builtin': text_1.TextWidget,
+  'TextInput-builtin': textInput_1.TextInputWidget
 };
 globalThis.widgetClasses = widgetClasses;
 function processMessage(message) {
@@ -1125,22 +1158,14 @@ function onError(event) {
 function onClose(event) {
   console.log("Connection closed: ".concat(event.reason));
 }
-function sendMessageToBackend(message) {
+function sendMessageOverWebsocket(message) {
   if (!socket) {
     console.log("Attempted to send message, but the websocket is not connected: ".concat(message));
     return;
   }
   socket.send(JSON.stringify(message));
 }
-exports.sendMessageToBackend = sendMessageToBackend;
-function sendEventToBackend(element, eventType, eventArgs) {
-  sendMessageToBackend(__assign({
-    type: eventType,
-    // Remove the leading `reflex-id-` from the element's ID
-    widgetId: parseInt(element.id.substring(10))
-  }, eventArgs));
-}
-exports.sendEventToBackend = sendEventToBackend;
+exports.sendMessageOverWebsocket = sendMessageOverWebsocket;
 main();
 },{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./mouseEventListener":"K1Om","./textInput":"g2Fb","./placeholder":"When","./switch":"RrmF"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

@@ -6,7 +6,7 @@ export type StackState = WidgetState & {
     children?: number[];
 };
 
-export class StackWidget extends WidgetBase  {
+export class StackWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-stack');

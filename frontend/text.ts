@@ -13,7 +13,7 @@ export type TextState = WidgetState & {
     underlined?: boolean;
 };
 
-export class TextWidget  extends WidgetBase  {
+export class TextWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-text');

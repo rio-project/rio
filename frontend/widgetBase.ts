@@ -58,6 +58,23 @@ export abstract class WidgetBase {
             payload: message,
         });
     }
+
+    _setStateDontNotifyBackend(deltaState: object) {
+        this.state = {
+            ...this.state,
+            ...deltaState,
+        };
+    }
+
+    setStateAndNotifyBackend(deltaState: object) {
+        this._setStateDontNotifyBackend(deltaState);
+        sendMessageOverWebsocket({
+            type: 'widgetStateUpdate',
+            // Remove the leading `reflex-id-` from the element's ID
+            widgetId: parseInt(this.elementId.substring(10)),
+            deltaState: deltaState,
+        });
+    }
 }
 
 globalThis.WidgetBase = WidgetBase;

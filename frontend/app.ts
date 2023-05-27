@@ -73,16 +73,16 @@ export function fillToCss(fill: Fill): string {
 }
 
 const widgetClasses = {
-    column: ColumnWidget,
-    rectangle: RectangleWidget,
-    row: RowWidget,
-    stack: StackWidget,
-    text: TextWidget,
-    mouseEventListener: MouseEventListenerWidget,
-    textInput: TextInputWidget,
-    placeholder: PlaceholderWidget,
-    dropdown: DropdownWidget,
-    switch: SwitchWidget,
+    'Column-builtin': ColumnWidget,
+    'Dropdown-builtin': DropdownWidget,
+    'MouseEventListener-builtin': MouseEventListenerWidget,
+    Placeholder: PlaceholderWidget,
+    'Rectangle-builtin': RectangleWidget,
+    'Row-builtin': RowWidget,
+    'Stack-builtin': StackWidget,
+    'Switch-builtin': SwitchWidget,
+    'Text-builtin': TextWidget,
+    'TextInput-builtin': TextInputWidget,
 };
 
 globalThis.widgetClasses = widgetClasses;
@@ -433,19 +433,6 @@ export function sendMessageOverWebsocket(message: object) {
     }
 
     socket.send(JSON.stringify(message));
-}
-
-export function sendEventOverWebsocket(
-    element: HTMLElement,
-    eventType: string,
-    eventArgs: object
-) {
-    sendMessageOverWebsocket({
-        type: eventType,
-        // Remove the leading `reflex-id-` from the element's ID
-        widgetId: parseInt(element.id.substring(10)),
-        ...eventArgs,
-    });
 }
 
 main();

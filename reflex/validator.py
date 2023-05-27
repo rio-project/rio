@@ -18,19 +18,19 @@ __all__ = [
 # Given a widget type, this dict contains the attribute names which contain
 # children / child ids
 _CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
-    "text": set(),
-    "row": {"children"},
-    "column": {"children"},
-    "dropdown": set(),
-    "rectangle": {"child"},
-    "stack": {"children"},
-    "margin": {"child"},
-    "align": {"child"},
-    "mouseEventListener": {"child"},
-    "textInput": set(),
-    "override": {"child"},
-    "placeholder": {"_child_"},
-    "switch": set(),
+    "Text-builtin": set(),
+    "Row-builtin": {"children"},
+    "Column-builtin": {"children"},
+    "Dropdown-builtin": set(),
+    "Rectangle-builtin": {"child"},
+    "Stack-builtin": {"children"},
+    "Margin-builtin": {"child"},
+    "Align-builtin": {"child"},
+    "MouseEventListener-builtin": {"child"},
+    "TextInput-builtin": set(),
+    "Override-builtin": {"child"},
+    "Placeholder": {"_child_"},
+    "Switch-builtin": set(),
 }
 
 
@@ -140,18 +140,7 @@ class Validator:
 
         # HTML widgets must be registered with the frontend before use. This set
         # contains the ids (`HtmlWidget._unique_id`) of all registered widgets.
-        self.registered_html_widgets: Set[str] = {
-            "column",
-            "rectangle",
-            "row",
-            "stack",
-            "text",
-            "mouseEventListener",
-            "textInput",
-            "placeholder",
-            "dropdown",
-            "switch",
-        }
+        self.registered_html_widgets: Set[str] = set(_CHILD_ATTRIBUTE_NAMES.keys())
 
     def dump_message(
         self,

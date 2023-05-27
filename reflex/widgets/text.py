@@ -4,14 +4,14 @@ from dataclasses import KW_ONLY
 from typing import Literal, Optional
 
 from ..styling import *
-from .widget_base import FundamentalWidget
+from . import widget_base
 
 __all__ = [
     "Text",
 ]
 
 
-class Text(FundamentalWidget):
+class Text(widget_base.HtmlWidget):
     text: str
     _: KW_ONLY
     multiline: bool = False
@@ -21,3 +21,6 @@ class Text(FundamentalWidget):
     font_weight: Literal["normal", "bold"] = "normal"
     italic: bool = False
     underlined: bool = False
+
+
+Text._unique_id = "Text-builtin"

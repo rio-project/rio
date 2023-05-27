@@ -1,4 +1,3 @@
-import { sendEventOverWebsocket } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type DropdownState = WidgetState & {
@@ -12,7 +11,7 @@ export class DropdownWidget extends WidgetBase {
         element.classList.add('reflex-dropdown');
 
         element.addEventListener('input', () => {
-            sendEventOverWebsocket(element, 'dropdownChangeEvent', {
+            this.setStateAndNotifyBackend({
                 value: element.value,
             });
         });

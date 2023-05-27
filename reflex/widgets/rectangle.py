@@ -1,26 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
-from .. import messages
-from ..common import Jsonable
+import reflex as rx
+
 from ..styling import *
-from .widget_base import (
-    EventHandler,
-    FundamentalWidget,
-    Widget,
-    call_event_handler_and_refresh,
-)
+from . import widget_base
 
 __all__ = [
     "Rectangle",
 ]
 
 
-class Rectangle(FundamentalWidget):
+class Rectangle(widget_base.HtmlWidget):
     fill: FillLike
-    child: Optional[Widget]
+    child: Optional[rx.Widget]
     corner_radius: Tuple[float, float, float, float]
     stroke_width: float
     stroke_color: Optional[Color]
@@ -28,7 +22,7 @@ class Rectangle(FundamentalWidget):
     def __init__(
         self,
         fill: FillLike,
-        child: Optional[Widget] = None,
+        child: Optional[rx.Widget] = None,
         *,
         corner_radius: Union[float, Tuple[float, float, float, float]] = 0.0,
         stroke_width: float = 0.0,
@@ -68,3 +62,6 @@ class Rectangle(FundamentalWidget):
         )
         self.stroke_width = stroke_width
         self.stroke_color = stroke_color
+
+
+Rectangle._unique_id = "Rectangle-builtin"

@@ -1,4 +1,3 @@
-import { sendEventOverWebsocket } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type TextInputState = WidgetState & {
@@ -13,8 +12,8 @@ export class TextInputWidget extends WidgetBase {
         let element = document.createElement('input');
         element.classList.add('reflex-text-input');
 
-        element.addEventListener('blur', () => {
-            sendEventOverWebsocket(element, 'textInputBlurEvent', {
+        element.addEventListener('input', () => {
+            this.setStateAndNotifyBackend({
                 text: element.value,
             });
         });

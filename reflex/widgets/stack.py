@@ -1,22 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import List
 
-from .. import messages
-from ..common import Jsonable
-from ..styling import *
-from .widget_base import (
-    EventHandler,
-    FundamentalWidget,
-    Widget,
-    call_event_handler_and_refresh,
-)
+import reflex as rx
+
+from . import widget_base
 
 __all__ = [
     "Stack",
 ]
 
 
-class Stack(FundamentalWidget):
-    children: List[Widget]
+class Stack(widget_base.HtmlWidget):
+    children: List[rx.Widget]
+
+
+Stack._unique_id = "Stack-builtin"

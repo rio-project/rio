@@ -42,63 +42,9 @@ class IncomingMessage(uniserde.Serde):
 
 
 @dataclass
-class ButtonPressedEvent(IncomingMessage):
+class WidgetStateUpdate(IncomingMessage):
     widget_id: int
-
-
-@dataclass
-class MouseDownEvent(IncomingMessage):
-    widget_id: int
-    button: Literal["left", "middle", "right"]
-    x: float
-    y: float
-
-
-@dataclass
-class MouseUpEvent(IncomingMessage):
-    widget_id: int
-    button: Literal["left", "middle", "right"]
-    x: float
-    y: float
-
-
-@dataclass
-class MouseMoveEvent(IncomingMessage):
-    widget_id: int
-    x: float
-    y: float
-
-
-@dataclass
-class MouseEnterEvent(IncomingMessage):
-    widget_id: int
-    x: float
-    y: float
-
-
-@dataclass
-class MouseLeaveEvent(IncomingMessage):
-    widget_id: int
-    x: float
-    y: float
-
-
-@dataclass
-class TextInputBlurEvent(IncomingMessage):
-    widget_id: int
-    text: str
-
-
-@dataclass
-class DropdownChangeEvent(IncomingMessage):
-    widget_id: int
-    value: str
-
-
-@dataclass
-class SwitchChangeEvent(IncomingMessage):
-    widget_id: int
-    is_on: bool
+    delta_state: Any
 
 
 @dataclass

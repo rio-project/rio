@@ -11,7 +11,7 @@ export type RectangleState = WidgetState & {
     stroke_color?: Color;
 };
 
-export class RectangleWidget extends WidgetBase  {
+export class RectangleWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');

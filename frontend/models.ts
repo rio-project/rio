@@ -15,15 +15,3 @@ export type Fill =
           imageUrl: string;
           fillMode: 'fit' | 'stretch' | 'tile' | 'zoom';
       };
-
-
-
-
-
-
-
-
-
-
-
-

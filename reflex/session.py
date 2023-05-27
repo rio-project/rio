@@ -117,7 +117,7 @@ class Session:
         self._dirty_widgets.add(widget)
 
         if not include_fundamental_children_recursively or not isinstance(
-            widget, widget_base.FundamentalWidget
+            widget, widget_base.HtmlWidget
         ):
             return
 
@@ -168,7 +168,7 @@ class Session:
             self._weak_widgets_by_id[widget._id] = widget
 
             # Fundamental widgets require no further treatment
-            if isinstance(widget, widget_base.FundamentalWidget):
+            if isinstance(widget, widget_base.HtmlWidget):
                 continue
 
             # Others need to be built
@@ -284,11 +284,14 @@ class Session:
 
         # Explicit check for some types. These don't play nice with `isinstance` and
         # similar methods
-        if value is Callable:
+        if origin is Callable:
+            raise WontSerialize()
+
+        if isinstance(type_, typing.TypeVar):
             raise WontSerialize()
 
         # Basic JSON values
-        if type_ in (bool, int, float, str):
+        if type_ in (bool, int, float, str, None):
             return value
 
         # Tuples or lists of serializable values
@@ -312,26 +315,13 @@ class Session:
         if type_ is Color:
             return value.rgba
 
-        # Optional / Union
-        if origin is Union:
+        # Optional
+        if origin is Union and len(args) == 2 and type(None) in args:
             if value is None:
                 return None
 
-            for arg in args:
-                if arg is None:
-                    continue
-
-                # Callable doesn't play nice with `isinstance`
-                if isinstance(arg, Callable) and callable(value):
-                    raise WontSerialize()
-
-                if arg is float and isinstance(value, int):
-                    return value
-
-                if isinstance(value, arg):  # type: ignore
-                    return self._serialize_and_host_value(value, arg)
-
-            assert False, f'Value "{value}" is not of any of the union types {args}'
+            type_ = next(type_ for type_ in args if type_ is not type(None))
+            return self._serialize_and_host_value(value, type_)
 
         # Literal
         if origin is Literal:
@@ -355,13 +345,10 @@ class Session:
         result: Dict[str, Jsonable]
 
         # Encode any internal state
-        if isinstance(widget, widget_base.FundamentalWidget):
-            type_name = type(widget).__name__
-            type_name_camel_case = type_name[0].lower() + type_name[1:]
-
+        if isinstance(widget, widget_base.HtmlWidget):
             result = {
-                "_type_": type_name_camel_case,
-                "_python_type_": type_name,
+                "_type_": widget._unique_id,
+                "_python_type_": type(widget).__name__,
             }
             result.update(widget._custom_serialize())
 
@@ -369,7 +356,7 @@ class Session:
             # Take care to add underscores to any properties here, as the
             # user-defined state is also added and could clash
             result = {
-                "_type_": "placeholder",
+                "_type_": "Placeholder",
                 "_python_type_": type(widget).__name__,
                 "_child_": self.lookup_widget_data(widget).build_result._id,
             }

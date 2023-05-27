@@ -1,24 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import List
 
-from .. import messages
-from ..common import Jsonable
-from ..styling import *
-from .widget_base import (
-    EventHandler,
-    FundamentalWidget,
-    Widget,
-    call_event_handler_and_refresh,
-)
+import reflex as rx
+
+from . import widget_base
 
 __all__ = [
     "Row",
 ]
 
 
-class Row(FundamentalWidget):
-    children: List[Widget]
+class Row(widget_base.HtmlWidget):
+    children: List[rx.Widget]
     _: KW_ONLY
     spacing: float = 0.0
+
+
+Row._unique_id = "Row-builtin"

@@ -1,4 +1,4 @@
-import { pixelsPerEm, replaceOnlyChild, sendEventOverWebsocket } from './app';
+import { pixelsPerEm, replaceOnlyChild } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 function eventMouseButtonToString(event: MouseEvent): object {
@@ -39,7 +39,8 @@ export class MouseEventListenerWidget extends WidgetBase {
 
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
-                sendEventOverWebsocket(element, 'mouseDownEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseDown',
                     ...eventMouseButtonToString(e),
                     ...eventMousePositionToString(e),
                 });
@@ -50,7 +51,8 @@ export class MouseEventListenerWidget extends WidgetBase {
 
         if (deltaState.reportMouseUp) {
             element.onmouseup = (e) => {
-                sendEventOverWebsocket(element, 'mouseUpEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseUp',
                     ...eventMouseButtonToString(e),
                     ...eventMousePositionToString(e),
                 });
@@ -61,7 +63,8 @@ export class MouseEventListenerWidget extends WidgetBase {
 
         if (deltaState.reportMouseMove) {
             element.onmousemove = (e) => {
-                sendEventOverWebsocket(element, 'mouseMoveEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseMove',
                     ...eventMousePositionToString(e),
                 });
             };
@@ -71,7 +74,8 @@ export class MouseEventListenerWidget extends WidgetBase {
 
         if (deltaState.reportMouseEnter) {
             element.onmouseenter = (e) => {
-                sendEventOverWebsocket(element, 'mouseEnterEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseEnter',
                     ...eventMousePositionToString(e),
                 });
             };
@@ -81,7 +85,8 @@ export class MouseEventListenerWidget extends WidgetBase {
 
         if (deltaState.reportMouseLeave) {
             element.onmouseleave = (e) => {
-                sendEventOverWebsocket(element, 'mouseLeaveEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseLeave',
                     ...eventMousePositionToString(e),
                 });
             };

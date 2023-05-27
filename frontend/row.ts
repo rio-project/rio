@@ -7,7 +7,7 @@ export type RowState = WidgetState & {
     spacing?: number;
 };
 
-export class RowWidget  extends WidgetBase {
+export class RowWidget extends WidgetBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-row');

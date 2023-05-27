@@ -16,10 +16,9 @@ from typing import (
     Dict,
     Generic,
     Iterable,
-    List,
     Optional,
+    ParamSpec,
     Set,
-    Tuple,
     Type,
     TypeVar,
     Union,
@@ -34,6 +33,7 @@ from .. import common, messages, session
 from ..common import Jsonable
 
 __all__ = [
+    "EventHandler",
     "Widget",
     "HtmlWidget",
 ]
@@ -55,17 +55,11 @@ document.head.appendChild(style);
 """
 
 
-@dataclass
-class WidgetEvent:
-    """
-    Base class for widget events.
-    """
-
-    widget: Widget
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
-T = TypeVar("T", bound=WidgetEvent)
-EventHandler = Optional[Callable[[T], Any | Awaitable[Any]]]
+EventHandler = Optional[Callable[P, Any | Awaitable[Any]]]
 
 
 _unique_id_counter = -1
@@ -75,35 +69,6 @@ def _make_unique_id() -> int:
     global _unique_id_counter
     _unique_id_counter += 1
     return _unique_id_counter
-
-
-async def call_event_handler_and_refresh(
-    widget: "Widget",
-    event_data: T,
-    handler: EventHandler[T],
-) -> None:
-    """
-    Call an event handler, if one is present. Await it if necessary
-    """
-    assert widget._session_ is not None
-
-    # Event handlers are optional
-    if handler is not None:
-        # If the handler is available, call it and await it if necessary
-        try:
-            result = handler(event_data)
-
-            if inspect.isawaitable(result):
-                await result
-
-        # Display and discard exceptions
-        except Exception:
-            print("Exception in event handler:")
-            traceback.print_exc()
-
-    # Refresh the session. A rebuild might be in order
-    assert widget._session_ is not None, widget
-    await widget._session_.refresh()
 
 
 def is_widget_class(cls: Type[Any]) -> bool:
@@ -284,11 +249,7 @@ class Widget(ABC):
         super().__init_subclass__()
 
         # All widgets must be direct subclasses of Widget
-        if (
-            cls.__base__ is not Widget
-            and cls.__base__ is not FundamentalWidget
-            and cls.__base__ is not HtmlWidget
-        ):
+        if cls.__base__ is not Widget and cls.__base__ is not HtmlWidget:
             raise TypeError(
                 f"Widget subclasses must be direct subclasses of Widget, not {cls.__base__!r}"
             )
@@ -371,6 +332,21 @@ class Widget(ABC):
             cls._state_properties_.add(state_property)
 
     @property
+    def session(self) -> "session.Session":
+        """
+        Return the session this widget is part of.
+
+        The session is accessible after the build method which constructed this
+        widget has returned.
+        """
+        if self._session_ is None:
+            raise RuntimeError(
+                "The session is only accessible once the build method which constructed this widget has returned."
+            )
+
+        return self._session_
+
+    @property
     def _id(self) -> int:
         """
         Return an unchanging, unique ID for this widget, so it can be identified
@@ -424,6 +400,47 @@ class Widget(ABC):
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
+    @typing.overload
+    async def _call_event_handler(
+        self,
+        handler: EventHandler[[Self]],
+    ) -> None:
+        ...
+
+    @typing.overload
+    async def _call_event_handler(
+        self,
+        handler: EventHandler[[Self, T]],
+        event_data: T,
+    ) -> None:
+        ...
+
+    async def _call_event_handler(  # type: ignore
+        self,
+        handler: EventHandler[P],
+        *event_data: T,  # type: ignore
+    ) -> None:
+        """
+        Call an event handler, if one is present. Await it if necessary. Log and
+        discard any exceptions.
+        """
+
+        # Event handlers are optional
+        if handler is None:
+            return
+
+        # If the handler is available, call it and await it if necessary
+        try:
+            result = handler(self, *event_data)  # type: ignore
+
+            if inspect.isawaitable(result):
+                await result
+
+        # Display and discard exceptions
+        except Exception:
+            print("Exception in event handler:")
+            traceback.print_exc()
+
     def __repr__(self) -> str:
         result = f"<{type(self).__name__} id:{self._id} -"
 
@@ -439,17 +456,15 @@ class Widget(ABC):
 Widget._initialize_state_properties(set())
 
 
-class FundamentalWidget(Widget):
-    def build(self) -> "Widget":
-        raise RuntimeError(f"Attempted to call `build` on fundamental widget {self}")
-
-
-class HtmlWidget(FundamentalWidget, ABC):
+class HtmlWidget(Widget):
     javascript_source: ClassVar[str] = ""
     css_source: ClassVar[str] = ""
 
     # Unique id for identifying this class in the frontend.
     _unique_id: ClassVar[str]
+
+    def build(self) -> "Widget":
+        raise RuntimeError(f"Attempted to call `build` on `HtmlWidget` {self}")
 
     def __init_subclass__(cls):
         hash_ = common.secure_string_hash(
@@ -482,28 +497,35 @@ class HtmlWidget(FundamentalWidget, ABC):
         if message_source:
             yield messages.EvaluateJavascript(javascript_source=message_source)
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
-        # Normally, fundamental widgets are identified by their class name. This
-        # is fine, since users should never create any fundamental widgets
-        # themselves, but this doesn't hold for `HtmlWidget`s, since they are
-        # meant to be public.
-        #
-        # This is a problem, because multiple classes might share the same name,
-        # causing clashes in the type names.
-        #
-        # -> Use a unique id instead.
-
-        return {
-            "_type_": self._unique_id,
-        }
-
     async def _handle_message(self, msg: messages.IncomingMessage) -> None:
-        if isinstance(msg, messages.WidgetMessage):
+        # The frontend has requested the widget's staet to be changed
+        if isinstance(msg, messages.WidgetStateUpdate):
+            await self._on_state_update(msg.delta_state)
+
+        # A custom message was sent by the frontend
+        elif isinstance(msg, messages.WidgetMessage):
             await self._on_message(msg.payload)
+
+        # Unknown, chain up
         else:
-            raise RuntimeError(
-                f"{__class__.__name__} received unexpected message `{msg}`"
-            )
+            await super()._handle_message(msg)
+
+    async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
+        """
+        This function is called when the frontend sends a state update to this
+        widget.
+        """
+        # Update all state properties to reflect the new state
+        for attr_name, attr_value in delta_state.items():
+            assert isinstance(attr_value, (bool, int, float, str)), attr_value
+            assert hasattr(type(self), attr_name), attr_name
+            assert isinstance(getattr(type(self), attr_name), StateProperty), attr_name
+
+            setattr(self, attr_name, attr_value)
+
+        # Trigger a refresh
+        assert self._session_ is not None
+        await self._session_.refresh()
 
     async def _on_message(self, message: Jsonable) -> None:
         """
