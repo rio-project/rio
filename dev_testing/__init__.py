@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any, List, Optional
+from typing_extensions   import Self
 
 import PIL.Image
 
@@ -30,11 +31,11 @@ class LoginWidget(rx.Widget):
 
     sap_session_token: Optional[str] = None
 
-    on_login: rx.EventHandler[[]] = None
+    on_login: rx.EventHandler[Self] = None
 
-    async def login(self, _: rx.ButtonPressedEvent) -> None:
+    async def login(self, _: rx.Button, __: rx.ButtonPressedEvent) -> None:
         self.sap_session_token = "<totally-legit-session-token>"
-        await rx.call_event_handler(self.on_login)
+        await self._call_event_handler(self.on_login)
 
     def build(self) -> rx.Widget:
         return Card(
@@ -88,7 +89,7 @@ class SimpleMenu(rx.Widget):
             child_widgets.append(
                 rx.Button(
                     name,
-                    on_press=lambda _: print(f"Pressed {name}"),
+                    on_press=lambda _, __: print(f"Pressed {name}"),
                     major=True,
                     margin_top=0 if ii == 0 else 0.5,
                 )
@@ -103,7 +104,7 @@ class SimpleMenu(rx.Widget):
 class MainPage(rx.Widget):
     sap_session_token: Optional[str] = None
 
-    def on_login(self) -> None:
+    def on_login(self, _) -> None:
         print(f"Logged in! The session token is {self.sap_session_token}.")
 
     def build_login_view(self) -> rx.Widget:

@@ -258,15 +258,19 @@ class Widget(ABC):
         dataclasses.dataclass(unsafe_hash=True, repr=False)(cls)
 
         # Replace the `__init__` method, so custom code is called afterwards
-        if cls.__base__ is Widget:
-            original_init = cls.__init__
 
-            @functools.wraps(original_init)
-            def replacement_init(self, *args, **kwargs):
-                original_init(self, *args, **kwargs)
-                self._custom_init()
+        # TODO: Should this be done for all classes? Wouldn't that mean that the
+        # function is called multiple times, once for each class in the
+        # hierarchy?
 
-            cls.__init__ = replacement_init
+        original_init = cls.__init__
+
+        @functools.wraps(original_init)
+        def replacement_init(self, *args, **kwargs):
+            original_init(self, *args, **kwargs)
+            self._custom_init()
+
+        cls.__init__ = replacement_init
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)
