@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Any, List, Optional
-from typing_extensions   import Self
+from typing_extensions import Self
 
 import PIL.Image
 
@@ -19,9 +19,11 @@ class Card(rx.Widget):
         margin = 0.5
 
         return rx.Rectangle(
-            fill=rx.Color.WHITE.darker(0.15),
             child=self.child,
-            corner_radius=(0, 0, radius, radius),
+            style=rx.BoxStyle(
+                fill=rx.Color.WHITE.darker(0.15),
+                corner_radius=(0, 0, radius, radius),
+            ),
         )
 
 
@@ -149,9 +151,11 @@ class MainPage(rx.Widget):
             child = self.build_menu()
 
         return rx.Rectangle(
-            fill=rx.ImageFill(
-                Path("./dev_testing/test.png"),
-                fill_mode="stretch",
+            rx.BoxStyle(
+                fill=rx.ImageFill(
+                    Path("./dev_testing/test.png"),
+                    fill_mode="stretch",
+                ),
             ),
             child=child,
         )

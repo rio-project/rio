@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 
 from typing_extensions import Self
+from .. import styling
 
 import reflex as rx
 
@@ -77,13 +78,13 @@ class Button(widget_base.Widget):
                 stroke_color = theme.COLOR_ACCENT
             case (False, True):
                 fill = theme.COLOR_ACCENT
-                stroke_color = None
+                stroke_color = styling.Color.TRANSPARENT
             case (True, False):
                 fill = theme.COLOR_ACCENT
                 stroke_color = theme.COLOR_ACCENT
             case (True, True):
                 fill = theme.COLOR_ACCENT.brighter(0.3)
-                stroke_color = None
+                stroke_color = styling.Color.TRANSPARENT
             case _:
                 assert False, "Unreachable"
 
@@ -96,14 +97,18 @@ class Button(widget_base.Widget):
             rx.Rectangle(
                 child=rx.Text(
                     self.text,
-                    font_weight="bold" if self.major else "normal",
-                    font_color=fill.contrasting(),
+                    style=styling.TextStyle(
+                        font_weight="bold" if self.major else "normal",
+                        font_color=fill.contrasting(),
+                    ),
                     margin=0.3,
                 ),
+                style = styling.BoxStyle(
                 fill=fill,
                 stroke_color=stroke_color,
                 stroke_width=theme.OUTLINE_WIDTH,
                 corner_radius=theme.CORNER_RADIUS,
+                ),
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

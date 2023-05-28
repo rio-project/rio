@@ -258,11 +258,10 @@ class Widget(ABC):
         dataclasses.dataclass(unsafe_hash=True, repr=False)(cls)
 
         # Replace the `__init__` method, so custom code is called afterwards
-
+        #
         # TODO: Should this be done for all classes? Wouldn't that mean that the
         # function is called multiple times, once for each class in the
         # hierarchy?
-
         original_init = cls.__init__
 
         @functools.wraps(original_init)
@@ -461,14 +460,20 @@ Widget._initialize_state_properties(set())
 
 
 class HtmlWidget(Widget):
-    javascript_source: ClassVar[str] = ""
-    css_source: ClassVar[str] = ""
-
-    # Unique id for identifying this class in the frontend.
+    # Unique id for identifying this class in the frontend. This is initialized
+    # in `Widget.__init_subclass__`.
     _unique_id: ClassVar[str]
 
     def build(self) -> "Widget":
         raise RuntimeError(f"Attempted to call `build` on `HtmlWidget` {self}")
+
+    @classmethod
+    def build_javascript_source(cls, sess: session.Session) -> str:
+        return ""
+
+    @classmethod
+    def build_css_source(cls, sess: session.Session) -> str:
+        return ""
 
     def __init_subclass__(cls):
         hash_ = common.secure_string_hash(
@@ -482,18 +487,22 @@ class HtmlWidget(Widget):
         super().__init_subclass__()
 
     @classmethod
-    def _build_initialization_messages(cls) -> Iterable[messages.OutgoingMessage]:
+    def _build_initialization_messages(
+        cls, sess: session.Session
+    ) -> Iterable[messages.OutgoingMessage]:
         message_source = ""
 
-        if cls.javascript_source:
+        javascript_source = cls.build_javascript_source(sess)
+        if javascript_source:
             message_source += JAVASCRIPT_SOURCE_TEMPLATE % {
-                "js_source": cls.javascript_source,
+                "js_source": javascript_source,
                 "js_class_name": cls.__name__,
                 "cls_unique_id": cls._unique_id,
             }
 
-        if cls.css_source:
-            escaped_css_source = json.dumps(cls.css_source)
+        css_source = cls.build_css_source(sess)
+        if css_source:
+            escaped_css_source = json.dumps(css_source)
             message_source += CSS_SOURCE_TEMPLATE % {
                 "escaped_css_source": escaped_css_source,
             }

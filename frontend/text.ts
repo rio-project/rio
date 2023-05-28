@@ -1,16 +1,11 @@
-import { Color } from './models';
+import { TextStyle } from './models';
 import { colorToCss } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type TextState = WidgetState & {
     text?: string;
     multiline?: boolean;
-    font?: string;
-    font_color?: Color;
-    font_size?: number;
-    font_weight?: string;
-    italic?: boolean;
-    underlined?: boolean;
+    style?: TextStyle;
 };
 
 export class TextWidget extends WidgetBase {
@@ -31,30 +26,17 @@ export class TextWidget extends WidgetBase {
                 : 'nowrap';
         }
 
-        if (deltaState.font !== undefined) {
-            element.style.fontFamily = deltaState.font;
-        }
-
-        if (deltaState.font_color !== undefined) {
-            element.style.color = colorToCss(deltaState.font_color);
-        }
-
-        if (deltaState.font_size !== undefined) {
-            element.style.fontSize = deltaState.font_size + 'rem';
-        }
-
-        if (deltaState.font_weight !== undefined) {
-            element.style.fontWeight = deltaState.font_weight;
-        }
-
-        if (deltaState.italic !== undefined) {
-            element.style.fontStyle = deltaState.italic ? 'italic' : 'normal';
-        }
-
-        if (deltaState.underlined !== undefined) {
-            element.style.textDecoration = deltaState.underlined
+        if (deltaState.style !== undefined) {
+            const style = deltaState.style;
+            element.style.fontFamily = style.fontName;
+            element.style.color = colorToCss(style.fontColor);
+            element.style.fontSize = style.fontSize + 'rem';
+            element.style.fontStyle = style.italic ? 'italic' : 'normal';
+            element.style.fontWeight = style.fontWeight;
+            element.style.textDecoration = style.underlined
                 ? 'underline'
                 : 'none';
+            element.style.textTransform = style.allCaps ? 'uppercase': 'none';
         }
     }
 }

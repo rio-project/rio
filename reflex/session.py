@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import typing
+from . import styling
 import weakref
 from dataclasses import dataclass
 from typing import (
@@ -23,7 +24,6 @@ import reflex as rx
 
 from . import app_server, messages
 from .common import Jsonable
-from .styling import *
 from .widgets import widget_base
 
 
@@ -249,7 +249,7 @@ class Session:
             ):
                 continue
 
-            for msg in widget._build_initialization_messages():
+            for msg in widget._build_initialization_messages(self):
                 await self.send_message(msg)
 
             self._initialized_html_widgets.add(type(widget))
@@ -301,19 +301,44 @@ class Session:
         # Special case: `FillLike`
         #
         # TODO: Is there a nicer way to detect these?
-        if origin is Union and set(args) == {Fill, Color}:
-            as_fill = Fill._try_from(value)
+        if origin is Union and set(args) == {styling.Fill, styling.Color}:
+            as_fill = styling.Fill._try_from(value)
 
             # Image fills may contain an image source which needs to be hosted
             # by the server so the client can access it
-            if isinstance(as_fill, ImageFill) and as_fill._image._asset is not None:
+            if (
+                isinstance(as_fill, styling.ImageFill)
+                and as_fill._image._asset is not None
+            ):
                 self.app_server.weakly_host_asset(as_fill._image._asset)
 
             return as_fill._serialize(self.app_server.external_url)
 
         # Colors
-        if type_ is Color:
+        if type_ is styling.Color:
             return value.rgba
+
+        # TextStyle
+        if type_ is styling.TextStyle:
+            return value._serialize()
+
+        # BoxStyle
+        if type_ is styling.BoxStyle:
+            assert isinstance(value, styling.BoxStyle), value
+
+            # Image fills may contain an image source which needs to be hosted
+            # by the server so the client can access it
+            if (
+                isinstance(value.fill, styling.ImageFill)
+                and value.fill._image._asset is not None
+            ):
+                self.app_server.weakly_host_asset(value.fill._image._asset)
+
+            return value._serialize(self.app_server.external_url)
+
+        # MarkdownStyle
+        if type_ is styling.MarkdownStyle:
+            return value._serialize()
 
         # Optional
         if origin is Union and len(args) == 2 and type(None) in args:

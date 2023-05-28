@@ -3,6 +3,7 @@ import os
 import secrets
 from pathlib import Path
 from typing import Dict, List, Tuple, TypeVar, Union
+import uniserde
 
 from typing_extensions import Annotated
 
@@ -11,18 +12,11 @@ _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
 PACKAGE_ROOT_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = PACKAGE_ROOT_DIR.parent / "frontend"
+HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR.parent / "hosted-assets"
 
 
-Jsonable = Union[
-    None,
-    bool,
-    int,
-    float,
-    str,
-    Tuple["Jsonable", ...],
-    List["Jsonable"],
-    Dict[str, "Jsonable"],
-]
+Jsonable = uniserde.Jsonable
+
 
 _READONLY = object()
 T = TypeVar("T")

@@ -227,23 +227,15 @@ var TextWidget = /** @class */function (_super) {
     if (deltaState.multiline !== undefined) {
       element.style.whiteSpace = deltaState.multiline ? 'normal' : 'nowrap';
     }
-    if (deltaState.font !== undefined) {
-      element.style.fontFamily = deltaState.font;
-    }
-    if (deltaState.font_color !== undefined) {
-      element.style.color = (0, app_1.colorToCss)(deltaState.font_color);
-    }
-    if (deltaState.font_size !== undefined) {
-      element.style.fontSize = deltaState.font_size + 'rem';
-    }
-    if (deltaState.font_weight !== undefined) {
-      element.style.fontWeight = deltaState.font_weight;
-    }
-    if (deltaState.italic !== undefined) {
-      element.style.fontStyle = deltaState.italic ? 'italic' : 'normal';
-    }
-    if (deltaState.underlined !== undefined) {
-      element.style.textDecoration = deltaState.underlined ? 'underline' : 'none';
+    if (deltaState.style !== undefined) {
+      var style = deltaState.style;
+      element.style.fontFamily = style.fontName;
+      element.style.color = (0, app_1.colorToCss)(style.fontColor);
+      element.style.fontSize = style.fontSize + 'rem';
+      element.style.fontStyle = style.italic ? 'italic' : 'normal';
+      element.style.fontWeight = style.fontWeight;
+      element.style.textDecoration = style.underlined ? 'underline' : 'none';
+      element.style.textTransform = style.allCaps ? 'uppercase' : 'none';
     }
   };
   return TextWidget;
@@ -445,26 +437,17 @@ var RectangleWidget = /** @class */function (_super) {
   };
   RectangleWidget.prototype.updateElement = function (element, deltaState) {
     (0, app_1.replaceOnlyChild)(element, deltaState.child);
-    if (deltaState.fill !== undefined) {
-      element.style.background = (0, app_1.fillToCss)(deltaState.fill);
-    }
-    if (deltaState.corner_radius !== undefined) {
-      var _a = deltaState.corner_radius,
+    if (deltaState.style !== undefined) {
+      var style = deltaState.style;
+      element.style.background = (0, app_1.fillToCss)(style.fill);
+      element.style.borderWidth = "".concat(style.strokeWidth, "rem");
+      element.style.borderColor = (0, app_1.colorToCss)(style.strokeColor);
+      var _a = style.cornerRadius,
         topLeft = _a[0],
         topRight = _a[1],
         bottomRight = _a[2],
         bottomLeft = _a[3];
       element.style.borderRadius = "".concat(topLeft, "rem ").concat(topRight, "rem ").concat(bottomRight, "rem ").concat(bottomLeft, "rem");
-    }
-    if (deltaState.stroke_width !== undefined) {
-      element.style.borderWidth = "".concat(deltaState.stroke_width, "rem");
-    }
-    if (deltaState.stroke_color !== undefined) {
-      if (deltaState.stroke_color === null) {
-        element.style.borderColor = 'transparent';
-      } else {
-        element.style.borderColor = (0, app_1.colorToCss)(deltaState.stroke_color);
-      }
     }
   };
   return RectangleWidget;

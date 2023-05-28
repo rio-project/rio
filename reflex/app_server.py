@@ -43,6 +43,10 @@ class AppServer(fastapi.FastAPI):
     ):
         super().__init__()
 
+        # TODO: Maybe parse the url and remove the backslash? Document this?
+        # Something?
+        assert not external_url.endswith("/"), external_url
+
         self.app = app_
         self.external_url = external_url
         self.validator_factory = validator_factory
@@ -60,6 +64,11 @@ class AppServer(fastapi.FastAPI):
         # All assets that have been registered with this session. They are held
         # weakly, meaning the session will host assets for as long as their
         # corresponding Python objects are alive.
+        #
+        # Assets registered here are hosted under `/assets/temp-{asset_id}`. In
+        # addition the server also hosts other assets (such as javascript
+        # dependencies) which are available under public URLS at
+        # `/assets/{some-name}`.
         self._assets: weakref.WeakValueDictionary[
             str, assets.HostedAsset
         ] = weakref.WeakValueDictionary()
@@ -174,14 +183,35 @@ class AppServer(fastapi.FastAPI):
 
     async def _serve_asset(self, asset_id: str) -> fastapi.responses.Response:
         """
-        Handler for serving registered assets via fastapi. The app only
-        references assets weakly, meaning trying to access an asset that has
-        been garbage collected will result in a 404 error.
+        Handler for serving assets via fastapi.
+
+        Some common assets are hosted under permanent, well known URLs under the
+        `/assets/{some-name}` path.
+
+        In addition, `HostedAsset` instances are hosted under their secret id
+        under the `/assets/temp-{asset_id}` path. These assets are held weakly
+        by the session, meaning they will be served for as long as the
+        corresponding Python object is alive.
         """
-        # Get the asset instance. The asset's id acts as a secret, so no further
-        # authentication is required.
+        # Well known asset?
+        if not asset_id.startswith("temp-"):
+            # TODO: Is this safe? Would this allow the client to break out
+            # from the directory using names such as `../`?
+            asset_file_path = common.HOSTED_ASSETS_DIR / asset_id
+            print(f"Asset: {asset_id}", asset_file_path)
+
+            # TODO: Can this check be avoided?
+            if asset_file_path.exists():
+                return fastapi.responses.FileResponse(
+                    common.HOSTED_ASSETS_DIR / asset_id
+                )
+
+            return fastapi.responses.Response(status_code=404)
+
+        # Get the asset's Python instance. The asset's id acts as a secret, so
+        # no further authentication is required.
         try:
-            asset = self._assets[asset_id]
+            asset = self._assets[asset_id.removeprefix("temp-")]
         except KeyError:
             return fastapi.responses.Response(status_code=404)
 
