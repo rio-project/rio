@@ -2,14 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
-from typing import Dict, Generic, Optional, TypeVar
+from typing import *  # type: ignore
 
-from typing_extensions import Self
 
 import reflex as rx
 
-from .. import messages
-from ..common import Jsonable, Readonly
 from ..styling import *
 from . import widget_base
 
@@ -31,22 +28,24 @@ class Dropdown(widget_base.HtmlWidget, Generic[T]):
     _: KW_ONLY
     value: Optional[T] = None
     on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
+    _selected_name: Optional[str] = None
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> Dict[str, Any]:
         return {
             "optionNames": list(self.options.keys()),
+            "selectedName": self._selected_name,
         }
 
-    async def _on_message(self, msg: Jsonable) -> None:
+    async def _on_state_update(self, msg: Any) -> None:
         # Parse the message
         assert isinstance(msg, dict), msg
 
-        msg_value = msg["value"]
-        assert isinstance(msg_value, str), msg_value
+        self._selected_name = msg["value"]
+        assert isinstance(self._selected_name, str), self._selected_name
 
         # Get the server-side value for this selection
         try:
-            self.value = self.options[msg_value]
+            self.value = self.options[self._selected_name]
         except KeyError:
             # Probably due to client lag
             return

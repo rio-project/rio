@@ -3,6 +3,7 @@ import { WidgetBase, WidgetState } from './widgetBase';
 export type DropdownState = WidgetState & {
     _type_: 'dropdown';
     optionNames?: string[];
+    selectedName?: string;
 };
 
 export class DropdownWidget extends WidgetBase {
@@ -29,6 +30,13 @@ export class DropdownWidget extends WidgetBase {
                 option.text = optionName;
                 element.appendChild(option);
             }
+        }
+
+        if (
+            deltaState.selectedName !== undefined &&
+            deltaState.selectedName !== null
+        ) {
+            (element as HTMLSelectElement).value = deltaState.selectedName;
         }
     }
 }

@@ -71,6 +71,12 @@ class Session:
         # source code.
         self._initialized_html_widgets: Set[Type[rx.HtmlWidget]] = set()
 
+        # This lock is used to order state updates that are sent to the client.
+        # Without it a message which was generated later might be sent to the
+        # client before an earlier message, leading to invalid widget
+        # references.
+        self._refresh_lock = asyncio.Lock()
+
     def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
@@ -228,37 +234,40 @@ class Session:
         after this method returns there are no more dirty widgets in the
         session, and Python's state and the client's state are in sync.
         """
-        # Refresh and get a set of all widgets which have been visited
-        visited_widgets = self.refresh_sync()
 
-        # Initialize all HTML widgets
-        for widget in visited_widgets:
-            if (
-                not isinstance(widget, rx.HtmlWidget)
-                or type(widget) in self._initialized_html_widgets
-            ):
-                continue
+        # For why this lock is here see its creation in `__init__`
+        async with self._refresh_lock:
+            # Refresh and get a set of all widgets which have been visited
+            visited_widgets = self.refresh_sync()
 
-            for msg in widget._build_initialization_messages(self):
-                await self.send_message(msg)
+            # Initialize all HTML widgets
+            for widget in visited_widgets:
+                if (
+                    not isinstance(widget, rx.HtmlWidget)
+                    or type(widget) in self._initialized_html_widgets
+                ):
+                    continue
 
-            self._initialized_html_widgets.add(type(widget))
+                for msg in widget._build_initialization_messages(self):
+                    await self.send_message(msg)
 
-        # Send the new state to the client if necessary
-        delta_states: Dict[int, Any] = {
-            widget._id: self._serialize_and_host_widget(widget)
-            for widget in visited_widgets
-        }
+                self._initialized_html_widgets.add(type(widget))
 
-        # Check whether the root widget needs replacing
-        if self.root_widget in visited_widgets:
-            root_widget_id = self.root_widget._id
-        else:
-            root_widget_id = None
+            # Send the new state to the client if necessary
+            delta_states: Dict[int, Any] = {
+                widget._id: self._serialize_and_host_widget(widget)
+                for widget in visited_widgets
+            }
 
-        await self.send_message(
-            messages.UpdateWidgetStates(delta_states, root_widget_id)
-        )
+            # Check whether the root widget needs replacing
+            if self.root_widget in visited_widgets:
+                root_widget_id = self.root_widget._id
+            else:
+                root_widget_id = None
+
+            await self.send_message(
+                messages.UpdateWidgetStates(delta_states, root_widget_id)
+            )
 
     def _serialize_and_host_value(self, value: Any, type_: Type) -> Jsonable:
         """

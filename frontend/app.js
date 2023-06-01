@@ -392,6 +392,9 @@ var DropdownWidget = /** @class */function (_super) {
         element.appendChild(option);
       }
     }
+    if (deltaState.selectedName !== undefined && deltaState.selectedName !== null) {
+      element.value = deltaState.selectedName;
+    }
   };
   return DropdownWidget;
 }(widgetBase_1.WidgetBase);
