@@ -228,12 +228,21 @@ class Color:
         if scale < 0.0 or scale > 1.0:
             raise ValueError("`scale` must be between 0.0 and 1.0")
 
-        brightness = self.value
+        hue, saturation, brightness = self.hsv
+
+        # Human vision is nonlinear. Convert the color to something more akin
+        # to how it is perceived.
+        brightness = brightness ** (1 / 2.2)
 
         if brightness > 0.5:
-            return self._map_rgb(lambda x: x * (1 - scale))
+            brightness = brightness * (1 - scale)
+        else:
+            brightness = brightness + (1 - brightness) * scale
 
-        return self.brighter((1 - brightness) * (1 - scale))
+        # Convert back to linear brightness
+        brightness = brightness**2.2
+
+        return Color.from_hsv(hue, saturation, brightness)
 
     def __repr__(self) -> str:
         return f"<Color {self.hex}>"
