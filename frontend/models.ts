@@ -17,19 +17,21 @@ export type Fill =
       };
 
 export type TextStyle = {
-	fontName: string;
-	fontColor: [number, number, number, number];
-	fontSize: number;
-	italic: boolean;
-	fontWeight: "normal" | "bold";
-	underlined: boolean;
-	allCaps: boolean;
+    fontName: string;
+    fontColor: [number, number, number, number];
+    fontSize: number;
+    italic: boolean;
+    fontWeight: 'normal' | 'bold';
+    underlined: boolean;
+    allCaps: boolean;
 };
 
-
 export type BoxStyle = {
-	fill: Fill;
-	strokeColor: [number, number, number, number];
-	strokeWidth: number;
-	cornerRadius: [number, number, number, number];
+    fill: Fill;
+    strokeColor: [number, number, number, number];
+    strokeWidth: number;
+    cornerRadius: [number, number, number, number];
+    shadowColor: [number, number, number, number];
+    shadowRadius: number;
+    shadowOffset: [number, number];
 };

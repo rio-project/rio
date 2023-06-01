@@ -43,6 +43,36 @@ body {
     flex-grow: 1;
     flex-shrink: 1;
     border-style: solid;
+
+    transition-timing-function: ease; /* The transition time is set via JS */
+
+    /*
+    The following attributes are controlled via variables, to allow JavaScript
+    to change them, even on pseudo-classes.
+    */
+    background: var(--rectangle-background);
+    border-color: var(--rectangle-stroke-color);
+    border-width: var(--rectangle-stroke-width);
+    border-radius: var(--rectangle-corner-radius-top-left)
+        var(--rectangle-corner-radius-top-right)
+        var(--rectangle-corner-radius-bottom-right)
+        var(--rectangle-corner-radius-bottom-left);
+    box-shadow: var(--rectangle-shadow-offset-x)
+        var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius)
+        var(--rectangle-shadow-color);
+}
+
+.reflex-rectangle-hover:hover {
+    background: var(--rectangle-background-hover);
+    border-color: var(--rectangle-stroke-color-hover);
+    border-width: var(--rectangle-stroke-width-hover);
+    border-radius: var(--rectangle-corner-radius-top-left-hover)
+        var(--rectangle-corner-radius-top-right-hover)
+        var(--rectangle-corner-radius-bottom-right-hover)
+        var(--rectangle-corner-radius-bottom-left-hover);
+    box-shadow: var(--rectangle-shadow-offset-x-hover)
+        var(--rectangle-shadow-offset-y-hover)
+        var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
 .reflex-stack {
@@ -70,7 +100,7 @@ body {
     border-radius: var(--corner-radius);
     border: 1.5px solid transparent;
 
-    padding: 0.3rem 0.5rem;
+    padding: 0.7rem 0.5rem;
     text-align: center;
     outline: none;
 

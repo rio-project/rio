@@ -1,5 +1,6 @@
 import hashlib
-import os
+from dataclasses import dataclass
+import fastapi
 import secrets
 from pathlib import Path
 from typing import Dict, List, Tuple, TypeVar, Union
@@ -41,3 +42,14 @@ def secure_string_hash(*values: str, hash_length: int = 32) -> str:
         hasher.update(value.encode("utf-8"))
 
     return hasher.hexdigest()
+
+
+@dataclass(frozen=True)
+class FileInfo:
+    name: str
+    size_in_bytes: int
+    media_type: str
+    _contents: bytes
+
+    async def read_bytes(self) -> bytes:
+        return self._contents

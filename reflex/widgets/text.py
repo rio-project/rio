@@ -15,7 +15,7 @@ class Text(widget_base.HtmlWidget):
     text: str
     _: KW_ONLY
     multiline: bool = False
-    style: styling.TextStyle
+    style: styling.TextStyle = styling.TextStyle()
 
 
 Text._unique_id = "Text-builtin"

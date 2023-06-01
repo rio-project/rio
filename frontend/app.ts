@@ -94,6 +94,8 @@ function processMessage(message: any) {
         updateWidgetStates(message.deltaStates, message.rootWidgetId);
     } else if (message.type == 'evaluateJavascript') {
         eval(message.javascriptSource);
+    } else if (message.type == 'requestFileUpload') {
+        requestFileUpload(message);
     } else {
         throw `Encountered unknown message type: ${message}`;
     }
@@ -193,50 +195,36 @@ function updateWidgetStates(
 }
 
 function commonUpdate(element: HTMLElement, state: WidgetState) {
+    // Margins
     if (state._margin_ !== undefined) {
         let [left, top, right, bottom] = state._margin_;
 
-        if (left === null) {
+        if (left === 0) {
             element.style.removeProperty('margin-left');
         } else {
             element.style.marginLeft = `${left}rem`;
         }
 
-        if (top === null) {
+        if (top === 0) {
             element.style.removeProperty('margin-top');
         } else {
             element.style.marginTop = `${top}rem`;
         }
 
-        if (right === null) {
+        if (right === 0) {
             element.style.removeProperty('margin-right');
         } else {
             element.style.marginRight = `${right}rem`;
         }
 
-        if (bottom === null) {
+        if (bottom === 0) {
             element.style.removeProperty('margin-bottom');
         } else {
             element.style.marginBottom = `${bottom}rem`;
         }
     }
 
-    if (state._size_ !== undefined) {
-        let [width, height] = state._size_;
-
-        if (width === null) {
-            element.style.removeProperty('width');
-        } else {
-            element.style.width = `${width}rem`;
-        }
-
-        if (height === null) {
-            element.style.removeProperty('height');
-        } else {
-            element.style.height = `${height}rem`;
-        }
-    }
-
+    // Alignment
     if (state._align_ !== undefined) {
         let [align_x, align_y] = state._align_;
 
@@ -244,34 +232,18 @@ function commonUpdate(element: HTMLElement, state: WidgetState) {
         if (align_x === null) {
             element.style.removeProperty('left');
             transform_x = 0;
-
-            if (element.style.width === 'max-content') {
-                element.style.removeProperty('width');
-            }
         } else {
             element.style.left = `${align_x * 100}%`;
             transform_x = align_x * -100;
-
-            if (!element.style.width) {
-                element.style.width = 'max-content';
-            }
         }
 
         let transform_y;
         if (align_y === null) {
             element.style.removeProperty('top');
             transform_y = 0;
-
-            if (element.style.height === 'max-content') {
-                element.style.removeProperty('height');
-            }
         } else {
             element.style.top = `${align_y * 100}%`;
             transform_y = align_y * -100;
-
-            if (!element.style.height) {
-                element.style.height = 'max-content';
-            }
         }
 
         if (transform_x === 0 && transform_y === 0) {
@@ -279,6 +251,44 @@ function commonUpdate(element: HTMLElement, state: WidgetState) {
         } else {
             element.style.transform = `translate(${transform_x}%, ${transform_y}%)`;
         }
+    }
+
+    // Width
+    //
+    // - If the width is set, use that
+    // - Widgets with an alignment don't grow, but use their natural size
+    // - Otherwise the widget's size is 100%. In this case however, margins must
+    //   be taken into account, since they aren't part of the `border-box`.
+    let newSize = state._size_ ? state._size_ : this.state._size_;
+    let [newWidth, newHeight] = newSize;
+
+    let newAlign = state._align_ ? state._align_ : this.state._align_;
+    let [newAlignX, newAlignY] = newAlign;
+
+    let newMargins = state._margin_ ? state._margin_ : this.state._margin_;
+    let [newMarginLeft, newMarginTop, newMarginRight, newMarginBottom] =
+        newMargins;
+    let newMarginX = newMarginLeft + newMarginRight;
+    let newMarginY = newMarginTop + newMarginBottom;
+
+    if (newWidth !== null) {
+        element.style.width = `${newWidth}rem`;
+    } else if (newAlignX !== null) {
+        element.style.width = 'max-content';
+    } else if (newMarginX !== 0) {
+        element.style.width = `calc(100% - ${newMarginX}rem)`;
+    } else {
+        element.style.removeProperty('width');
+    }
+
+    if (newHeight != null) {
+        element.style.height = `${newHeight}rem`;
+    } else if (newAlignY !== null) {
+        element.style.height = 'max-content';
+    } else if (newMarginY !== 0) {
+        element.style.height = `calc(100% - ${newMarginY}rem)`;
+    } else {
+        element.style.removeProperty('height');
     }
 }
 
@@ -376,6 +386,54 @@ export function replaceChildren(
         parentElement.insertBefore(newElement!, curElement);
         curIdIndex++;
     }
+}
+
+function requestFileUpload(message: any) {
+    // Create a file upload input element
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.style.display = 'none';
+
+    function finish() {
+        // Remove the input element from the DOM
+        document.body.removeChild(input);
+
+        // Build a `FormData` object containing the files
+        const data = new FormData();
+
+        let ii = 0;
+        for (const file of input.files || []) {
+            ii += 1;
+            data.append('file_names', file.name);
+            data.append('file_types', file.type);
+            data.append('file_sizes', file.size.toString());
+            data.append('file_streams', file, file.name);
+        }
+
+        // FastAPI has trouble parsing empty form data. Append a dummy value so
+        // it's never empty
+        data.append('dummy', 'dummy');
+
+        // Upload the files
+        fetch(message.uploadUrl, {
+            method: 'PUT',
+            body: data,
+        });
+    }
+
+    // Listen for changes to the input
+    input.addEventListener('change', finish);
+
+    // Detect if the window gains focus. This means the file upload dialog was
+    // closed without selecting a file
+    window.addEventListener('focus', finish, { once: true });
+
+    // Add the input element to the DOM
+    document.body.appendChild(input);
+
+    // Trigger the file upload
+    input.click();
 }
 
 function main() {

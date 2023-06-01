@@ -257,19 +257,21 @@ class Widget(ABC):
         # Apply the dataclass transform
         dataclasses.dataclass(unsafe_hash=True, repr=False)(cls)
 
-        # Replace the `__init__` method, so custom code is called afterwards
+        # Widgets need to run custom code in in `__init__`, but dataclasses
+        # don't chain up. `__init__` is replaced with a custom function, which
+        # first calls the original one, then runs the custom code.
         #
-        # TODO: Should this be done for all classes? Wouldn't that mean that the
-        # function is called multiple times, once for each class in the
-        # hierarchy?
-        original_init = cls.__init__
+        # Take care to only do this for the leaf class, so that the custom code
+        # isn't run multiple times.
+        if cls.__module__ != __name__ or cls.__name__ != "HtmlWidget":
+            original_init = cls.__init__
 
-        @functools.wraps(original_init)
-        def replacement_init(self, *args, **kwargs):
-            original_init(self, *args, **kwargs)
-            self._custom_init()
+            @functools.wraps(original_init)
+            def replacement_init(self, *args, **kwargs):
+                original_init(self, *args, **kwargs)
+                self._custom_init()
 
-        cls.__init__ = replacement_init
+            cls.__init__ = replacement_init
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)

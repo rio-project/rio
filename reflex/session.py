@@ -1,24 +1,14 @@
 from __future__ import annotations
 
 import logging
+import secrets
+import asyncio
+from . import common
 import typing
 from . import styling
 import weakref
 from dataclasses import dataclass
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Container,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    Set,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import *  #  type: ignore
 
 import reflex as rx
 
@@ -746,3 +736,30 @@ class Session:
                 continue
 
             yield old_widget, new_widget
+
+    async def file_chooser(
+        self,
+        *,
+        dialog_title: str = "Select a file",
+        file_extensions: Optional[List[str]] = None,
+    ) -> List[common.FileInfo]:
+        """
+        Open a file chooser dialog.
+        """
+        # Create a secret id and register the file upload with the app server
+        upload_id = secrets.token_urlsafe()
+        future = asyncio.Future()
+
+        self.app_server._pending_file_uploads[upload_id] = future
+
+        # Tell the frontend to upload a file
+        await self.send_message(
+            messages.RequestFileUpload(
+                upload_url=f"{self.app_server.external_url}/upload/{upload_id}",
+                dialog_title=dialog_title,
+                file_extensions=file_extensions,
+            )
+        )
+
+        # Wait for the user to upload files
+        return await future

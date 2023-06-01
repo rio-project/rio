@@ -4,6 +4,7 @@ from dataclasses import KW_ONLY
 
 from typing_extensions import Self
 from .. import styling
+from typing import Optional
 
 import reflex as rx
 
@@ -24,9 +25,141 @@ class Button(widget_base.Widget):
     text: str
     on_press: rx.EventHandler[Self, ButtonPressedEvent] = None
     _: KW_ONLY
-    major: bool = True
-    _is_entered: bool = False
+    style: rx.BoxStyle
+    hover_style: rx.BoxStyle
+    click_style: rx.BoxStyle
+    text_style: rx.TextStyle
+    text_style_hover: rx.TextStyle
+    text_style_click: rx.TextStyle
+    transition_speed: float
     _is_pressed: bool = False
+    _is_entered: bool = False
+
+    @classmethod
+    def major(
+        cls,
+        text: str,
+        on_press: rx.EventHandler[Self, ButtonPressedEvent] = None,
+        *,
+        font_color: rx.Color = theme.COLOR_FONT,
+        accent_color: rx.Color = theme.COLOR_ACCENT,
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        return cls(
+            text,
+            on_press,
+            style=rx.BoxStyle(
+                fill=accent_color,
+                corner_radius=theme.CORNER_RADIUS,
+            ),
+            hover_style=rx.BoxStyle(
+                fill=accent_color.brighter(0.1),
+                corner_radius=theme.CORNER_RADIUS,
+            ),
+            click_style=rx.BoxStyle(
+                fill=accent_color.brighter(0.2),
+                corner_radius=theme.CORNER_RADIUS,
+            ),
+            text_style=rx.TextStyle(
+                font_color=font_color,
+                font_weight="bold",
+            ),
+            text_style_hover=rx.TextStyle(
+                font_color=accent_color.contrasting(),
+                font_weight="bold",
+            ),
+            text_style_click=rx.TextStyle(
+                font_color=accent_color.contrasting(),
+                font_weight="bold",
+            ),
+            transition_speed=theme.TRANSITION_FAST,
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
+
+    @classmethod
+    def minor(
+        cls,
+        text: str,
+        on_press: rx.EventHandler[Self, ButtonPressedEvent] = None,
+        *,
+        accent_color: rx.Color = theme.COLOR_ACCENT,
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        base_style = rx.BoxStyle(
+            fill=styling.Color.TRANSPARENT,
+            corner_radius=theme.CORNER_RADIUS,
+            stroke_width=theme.OUTLINE_WIDTH,
+            stroke_color=accent_color,
+        )
+
+        return cls(
+            text,
+            on_press,
+            style=base_style,
+            hover_style=base_style.replace(
+                fill=accent_color.brighter(0.1),
+                stroke_color=accent_color.brighter(0.1),
+            ),
+            click_style=base_style.replace(
+                fill=accent_color.brighter(0.2),
+                stroke_color=accent_color.brighter(0.2),
+            ),
+            text_style=rx.TextStyle(
+                font_color=accent_color,
+            ),
+            text_style_hover=rx.TextStyle(
+                font_color=accent_color.contrasting(),
+            ),
+            text_style_click=rx.TextStyle(
+                font_color=accent_color.contrasting(),
+            ),
+            transition_speed=theme.TRANSITION_FAST,
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
 
     def _on_mouse_enter(
         self,
@@ -70,45 +203,25 @@ class Button(widget_base.Widget):
         self._is_pressed = False
 
     def build(self) -> rx.Widget:
-        # Change the visuals depending on whether the button is pressed, and
-        # whether it's major
-        match (self._is_pressed, self.major):
-            case (False, False):
-                fill = theme.COLOR_NEUTRAL
-                stroke_color = theme.COLOR_ACCENT
-            case (False, True):
-                fill = theme.COLOR_ACCENT
-                stroke_color = styling.Color.TRANSPARENT
-            case (True, False):
-                fill = theme.COLOR_ACCENT
-                stroke_color = theme.COLOR_ACCENT
-            case (True, True):
-                fill = theme.COLOR_ACCENT.brighter(0.3)
-                stroke_color = styling.Color.TRANSPARENT
-            case _:
-                assert False, "Unreachable"
+        if self._is_pressed:
+            style = self.click_style
+            hover_style = None
+            text_style = self.text_style_click
+        else:
+            style = self.style
+            hover_style = self.hover_style
+            text_style = self.text_style_hover if self._is_entered else self.text_style
 
-        # Give visual feedback if the mouse is over the button
-        if self._is_entered and not self._is_pressed:
-            fill = fill.brighter(0.15)
-
-        # Construct the result
         return rx.MouseEventListener(
             rx.Rectangle(
                 child=rx.Text(
                     self.text,
-                    style=styling.TextStyle(
-                        font_weight="bold" if self.major else "normal",
-                        font_color=fill.contrasting(),
-                    ),
+                    style=text_style,
                     margin=0.3,
                 ),
-                style = styling.BoxStyle(
-                fill=fill,
-                stroke_color=stroke_color,
-                stroke_width=theme.OUTLINE_WIDTH,
-                corner_radius=theme.CORNER_RADIUS,
-                ),
+                style=style,
+                hover_style=hover_style,
+                transition_time=theme.TRANSITION_FAST,
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

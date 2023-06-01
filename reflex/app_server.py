@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import asyncio
 import io
 import json
 import mimetypes
@@ -9,7 +10,7 @@ import traceback
 import weakref
 from datetime import timedelta
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import *  # type: ignore
 
 import aiohttp
 import fastapi
@@ -73,11 +74,20 @@ class AppServer(fastapi.FastAPI):
             str, assets.HostedAsset
         ] = weakref.WeakValueDictionary()
 
+        # All pending file uploads. These are stored in memory for a limited
+        # time. When a file is uploaded the corresponding future is set.
+        self._pending_file_uploads: timer_dict.TimerDict[
+            str, asyncio.Future[List[common.FileInfo]]
+        ] = timer_dict.TimerDict(default_duration=timedelta(minutes=15))
+
         # Fastapi
         self.add_api_route("/", self._serve_index, methods=["GET"])
         self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
         self.add_api_route("/favicon.ico", self._serve_favicon, methods=["GET"])
         self.add_api_route("/asset/{asset_id}", self._serve_asset, methods=["GET"])
+        self.add_api_route(
+            "/upload/{upload_token}", self._serve_file_upload, methods=["PUT"]
+        )
         self.add_api_websocket_route("/ws", self._serve_websocket)
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
@@ -226,6 +236,74 @@ class AppServer(fastapi.FastAPI):
                 asset.data,
                 media_type=asset.media_type,
             )
+
+    async def _serve_file_upload(
+        self,
+        upload_token: str,
+        file_names: List[str],
+        file_types: List[str],
+        file_sizes: List[str],
+        # If no files are uploaded `files` isn't present in the form data at
+        # all. Using a default value ensures that those requests don't fail
+        # because of "missing parameters".
+        #
+        # Lists are mutable, make sure not to modify this value!
+        file_streams: List[fastapi.UploadFile] = [],
+    ):
+        # Try to find the future for this token
+        try:
+            future = self._pending_file_uploads.pop(upload_token)
+        except KeyError:
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_400_BAD_REQUEST,
+                detail="Invalid upload token.",
+            )
+
+        # Make sure the same number of values was received for each parameter
+        n_names = len(file_names)
+        n_types = len(file_types)
+        n_sizes = len(file_sizes)
+        n_streams = len(file_streams)
+
+        if n_names != n_types or n_names != n_sizes or n_names != n_streams:
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Inconsistent number of files between the different message parts.",
+            )
+
+        # Parse the file sizes
+        parsed_file_sizes = []
+        for file_size in file_sizes:
+            try:
+                parsed = int(file_size)
+            except ValueError:
+                raise fastapi.HTTPException(
+                    status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Invalid file size.",
+                )
+
+            if parsed < 0:
+                raise fastapi.HTTPException(
+                    status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Invalid file size.",
+                )
+
+            parsed_file_sizes.append(parsed)
+
+        # Complete the future
+        future.set_result(
+            [
+                common.FileInfo(
+                    name=file_names[ii],
+                    size_in_bytes=parsed_file_sizes[ii],
+                    media_type=file_types[ii],
+                    _contents=await file_streams[ii].read(),
+                )
+                for ii in range(n_names)
+            ]
+        )
+
+        return fastapi.responses.Response(status_code=fastapi.status.HTTP_200_OK)
 
     async def _serve_websocket(
         self,

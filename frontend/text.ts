@@ -36,7 +36,7 @@ export class TextWidget extends WidgetBase {
             element.style.textDecoration = style.underlined
                 ? 'underline'
                 : 'none';
-            element.style.textTransform = style.allCaps ? 'uppercase': 'none';
+            element.style.textTransform = style.allCaps ? 'uppercase' : 'none';
         }
     }
 }

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional
+from typing import *  # type: ignore
 
 import uniserde
 
@@ -32,6 +32,17 @@ class EvaluateJavascript(OutgoingMessage):
     """
 
     javascript_source: str
+
+
+@dataclass
+class RequestFileUpload(OutgoingMessage):
+    """
+    Tell the client to upload a file to the server.
+    """
+
+    upload_url: str
+    dialog_title: str
+    file_extensions: Optional[List[str]]
 
 
 @uniserde.as_child
