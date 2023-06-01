@@ -31,7 +31,7 @@ class HostedAsset:
             "/"
         ), "server_external_url must not end with a slash"
 
-        return f"{server_external_url}/asset/temp-{self.secret_id}"
+        return f"{server_external_url}/reflex/asset/temp-{self.secret_id}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HostedAsset):

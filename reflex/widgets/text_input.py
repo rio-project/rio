@@ -24,7 +24,7 @@ class TextInput(widget_base.HtmlWidget):
     placeholder: str = ""
     _: KW_ONLY
     secret: bool = False
-    on_change: widget_base.EventHandler[Self, TextInputChangeEvent] = None
+    on_change: widget_base.EventHandler[TextInputChangeEvent] = None
 
     async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
         # Trigger on_change event

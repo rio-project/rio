@@ -33,9 +33,9 @@ class LoginWidget(rx.Widget):
 
     sap_session_token: Optional[str] = None
 
-    on_login: rx.EventHandler[Self] = None
+    on_login: rx.EventHandler[[]] = None
 
-    async def login(self, _: rx.Button, __: rx.ButtonPressedEvent) -> None:
+    async def login(self, event: rx.ButtonPressedEvent) -> None:
         self.sap_session_token = "<totally-legit-session-token>"
         await self._call_event_handler(self.on_login)
 
@@ -54,10 +54,9 @@ class LoginWidget(rx.Widget):
                         secret=True,
                         margin_bottom=1,
                     ),
-                    rx.Button(
+                    rx.Button.major(
                         "Login",
                         on_press=self.login,
-                        major=True,
                     ),
                     rx.Switch(),
                     rx.Dropdown({"foo": 1, "bar": 2}, on_change=print),
@@ -89,10 +88,9 @@ class SimpleMenu(rx.Widget):
 
         for ii, name in enumerate(self.children):
             child_widgets.append(
-                rx.Button(
+                rx.Button.major(
                     name,
-                    on_press=lambda _, __: print(f"Pressed {name}"),
-                    major=True,
+                    on_press=lambda _: print(f"Pressed {name}"),
                     margin_top=0 if ii == 0 else 0.5,
                 )
             )
@@ -106,7 +104,7 @@ class SimpleMenu(rx.Widget):
 class MainPage(rx.Widget):
     sap_session_token: Optional[str] = None
 
-    def on_login(self, _) -> None:
+    def on_login(self) -> None:
         print(f"Logged in! The session token is {self.sap_session_token}.")
 
     def build_login_view(self) -> rx.Widget:

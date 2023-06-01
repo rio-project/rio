@@ -15,6 +15,7 @@ from . import widget_base
 
 __all__ = [
     "Dropdown",
+    "DropdownChangeEvent",
 ]
 
 T = TypeVar("T")
@@ -29,7 +30,7 @@ class Dropdown(widget_base.HtmlWidget, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
     value: Optional[T] = None
-    on_change: rx.EventHandler[Self, DropdownChangeEvent[T]] = None
+    on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
 
     def _custom_serialize(self) -> Dict[str, Jsonable]:
         return {

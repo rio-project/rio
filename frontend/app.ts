@@ -451,7 +451,10 @@ function main() {
     }
 
     // Connect to the websocket
-    var url = new URL(`/ws?sessionToken=${sessionToken}`, window.location.href);
+    var url = new URL(
+        `/reflex/ws?sessionToken=${sessionToken}`,
+        window.location.href
+    );
     url.protocol = url.protocol.replace('http', 'ws');
     console.log(`Connecting websocket to ${url.href}`);
     socket = new WebSocket(url.href);

@@ -21,7 +21,7 @@ class SwitchChangeEvent:
 class Switch(widget_base.HtmlWidget):
     is_on: bool = False
     _: KW_ONLY
-    on_change: rx.EventHandler[Self, SwitchChangeEvent] = None
+    on_change: rx.EventHandler[SwitchChangeEvent] = None
 
     async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
         # Trigger on_change event

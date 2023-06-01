@@ -83,12 +83,14 @@ class AppServer(fastapi.FastAPI):
         # Fastapi
         self.add_api_route("/", self._serve_index, methods=["GET"])
         self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
-        self.add_api_route("/favicon.ico", self._serve_favicon, methods=["GET"])
-        self.add_api_route("/asset/{asset_id}", self._serve_asset, methods=["GET"])
+        self.add_api_route("/reflex/favicon.ico", self._serve_favicon, methods=["GET"])
         self.add_api_route(
-            "/upload/{upload_token}", self._serve_file_upload, methods=["PUT"]
+            "/reflex/asset/{asset_id}", self._serve_asset, methods=["GET"]
         )
-        self.add_api_websocket_route("/ws", self._serve_websocket)
+        self.add_api_route(
+            "/reflex/upload/{upload_token}", self._serve_file_upload, methods=["PUT"]
+        )
+        self.add_api_websocket_route("/reflex/ws", self._serve_websocket)
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """

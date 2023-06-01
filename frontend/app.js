@@ -1213,7 +1213,7 @@ function main() {
     processMessage(message);
   }
   // Connect to the websocket
-  var url = new URL("/ws?sessionToken=".concat(sessionToken), window.location.href);
+  var url = new URL("/reflex/ws?sessionToken=".concat(sessionToken), window.location.href);
   url.protocol = url.protocol.replace('http', 'ws');
   console.log("Connecting websocket to ".concat(url.href));
   socket = new WebSocket(url.href);

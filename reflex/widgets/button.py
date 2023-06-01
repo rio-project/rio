@@ -23,7 +23,7 @@ class ButtonPressedEvent:
 
 class Button(widget_base.Widget):
     text: str
-    on_press: rx.EventHandler[Self, ButtonPressedEvent] = None
+    on_press: rx.EventHandler[ButtonPressedEvent] = None
     _: KW_ONLY
     style: rx.BoxStyle
     hover_style: rx.BoxStyle
@@ -39,7 +39,7 @@ class Button(widget_base.Widget):
     def major(
         cls,
         text: str,
-        on_press: rx.EventHandler[Self, ButtonPressedEvent] = None,
+        on_press: rx.EventHandler[ButtonPressedEvent] = None,
         *,
         font_color: rx.Color = theme.COLOR_FONT,
         accent_color: rx.Color = theme.COLOR_ACCENT,
@@ -102,7 +102,7 @@ class Button(widget_base.Widget):
     def minor(
         cls,
         text: str,
-        on_press: rx.EventHandler[Self, ButtonPressedEvent] = None,
+        on_press: rx.EventHandler[ButtonPressedEvent] = None,
         *,
         accent_color: rx.Color = theme.COLOR_ACCENT,
         key: Optional[str] = None,
@@ -161,36 +161,20 @@ class Button(widget_base.Widget):
             align_y=align_y,
         )
 
-    def _on_mouse_enter(
-        self,
-        sender: rx.MouseEventListener,
-        event: rx.MouseEnterEvent,
-    ) -> None:
+    def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
         self._is_entered = True
 
-    def _on_mouse_leave(
-        self,
-        sender: rx.MouseEventListener,
-        event: rx.MouseLeaveEvent,
-    ) -> None:
+    def _on_mouse_leave(self, event: rx.MouseLeaveEvent) -> None:
         self._is_entered = False
 
-    def _on_mouse_down(
-        self,
-        sender: rx.MouseEventListener,
-        event: rx.MouseDownEvent,
-    ) -> None:
+    def _on_mouse_down(self, event: rx.MouseDownEvent) -> None:
         # Only react to left mouse button
         if event.button != rx.MouseButton.LEFT:
             return
 
         self._is_pressed = True
 
-    async def _on_mouse_up(
-        self,
-        sender: rx.MouseEventListener,
-        event: rx.MouseUpEvent,
-    ) -> None:
+    async def _on_mouse_up(self, event: rx.MouseUpEvent) -> None:
         # Only react to left mouse button
         if not self._is_pressed:
             return

@@ -66,11 +66,11 @@ class MouseLeaveEvent(_MousePositionedEvent):
 class MouseEventListener(widget_base.HtmlWidget):
     child: widget_base.Widget
     _: KW_ONLY
-    on_mouse_down: rx.EventHandler[Self, MouseDownEvent] = None
-    on_mouse_up: rx.EventHandler[Self, MouseUpEvent] = None
-    on_mouse_move: rx.EventHandler[Self, MouseMoveEvent] = None
-    on_mouse_enter: rx.EventHandler[Self, MouseEnterEvent] = None
-    on_mouse_leave: rx.EventHandler[Self, MouseLeaveEvent] = None
+    on_mouse_down: rx.EventHandler[MouseDownEvent] = None
+    on_mouse_up: rx.EventHandler[MouseUpEvent] = None
+    on_mouse_move: rx.EventHandler[MouseMoveEvent] = None
+    on_mouse_enter: rx.EventHandler[MouseEnterEvent] = None
+    on_mouse_leave: rx.EventHandler[MouseLeaveEvent] = None
 
     def _custom_serialize(self) -> Dict[str, Jsonable]:
         return {

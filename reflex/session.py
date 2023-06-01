@@ -380,8 +380,8 @@ class Session:
         # separately
         result["_margin_"] = (
             widget.margin_left,
-            widget.margin_right,
             widget.margin_top,
+            widget.margin_right,
             widget.margin_bottom,
         )
         result["_size_"] = (
@@ -755,7 +755,7 @@ class Session:
         # Tell the frontend to upload a file
         await self.send_message(
             messages.RequestFileUpload(
-                upload_url=f"{self.app_server.external_url}/upload/{upload_id}",
+                upload_url=f"{self.app_server.external_url}/reflex/upload/{upload_id}",
                 dialog_title=dialog_title,
                 file_extensions=file_extensions,
             )

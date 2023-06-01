@@ -408,14 +408,14 @@ class Widget(ABC):
     @typing.overload
     async def _call_event_handler(
         self,
-        handler: EventHandler[[Self]],
+        handler: EventHandler[[]],
     ) -> None:
         ...
 
     @typing.overload
     async def _call_event_handler(
         self,
-        handler: EventHandler[[Self, T]],
+        handler: EventHandler[[T]],
         event_data: T,
     ) -> None:
         ...
@@ -436,7 +436,7 @@ class Widget(ABC):
 
         # If the handler is available, call it and await it if necessary
         try:
-            result = handler(self, *event_data)  # type: ignore
+            result = handler(*event_data)  # type: ignore
 
             if inspect.isawaitable(result):
                 await result
