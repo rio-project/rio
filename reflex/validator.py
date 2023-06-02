@@ -18,19 +18,17 @@ __all__ = [
 # Given a widget type, this dict contains the attribute names which contain
 # children / child ids
 _CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
-    "Text-builtin": set(),
-    "Row-builtin": {"children"},
     "Column-builtin": {"children"},
     "Dropdown-builtin": set(),
-    "Rectangle-builtin": {"child"},
-    "Stack-builtin": {"children"},
-    "Margin-builtin": {"child"},
-    "Align-builtin": {"child"},
     "MouseEventListener-builtin": {"child"},
-    "TextInput-builtin": set(),
-    "Override-builtin": {"child"},
     "Placeholder": {"_child_"},
+    "ProgressCircle-builtin": set(),
+    "Rectangle-builtin": {"child"},
+    "Row-builtin": {"children"},
+    "Stack-builtin": {"children"},
     "Switch-builtin": set(),
+    "Text-builtin": set(),
+    "TextInput-builtin": set(),
 }
 
 

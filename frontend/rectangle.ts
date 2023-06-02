@@ -46,17 +46,17 @@ function setBoxStyleVariables(
         variables['background'] = fillToCss(style.fill);
 
         variables['stroke-color'] = colorToCss(style.strokeColor);
-        variables['stroke-width'] = `${style.strokeWidth}rem`;
+        variables['stroke-width'] = `${style.strokeWidth}em`;
 
-        variables['corner-radius-top-left'] = `${style.cornerRadius[0]}rem`;
-        variables['corner-radius-top-right'] = `${style.cornerRadius[1]}rem`;
-        variables['corner-radius-bottom-right'] = `${style.cornerRadius[2]}rem`;
-        variables['corner-radius-bottom-left'] = `${style.cornerRadius[3]}rem`;
+        variables['corner-radius-top-left'] = `${style.cornerRadius[0]}em`;
+        variables['corner-radius-top-right'] = `${style.cornerRadius[1]}em`;
+        variables['corner-radius-bottom-right'] = `${style.cornerRadius[2]}em`;
+        variables['corner-radius-bottom-left'] = `${style.cornerRadius[3]}em`;
 
         variables['shadow-color'] = colorToCss(style.shadowColor);
-        variables['shadow-radius'] = `${style.shadowRadius}rem`;
-        variables['shadow-offset-x'] = `${style.shadowOffset[0]}rem`;
-        variables['shadow-offset-y'] = `${style.shadowOffset[1]}rem`;
+        variables['shadow-radius'] = `${style.shadowRadius}em`;
+        variables['shadow-offset-x'] = `${style.shadowOffset[0]}em`;
+        variables['shadow-offset-y'] = `${style.shadowOffset[1]}em`;
     }
 
     // Set the variables and add the prefix

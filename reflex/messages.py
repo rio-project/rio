@@ -41,8 +41,8 @@ class RequestFileUpload(OutgoingMessage):
     """
 
     upload_url: str
-    dialog_title: str
     file_extensions: Optional[List[str]]
+    multiple: bool
 
 
 @uniserde.as_child

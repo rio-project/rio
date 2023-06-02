@@ -10,6 +10,7 @@ import { TextInputWidget } from './textInput';
 import { PlaceholderWidget } from './placeholder';
 import { SwitchWidget } from './switch';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { ProgressCircleWidget } from './progressCircle';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
@@ -76,13 +77,14 @@ const widgetClasses = {
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
-    Placeholder: PlaceholderWidget,
+    'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
     'Row-builtin': RowWidget,
     'Stack-builtin': StackWidget,
     'Switch-builtin': SwitchWidget,
     'Text-builtin': TextWidget,
     'TextInput-builtin': TextInputWidget,
+    Placeholder: PlaceholderWidget,
 };
 
 globalThis.widgetClasses = widgetClasses;
@@ -202,25 +204,25 @@ function commonUpdate(element: HTMLElement, state: WidgetState) {
         if (left === 0) {
             element.style.removeProperty('margin-left');
         } else {
-            element.style.marginLeft = `${left}rem`;
+            element.style.marginLeft = `${left}em`;
         }
 
         if (top === 0) {
             element.style.removeProperty('margin-top');
         } else {
-            element.style.marginTop = `${top}rem`;
+            element.style.marginTop = `${top}em`;
         }
 
         if (right === 0) {
             element.style.removeProperty('margin-right');
         } else {
-            element.style.marginRight = `${right}rem`;
+            element.style.marginRight = `${right}em`;
         }
 
         if (bottom === 0) {
             element.style.removeProperty('margin-bottom');
         } else {
-            element.style.marginBottom = `${bottom}rem`;
+            element.style.marginBottom = `${bottom}em`;
         }
     }
 
@@ -272,21 +274,21 @@ function commonUpdate(element: HTMLElement, state: WidgetState) {
     let newMarginY = newMarginTop + newMarginBottom;
 
     if (newWidth !== null) {
-        element.style.width = `${newWidth}rem`;
+        element.style.width = `${newWidth}em`;
     } else if (newAlignX !== null) {
         element.style.width = 'max-content';
     } else if (newMarginX !== 0) {
-        element.style.width = `calc(100% - ${newMarginX}rem)`;
+        element.style.width = `calc(100% - ${newMarginX}em)`;
     } else {
         element.style.removeProperty('width');
     }
 
     if (newHeight != null) {
-        element.style.height = `${newHeight}rem`;
+        element.style.height = `${newHeight}em`;
     } else if (newAlignY !== null) {
         element.style.height = 'max-content';
     } else if (newMarginY !== 0) {
-        element.style.height = `calc(100% - ${newMarginY}rem)`;
+        element.style.height = `calc(100% - ${newMarginY}em)`;
     } else {
         element.style.removeProperty('height');
     }
@@ -392,12 +394,20 @@ function requestFileUpload(message: any) {
     // Create a file upload input element
     let input = document.createElement('input');
     input.type = 'file';
-    input.multiple = true;
+    input.multiple = message.multiple;
+
+    if (message.fileExtensions !== null) {
+        input.accept = message.fileExtensions.join(',');
+    }
+
     input.style.display = 'none';
 
     function finish() {
         // Remove the input element from the DOM
-        document.body.removeChild(input);
+        input.remove();
+
+        // Remove any event listeners
+        window.removeEventListener('focus', finish);
 
         // Build a `FormData` object containing the files
         const data = new FormData();

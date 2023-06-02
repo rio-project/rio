@@ -19,7 +19,7 @@ function loadShowdown(callback) {
     if (typeof showdown === 'undefined') {
         console.log('Fetching showdown.js');
         let script = document.createElement('script');
-        script.src = '%s/asset/showdown.min.js';
+        script.src = '%s/reflex/asset/showdown.min.js';
         script.onload = callback;
         document.head.appendChild(script);
     } else {

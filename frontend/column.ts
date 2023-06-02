@@ -18,7 +18,7 @@ export class ColumnWidget extends WidgetBase {
         replaceChildren(element, deltaState.children);
 
         if (deltaState.spacing !== undefined) {
-            element.style.gap = `${deltaState.spacing}rem`;
+            element.style.gap = `${deltaState.spacing}em`;
         }
     }
 }

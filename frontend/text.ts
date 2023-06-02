@@ -30,7 +30,7 @@ export class TextWidget extends WidgetBase {
             const style = deltaState.style;
             element.style.fontFamily = style.fontName;
             element.style.color = colorToCss(style.fontColor);
-            element.style.fontSize = style.fontSize + 'rem';
+            element.style.fontSize = style.fontSize + 'em';
             element.style.fontStyle = style.italic ? 'italic' : 'normal';
             element.style.fontWeight = style.fontWeight;
             element.style.textDecoration = style.underlined

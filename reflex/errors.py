@@ -1,0 +1,2 @@
+class NoFileSelectedError(Exception):
+    pass

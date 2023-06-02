@@ -141,3 +141,25 @@ body {
     background-color: var(--color-light);
     border: 1.5px solid var(--color-accent);
 }
+
+@keyframes progress-circle-anim {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.reflex-progress-circle-no-progress {
+    width: var(--size);
+    height: var(--size);
+    background: transparent;
+    margin: 2em;
+    border-radius: 50%;
+    animation: progress-circle-anim 0.9s linear infinite;
+
+    box-shadow: (var(--size) * 1.2) 0 0 0 #333,
+        (-var(--size) / 1.5) (-var(--size)) 0 0 #333,
+        (-var(--size) / 1.5) (var(--size)) 0 0 #333;
+}

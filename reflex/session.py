@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import secrets
+import logging
+from . import errors
 import asyncio
 from . import common
 import typing
@@ -746,12 +748,30 @@ class Session:
 
             yield old_widget, new_widget
 
+    @overload
     async def file_chooser(
         self,
         *,
-        dialog_title: str = "Select a file",
-        file_extensions: Optional[List[str]] = None,
-    ) -> List[common.FileInfo]:
+        file_extensions: Optional[Iterable[str]] = None,
+        multiple: Literal[False] = False,
+    ) -> common.FileInfo:
+        ...
+
+    @overload
+    async def file_chooser(
+        self,
+        *,
+        file_extensions: Optional[Iterable[str]] = None,
+        multiple: Literal[True],
+    ) -> Tuple[common.FileInfo]:
+        ...
+
+    async def file_chooser(
+        self,
+        *,
+        file_extensions: Optional[Iterable[str]] = None,
+        multiple: bool = False,
+    ) -> Union[common.FileInfo, Tuple[common.FileInfo]]:
         """
         Open a file chooser dialog.
         """
@@ -761,14 +781,37 @@ class Session:
 
         self.app_server._pending_file_uploads[upload_id] = future
 
+        # Allow the user to specify both `jpg` and `.jpg`
+        if file_extensions is not None:
+            file_extensions = [
+                ext if ext.startswith(".") else f".{ext}" for ext in file_extensions
+            ]
+
         # Tell the frontend to upload a file
         await self.send_message(
             messages.RequestFileUpload(
                 upload_url=f"{self.app_server.external_url}/reflex/upload/{upload_id}",
-                dialog_title=dialog_title,
                 file_extensions=file_extensions,
+                multiple=multiple,
             )
         )
 
         # Wait for the user to upload files
-        return await future
+        files = await future
+
+        # Raise an exception if no files were uploaded
+        if not files:
+            raise errors.NoFileSelectedError()
+
+        # Ensure only one file was provided if `multiple` is False
+        if not multiple and len(files) != 1:
+            logging.warning(
+                "Client attempted to upload multiple files when `multiple` was False."
+            )
+            raise errors.NoFileSelectedError()
+
+        # Return the file info
+        if multiple:
+            return tuple(files)
+        else:
+            return files[0]

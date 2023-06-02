@@ -9,5 +9,6 @@ from .row import *
 from .stack import *
 from .switch import *
 from .text import *
+from .progress_circle import *
 from .text_input import *
 from .widget_base import *
