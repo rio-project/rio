@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Union
+from typing import Optional
 from .. import theme
 import reflex as rx
 
@@ -15,12 +15,14 @@ __all__ = [
 class ProgressCircle(widget_base.HtmlWidget):
     _: rx.KW_ONLY
     color: styling.Color = theme.COLOR_ACCENT
+    background_color: styling.Color = theme.COLOR_NEUTRAL
     progress: Optional[float] = None
 
     def __init__(
         self,
         *,
         color: rx.Color = theme.COLOR_ACCENT,
+        background_color: rx.Color = theme.COLOR_NEUTRAL,
         progress: Optional[float] = None,
         size: float = 3.5,
         key: Optional[str] = None,
@@ -50,6 +52,7 @@ class ProgressCircle(widget_base.HtmlWidget):
         )
 
         self.color = color
+        self.background_color = background_color
         self.progress = progress
 
 

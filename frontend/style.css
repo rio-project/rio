@@ -62,7 +62,7 @@ body {
         var(--rectangle-shadow-color);
 }
 
-.reflex-rectangle-hover:hover {
+.reflex-rectangle.hover:hover {
     background: var(--rectangle-background-hover);
     border-color: var(--rectangle-stroke-color-hover);
     border-width: var(--rectangle-stroke-width-hover);
@@ -142,24 +142,56 @@ body {
     border: 1.5px solid var(--color-accent);
 }
 
-@keyframes progress-circle-anim {
-    from {
-        transform: rotate(0);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Loading Circle */
+.reflex-progress-circle circle {
+  fill: none;
+  stroke-width: 3.5;
 }
 
-.reflex-progress-circle-no-progress {
-    width: var(--size);
-    height: var(--size);
-    background: transparent;
-    margin: 2em;
-    border-radius: 50%;
-    animation: progress-circle-anim 0.9s linear infinite;
-
-    box-shadow: (var(--size) * 1.2) 0 0 0 #333,
-        (-var(--size) / 1.5) (-var(--size)) 0 0 #333,
-        (-var(--size) / 1.5) (var(--size)) 0 0 #333;
+.spinning svg {
+  transform-origin: center;
+  animation: rotate 2s linear infinite;
 }
+
+.spinning .progress {
+  stroke-dasharray: 1, 200;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+.spinning .background {
+    stroke: none;
+}
+
+.reflex-progress-circle:not(.spinning) .progress {
+    stroke-dashoffset: -94.25;
+    stroke-dasharray: var(--dasharray);
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.reflex-progress-circle:not(.spinning) .background {
+    stroke: var(--background-color);
+}
+
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dashoffset: -125px;
+  }
+}
+
