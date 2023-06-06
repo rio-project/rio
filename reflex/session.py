@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import functools
 import json
 import secrets
 import logging
@@ -21,7 +22,7 @@ from .common import Jsonable
 from .widgets import widget_base
 
 
-__all__ = ['Session']
+__all__ = ["Session"]
 
 
 T = typing.TypeVar("T")
@@ -30,6 +31,11 @@ T = typing.TypeVar("T")
 @dataclass
 class WidgetData:
     build_result: rx.Widget
+
+    # Keep track of how often this widget has been built. This is used by
+    # widgets to determine whether they are still part of their parent's current
+    # build output.
+    build_generation: int
 
     # The ids of all widgets contained in this build output. This does not
     # include the children of non-fundamental widgets, since they have their own
@@ -95,12 +101,6 @@ class Session:
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
         self._attachments: Dict[Type[Any], Any] = {}
-
-        # The ids of all live widgets in this session. Used to avoid sending
-        # messages to the frontend for widgets which no longer exist.
-        self._live_widget_ids: Set[int] = self._scan_live_widgets_in_build_output(
-            root_widget
-        )
 
     def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
@@ -223,7 +223,7 @@ class Session:
             # No, this is the first time
             except KeyError:
                 # Create the widget data and cache it
-                widget_data = WidgetData(build_result, set())
+                widget_data = WidgetData(build_result, 0, set())
                 self._weak_widget_data_by_widget[widget] = widget_data
 
                 # Mark all fresh widgets as dirty
@@ -248,25 +248,56 @@ class Session:
             else:
                 self.reconcile_tree(widget_data, build_result)
 
+                # Increment the build generation
+                widget_data.build_generation += 1
+
                 # Reconciliation can change the build result. Make sure nobody
                 # uses `build_result` instead of `widget_data.build_result` from
                 # now on.
                 del build_result
 
-            # Keep track of which widgets are alive and which aren't. This is
-            # used to avoid sending messages referencing invalid widgets to the
-            # frontend.
-            live_widget_ids: Set[int] = self._scan_live_widgets_in_build_output(
-                widget_data.build_result
-            )
+            # Inject the builder and build generation
+            to_do = {widget_data.build_result}
+            weak_builder_ref = weakref.ref(widget)
 
-            self._live_widget_ids -= widget_data.contained_widget_ids
-            self._live_widget_ids |= live_widget_ids
-            widget_data.contained_widget_ids = live_widget_ids
+            while to_do:
+                cur = to_do.pop()
+                cur._weak_builder_ = weak_builder_ref
+                cur._build_generation_ = widget_data.build_generation
 
-        return {
-            widget for widget in visited_widgets if widget._id in self._live_widget_ids
+                if isinstance(cur, widget_base.HtmlWidget):
+                    to_do.update(cur._iter_direct_children())
+
+        # Determine which widgets are alive, to avoid sending references to dead
+        # widgets to the frontend.
+        alive_cache: Dict[rx.Widget, bool] = {
+            self.root_widget: True,
         }
+
+        def is_alive(widget: widget_base.Widget) -> bool:
+            # Already cached?
+            try:
+                return alive_cache[widget]
+            except KeyError:
+                pass
+
+            # Parent has been garbage collected?
+            parent = widget._weak_builder_()
+            if parent is None:
+                result = False
+
+            else:
+                parent_data = self.lookup_widget_data(parent)
+                result = (
+                    parent_data.build_generation == widget._build_generation_
+                    and is_alive(parent)
+                )
+
+            # Cache and return
+            alive_cache[widget] = result
+            return result
+
+        return {widget for widget in visited_widgets if is_alive(widget)}
 
     async def refresh(self) -> None:
         """
@@ -457,21 +488,23 @@ class Session:
             # Skip some values
             if name in (
                 "_",
-                "_session_",
+                "_build_generation_",
                 "_explicitly_set_properties_",
                 "_init_signature_",
+                "_session_",
                 "_state_properties_",
-                "margin",
-                "margin_x",
-                "margin_y",
+                "_weak_builder_",
+                "align_x",
+                "align_y",
+                "height",
+                "margin_bottom",
                 "margin_left",
                 "margin_right",
                 "margin_top",
-                "margin_bottom",
+                "margin_x",
+                "margin_y",
+                "margin",
                 "width",
-                "height",
-                "align_x",
-                "align_y",
             ):
                 continue
 
@@ -914,14 +947,3 @@ document.body.removeChild(a)
             return self._attachments[typ]
         except KeyError:
             raise KeyError(typ)
-
-    def _scan_live_widgets_in_build_output(self, widget: rx.Widget) -> Set[int]:
-        result = {widget._id}
-
-        if not isinstance(widget, rx.HtmlWidget):
-            return result
-
-        for child in widget._iter_direct_children():
-            result |= self._scan_live_widgets_in_build_output(child)
-
-        return result

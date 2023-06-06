@@ -4,7 +4,6 @@ import functools
 import asyncio
 import io
 import json
-import mimetypes
 import secrets
 import traceback
 import weakref
@@ -12,7 +11,6 @@ from datetime import timedelta
 from pathlib import Path
 from typing import *  # type: ignore
 
-import aiohttp
 import fastapi
 import timer_dict
 import uniserde

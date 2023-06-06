@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
+import weakref
 import inspect
 import json
 import traceback
@@ -209,6 +210,17 @@ class Widget(ABC):
     align_x: Optional[float] = None
     align_y: Optional[float] = None
 
+    # Weak reference to the widget whose `build` method returned this widget.
+    _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
+        default=lambda: None,
+        init=False,
+    )
+
+    # Each time a widget is built the build generation in that widget's WIDGET
+    # DATA is incremented. If this value no longer matches the value in its
+    # parent's WIDGET DATA, the widget is dead.
+    _build_generation_: int = dataclasses.field(default=-1, init=False)
+
     # Injected by the session when the widget is refreshed
     _session_: Optional["session.Session"] = dataclasses.field(default=None, init=False)
 
@@ -318,12 +330,14 @@ class Widget(ABC):
             # `StateProperty`
             if attr_name in (
                 "_",
-                "_session_",
+                "_build_generation_",
                 "_explicitly_set_properties_",
                 "_init_signature_",
-                "margin",
+                "_session_",
+                "_weak_builder_",
                 "margin_x",
                 "margin_y",
+                "margin",
             ):
                 continue
 
