@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import json
 import secrets
 import logging
 from . import errors
@@ -11,6 +12,7 @@ from . import styling
 import weakref
 from dataclasses import dataclass
 from typing import *  #  type: ignore
+from . import assets
 
 import reflex as rx
 
@@ -19,9 +21,20 @@ from .common import Jsonable
 from .widgets import widget_base
 
 
+__all__ = ['Session']
+
+
+T = typing.TypeVar("T")
+
+
 @dataclass
 class WidgetData:
     build_result: rx.Widget
+
+    # The ids of all widgets contained in this build output. This does not
+    # include the children of non-fundamental widgets, since they have their own
+    # build output.
+    contained_widget_ids: Set[int]
 
 
 class WontSerialize(Exception):
@@ -79,6 +92,16 @@ class Session:
         # references.
         self._refresh_lock = asyncio.Lock()
 
+        # Attachments. These are arbitrary values which are passed around inside
+        # of the app. They can be looked up by their type.
+        self._attachments: Dict[Type[Any], Any] = {}
+
+        # The ids of all live widgets in this session. Used to avoid sending
+        # messages to the frontend for widgets which no longer exist.
+        self._live_widget_ids: Set[int] = self._scan_live_widgets_in_build_output(
+            root_widget
+        )
+
     def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
@@ -134,6 +157,9 @@ class Session:
 
         To make sure async isn't used unintentionally this part of the refresh
         function is split into a separate, synchronous function.
+
+        The session keeps track of widgets which are no longer referenced in its
+        widget tree. Those widgets are NOT included in the function's result.
         """
 
         # If nothing is dirty just return. While the loop below wouldn't do
@@ -197,7 +223,7 @@ class Session:
             # No, this is the first time
             except KeyError:
                 # Create the widget data and cache it
-                widget_data = WidgetData(build_result)
+                widget_data = WidgetData(build_result, set())
                 self._weak_widget_data_by_widget[widget] = widget_data
 
                 # Mark all fresh widgets as dirty
@@ -222,7 +248,25 @@ class Session:
             else:
                 self.reconcile_tree(widget_data, build_result)
 
-        return visited_widgets
+                # Reconciliation can change the build result. Make sure nobody
+                # uses `build_result` instead of `widget_data.build_result` from
+                # now on.
+                del build_result
+
+            # Keep track of which widgets are alive and which aren't. This is
+            # used to avoid sending messages referencing invalid widgets to the
+            # frontend.
+            live_widget_ids: Set[int] = self._scan_live_widgets_in_build_output(
+                widget_data.build_result
+            )
+
+            self._live_widget_ids -= widget_data.contained_widget_ids
+            self._live_widget_ids |= live_widget_ids
+            widget_data.contained_widget_ids = live_widget_ids
+
+        return {
+            widget for widget in visited_widgets if widget._id in self._live_widget_ids
+        }
 
     async def refresh(self) -> None:
         """
@@ -241,6 +285,10 @@ class Session:
         async with self._refresh_lock:
             # Refresh and get a set of all widgets which have been visited
             visited_widgets = self.refresh_sync()
+
+            # Avoid sending empty messages
+            if not visited_widgets:
+                return
 
             # Initialize all HTML widgets
             for widget in visited_widgets:
@@ -815,3 +863,65 @@ class Session:
             return tuple(files)
         else:
             return files[0]
+
+    async def save_file(
+        self,
+        file_name: str,
+        file_contents: Union[str, bytes],
+        *,
+        media_type: Optional[str] = None,
+    ) -> None:
+        # Convert the file contents to bytes
+        if isinstance(file_contents, str):
+            file_contents = file_contents.encode("utf-8")
+
+            if media_type is None:
+                media_type = "text/plain"
+
+        elif media_type is None:
+            media_type = "application/octet-stream"
+
+        # Host the file as asset
+        as_asset = assets.HostedAsset(media_type, file_contents)
+        self.app_server.weakly_host_asset(as_asset)
+
+        # Tell the frontend to download the file
+        await self.send_message(
+            messages.EvaluateJavascript(
+                f"""
+const a = document.createElement('a')
+a.href = {json.dumps(as_asset.url(self.app_server.external_url))}
+a.download = {json.dumps(file_name)}
+document.body.appendChild(a)
+a.click()
+document.body.removeChild(a)
+"""
+            )
+        )
+
+    def attach(self, value: Any) -> None:
+        """
+        Attaches the given value to the `Session`. It can be retrieved later
+        using `get_attachment`.
+        """
+        self._attachments[type(value)] = value
+
+    def get_attachment(self, typ: Type[T]) -> T:
+        """
+        Retrieves an attachment that was previously attached using `attach`.
+        """
+        try:
+            return self._attachments[typ]
+        except KeyError:
+            raise KeyError(typ)
+
+    def _scan_live_widgets_in_build_output(self, widget: rx.Widget) -> Set[int]:
+        result = {widget._id}
+
+        if not isinstance(widget, rx.HtmlWidget):
+            return result
+
+        for child in widget._iter_direct_children():
+            result |= self._scan_live_widgets_in_build_output(child)
+
+        return result

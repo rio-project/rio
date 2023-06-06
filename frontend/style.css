@@ -62,7 +62,7 @@ body {
         var(--rectangle-shadow-color);
 }
 
-.reflex-rectangle.hover:hover {
+.reflex-rectangle-hover:hover {
     background: var(--rectangle-background-hover);
     border-color: var(--rectangle-stroke-color-hover);
     border-width: var(--rectangle-stroke-width-hover);

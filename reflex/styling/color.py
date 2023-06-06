@@ -244,6 +244,21 @@ class Color:
 
         return Color.from_hsv(hue, saturation, brightness)
 
+    def desaturated(self, amount: float) -> "Color":
+        """
+        Return a copy of this color with the saturation reduced by the given
+        amount. `0` means no change, `1` will turn the color into a shade of
+        grey.
+        """
+
+        if amount < 0.0 or amount > 1.0:
+            raise ValueError("`amount` must be between 0.0 and 1.0")
+
+        hue, saturation, brightness = self.hsv
+        saturation = saturation * (1 - amount)
+
+        return Color.from_hsv(hue, saturation, brightness)
+
     def __repr__(self) -> str:
         return f"<Color {self.hex}>"
 
@@ -271,6 +286,9 @@ class Color:
     MAGENTA: ClassVar["Color"]
     YELLOW: ClassVar["Color"]
 
+    # Others
+    PURPLE: ClassVar["Color"]
+
     # Special
     TRANSPARENT: ClassVar["Color"]
 
@@ -286,5 +304,7 @@ Color.BLUE = Color.from_rgb(0.0, 0.0, 1.0)
 Color.CYAN = Color.from_rgb(0.0, 1.0, 1.0)
 Color.MAGENTA = Color.from_rgb(1.0, 0.0, 1.0)
 Color.YELLOW = Color.from_rgb(1.0, 1.0, 0.0)
+
+Color.PURPLE = Color.from_rgb(0.5, 0.0, 0.5)
 
 Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)

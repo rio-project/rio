@@ -440,15 +440,15 @@ function setBoxStyleVariables(element, style, prefix, suffix) {
     variables = {
       background: 'transparent',
       'stroke-color': 'transparent',
-      'stroke-width': '0rem',
-      'corner-radius-top-left': '0rem',
-      'corner-radius-top-right': '0rem',
-      'corner-radius-bottom-right': '0rem',
-      'corner-radius-bottom-left': '0rem',
+      'stroke-width': '0em',
+      'corner-radius-top-left': '0em',
+      'corner-radius-top-right': '0em',
+      'corner-radius-bottom-right': '0em',
+      'corner-radius-bottom-left': '0em',
       'shadow-color': 'transparent',
-      'shadow-radius': '0rem',
-      'shadow-offset-x': '0rem',
-      'shadow-offset-y': '0rem'
+      'shadow-radius': '0em',
+      'shadow-offset-x': '0em',
+      'shadow-offset-y': '0em'
     };
   } else {
     variables['background'] = (0, app_1.fillToCss)(style.fill);

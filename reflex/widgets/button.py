@@ -28,10 +28,14 @@ class Button(widget_base.Widget):
     style: rx.BoxStyle
     hover_style: rx.BoxStyle
     click_style: rx.BoxStyle
+    insensitive_style: rx.BoxStyle
     text_style: rx.TextStyle
     text_style_hover: rx.TextStyle
     text_style_click: rx.TextStyle
+    text_style_insensitive: rx.TextStyle
     transition_speed: float
+    is_sensitive: bool = True
+    is_loading: bool = False
     _is_pressed: bool = False
     _is_entered: bool = False
 
@@ -41,6 +45,8 @@ class Button(widget_base.Widget):
         text: str,
         on_press: rx.EventHandler[ButtonPressedEvent] = None,
         *,
+        is_sensitive: bool = True,
+        is_loading: bool = False,
         font_color: rx.Color = theme.COLOR_FONT,
         accent_color: rx.Color = theme.COLOR_ACCENT,
         key: Optional[str] = None,
@@ -59,6 +65,8 @@ class Button(widget_base.Widget):
         return cls(
             text,
             on_press,
+            is_sensitive=is_sensitive,
+            is_loading=is_loading,
             style=rx.BoxStyle(
                 fill=accent_color,
                 corner_radius=theme.CORNER_RADIUS,
@@ -69,6 +77,10 @@ class Button(widget_base.Widget):
             ),
             click_style=rx.BoxStyle(
                 fill=accent_color.brighter(0.2),
+                corner_radius=theme.CORNER_RADIUS,
+            ),
+            insensitive_style=rx.BoxStyle(
+                fill=accent_color.desaturated(0.8),
                 corner_radius=theme.CORNER_RADIUS,
             ),
             text_style=rx.TextStyle(
@@ -82,6 +94,9 @@ class Button(widget_base.Widget):
             text_style_click=rx.TextStyle(
                 font_color=accent_color.contrasting(),
                 font_weight="bold",
+            ),
+            text_style_insensitive=rx.TextStyle(
+                font_color=accent_color.desaturated(0.8).contrasting(),
             ),
             transition_speed=theme.TRANSITION_FAST,
             key=key,
@@ -104,6 +119,8 @@ class Button(widget_base.Widget):
         text: str,
         on_press: rx.EventHandler[ButtonPressedEvent] = None,
         *,
+        is_sensitive: bool = True,
+        is_loading: bool = False,
         accent_color: rx.Color = theme.COLOR_ACCENT,
         key: Optional[str] = None,
         margin: Optional[float] = None,
@@ -128,6 +145,8 @@ class Button(widget_base.Widget):
         return cls(
             text,
             on_press,
+            is_sensitive=is_sensitive,
+            is_loading=is_loading,
             style=base_style,
             hover_style=base_style.replace(
                 fill=accent_color.brighter(0.1),
@@ -137,6 +156,9 @@ class Button(widget_base.Widget):
                 fill=accent_color.brighter(0.2),
                 stroke_color=accent_color.brighter(0.2),
             ),
+            insensitive_style=base_style.replace(
+                stroke_color=accent_color.desaturated(0.8),
+            ),
             text_style=rx.TextStyle(
                 font_color=accent_color,
             ),
@@ -145,6 +167,9 @@ class Button(widget_base.Widget):
             ),
             text_style_click=rx.TextStyle(
                 font_color=accent_color.contrasting(),
+            ),
+            text_style_insensitive=rx.TextStyle(
+                font_color=accent_color.desaturated(0.8).contrasting(),
             ),
             transition_speed=theme.TRANSITION_FAST,
             key=key,
@@ -175,8 +200,8 @@ class Button(widget_base.Widget):
         self._is_pressed = True
 
     async def _on_mouse_up(self, event: rx.MouseUpEvent) -> None:
-        # Only react to left mouse button
-        if not self._is_pressed:
+        # Only react to left mouse button, and only if sensitive
+        if event.button != rx.MouseButton.LEFT or not self.is_sensitive:
             return
 
         await self._call_event_handler(
@@ -187,22 +212,43 @@ class Button(widget_base.Widget):
         self._is_pressed = False
 
     def build(self) -> rx.Widget:
-        if self._is_pressed:
+        # If not sensitive, use the insensitive styles
+        if not self.is_sensitive:
+            style = self.insensitive_style
+            hover_style = None
+            text_style = self.text_style_insensitive
+
+        # If pressed use the click styles
+        elif self._is_pressed:
             style = self.click_style
             hover_style = None
             text_style = self.text_style_click
+
+        # Otherwise use the regular styles
         else:
             style = self.style
             hover_style = self.hover_style
             text_style = self.text_style_hover if self._is_entered else self.text_style
 
+        # Prepare the child
+        if self.is_loading:
+            scale = text_style.font_size
+            child = rx.ProgressCircle(
+                color=text_style.font_color,
+                size=scale * 1.2,
+                align_x=0.5,
+                align_y=0.5,
+            )
+        else:
+            child = rx.Text(
+                self.text,
+                style=text_style,
+                margin=0.3,
+            )
+
         return rx.MouseEventListener(
             rx.Rectangle(
-                child=rx.Text(
-                    self.text,
-                    style=text_style,
-                    margin=0.3,
-                ),
+                child=child,
                 style=style,
                 hover_style=hover_style,
                 transition_time=theme.TRANSITION_FAST,
