@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import inspect
+import uniserde
+import enum
 import logging
 import functools
 import json
@@ -373,6 +376,10 @@ class Session:
         # Basic JSON values
         if type_ in (bool, int, float, str, None):
             return value
+
+        # Enums
+        if inspect.isclass(type_) and issubclass(type_, enum.Enum):
+            return uniserde.as_json(value, as_type=type_)
 
         # Tuples or lists of serializable values
         if origin is tuple or origin is list:
@@ -925,12 +932,22 @@ class Session:
 const a = document.createElement('a')
 a.href = {json.dumps(as_asset.url(self.app_server.external_url))}
 a.download = {json.dumps(file_name)}
+a.target = "_blank"
 document.body.appendChild(a)
 a.click()
 document.body.removeChild(a)
 """
             )
         )
+
+        # Keep the asset alive for some time
+        #
+        # TODO: Is there a better way to do this
+        async def keepaliver() -> None:
+            temp = as_asset
+            await asyncio.sleep(60)
+
+        asyncio.create_task(keepaliver())
 
     def attach(self, value: Any) -> None:
         """

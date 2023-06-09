@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import asyncio
 import io
+import reflex as rx
 import json
 import secrets
 import traceback
@@ -38,6 +39,7 @@ class AppServer(fastapi.FastAPI):
         self,
         app_: app.App,
         external_url: str,
+        on_session_started: rx.EventHandler[rx.Session],
         validator_factory: Optional[Callable[[], validator.Validator]] = None,
     ):
         super().__init__()
@@ -48,6 +50,7 @@ class AppServer(fastapi.FastAPI):
 
         self.app = app_
         self.external_url = external_url
+        self.on_session_started = on_session_started
         self.validator_factory = validator_factory
 
         # Initialized lazily, when the favicon is first requested.
@@ -347,6 +350,9 @@ class AppServer(fastapi.FastAPI):
             send_message,
             self,
         )
+
+        # Trigger the `on_session_started` event
+        await common.call_event_handler(self.on_session_started, sess)
 
         # Trigger an initial build. This will also send the initial state to
         # the frontend.

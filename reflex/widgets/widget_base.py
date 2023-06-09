@@ -212,7 +212,7 @@ class Widget(ABC):
 
     # Weak reference to the widget whose `build` method returned this widget.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
-        default=lambda: None,
+        default=lambda _: None,  # TODO: Why
         init=False,
     )
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
+from .. import common
 
 from typing_extensions import Self
 from .. import styling
@@ -96,7 +97,7 @@ class Button(widget_base.Widget):
                 font_weight="bold",
             ),
             text_style_insensitive=rx.TextStyle(
-                font_color=accent_color.desaturated(0.8).contrasting(),
+                font_color=accent_color.desaturated(0.8).contrasting(0.25),
             ),
             transition_speed=theme.TRANSITION_FAST,
             key=key,
@@ -237,7 +238,7 @@ class Button(widget_base.Widget):
                 color=text_style.font_color,
                 size=scale * 1.2,
                 align_x=0.5,
-                align_y=0.5,
+                margin=0.3,
             )
         else:
             child = rx.Text(
@@ -252,6 +253,7 @@ class Button(widget_base.Widget):
                 style=style,
                 hover_style=hover_style,
                 transition_time=theme.TRANSITION_FAST,
+                cursor=common.CursorStyle.POINTER,
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

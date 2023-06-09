@@ -12,6 +12,8 @@ import webview
 from . import app_server, validator
 from .image_source import ImageLike, ImageSource
 from .widgets import widget_base
+import reflex as rx
+
 
 __all__ = [
     "App",
@@ -25,10 +27,12 @@ class App:
         build: Callable[[], widget_base.Widget],
         *,
         icon: Optional[ImageLike] = None,
+        on_session_started: rx.EventHandler[rx.Session] = None,
     ):
         self.name = name
         self.build = build
         self._icon = None if icon is None else ImageSource(icon)
+        self.on_session_started = on_session_started
 
     def as_fastapi(
         self,
@@ -39,6 +43,7 @@ class App:
         return app_server.AppServer(
             self,
             external_url=external_url,
+            on_session_started=self.on_session_started,
             validator_factory=_validator_factory,
         )
 

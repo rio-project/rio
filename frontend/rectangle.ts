@@ -8,6 +8,7 @@ export type RectangleState = WidgetState & {
     child?: number;
     hover_style?: BoxStyle | null;
     transition_time?: number;
+    cursor?: string;
 };
 
 function setBoxStyleVariables(
@@ -91,6 +92,14 @@ export class RectangleWidget extends WidgetBase {
                 'rectangle-',
                 '-hover'
             );
+        }
+
+        if (deltaState.cursor !== undefined) {
+            if (deltaState.cursor === 'default') {
+                element.style.removeProperty('cursor');
+            } else {
+                element.style.cursor = deltaState.cursor;
+            }
         }
     }
 }
