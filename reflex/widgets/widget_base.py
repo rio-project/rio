@@ -76,13 +76,65 @@ def is_widget_class(cls: Type[Any]) -> bool:
     return inspect.isclass(cls) and issubclass(cls, Widget)
 
 
-@dataclass
+@dataclass(eq=False)
 class StateBinding:
-    state_property: StateProperty
-    widget: Optional[Widget]
+    # Weak reference to the widget containing this binding
+    owning_widget_weak: Callable[[], Optional[Widget]]
+
+    # The state property whose value this binding is
+    owning_property: StateProperty
+
+    # Each binding is either the root-most binding, or a child of another
+    # binding. This value is True if this binding is the root.
+    is_root: bool
+
+    parent: Optional[StateBinding]
+    value: Optional[object]
+
+    children: weakref.WeakSet[StateBinding] = dataclasses.field(
+        default_factory=weakref.WeakSet
+    )
+
+    def get_value(self) -> object:
+        if self.is_root:
+            return self.value
+
+        assert self.parent is not None
+        return self.parent.get_value()
+
+    def set_value(self, value: object) -> None:
+        # Delegate to the parent, if any
+        if self.parent is not None:
+            self.parent.set_value(value)
+            return
+
+        # Otherwise this is the root-most binding. Set the value
+        self.value = value
+
+        # Then recursively mark all children as dirty
+        self.recursively_mark_children_as_dirty()
+
+    def recursively_mark_children_as_dirty(self) -> None:
+        to_do = [self]
+
+        while to_do:
+            cur = to_do.pop()
+            owning_widget = cur.owning_widget_weak()
+
+            # The widget's session may be `None`, if this widget has never
+            # entered the widget tree. e.g. `build` returns a widget, which
+            # doesn't make it through reconciliation and is thus never even
+            # marked as dirty -> No session is injected.
+            if owning_widget is not None and owning_widget._session_ is not None:
+                owning_widget._session_.register_dirty_widget(
+                    owning_widget,
+                    include_fundamental_children_recursively=False,
+                )
+
+            to_do.extend(cur.children)
 
 
-class StateProperty(Generic[T]):
+class StateProperty:
     """
     StateProperties act like regular properties, with additional considerations:
 
@@ -107,19 +159,11 @@ class StateProperty(Generic[T]):
         self.name = name
         self.readonly = readonly
 
-    @overload
-    def __get__(self, instance: Widget, owner: Optional[type] = None) -> T:
-        ...
-
-    @overload
-    def __get__(self, instance: None, owner: Optional[type] = None) -> Self:
-        ...
-
     def __get__(
         self,
         instance: Optional[Widget],
         owner: Optional[type] = None,
-    ) -> Union[T, Self]:
+    ) -> object:
         # If accessed through the class, rather than instance, return the
         # StateProperty itself
         if instance is None:
@@ -133,57 +177,56 @@ class StateProperty(Generic[T]):
             raise AttributeError(self.name) from None
 
         # If the value is a binding return the binding's value
-        if type(value) is StateBinding:
-            assert value.widget is not None
-            return value.state_property.__get__(value.widget)  # type: ignore
+        if isinstance(value, StateBinding):
+            return value.get_value()
 
         # Otherwise return the value
         return value
 
-    def set_value(self, instance: Widget, value: T, mark_dirty: bool) -> None:
+    def __set__(self, instance: Widget, value: object) -> None:
         if self.readonly:
             cls_name = type(instance).__name__
             raise AttributeError(
                 f"Cannot assign to readonly property {cls_name}.{self.name}"
             )
 
-        # When assigning a StateProperty to another StateProperty, a
-        # `StateBinding` is created. Otherwise just assign the value as-is.
-        if type(value) is StateProperty:
-            # The binding's widget isn't known yet, and is injected later by the
-            # `Session`.
-            new_value = StateBinding(value, None)
-        else:
-            new_value = value
-
-        # If this property is part of a state binding update the parent's value
+        # If this property is part of a state binding delegate to the binding
+        # instead
         instance_vars = vars(instance)
-        local_value = instance_vars.get(self.name)
+        try:
+            local_value = instance_vars[self.name]
 
+        # No value was assigned yet, i.e. this function was called by the
+        # widget's `__init__`. If this is a plain value assign it. Even if it is
+        # a `StateProperty` the binding will be created by the `Session`, so
+        # just keep track of the value in that case as well.
+        except KeyError:
+            assert instance._session_ is None
+            instance_vars[self.name] = value
+            return
+
+        # A value has already been assigned. This is mutation of an existing
+        # widget
+
+        # State bindings may only be created when the widget is constructed
+        if isinstance(value, StateProperty):
+            raise RuntimeError(
+                "State bindings can only be created when the widget is constructed"
+            )
+
+        # Delegate to the binding if it exists
         if isinstance(local_value, StateBinding):
-            if isinstance(new_value, StateBinding):
-                # This should virtually never happen. So don't handle it, scream
-                # and die
-                raise RuntimeError(
-                    "State bindings can only be created when the widget is constructed"
-                )
+            local_value.set_value(value)
+            return
 
-            local_value.state_property.set_value(local_value.widget, new_value, mark_dirty)  # type: ignore
+        # Otherwise set the value directly and mark the widget as dirty
+        instance_vars[self.name] = value
 
-        else:
-            instance_vars[self.name] = new_value
-
-        # If a session is known also notify the session that the widget is
-        # dirty. If the session is not known yet, the widget will be processed
-        # by the session anyway, as if dirty.
-        if instance._session_ is not None and mark_dirty:
+        if instance._session_ is not None:
             instance._session_.register_dirty_widget(
                 instance,
                 include_fundamental_children_recursively=False,
             )
-
-    def __set__(self, instance: Widget, value: T) -> None:
-        self.set_value(instance, value, mark_dirty=True)
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"
@@ -212,7 +255,7 @@ class Widget(ABC):
 
     # Weak reference to the widget whose `build` method returned this widget.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
-        default=lambda _: None,  # TODO: Why
+        default=lambda: None,
         init=False,
     )
 

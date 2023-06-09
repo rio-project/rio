@@ -4,11 +4,8 @@ import enum
 from dataclasses import KW_ONLY, dataclass
 from typing import Any, Dict
 
-from typing_extensions import Self
-
 import reflex as rx
 
-from .. import messages
 from ..common import Jsonable
 from ..styling import *
 from . import widget_base

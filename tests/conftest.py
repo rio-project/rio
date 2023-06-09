@@ -1,4 +1,3 @@
-
 import pytest
 
 import asyncio
@@ -15,8 +14,13 @@ class _MockApp:
 
         self.outgoing_messages: List[OutgoingMessage] = []
 
-        self._app = rx.App('MockApp', lambda: root_widget)
-        self._app_server = AppServer(self._app, external_url='https://unit.test')
+        self._app = rx.App("MockApp", lambda: root_widget)
+        self._app_server = AppServer(
+            self._app,
+            external_url="https://unit.test",
+            on_session_started=None,
+            validator_factory=None,
+        )
         self._session = rx.Session(
             root_widget,
             self._send_message,

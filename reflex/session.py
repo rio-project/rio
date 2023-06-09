@@ -207,17 +207,42 @@ class Session:
             # Take care to do this before reconciliation, because reconciliation
             # needs to access state bindings, which is only possible once the
             # bindings are aware of their widget.
+            widget_vars = vars(widget)
+
             for child in build_result._iter_direct_and_indirect_children(True):
                 child_vars = vars(child)
 
                 for state_property in child._state_properties_:
                     value = child_vars[state_property.name]
 
-                    if (
-                        isinstance(value, widget_base.StateBinding)
-                        and value.widget is None
-                    ):
-                        value.widget = widget
+                    # Create a StateBinding, if requested
+                    if isinstance(value, widget_base.StateProperty):
+                        # In order to create a `StateBinding`, the parent's
+                        # attribute must also be a binding
+                        parent_binding = widget_vars[value.name]
+
+                        if not isinstance(parent_binding, widget_base.StateBinding):
+                            parent_binding = widget_base.StateBinding(
+                                owning_widget_weak=weakref.ref(widget),
+                                owning_property=value,
+                                is_root=True,
+                                parent=None,
+                                value=parent_binding,
+                                children=weakref.WeakSet(),
+                            )
+                            widget_vars[value.name] = parent_binding
+
+                        # Create the child binding
+                        child_binding = widget_base.StateBinding(
+                            owning_widget_weak=weakref.ref(child),
+                            owning_property=state_property,
+                            is_root=False,
+                            parent=parent_binding,
+                            value=None,
+                            children=weakref.WeakSet(),
+                        )
+                        parent_binding.children.add(child_binding)
+                        child_vars[state_property.name] = child_binding
 
             # Has this widget been built before?
             try:

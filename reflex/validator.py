@@ -2,6 +2,7 @@ import copy
 import json
 import re
 from dataclasses import dataclass
+from . import session
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Union
 
@@ -124,9 +125,12 @@ class ValidationError(Exception):
 class Validator:
     def __init__(
         self,
+        session_: session.Session,
         *,
         dump_directory_path: Optional[Path] = None,
     ):
+        self.session = session_
+
         if dump_directory_path is not None:
             assert dump_directory_path.exists(), dump_directory_path
             assert dump_directory_path.is_dir(), dump_directory_path
@@ -363,6 +367,15 @@ class Validator:
                     raise ValidationError(
                         f"Widget with id `{widget.id}` references unknown widget with id `{child_id}`"
                     )
+
+        # Make sure all widgets in the session have had their session injected
+        for widget in self.session.root_widget._iter_direct_and_indirect_children(
+            include_self=True
+        ):
+            if widget._session_ is None:
+                raise ValidationError(
+                    f"Widget `{widget}` has not had its session injected"
+                )
 
         # Prune the widget tree
         self.prune_widgets()

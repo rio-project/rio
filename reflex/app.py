@@ -38,7 +38,9 @@ class App:
         self,
         external_url: str,
         *,
-        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
+        _validator_factory: Optional[
+            Callable[[rx.Session], validator.Validator]
+        ] = None,
     ) -> fastapi.FastAPI:
         return app_server.AppServer(
             self,
@@ -54,7 +56,9 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
+        _validator_factory: Optional[
+            Callable[[rx.Session], validator.Validator]
+        ] = None,
         _on_startup: Optional[Callable[[], Awaitable[None]]] = None,
     ) -> None:
         # Suppress stdout messages if requested
@@ -94,7 +98,9 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
+        _validator_factory: Optional[
+            Callable[[rx.Session], validator.Validator]
+        ] = None,
     ):
         if external_url is None:
             external_url = f"http://{host}:{port}"

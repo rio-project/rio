@@ -40,7 +40,7 @@ class AppServer(fastapi.FastAPI):
         app_: app.App,
         external_url: str,
         on_session_started: rx.EventHandler[rx.Session],
-        validator_factory: Optional[Callable[[], validator.Validator]] = None,
+        validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
     ):
         super().__init__()
 
@@ -327,9 +327,6 @@ class AppServer(fastapi.FastAPI):
         # Accept the socket
         await websocket.accept()
 
-        # Optionally create a validator
-        validator = None if self.validator_factory is None else self.validator_factory()
-
         # Create a function for sending messages to the frontend. This function
         # will also pipe the message to the validator if one is present.
         async def send_message(
@@ -350,6 +347,9 @@ class AppServer(fastapi.FastAPI):
             send_message,
             self,
         )
+
+        # Optionally create a validator
+        validator = None if self.validator_factory is None else self.validator_factory(sess)
 
         # Trigger the `on_session_started` event
         await common.call_event_handler(self.on_session_started, sess)

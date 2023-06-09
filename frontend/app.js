@@ -493,6 +493,13 @@ var RectangleWidget = /** @class */function (_super) {
       element.classList.add('reflex-rectangle-hover');
       setBoxStyleVariables(element, deltaState.hover_style, 'rectangle-', '-hover');
     }
+    if (deltaState.cursor !== undefined) {
+      if (deltaState.cursor === 'default') {
+        element.style.removeProperty('cursor');
+      } else {
+        element.style.cursor = deltaState.cursor;
+      }
+    }
   };
   return RectangleWidget;
 }(widgetBase_1.WidgetBase);

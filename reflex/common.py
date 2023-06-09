@@ -19,7 +19,7 @@ FRONTEND_DIR = PACKAGE_ROOT_DIR.parent / "frontend"
 HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR.parent / "hosted-assets"
 
 
-Jsonable = uniserde.Jsonable
+Jsonable: TypeAlias = uniserde.Jsonable
 
 
 _READONLY = object()

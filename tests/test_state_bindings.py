@@ -1,4 +1,3 @@
-
 import reflex as rx
 
 
@@ -7,15 +6,20 @@ def test_binding_makes_sibling_dirty(MockApp):
         text: str = ""
 
         def build(self):
-            return rx.Column([
-                rx.Text(Root.text),
-                rx.Text(Root.text),
-            ])
+            return rx.Column(
+                [
+                    rx.Text(Root.text),
+                    rx.Text(Root.text),
+                ]
+            )
 
     root = Root()
     app = MockApp(root)
     text1, text2 = app.get_build_output(root).children
 
     text1.text = "Hello"
-    assert text2 in app.dirty_widgets
 
+    assert root in app.dirty_widgets
+    assert text1 in app.dirty_widgets
+    assert text2 in app.dirty_widgets
+    assert text2.text == "Hello"

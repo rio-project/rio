@@ -44,5 +44,5 @@ class MarkdownView extends WidgetBase  {
     }
 }
     """ % (
-            sess.app_server.external_url,
+            sess.app_server.external_url
         )

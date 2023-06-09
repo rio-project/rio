@@ -159,8 +159,9 @@ class MainPage(rx.Widget):
         )
 
 
-def validator_factory() -> reflex.validator.Validator:
+def validator_factory(sess: rx.Session) -> reflex.validator.Validator:
     return reflex.validator.Validator(
+        sess,
         dump_directory_path=GENERATED_DIR,
     )
 
