@@ -349,17 +349,19 @@ class AppServer(fastapi.FastAPI):
         )
 
         # Optionally create a validator
-        validator = None if self.validator_factory is None else self.validator_factory(sess)
+        validator = (
+            None if self.validator_factory is None else self.validator_factory(sess)
+        )
 
         # Trigger the `on_session_started` event
         await common.call_event_handler(self.on_session_started, sess)
 
         # Trigger an initial build. This will also send the initial state to
         # the frontend.
-        sess.register_dirty_widget(
+        sess._register_dirty_widget(
             root_widget, include_fundamental_children_recursively=True
         )
-        await sess.refresh()
+        await sess._refresh()
 
         while True:
             # Refresh the session's duration
@@ -391,4 +393,4 @@ class AppServer(fastapi.FastAPI):
                 validator.handle_incoming_message(message)
 
             # Delegate to the session
-            await sess.handle_message(message)
+            await sess._handle_message(message)

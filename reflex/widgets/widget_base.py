@@ -126,7 +126,7 @@ class StateBinding:
             # doesn't make it through reconciliation and is thus never even
             # marked as dirty -> No session is injected.
             if owning_widget is not None and owning_widget._session_ is not None:
-                owning_widget._session_.register_dirty_widget(
+                owning_widget._session_._register_dirty_widget(
                     owning_widget,
                     include_fundamental_children_recursively=False,
                 )
@@ -223,7 +223,7 @@ class StateProperty:
         instance_vars[self.name] = value
 
         if instance._session_ is not None:
-            instance._session_.register_dirty_widget(
+            instance._session_._register_dirty_widget(
                 instance,
                 include_fundamental_children_recursively=False,
             )
@@ -303,7 +303,7 @@ class Widget(ABC):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        has_custom_init = '__init__' in vars(cls)
+        has_custom_init = "__init__" in vars(cls)
 
         # Apply the dataclass transform
         dataclasses.dataclass(eq=False, repr=False)(cls)
@@ -380,6 +380,19 @@ class Widget(ABC):
             cls._state_properties_.add(state_property)
 
     @property
+    def _id(self) -> int:
+        """
+        Return an unchanging, unique ID for this widget, so it can be identified
+        over the API.
+        """
+        try:
+            return vars(self)["_id"]
+        except KeyError:
+            _id = _make_unique_id()
+            vars(self)["_id"] = _id
+            return _id
+
+    @property
     def session(self) -> "session.Session":
         """
         Return the session this widget is part of.
@@ -393,19 +406,6 @@ class Widget(ABC):
             )
 
         return self._session_
-
-    @property
-    def _id(self) -> int:
-        """
-        Return an unchanging, unique ID for this widget, so it can be identified
-        over the API.
-        """
-        try:
-            return vars(self)["_id"]
-        except KeyError:
-            _id = _make_unique_id()
-            vars(self)["_id"] = _id
-            return _id
 
     def _custom_serialize(self) -> Dict[str, Jsonable]:
         """
@@ -488,6 +488,14 @@ class Widget(ABC):
         except Exception:
             print("Exception in event handler:")
             traceback.print_exc()
+
+    async def force_refresh(self) -> None:
+        self.session._register_dirty_widget(
+            self,
+            include_fundamental_children_recursively=False,
+        )
+
+        await self.session._refresh()
 
     def __repr__(self) -> str:
         result = f"<{type(self).__name__} id:{self._id} -"
@@ -583,7 +591,7 @@ class HtmlWidget(Widget):
 
         # Trigger a refresh
         assert self._session_ is not None
-        await self._session_.refresh()
+        await self._session_._refresh()
 
     async def _on_message(self, message: Jsonable) -> None:
         """

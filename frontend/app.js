@@ -375,8 +375,8 @@ var DropdownWidget = /** @class */function (_super) {
     var element = document.createElement('select');
     element.classList.add('reflex-dropdown');
     element.addEventListener('input', function () {
-      _this.setStateAndNotifyBackend({
-        value: element.value
+      _this.sendMessageToBackend({
+        name: element.value
       });
     });
     return element;
@@ -392,8 +392,12 @@ var DropdownWidget = /** @class */function (_super) {
         element.appendChild(option);
       }
     }
-    if (deltaState.selectedName !== undefined && deltaState.selectedName !== null) {
-      element.value = deltaState.selectedName;
+    if (deltaState.selectedName !== undefined) {
+      if (deltaState.selectedName === null) {
+        element.selectedIndex = -1;
+      } else {
+        element.value = deltaState.selectedName;
+      }
     }
   };
   return DropdownWidget;

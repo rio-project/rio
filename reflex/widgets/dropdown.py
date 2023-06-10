@@ -26,38 +26,46 @@ class DropdownChangeEvent(Generic[T]):
 class Dropdown(widget_base.HtmlWidget, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
-    value: Optional[T] = None
+    selected_value: Optional[T] = None
     on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
-    _selected_name: Optional[str] = None
 
     def _custom_serialize(self) -> Dict[str, Any]:
-        return {
+        if not self.options:
+            raise ValueError("`Dropdown` must have at least one option.")
+
+        # If no value is selected, choose the first one
+        if self.selected_value is None:
+            self.selected_value = next(iter(self.options.values()))
+
+        # The value may not be serializable. Get the corresponding name instead.
+        for name, value in self.options.items():
+            if value == self.selected_value:
+                break
+        else:
+            name = None
+
+        result = {
             "optionNames": list(self.options.keys()),
-            "selectedName": self._selected_name,
+            "selectedName": name,
         }
 
-    async def _on_state_update(self, msg: Any) -> None:
+        return result
+
+    async def _on_message(self, msg: Any) -> None:
         # Parse the message
         assert isinstance(msg, dict), msg
 
-        self._selected_name = msg["value"]
-        assert isinstance(self._selected_name, str), self._selected_name
-
-        # Get the server-side value for this selection
+        # The frontend works with names, not values. Get the corresponding
+        # value.
         try:
-            self.value = self.options[self._selected_name]
+            self.selected_value = self.options[msg["name"]]
         except KeyError:
-            # Probably due to client lag
+            # Invalid names may be sent due to lag between the frontend and
+            # backend. Ignore them.
             return
 
-        # Trigger on_change event
-        await self._call_event_handler(
-            self.on_change,
-            DropdownChangeEvent(self.value),
-        )
-
-        # Update the widget's state
-        await self.session.refresh()
+        # Refresh the session
+        await self.session._refresh()
 
 
 Dropdown._unique_id = "Dropdown-builtin"

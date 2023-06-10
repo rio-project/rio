@@ -105,7 +105,7 @@ class Session:
         # of the app. They can be looked up by their type.
         self._attachments: Dict[Type[Any], Any] = {}
 
-    def lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
+    def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
         data is present for the widget.
@@ -115,14 +115,14 @@ class Session:
         except KeyError:
             raise KeyError(widget) from None
 
-    def lookup_widget(self, widget_id: int) -> rx.Widget:
+    def _lookup_widget(self, widget_id: int) -> rx.Widget:
         """
         Returns the widget and its data for the given widget ID. Raises
         `KeyError` if no widget is present for the ID.
         """
         return self._weak_widgets_by_id[widget_id]
 
-    def register_dirty_widget(
+    def _register_dirty_widget(
         self,
         widget: rx.Widget,
         *,
@@ -146,12 +146,12 @@ class Session:
             return
 
         for child in widget._iter_direct_children():
-            self.register_dirty_widget(
+            self._register_dirty_widget(
                 child,
                 include_fundamental_children_recursively=True,
             )
 
-    def refresh_sync(self) -> Set[rx.Widget]:
+    def _refresh_sync(self) -> Set[rx.Widget]:
         """
         See `refresh` for details on what this function does.
 
@@ -246,7 +246,7 @@ class Session:
 
             # Has this widget been built before?
             try:
-                widget_data = self.lookup_widget_data(widget)
+                widget_data = self._lookup_widget_data(widget)
 
             # No, this is the first time
             except KeyError:
@@ -255,7 +255,7 @@ class Session:
                 self._weak_widget_data_by_widget[widget] = widget_data
 
                 # Mark all fresh widgets as dirty
-                self.register_dirty_widget(
+                self._register_dirty_widget(
                     build_result, include_fundamental_children_recursively=True
                 )
 
@@ -274,7 +274,7 @@ class Session:
             # - Update the widget data with the build output resulting from the
             #   operations above
             else:
-                self.reconcile_tree(widget_data, build_result)
+                self._reconcile_tree(widget_data, build_result)
 
                 # Increment the build generation
                 widget_data.build_generation += 1
@@ -315,7 +315,7 @@ class Session:
                 result = False
 
             else:
-                parent_data = self.lookup_widget_data(parent)
+                parent_data = self._lookup_widget_data(parent)
                 result = (
                     parent_data.build_generation == widget._build_generation_
                     and is_alive(parent)
@@ -327,7 +327,7 @@ class Session:
 
         return {widget for widget in visited_widgets if is_alive(widget)}
 
-    async def refresh(self) -> None:
+    async def _refresh(self) -> None:
         """
         Make sure the session state is up to date. Specifically:
 
@@ -343,7 +343,7 @@ class Session:
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
             # Refresh and get a set of all widgets which have been visited
-            visited_widgets = self.refresh_sync()
+            visited_widgets = self._refresh_sync()
 
             # Avoid sending empty messages
             if not visited_widgets:
@@ -495,7 +495,7 @@ class Session:
             result = {
                 "_type_": "Placeholder",
                 "_python_type_": type(widget).__name__,
-                "_child_": self.lookup_widget_data(widget).build_result._id,
+                "_child_": self._lookup_widget_data(widget).build_result._id,
             }
 
         # Add layout properties, in a more succinct way than sending them
@@ -550,7 +550,7 @@ class Session:
 
         return result
 
-    async def handle_message(self, msg: messages.IncomingMessage) -> None:
+    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
         """
         Handle a message from the client. This is the main entry point for
         messages from the client.
@@ -563,7 +563,7 @@ class Session:
 
         # Let the widget handle the message
         try:
-            widget = self.lookup_widget(widget_id)
+            widget = self._lookup_widget(widget_id)
         except KeyError:
             logging.warn(
                 f"Encountered message for unknown widget {widget_id}. (The widget might have been deleted in the meantime.)"
@@ -572,10 +572,10 @@ class Session:
 
         await widget._handle_message(msg)
 
-    def reconcile_tree(self, old_build_data: WidgetData, new_build: rx.Widget) -> None:
+    def _reconcile_tree(self, old_build_data: WidgetData, new_build: rx.Widget) -> None:
         # Find all pairs of widgets which should be reconciled
         matched_pairs = list(
-            self.find_widgets_for_reconciliation(old_build_data.build_result, new_build)
+            self._find_widgets_for_reconciliation(old_build_data.build_result, new_build)
         )
 
         # Reconciliating individual widgets requires knowledge of which other
@@ -588,8 +588,10 @@ class Session:
 
         # Reconcile all matched pairs
         for new_widget, old_widget in reconciled_widgets_new_to_old.items():
-            self.reconcile_widget(
-                old_widget, new_widget, reconciled_widgets_new_to_old.keys()
+            self._reconcile_widget(
+                old_widget,
+                new_widget,
+                reconciled_widgets_new_to_old,
             )
 
         # Update the widget data. If the root widget was not reconciled, the new
@@ -643,21 +645,19 @@ class Session:
             if widget in reconciled_widgets_old:
                 continue
 
-            self.register_dirty_widget(
+            self._register_dirty_widget(
                 widget, include_fundamental_children_recursively=False
             )
 
-    def reconcile_widget(
+    def _reconcile_widget(
         self,
         old_widget: rx.Widget,
         new_widget: rx.Widget,
-        reconciled_new_widgets: Container[rx.Widget],
+        reconciled_widgets_new_to_old: Dict[rx.Widget, rx.Widget],
     ) -> None:
         """
         Given two widgets of the same type, reconcile them. Specifically:
 
-        - Replace the new widget with the old one in the widget tree (using
-          `new_widget_replacer`)
         - Any state which was explicitly set by the user in the new widget's
           constructor is considered explicitly set, and will be copied into the
           old widget
@@ -668,24 +668,58 @@ class Session:
         """
         assert type(old_widget) is type(new_widget), (old_widget, new_widget)
 
+        # Let any following code assume that the two widgets aren't the same
+        # instance
+        if old_widget is new_widget:
+            return
+
         # Determine which properties will be taken from the new widget
         overridden_values = {}
-        new_widget_dict = vars(new_widget)
         old_widget_dict = vars(old_widget)
+        new_widget_dict = vars(new_widget)
 
         for prop in new_widget._state_properties_:
+            # Should the value be overridden?
             if prop.name not in new_widget._explicitly_set_properties_:
                 continue
 
+            # Take care to keep state bindings up to date
+            old_value = getattr(old_widget, prop.name)
+            new_value = getattr(new_widget, prop.name)
+            old_is_binding = isinstance(old_value, widget_base.StateBinding)
+            new_is_binding = isinstance(new_value, widget_base.StateBinding)
+
+            # If the old value was a binding, and the new one isn't, split the
+            # tree of bindings. All children are now roots.
+            if old_is_binding and not new_is_binding:
+                binding_value = old_value.get_value()
+                old_value.owning_widget_weak = lambda: None
+
+                for child_binding in old_value.children:
+                    child_binding.is_root = True
+                    child_binding.parent = None
+                    child_binding.value = binding_value
+
+            # If both values are bindings transfer the children to the new
+            # binding
+            elif old_is_binding and new_is_binding:
+                new_value.children = old_value.children
+
+                for child in old_value.children:
+                    child.parent = new_value
+
             overridden_values[prop.name] = new_widget_dict[prop.name]
 
-        # Check if any of the widget's values have changed. If so, it is
-        # considered dirty
+        # If the widget has changed mark it as dirty
         def values_equal(old: object, new: object) -> bool:
+            """
+            Used to compare the old and new values of a property. Returns `True`
+            if the values are considered equal, `False` otherwise.
+            """
             # Widgets are a special case. Widget attributes are dirty iff the
             # widget isn't reconciled, i.e. it is a new widget
             if isinstance(new, rx.Widget):
-                return new in reconciled_new_widgets
+                return old is reconciled_widgets_new_to_old.get(new, None)
 
             if isinstance(new, list):
                 if not isinstance(old, list):
@@ -706,12 +740,13 @@ class Session:
             except Exception:
                 return old is new
 
+        # Determine which properties will be taken from the new widget
         for prop_name in overridden_values:
             old_value = getattr(old_widget, prop_name)
             new_value = getattr(new_widget, prop_name)
 
             if not values_equal(old_value, new_value):
-                self.register_dirty_widget(
+                self._register_dirty_widget(
                     old_widget,
                     include_fundamental_children_recursively=False,
                 )
@@ -724,7 +759,7 @@ class Session:
         # Now combine the old and new dictionaries
         old_widget_dict.update(overridden_values)
 
-    def find_widgets_for_reconciliation(
+    def _find_widgets_for_reconciliation(
         self,
         old_build: rx.Widget,
         new_build: rx.Widget,

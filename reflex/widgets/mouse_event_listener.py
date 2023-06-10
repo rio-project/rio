@@ -137,7 +137,7 @@ class MouseEventListener(widget_base.HtmlWidget):
             raise ValueError(f"{__class__.__name__} encountered unknown message: {msg}")
 
         # Refresh the session
-        await self.session.refresh()
+        await self.session._refresh()
 
 
 MouseEventListener._unique_id = "MouseEventListener-builtin"

@@ -27,10 +27,10 @@ class _MockApp:
             self._app_server,
         )
 
-        self._session.register_dirty_widget(
+        self._session._register_dirty_widget(
             root_widget, include_fundamental_children_recursively=True
         )
-        asyncio.run(self._session.refresh())
+        asyncio.run(self._session._refresh())
 
     async def _send_message(self, message: OutgoingMessage) -> None:
         self.outgoing_messages.append(message)

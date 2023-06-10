@@ -12,8 +12,8 @@ export class DropdownWidget extends WidgetBase {
         element.classList.add('reflex-dropdown');
 
         element.addEventListener('input', () => {
-            this.setStateAndNotifyBackend({
-                value: element.value,
+            this.sendMessageToBackend({
+                name: element.value,
             });
         });
 
@@ -32,11 +32,12 @@ export class DropdownWidget extends WidgetBase {
             }
         }
 
-        if (
-            deltaState.selectedName !== undefined &&
-            deltaState.selectedName !== null
-        ) {
-            (element as HTMLSelectElement).value = deltaState.selectedName;
+        if (deltaState.selectedName !== undefined) {
+            if (deltaState.selectedName === null) {
+                (element as HTMLSelectElement).selectedIndex = -1;
+            } else {
+                (element as HTMLSelectElement).value = deltaState.selectedName;
+            }
         }
     }
 }
