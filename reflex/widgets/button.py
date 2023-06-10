@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from .. import common
 
-from typing_extensions import Self
 from .. import styling
 from typing import Optional
 

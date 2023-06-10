@@ -1,162 +1,44 @@
-from pathlib import Path
-from typing import Any, List, Optional
-from typing_extensions import Self
 
-import PIL.Image
+from pathlib import Path
+from typing import Literal
 
 import reflex as rx
 import reflex.validator
+
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
 GENERATED_DIR = PROJECT_ROOT_DIR / "generated"
 
 
-class Card(rx.Widget):
-    child: rx.Widget
-
-    def build(self) -> rx.Widget:
-        radius = 0.0
-        margin = 0.5
-
-        return rx.Rectangle(
-            child=self.child,
-            style=rx.BoxStyle(
-                fill=rx.Color.WHITE.darker(0.15),
-                corner_radius=(0, 0, radius, radius),
-            ),
-        )
+class AutoFormShowcase(rx.AutoForm):
+    foo: str = ''
+    bar: Literal['hello', 'world'] = 'world'
 
 
-class LoginWidget(rx.Widget):
-    username: str = ""
-    password: str = ""
-
-    sap_session_token: Optional[str] = None
-
-    on_login: rx.EventHandler[[]] = None
-
-    async def login(self, event: rx.ButtonPressedEvent) -> None:
-        self.sap_session_token = "<totally-legit-session-token>"
-        await self._call_event_handler(self.on_login)
-
-    def build(self) -> rx.Widget:
-        return Card(
-            rx.Column(
-                children=[
-                    rx.TextInput(
-                        text=LoginWidget.username,
-                        placeholder="Benutzername",
-                        margin_bottom=1,
-                    ),
-                    rx.TextInput(
-                        text=LoginWidget.password,
-                        placeholder="Passwort",
-                        secret=True,
-                        margin_bottom=1,
-                    ),
-                    rx.Button.major(
-                        "Login",
-                        on_press=self.login,
-                    ),
-                    rx.Switch(),
-                    rx.Dropdown({"foo": 1, "bar": 2}, on_change=print),
-                    rx.MarkdownView(
-                        text="""
-# Hello World
-
-This is a markdown view. It supports **bold** and *italic* text, as well as
-[links](https://www.google.com).
-
-There's also code blocks:
-
-```python
-print("Hello World")
-```
-"""
-                    ),
-                ],
-            ),
-        )
-
-
-class SimpleMenu(rx.Widget):
-    heading: str
-    children: List[str]
-
-    def build(self) -> rx.Widget:
-        child_widgets = []
-
-        for ii, name in enumerate(self.children):
-            child_widgets.append(
-                rx.Button.major(
-                    name,
-                    on_press=lambda _: print(f"Pressed {name}"),
-                    margin_top=0 if ii == 0 else 0.5,
-                )
-            )
-
-        return Card(
-            child=rx.Column(child_widgets),
-            width=30,
-        )
-
-
-class MainPage(rx.Widget):
-    sap_session_token: Optional[str] = None
-
-    def on_login(self) -> None:
-        print(f"Logged in! The session token is {self.sap_session_token}.")
-
-    def build_login_view(self) -> rx.Widget:
-        return LoginWidget(
-            sap_session_token=MainPage.sap_session_token,
-            on_login=self.on_login,
-            margin_left=4,
-            width=30,
-            height=15,
-            align_y=0.35,
-        )
-
-    def build_menu(self):
-        return rx.Column(
-            [
-                SimpleMenu(
-                    "Reports",
-                    [
-                        "Personalbericht",
-                        "Zustellbericht",
-                    ],
+class WidgetShowcase(rx.Widget):
+    def build(self):
+        return rx.Row([
+            rx.Column([
+                # rx.Button("Click Me!"),
+                rx.Dropdown({'Foo': 'foo', 'Bar': 'bar'}),
+                rx.MarkdownView("**This** is *markdown*"),
+                rx.ProgressCircle(),
+                rx.MouseEventListener(
+                    rx.Rectangle(rx.BoxStyle(fill=rx.Color.BLUE), width=10, height=2),
+                    on_mouse_down=lambda event: print("Mouse Down!"),
                 ),
-                SimpleMenu(
-                    "Tasks",
-                    [
-                        "Scheduler",
-                        "Laufende Tasks",
-                    ],
-                    margin_top=1,
-                ),
-            ],
-            align_x=0.5,
-            align_y=0.3,
-        )
-
-    def build(self) -> rx.Widget:
-        print(f"Rebuilding. The session token is {self.sap_session_token}.")
-
-        if self.sap_session_token is None:
-            child = self.build_login_view()
-        else:
-            child = self.build_menu()
-
-        return rx.Rectangle(
-            rx.BoxStyle(
-                fill=rx.ImageFill(
-                    Path("./dev_testing/test.png"),
-                    fill_mode="stretch",
-                ),
-            ),
-            child=child,
-        )
+                rx.Switch(),
+                rx.TextInput(placeholder="Type here!"),
+                rx.Text("Hello World!"),
+            ]),
+            rx.Column([
+                rx.Stack([
+                    rx.Rectangle(rx.BoxStyle(fill=rx.Color.RED), width=10, height=10),
+                    rx.Rectangle(rx.BoxStyle(fill=rx.Color.GREEN), width=5, height=5, align_x=0.5, align_y=0.5),
+                ]),
+                AutoFormShowcase(),
+            ]),
+        ])
 
 
 def validator_factory(sess: rx.Session) -> reflex.validator.Validator:
@@ -167,8 +49,8 @@ def validator_factory(sess: rx.Session) -> reflex.validator.Validator:
 
 
 rx_app = rx.App(
-    "Super Dynamic Website!",
-    MainPage,
+    "Widget Showcase",
+    WidgetShowcase,
     icon=Path("./dev_testing/test.png"),
 )
 

@@ -233,7 +233,7 @@ class StateProperty:
 
 
 @dataclass_transform()
-@dataclass(unsafe_hash=True)
+@dataclass(eq=False, repr=False)
 class Widget(ABC):
     _: KW_ONLY
     key: Optional[str] = None
@@ -303,22 +303,16 @@ class Widget(ABC):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        # All widgets must be direct subclasses of Widget
-        if cls.__base__ is not Widget and cls.__base__ is not HtmlWidget:
-            raise TypeError(
-                f"Widget subclasses must be direct subclasses of Widget, not {cls.__base__!r}"
-            )
+        has_custom_init = '__init__' in vars(cls)
 
         # Apply the dataclass transform
-        dataclasses.dataclass(unsafe_hash=True, repr=False)(cls)
+        dataclasses.dataclass(eq=False, repr=False)(cls)
 
-        # Widgets need to run custom code in in `__init__`, but dataclasses
-        # don't chain up. `__init__` is replaced with a custom function, which
-        # first calls the original one, then runs the custom code.
-        #
-        # Take care to only do this for the leaf class, so that the custom code
-        # isn't run multiple times.
-        if cls.__module__ != __name__ or cls.__name__ != "HtmlWidget":
+        # Widgets need to run custom code in in `__init__`, but dataclass
+        # constructors don't chain up. So if this class's `__init__` was created
+        # by the `@dataclass` decorator, wrap it with a custom `__init__` that
+        # calls our initialization code.
+        if not has_custom_init:
             original_init = cls.__init__
 
             @functools.wraps(original_init)
@@ -330,14 +324,6 @@ class Widget(ABC):
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)
-
-        # Widgets must be hashable, because sessions use weak dicts & sets to
-        # keep track of them. However, unlike dataclasses, instances should only
-        # be equal to themselves.
-        #
-        # -> Replace the dataclass implementations of `__eq__` and `__hash__`
-        cls.__eq__ = lambda self, other: self is other  # type: ignore
-        cls.__hash__ = lambda self: id(self)  # type: ignore
 
         # Determine and cache the `__init__` signature
         #
