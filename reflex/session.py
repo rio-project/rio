@@ -947,6 +947,8 @@ class Session:
         # Wait for the user to upload files
         files = await future
 
+        print('FILES: ', files)
+
         # Raise an exception if no files were uploaded
         if not files:
             raise errors.NoFileSelectedError()

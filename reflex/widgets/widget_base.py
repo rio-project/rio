@@ -255,7 +255,9 @@ class Widget(ABC):
 
     # Weak reference to the widget whose `build` method returned this widget.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
-        default=lambda: None,
+        # Dataclasses seem to unintentionally turn this function into a method.
+        # Make sure it works whether or not `self` is passed.
+        default=lambda *args: None,
         init=False,
     )
 

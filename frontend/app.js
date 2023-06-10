@@ -1244,10 +1244,10 @@ function requestFileUpload(message) {
   }
   input.style.display = 'none';
   function finish() {
-    // Remove the input element from the DOM
-    input.remove();
-    // Remove any event listeners
-    window.removeEventListener('focus', finish);
+    // Don't run twice
+    if (input.parentElement === null) {
+      return;
+    }
     // Build a `FormData` object containing the files
     var data = new FormData();
     var ii = 0;
@@ -1267,12 +1267,20 @@ function requestFileUpload(message) {
       method: 'PUT',
       body: data
     });
+    // Remove the input element from the DOM. Removing this too early causes
+    // weird behavior in some browsers
+    input.remove();
   }
   // Listen for changes to the input
-  input.addEventListener('change', finish);
+  input.addEventListener('change', function () {
+    console.log('change');
+    finish();
+  });
   // Detect if the window gains focus. This means the file upload dialog was
   // closed without selecting a file
-  window.addEventListener('focus', finish, {
+  window.addEventListener('focus', function () {
+    this.window.setTimeout(finish, 1000);
+  }, {
     once: true
   });
   // Add the input element to the DOM
@@ -1323,6 +1331,7 @@ function sendMessageOverWebsocket(message) {
     console.log("Attempted to send message, but the websocket is not connected: ".concat(message));
     return;
   }
+  console.log('Sending message: ', message);
   socket.send(JSON.stringify(message));
 }
 exports.sendMessageOverWebsocket = sendMessageOverWebsocket;

@@ -253,6 +253,8 @@ class AppServer(fastapi.FastAPI):
         # Lists are mutable, make sure not to modify this value!
         file_streams: List[fastapi.UploadFile] = [],
     ):
+        print("APP SERVER", file_names, file_types, file_sizes, file_streams)
+
         # Try to find the future for this token
         try:
             future = self._pending_file_uploads.pop(upload_token)
