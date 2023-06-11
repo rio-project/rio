@@ -803,6 +803,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.SwitchWidget = void 0;
+var app_1 = require("./app");
 var widgetBase_1 = require("./widgetBase");
 var SwitchWidget = /** @class */function (_super) {
   __extends(SwitchWidget, _super);
@@ -813,23 +814,48 @@ var SwitchWidget = /** @class */function (_super) {
     var _this = this;
     var element = document.createElement('div');
     element.classList.add('reflex-switch');
-    element.addEventListener('click', function () {
+    var containerElement = document.createElement('div');
+    containerElement.classList.add('container');
+    element.appendChild(containerElement);
+    var checkboxElement = document.createElement('input');
+    checkboxElement.type = 'checkbox';
+    containerElement.appendChild(checkboxElement);
+    var knobElement = document.createElement('div');
+    knobElement.classList.add('knob');
+    containerElement.appendChild(knobElement);
+    checkboxElement.addEventListener('change', function () {
       _this.setStateAndNotifyBackend({
-        is_on: element.textContent !== 'true'
+        is_on: checkboxElement.checked
       });
     });
     return element;
   };
   SwitchWidget.prototype.updateElement = function (element, deltaState) {
     if (deltaState.is_on !== undefined) {
-      element.textContent = deltaState.is_on.toString();
-      element.style.backgroundColor = deltaState.is_on ? 'green' : 'red';
+      if (deltaState.is_on) {
+        element.classList.add('is-on');
+      } else {
+        element.classList.remove('is-on');
+      }
+      element.querySelector('input').checked = deltaState.is_on;
+    }
+    if (deltaState.knobColorOff !== undefined) {
+      element.style.setProperty('--switch-knob-color-off', (0, app_1.colorToCss)(deltaState.knobColorOff));
+    }
+    if (deltaState.knobColorOn !== undefined) {
+      element.style.setProperty('--switch-knob-color-on', (0, app_1.colorToCss)(deltaState.knobColorOn));
+    }
+    if (deltaState.backgroundColorOff !== undefined) {
+      element.style.setProperty('--switch-background-color-off', (0, app_1.colorToCss)(deltaState.backgroundColorOff));
+    }
+    if (deltaState.backgroundColorOn !== undefined) {
+      element.style.setProperty('--switch-background-color-on', (0, app_1.colorToCss)(deltaState.backgroundColorOn));
     }
   };
   return SwitchWidget;
 }(widgetBase_1.WidgetBase);
 exports.SwitchWidget = SwitchWidget;
-},{"./widgetBase":"DUgK"}],"grfb":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"grfb":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -1272,14 +1298,13 @@ function requestFileUpload(message) {
     input.remove();
   }
   // Listen for changes to the input
-  input.addEventListener('change', function () {
-    console.log('change');
-    finish();
-  });
+  input.addEventListener('change', finish);
   // Detect if the window gains focus. This means the file upload dialog was
   // closed without selecting a file
   window.addEventListener('focus', function () {
-    this.window.setTimeout(finish, 1000);
+    // In some browsers `focus` fires before `change`. Give `change`
+    // time to run first.
+    this.window.setTimeout(finish, 500);
   }, {
     once: true
   });
