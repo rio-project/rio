@@ -232,7 +232,7 @@ class StateProperty:
         return f"<{type(self).__name__} {self.name}>"
 
 
-@dataclass_transform()
+@dataclass_transform(eq_default=False)
 @dataclass(eq=False, repr=False)
 class Widget(ABC):
     _: KW_ONLY
