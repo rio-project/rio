@@ -837,7 +837,13 @@ var SwitchWidget = /** @class */function (_super) {
       } else {
         element.classList.remove('is-on');
       }
-      element.querySelector('input').checked = deltaState.is_on;
+      // Assign the new value to the checkbox element, but only if it
+      // differs from the current value, to avoid immediately triggering
+      // the event again.
+      var checkboxElement = element.querySelector('input');
+      if ((checkboxElement === null || checkboxElement === void 0 ? void 0 : checkboxElement.checked) !== deltaState.is_on) {
+        checkboxElement.checked = deltaState.is_on;
+      }
     }
     if (deltaState.knobColorOff !== undefined) {
       element.style.setProperty('--switch-knob-color-off', (0, app_1.colorToCss)(deltaState.knobColorOff));

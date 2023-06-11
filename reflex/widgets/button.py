@@ -252,7 +252,7 @@ class Button(widget_base.Widget):
                 style=style,
                 hover_style=hover_style,
                 transition_time=theme.TRANSITION_FAST,
-                cursor=common.CursorStyle.POINTER,
+                cursor=common.CursorStyle.POINTER if self.is_sensitive else common.CursorStyle.DEFAULT,
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

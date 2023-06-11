@@ -575,7 +575,9 @@ class Session:
     def _reconcile_tree(self, old_build_data: WidgetData, new_build: rx.Widget) -> None:
         # Find all pairs of widgets which should be reconciled
         matched_pairs = list(
-            self._find_widgets_for_reconciliation(old_build_data.build_result, new_build)
+            self._find_widgets_for_reconciliation(
+                old_build_data.build_result, new_build
+            )
         )
 
         # Reconciliating individual widgets requires knowledge of which other
@@ -684,8 +686,8 @@ class Session:
                 continue
 
             # Take care to keep state bindings up to date
-            old_value = getattr(old_widget, prop.name)
-            new_value = getattr(new_widget, prop.name)
+            old_value = old_widget_dict[prop.name]
+            new_value = new_widget_dict[prop.name]
             old_is_binding = isinstance(old_value, widget_base.StateBinding)
             new_is_binding = isinstance(new_value, widget_base.StateBinding)
 
@@ -703,12 +705,16 @@ class Session:
             # If both values are bindings transfer the children to the new
             # binding
             elif old_is_binding and new_is_binding:
+                new_value.owning_widget_weak = old_value.owning_widget_weak
                 new_value.children = old_value.children
 
                 for child in old_value.children:
                     child.parent = new_value
 
-            overridden_values[prop.name] = new_widget_dict[prop.name]
+                # Save the binding's value in case this is the root binding
+                new_value.value = old_value.value
+
+            overridden_values[prop.name] = new_value
 
         # If the widget has changed mark it as dirty
         def values_equal(old: object, new: object) -> bool:
@@ -947,7 +953,7 @@ class Session:
         # Wait for the user to upload files
         files = await future
 
-        print('FILES: ', files)
+        print("FILES: ", files)
 
         # Raise an exception if no files were uploaded
         if not files:
