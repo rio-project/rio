@@ -11,6 +11,7 @@ import { PlaceholderWidget } from './placeholder';
 import { SwitchWidget } from './switch';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { ProgressCircleWidget } from './progressCircle';
+import { PlotWidget } from './plot';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
@@ -77,6 +78,7 @@ const widgetClasses = {
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
+    'Plot-builtin': PlotWidget,
     'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
     'Row-builtin': RowWidget,

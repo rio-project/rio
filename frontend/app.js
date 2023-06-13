@@ -921,7 +921,52 @@ var ProgressCircleWidget = /** @class */function (_super) {
   return ProgressCircleWidget;
 }(widgetBase_1.WidgetBase);
 exports.ProgressCircleWidget = ProgressCircleWidget;
-},{"./app":"EVxB","./widgetBase":"DUgK"}],"EVxB":[function(require,module,exports) {
+},{"./app":"EVxB","./widgetBase":"DUgK"}],"NWKb":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PlotWidget = void 0;
+var widgetBase_1 = require("./widgetBase");
+var PlotWidget = /** @class */function (_super) {
+  __extends(PlotWidget, _super);
+  function PlotWidget() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  PlotWidget.prototype.createElement = function () {
+    var element = document.createElement('div');
+    return element;
+  };
+  PlotWidget.prototype.updateElement = function (element, deltaState) {
+    if (deltaState.htmlSource !== undefined) {
+      element.innerHTML = deltaState.htmlSource;
+    }
+  };
+  return PlotWidget;
+}(widgetBase_1.WidgetBase);
+exports.PlotWidget = PlotWidget;
+},{"./widgetBase":"DUgK"}],"EVxB":[function(require,module,exports) {
 "use strict";
 
 var __assign = this && this.__assign || function () {
@@ -949,6 +994,7 @@ var textInput_1 = require("./textInput");
 var placeholder_1 = require("./placeholder");
 var switch_1 = require("./switch");
 var progressCircle_1 = require("./progressCircle");
+var plot_1 = require("./plot");
 var sessionToken = '{session_token}';
 var initialMessages = '{initial_messages}';
 var socket = null;
@@ -1006,6 +1052,7 @@ var widgetClasses = {
   'Column-builtin': column_1.ColumnWidget,
   'Dropdown-builtin': dropdown_1.DropdownWidget,
   'MouseEventListener-builtin': mouseEventListener_1.MouseEventListenerWidget,
+  'Plot-builtin': plot_1.PlotWidget,
   'ProgressCircle-builtin': progressCircle_1.ProgressCircleWidget,
   'Rectangle-builtin': rectangle_1.RectangleWidget,
   'Row-builtin': row_1.RowWidget,
@@ -1367,5 +1414,5 @@ function sendMessageOverWebsocket(message) {
 }
 exports.sendMessageOverWebsocket = sendMessageOverWebsocket;
 main();
-},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./mouseEventListener":"K1Om","./textInput":"g2Fb","./placeholder":"When","./switch":"RrmF","./progressCircle":"grfb"}]},{},["EVxB"], null)
+},{"./text":"EmPY","./row":"DCF0","./column":"FDPZ","./dropdown":"aj59","./rectangle":"u1gD","./stack":"E2Q9","./mouseEventListener":"K1Om","./textInput":"g2Fb","./placeholder":"When","./switch":"RrmF","./progressCircle":"grfb","./plot":"NWKb"}]},{},["EVxB"], null)
 //# sourceMappingURL=/app.js.map

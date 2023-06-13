@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import asyncio
+import plotly
 import io
 import reflex as rx
 import json
@@ -67,10 +68,10 @@ class AppServer(fastapi.FastAPI):
         # weakly, meaning the session will host assets for as long as their
         # corresponding Python objects are alive.
         #
-        # Assets registered here are hosted under `/assets/temp-{asset_id}`. In
+        # Assets registered here are hosted under `/asset/temp-{asset_id}`. In
         # addition the server also hosts other assets (such as javascript
         # dependencies) which are available under public URLS at
-        # `/assets/{some-name}`.
+        # `/asset/{some-name}`.
         self._assets: weakref.WeakValueDictionary[
             str, assets.HostedAsset
         ] = weakref.WeakValueDictionary()
@@ -206,6 +207,18 @@ class AppServer(fastapi.FastAPI):
         by the session, meaning they will be served for as long as the
         corresponding Python object is alive.
         """
+
+        # Special case: plotly
+        #
+        # The python plotly library already includes a minified version of
+        # plotly.js. Rather than shipping another one, just serve the one
+        # included in the library.
+        if asset_id == "plotly.min.js":
+            return fastapi.responses.Response(
+                content=plotly.offline.get_plotlyjs(),
+                media_type="text/javascript",
+            )
+
         # Well known asset?
         if not asset_id.startswith("temp-"):
             # TODO: Is this safe? Would this allow the client to break out

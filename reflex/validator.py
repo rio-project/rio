@@ -30,6 +30,7 @@ _CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "Switch-builtin": set(),
     "Text-builtin": set(),
     "TextInput-builtin": set(),
+    "Plot-builtin": set(),
 }
 
 
