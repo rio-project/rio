@@ -224,7 +224,6 @@ class AppServer(fastapi.FastAPI):
             # TODO: Is this safe? Would this allow the client to break out
             # from the directory using names such as `../`?
             asset_file_path = common.HOSTED_ASSETS_DIR / asset_id
-            print(f"Asset: {asset_id}", asset_file_path)
 
             # TODO: Can this check be avoided?
             if asset_file_path.exists():
@@ -266,8 +265,6 @@ class AppServer(fastapi.FastAPI):
         # Lists are mutable, make sure not to modify this value!
         file_streams: List[fastapi.UploadFile] = [],
     ):
-        print("APP SERVER", file_names, file_types, file_sizes, file_streams)
-
         # Try to find the future for this token
         try:
             future = self._pending_file_uploads.pop(upload_token)

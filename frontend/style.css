@@ -3,6 +3,7 @@
     --color-light: #eeeeee;
     --color-font: #000000;
     --color-accent: #e80265;
+    --color-placeholder: #666666;
 
     --corner-radius: 0.4rem;
 
@@ -119,6 +120,10 @@ body {
 .reflex-text-input:focus {
     background-color: var(--color-light);
     border: 1.5px solid var(--color-accent);
+}
+
+::placeholder {
+    color: var(--color-placeholder);
 }
 
 /* Dropdown */

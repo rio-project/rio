@@ -57,8 +57,8 @@ class FileInfo:
     async def read_bytes(self) -> bytes:
         return self._contents
 
-    async def read_text(self) -> str:
-        return self._contents.decode("utf-8")
+    async def read_text(self, *, encoding: str = 'utf-8') -> str:
+        return self._contents.decode(encoding)
 
 
 T = TypeVar("T")
