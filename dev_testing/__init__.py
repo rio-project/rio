@@ -22,7 +22,7 @@ class WidgetShowcase(rx.Widget):
         fig = px.line(df, x="year", y="lifeExp", title="Life expectancy in Canada")
 
         fig.write_html(
-            reflex.common.PACKAGE_ROOT_DIR / "plot.html",
+            reflex.common.PACKAGE_ROOT_DIR.parent /'generated' / "plot.html",
             full_html=True,
             include_plotlyjs="cdn",
             default_width="100%",

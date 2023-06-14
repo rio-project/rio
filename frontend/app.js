@@ -949,6 +949,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PlotWidget = void 0;
 var widgetBase_1 = require("./widgetBase");
+function loadPlotly(callback) {
+  if (typeof Plotly === 'undefined') {
+    console.log('Fetching plotly.js');
+    var script = document.createElement('script');
+    script.src = '/reflex/asset/plotly.min.js';
+    script.onload = callback;
+    document.head.appendChild(script);
+  } else {
+    callback();
+  }
+}
 var PlotWidget = /** @class */function (_super) {
   __extends(PlotWidget, _super);
   function PlotWidget() {
@@ -956,11 +967,16 @@ var PlotWidget = /** @class */function (_super) {
   }
   PlotWidget.prototype.createElement = function () {
     var element = document.createElement('div');
+    element.style.display = 'inline-block';
     return element;
   };
   PlotWidget.prototype.updateElement = function (element, deltaState) {
-    if (deltaState.htmlSource !== undefined) {
-      element.innerHTML = deltaState.htmlSource;
+    if (deltaState.plotJson !== undefined) {
+      element.innerHTML = '';
+      loadPlotly(function () {
+        var plotJson = JSON.parse(deltaState.plotJson);
+        Plotly.newPlot(element, plotJson.data, plotJson.layout);
+      });
     }
   };
   return PlotWidget;
