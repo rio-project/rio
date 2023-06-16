@@ -271,31 +271,28 @@ class Widget(ABC):
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
-    _explicitly_set_properties_: Set[str] = dataclasses.field(init=False)
-
-    # Cache for the function's `__init__` parameters. This is used to determine
-    # which parameters were explicitly set in the constructor.
-    _init_signature_: ClassVar[introspection.Signature]
+    _explicitly_set_properties_: Set[str] = dataclasses.field(
+        init=False, default_factory=set
+    )
 
     # Cache for the set of all `StateProperty` instances in this class
     _state_properties_: ClassVar[Set["StateProperty"]]
 
-    def __new__(cls, *args, **kwargs) -> Self:
-        self = super().__new__(cls)
+    @staticmethod
+    def _determine_explicitly_set_properties(
+        original_init,
+        self: "Widget",
+        *args,
+        **kwargs,
+    ):
+        # Chain up to the original `__init__`
+        original_init(self, *args, **kwargs)
 
-        # Keep track of which properties were explicitly set in the constructor.
-        try:
-            bound_args = cls._init_signature_.bind(*args, **kwargs)
-        except TypeError as err:
-            raise TypeError(
-                f"{cls.__name__}.__init__ has received invalid arguments: {err}"
-            ) from None
+        # Determine which properties were explicitly set
+        bound_args = inspect.signature(original_init).bind(self, *args, **kwargs)
+        self._explicitly_set_properties_.update(bound_args.arguments)
 
-        self._explicitly_set_properties_ = set(bound_args.arguments)
-
-        return self
-
-    def _custom_init(self):
+    def _determine_margins(self):
         def elvis(*args):
             for arg in args:
                 if arg is not None:
@@ -316,6 +313,13 @@ class Widget(ABC):
         # Apply the dataclass transform
         dataclasses.dataclass(eq=False, repr=False)(cls)
 
+        # Keep track of which properties were explicitly set in the constructor.
+        introspection.wrap_method(
+            cls._determine_explicitly_set_properties,
+            cls,
+            "__init__",
+        )
+
         # Widgets need to run custom code in in `__init__`, but dataclass
         # constructors don't chain up. So if this class's `__init__` was created
         # by the `@dataclass` decorator, wrap it with a custom `__init__` that
@@ -324,21 +328,14 @@ class Widget(ABC):
             original_init = cls.__init__
 
             @functools.wraps(original_init)
-            def replacement_init(self, *args, **kwargs):
-                original_init(self, *args, **kwargs)
-                self._custom_init()
+            def replacement_init(self: "Widget", *args, **kwargs):
+                original_init(self, *args, **kwargs)  # type: ignore
+                self._determine_margins()
 
-            cls.__init__ = replacement_init
+            cls.__init__ = replacement_init  # type: ignore
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)
-
-        # Determine and cache the `__init__` signature
-        #
-        # Make sure to strip `self`
-        cls._init_signature_ = introspection.Signature.for_method(
-            cls, "__init__"
-        ).without_parameters(0)
 
     @classmethod
     def _initialize_state_properties(
