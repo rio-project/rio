@@ -166,10 +166,16 @@ var WidgetBase = /** @class */function () {
     });
   };
   WidgetBase.prototype._setStateDontNotifyBackend = function (deltaState) {
+    // Set the state
     this.state = __assign(__assign({}, this.state), deltaState);
+    // Trigger an update
+    // @ts-ignore
+    this.updateElement(this.element, deltaState);
   };
   WidgetBase.prototype.setStateAndNotifyBackend = function (deltaState) {
+    // Set the state. This also updates the widget
     this._setStateDontNotifyBackend(deltaState);
+    // Notify the backend
     (0, app_1.sendMessageOverWebsocket)({
       type: 'widgetStateUpdate',
       // Remove the leading `reflex-id-` from the element's ID
@@ -710,10 +716,23 @@ var TextInputWidget = /** @class */function (_super) {
     var _this = this;
     var element = document.createElement('input');
     element.classList.add('reflex-text-input');
-    element.addEventListener('input', function () {
+    // Detect value changes and send them to the backend
+    element.addEventListener('blur', function () {
       _this.setStateAndNotifyBackend({
         text: element.value
       });
+    });
+    // Detect the enter key and send it to the backend
+    //
+    // In addition to notifying the backend, also include the input's
+    // current value. This ensures any event handlers actually use the up-to
+    // date value.
+    element.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        _this.sendMessageToBackend({
+          text: element.value
+        });
+      }
     });
     return element;
   };

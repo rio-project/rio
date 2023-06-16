@@ -60,14 +60,22 @@ export abstract class WidgetBase {
     }
 
     _setStateDontNotifyBackend(deltaState: object) {
+        // Set the state
         this.state = {
             ...this.state,
             ...deltaState,
         };
+
+        // Trigger an update
+        // @ts-ignore
+        this.updateElement(this.element, deltaState);
     }
 
     setStateAndNotifyBackend(deltaState: object) {
+        // Set the state. This also updates the widget
         this._setStateDontNotifyBackend(deltaState);
+
+        // Notify the backend
         sendMessageOverWebsocket({
             type: 'widgetStateUpdate',
             // Remove the leading `reflex-id-` from the element's ID

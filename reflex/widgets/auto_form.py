@@ -77,10 +77,8 @@ class AutoFormBuilder:
         for field in self.fields:
             rows.append(
                 rx.Row(
-                    [
                         rx.Text(field.name),
                         self._build_input_field(field),
-                    ],
                     spacing=self.spacing,
                 )
             )

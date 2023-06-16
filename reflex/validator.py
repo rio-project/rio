@@ -362,12 +362,16 @@ class Validator:
             )
 
         # Make sure no invalid widget references are present
+        invalid_references = {}
         for widget in self.widgets_by_id.values():
             for child_id in widget.referenced_child_ids:
                 if child_id not in self.widgets_by_id:
-                    raise ValidationError(
-                        f"Widget with id `{widget.id}` references unknown widget with id `{child_id}`"
-                    )
+                    invalid_references.setdefault(widget.id, []).append(child_id)
+
+        if invalid_references:
+            raise ValidationError(
+                f"Invalid widget references detected: {invalid_references}"
+            )
 
         # Make sure all widgets in the session have had their session injected
         for widget in self.session.root_widget._iter_direct_and_indirect_children(

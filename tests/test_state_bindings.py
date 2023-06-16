@@ -1,4 +1,3 @@
-
 import reflex as rx
 
 
@@ -50,10 +49,8 @@ def test_binding_assignment_on_sibling(MockApp):
 
         def build(self):
             return rx.Column(
-                [
-                    rx.Text(Root.text),
-                    rx.Text(Root.text),
-                ]
+                rx.Text(Root.text),
+                rx.Text(Root.text),
             )
 
     root_widget = Root()

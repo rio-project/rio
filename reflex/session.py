@@ -734,7 +734,7 @@ class Session:
                 if len(old) != len(new):
                     return False
 
-                for old_item, new_item in zip(old, new):  # type: ignore
+                for old_item, new_item in zip(old, new):
                     if not values_equal(old_item, new_item):
                         return False
 
@@ -756,6 +756,22 @@ class Session:
                     old_widget,
                     include_fundamental_children_recursively=False,
                 )
+
+                # TODO / FIXME
+                #
+                # Overriding an attribute can cause the widget to contain
+                # widgets which have never had their builder or state properties
+                # injected. This code avoids this by marking their builder as
+                # dirty. This makes tons of widgets pass through building
+                # multiple times though, for no reason at all.
+                if isinstance(old_widget, rx.HtmlWidget):
+                    builder = old_widget._weak_builder_()
+                    assert builder is not None, old_widget
+                    self._register_dirty_widget(
+                        builder,
+                        include_fundamental_children_recursively=False,
+                    )
+
                 break
 
         # Override the key now. It should never be preserved, but doesn't make

@@ -284,7 +284,13 @@ class Widget(ABC):
         self = super().__new__(cls)
 
         # Keep track of which properties were explicitly set in the constructor.
-        bound_args = cls._init_signature_.bind(*args, **kwargs)
+        try:
+            bound_args = cls._init_signature_.bind(*args, **kwargs)
+        except TypeError as err:
+            raise TypeError(
+                f"{cls.__name__}.__init__ has received invalid arguments: {err}"
+            ) from None
+
         self._explicitly_set_properties_ = set(bound_args.arguments)
 
         return self

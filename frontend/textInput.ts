@@ -12,10 +12,24 @@ export class TextInputWidget extends WidgetBase {
         let element = document.createElement('input');
         element.classList.add('reflex-text-input');
 
-        element.addEventListener('input', () => {
+        // Detect value changes and send them to the backend
+        element.addEventListener('blur', () => {
             this.setStateAndNotifyBackend({
                 text: element.value,
             });
+        });
+
+        // Detect the enter key and send it to the backend
+        //
+        // In addition to notifying the backend, also include the input's
+        // current value. This ensures any event handlers actually use the up-to
+        // date value.
+        element.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                this.sendMessageToBackend({
+                    text: element.value,
+                });
+            }
         });
 
         return element;
