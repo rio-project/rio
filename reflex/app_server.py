@@ -32,7 +32,7 @@ def read_frontend_template(template_name: str) -> str:
     Read a text file from the frontend directory and return its content. The
     results are cached to avoid repeated disk access.
     """
-    return (common.FRONTEND_DIR / template_name).read_text()
+    return (common.GENREATED_DIR / template_name).read_text()
 
 
 class AppServer(fastapi.FastAPI):
