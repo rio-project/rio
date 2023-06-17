@@ -7,12 +7,16 @@ export type PlaceholderState = WidgetState & {
 };
 
 export class PlaceholderWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
+        element.classList.add('reflex-placeholder');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: PlaceholderState): void {
+    updateInnerElement(
+        element: HTMLElement,
+        deltaState: PlaceholderState
+    ): void {
         replaceOnlyChild(element, deltaState._child_);
     }
 }

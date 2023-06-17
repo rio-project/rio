@@ -8,13 +8,13 @@ export type RowState = WidgetState & {
 };
 
 export class RowWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-row');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: RowState): void {
+    updateInnerElement(element: HTMLElement, deltaState: RowState): void {
         replaceChildren(element, deltaState.children);
 
         if (deltaState.spacing !== undefined) {

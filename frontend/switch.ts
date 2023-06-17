@@ -11,7 +11,7 @@ export type SwitchState = WidgetState & {
 };
 
 export class SwitchWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-switch');
 
@@ -36,7 +36,7 @@ export class SwitchWidget extends WidgetBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SwitchState): void {
+    updateInnerElement(element: HTMLElement, deltaState: SwitchState): void {
         if (deltaState.is_on !== undefined) {
             if (deltaState.is_on) {
                 element.classList.add('is-on');

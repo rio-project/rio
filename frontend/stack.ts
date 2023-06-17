@@ -7,13 +7,13 @@ export type StackState = WidgetState & {
 };
 
 export class StackWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-stack');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: StackState): void {
+    updateInnerElement(element: HTMLElement, deltaState: StackState): void {
         if (deltaState.children !== undefined) {
             replaceChildren(element, deltaState.children);
 

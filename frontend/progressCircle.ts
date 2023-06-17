@@ -9,7 +9,7 @@ export type ProgressCircleState = WidgetState & {
 };
 
 export class ProgressCircleWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.innerHTML = `
             <svg viewBox="25 25 50 50">
@@ -21,7 +21,10 @@ export class ProgressCircleWidget extends WidgetBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ProgressCircleState): void {
+    updateInnerElement(
+        element: HTMLElement,
+        deltaState: ProgressCircleState
+    ): void {
         if (deltaState.color !== undefined) {
             element.style.stroke = colorToCss(deltaState.color);
         }

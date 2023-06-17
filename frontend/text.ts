@@ -9,34 +9,39 @@ export type TextState = WidgetState & {
 };
 
 export class TextWidget extends WidgetBase {
-    createElement(): HTMLElement {
-        let element = document.createElement('div');
-        element.classList.add('reflex-text');
-        return element;
+    createInnerElement(): HTMLElement {
+        let containerElement = document.createElement('div');
+        containerElement.classList.add('reflex-text');
+
+        let textElement = document.createElement('div');
+        containerElement.appendChild(textElement);
+        return containerElement;
     }
 
-    updateElement(element: HTMLElement, deltaState: TextState): void {
+    updateInnerElement(containerElement: HTMLElement, deltaState: TextState): void {
+        let textElement = containerElement.firstElementChild as HTMLElement;
+
         if (deltaState.text !== undefined) {
-            element.innerText = deltaState.text;
+            textElement.innerText = deltaState.text;
         }
 
         if (deltaState.multiline !== undefined) {
-            element.style.whiteSpace = deltaState.multiline
+            textElement.style.whiteSpace = deltaState.multiline
                 ? 'normal'
                 : 'nowrap';
         }
 
         if (deltaState.style !== undefined) {
             const style = deltaState.style;
-            element.style.fontFamily = style.fontName;
-            element.style.color = colorToCss(style.fontColor);
-            element.style.fontSize = style.fontSize + 'em';
-            element.style.fontStyle = style.italic ? 'italic' : 'normal';
-            element.style.fontWeight = style.fontWeight;
-            element.style.textDecoration = style.underlined
+            textElement.style.fontFamily = style.fontName;
+            textElement.style.color = colorToCss(style.fontColor);
+            textElement.style.fontSize = style.fontSize + 'em';
+            textElement.style.fontStyle = style.italic ? 'italic' : 'normal';
+            textElement.style.fontWeight = style.fontWeight;
+            textElement.style.textDecoration = style.underlined
                 ? 'underline'
                 : 'none';
-            element.style.textTransform = style.allCaps ? 'uppercase' : 'none';
+            textElement.style.textTransform = style.allCaps ? 'uppercase' : 'none';
         }
     }
 }

@@ -1,6 +1,6 @@
 cp frontend/index.html generated/index.html
 
-npx parcel build frontend/style.styl \
+npx parcel build frontend/style.scss \
     --log-level 1 \
     --out-dir generated \
     --out-file style.css \

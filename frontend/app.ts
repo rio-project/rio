@@ -19,7 +19,7 @@ const initialMessages = '{initial_messages}';
 let socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
 
-const elementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
+const outerElementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
 
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
@@ -121,10 +121,10 @@ function updateWidgetStates(
     for (let id in message) {
         let deltaState = message[id];
         let elementId = `reflex-id-${id}`;
-        let element = document.getElementById(elementId);
+        let outerElement = document.getElementById(elementId);
 
         // This is a reused element, nothing to do
-        if (element) {
+        if (outerElement) {
             continue;
         }
 
@@ -140,52 +140,78 @@ function updateWidgetStates(
         let instance: WidgetBase = new widgetClass(elementId, deltaState);
 
         // Build the widget
-        element = instance.createElement();
+        outerElement = document.createElement('div');
+
+        let innerElement = instance.createInnerElement();
+        outerElement.appendChild(innerElement);
 
         // Add a unique ID to the widget
-        element.id = elementId;
+        outerElement.id = elementId;
 
         // Add the common css class to the widget
-        element.classList.add('reflex-widget');
+        innerElement.classList.add('reflex-inner');
+        outerElement.classList.add('reflex-outer');
 
         // Store the widget's class name in the element. Used for debugging.
-        element.setAttribute('dbg-py-class', deltaState._python_type_);
+        outerElement.setAttribute('dbg-py-class', deltaState._python_type_);
 
         // Set the widget's key, if it has one. Used for debugging.
         let key = deltaState['key'];
         if (key !== undefined) {
-            element.setAttribute('dbg-key', `${key}`);
+            outerElement.setAttribute('dbg-key', `${key}`);
         }
 
         // Create a mapping from the element to the widget instance
-        elementsToInstances.set(element, instance);
+        outerElementsToInstances.set(outerElement, instance);
 
         // Keep the widget alive
-        latentWidgets.appendChild(element);
+        latentWidgets.appendChild(outerElement);
     }
 
     // Update all widgets mentioned in the message
+    let widgetsNeedingGrowUpdate = new Set<WidgetBase>();
+
     for (let id in message) {
         let deltaState = message[id];
-        let element = document.getElementById('reflex-id-' + id);
+        let outerElement = document.getElementById('reflex-id-' + id);
+        let innerElement = outerElement!.firstChild as HTMLElement;
 
-        if (!element) {
+        if (!outerElement) {
             throw `Failed to find widget with id ${id}, despite only just creating it!?`;
         }
 
         // Perform updates common to all widgets
-        commonUpdate(element!, deltaState);
+        commonUpdate(outerElement, innerElement, deltaState);
 
         // Perform updates specific to this widget type
-        let instance = elementsToInstances.get(element!) as WidgetBase;
-        instance.updateElement(element, deltaState);
+        let instance = outerElementsToInstances.get(
+            outerElement!
+        ) as WidgetBase;
+        instance.updateInnerElement(innerElement, deltaState);
 
         // Update the widget's state
         instance.state = {
             ...instance.state,
             ...deltaState,
         };
+
+        // Mark the widget and its children as needing a flex-grow update
+        widgetsNeedingGrowUpdate.add(instance);
+
+        for (let childElement of outerElement.childNodes) {
+            let childInstance = outerElementsToInstances.get(
+                childElement as any
+            );
+
+            if (childInstance !== undefined) {
+                widgetsNeedingGrowUpdate.add(childInstance);
+            }
+        }
     }
+
+    // Update each element's `flex-grow`. This can only be done after all
+    // widgets have their correct parent set.
+    widgetsNeedingGrowUpdate.forEach(updateFlexGrow);
 
     // Replace the root widget if requested
     if (rootWidgetId !== null) {
@@ -198,33 +224,37 @@ function updateWidgetStates(
     latentWidgets.remove();
 }
 
-function commonUpdate(element: HTMLElement, state: WidgetState) {
+function commonUpdate(
+    outerElement: HTMLElement,
+    innerElement: HTMLElement,
+    state: WidgetState
+) {
     // Margins
     if (state._margin_ !== undefined) {
         let [left, top, right, bottom] = state._margin_;
 
         if (left === 0) {
-            element.style.removeProperty('margin-left');
+            innerElement.style.removeProperty('margin-left');
         } else {
-            element.style.marginLeft = `${left}em`;
+            innerElement.style.marginLeft = `${left}em`;
         }
 
         if (top === 0) {
-            element.style.removeProperty('margin-top');
+            innerElement.style.removeProperty('margin-top');
         } else {
-            element.style.marginTop = `${top}em`;
+            innerElement.style.marginTop = `${top}em`;
         }
 
         if (right === 0) {
-            element.style.removeProperty('margin-right');
+            innerElement.style.removeProperty('margin-right');
         } else {
-            element.style.marginRight = `${right}em`;
+            innerElement.style.marginRight = `${right}em`;
         }
 
         if (bottom === 0) {
-            element.style.removeProperty('margin-bottom');
+            innerElement.style.removeProperty('margin-bottom');
         } else {
-            element.style.marginBottom = `${bottom}em`;
+            innerElement.style.marginBottom = `${bottom}em`;
         }
     }
 
@@ -234,26 +264,26 @@ function commonUpdate(element: HTMLElement, state: WidgetState) {
 
         let transform_x;
         if (align_x === null) {
-            element.style.removeProperty('left');
+            innerElement.style.removeProperty('left');
             transform_x = 0;
         } else {
-            element.style.left = `${align_x * 100}%`;
+            innerElement.style.left = `${align_x * 100}%`;
             transform_x = align_x * -100;
         }
 
         let transform_y;
         if (align_y === null) {
-            element.style.removeProperty('top');
+            innerElement.style.removeProperty('top');
             transform_y = 0;
         } else {
-            element.style.top = `${align_y * 100}%`;
+            innerElement.style.top = `${align_y * 100}%`;
             transform_y = align_y * -100;
         }
 
         if (transform_x === 0 && transform_y === 0) {
-            element.style.removeProperty('transform');
+            innerElement.style.removeProperty('transform');
         } else {
-            element.style.transform = `translate(${transform_x}%, ${transform_y}%)`;
+            innerElement.style.transform = `translate(${transform_x}%, ${transform_y}%)`;
         }
     }
 
@@ -276,23 +306,45 @@ function commonUpdate(element: HTMLElement, state: WidgetState) {
     let newMarginY = newMarginTop + newMarginBottom;
 
     if (newWidth !== null) {
-        element.style.width = `${newWidth}em`;
+        innerElement.style.width = `${newWidth}em`;
     } else if (newAlignX !== null) {
-        element.style.width = 'max-content';
+        innerElement.style.width = 'max-content';
     } else if (newMarginX !== 0) {
-        element.style.width = `calc(100% - ${newMarginX}em)`;
+        innerElement.style.width = `calc(100% - ${newMarginX}em)`;
     } else {
-        element.style.removeProperty('width');
+        innerElement.style.removeProperty('width');
     }
 
     if (newHeight != null) {
-        element.style.height = `${newHeight}em`;
+        innerElement.style.height = `${newHeight}em`;
     } else if (newAlignY !== null) {
-        element.style.height = 'max-content';
+        innerElement.style.height = 'max-content';
     } else if (newMarginY !== 0) {
-        element.style.height = `calc(100% - ${newMarginY}em)`;
+        innerElement.style.height = `calc(100% - ${newMarginY}em)`;
     } else {
-        element.style.removeProperty('height');
+        innerElement.style.removeProperty('height');
+    }
+}
+
+function updateFlexGrow(widget: WidgetBase) {
+    // Is the parent horizontally or vertically oriented?
+    let outerElement = widget.outerElement;
+    let parentFlexDirection = outerElement.parentElement!.style.flexDirection;
+    let isParentHorizontal = parentFlexDirection !== 'column';
+
+    // Get this widget's relevant property
+    let sizeIsOverridden;
+    if (isParentHorizontal) {
+        sizeIsOverridden = widget.state['_size_'][0] !== null;
+    } else {
+        sizeIsOverridden = widget.state['_size_'][1] !== null;
+    }
+
+    // If the size is overridden, don't grow
+    if (sizeIsOverridden) {
+        outerElement.style.flexGrow = '0';
+    } else {
+        outerElement.style.removeProperty('flex-grow');
     }
 }
 

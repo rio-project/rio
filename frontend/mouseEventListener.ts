@@ -25,13 +25,13 @@ export type MouseEventListenerState = WidgetState & {
 };
 
 export class MouseEventListenerWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-mouse-event-listener');
         return element;
     }
 
-    updateElement(
+    updateInnerElement(
         element: HTMLElement,
         deltaState: MouseEventListenerState
     ): void {

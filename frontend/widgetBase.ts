@@ -13,22 +13,26 @@ export type WidgetState = {
 
 /// Base class for all widgets
 export abstract class WidgetBase {
-    elementId: string;
+    outerElementId: string;
     state: object;
 
-    constructor(elementId: string, state: WidgetState) {
-        this.elementId = elementId;
+    constructor(outerElementId: string, state: WidgetState) {
+        this.outerElementId = outerElementId;
         this.state = state;
     }
 
     /// Fetches the HTML element associated with this widget. This is a slow
     /// operation and should be avoided if possible.
-    get element() {
-        let element = document.getElementById(this.elementId);
+    get innerElement() {
+        return this.outerElement.firstElementChild as HTMLElement;
+    }
+
+    get outerElement() {
+        let element = document.getElementById(this.outerElementId);
 
         if (element === null) {
             throw new Error(
-                `Instance for element with id ${this.elementId} cannot find its element`
+                `Instance for element with id ${this.outerElementId} cannot find its element`
             );
         }
 
@@ -37,7 +41,7 @@ export abstract class WidgetBase {
 
     /// Creates the HTML element associated with this widget. This function does
     /// not attach the element to the DOM, but merely returns it.
-    abstract createElement(): HTMLElement;
+    abstract createInnerElement(): HTMLElement;
 
     /// Given a partial state update, this function updates the widget's HTML
     /// element to reflect the new state.
@@ -45,7 +49,10 @@ export abstract class WidgetBase {
     /// The `element` parameter is identical to `this.element`. Calling that
     /// property is slow however, so it is passed as argument here, to avoid
     /// accidentally calling the property multiple times.
-    abstract updateElement(element: HTMLElement, deltaState: WidgetState): void;
+    abstract updateInnerElement(
+        element: HTMLElement,
+        deltaState: WidgetState
+    ): void;
 
     /// Send a message to the python instance corresponding to this widget. The
     /// message is an arbitrary JSON object and will be passed to the instance's
@@ -54,7 +61,7 @@ export abstract class WidgetBase {
         sendMessageOverWebsocket({
             type: 'widgetMessage',
             // Remove the leading `reflex-id-` from the element's ID
-            widgetId: parseInt(this.elementId.substring(10)),
+            widgetId: parseInt(this.outerElementId.substring(10)),
             payload: message,
         });
     }
@@ -68,7 +75,7 @@ export abstract class WidgetBase {
 
         // Trigger an update
         // @ts-ignore
-        this.updateElement(this.element, deltaState);
+        this.updateInnerElement(this.innerElement, deltaState);
     }
 
     setStateAndNotifyBackend(deltaState: object) {
@@ -79,7 +86,7 @@ export abstract class WidgetBase {
         sendMessageOverWebsocket({
             type: 'widgetStateUpdate',
             // Remove the leading `reflex-id-` from the element's ID
-            widgetId: parseInt(this.elementId.substring(10)),
+            widgetId: parseInt(this.outerElementId.substring(10)),
             deltaState: deltaState,
         });
     }

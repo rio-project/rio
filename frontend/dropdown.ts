@@ -7,7 +7,7 @@ export type DropdownState = WidgetState & {
 };
 
 export class DropdownWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('select');
         element.classList.add('reflex-dropdown');
 
@@ -20,7 +20,7 @@ export class DropdownWidget extends WidgetBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: DropdownState): void {
+    updateInnerElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
             element.innerHTML = '';
 

@@ -8,13 +8,13 @@ type ColumnState = WidgetState & {
 };
 
 export class ColumnWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-column');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ColumnState): void {
+    updateInnerElement(element: HTMLElement, deltaState: ColumnState): void {
         replaceChildren(element, deltaState.children);
 
         if (deltaState.spacing !== undefined) {

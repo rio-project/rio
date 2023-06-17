@@ -45,9 +45,9 @@ class ShowcaseCard(rx.Widget):
     def build(self) -> rx.Widget:
         return Card(
             rx.Column(
-                    rx.Text(self.title, multiline=True),
-                    rx.Text(self.description, multiline=True),
-                    self.child,
+                rx.Text(self.title, multiline=True),
+                rx.Text(self.description, multiline=True),
+                self.child,
             )
         )
 
@@ -56,24 +56,24 @@ class Sidebar(rx.Widget):
     def build(self) -> rx.Widget:
         return rx.Rectangle(
             child=rx.Column(
-                    rx.Text(
-                        "Reflex IO",
-                        style=rx.TextStyle(
-                            font_color=COLOR_ACCENT,
-                            font_size=3.0,
-                        ),
-                        margin_top=1.0,
+                rx.Text(
+                    "Reflex IO",
+                    style=rx.TextStyle(
+                        font_color=COLOR_ACCENT,
+                        font_size=3.0,
                     ),
-                    rx.Text(
-                        "The reactive UI library for Python",
-                        style=rx.TextStyle(font_color=COLOR_ACCENT),
-                        margin_x=0.6,
-                    ),
-                    rx.TextInput(
-                        placeholder="Search...",
-                        margin_x=1.0,
-                        margin_top=4.0,
-                    ),
+                    margin_top=1.0,
+                ),
+                rx.Text(
+                    "The reactive UI library for Python",
+                    style=rx.TextStyle(font_color=COLOR_ACCENT),
+                    margin_top=0.6,
+                ),
+                rx.TextInput(
+                    placeholder="Search...",
+                    margin_x=1.0,
+                    margin_top=4.0,
+                ),
                 align_y=0,
             ),
             style=rx.BoxStyle(
@@ -89,19 +89,22 @@ class WidgetShowcase(rx.Widget):
 
         return rx.Rectangle(
             child=rx.Row(
-                    Sidebar(width=40),
-                    ShowcaseCard(
-                        "Hello Worlds",
-                        "Much hello!",
-                        rx.Column(
-                                rx.Text("Hello World"),
-                                rx.Text("Hello World"),
-                                rx.Text("Hello World"),
-                                rx.Plot(figure=fig),
+                Sidebar(width=30),
+                ShowcaseCard(
+                    "Hello Worlds",
+                    "Much hello!",
+                    rx.Column(
+                        rx.Text("Hello World"),
+                        rx.Text("Hello World"),
+                        rx.Text("Hello World"),
+                        rx.Plot(
+                            figure=fig,
+                            height=30,
                         ),
-                        margin_x=4,
-                        align_y=0.2,
                     ),
+                    margin_x=4,
+                    align_y=0.2,
+                ),
             ),
             style=rx.BoxStyle(fill=COLOR_BG),
         )

@@ -67,13 +67,13 @@ function setBoxStyleVariables(
 }
 
 export class RectangleWidget extends WidgetBase {
-    createElement(): HTMLElement {
+    createInnerElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: RectangleState): void {
+    updateInnerElement(element: HTMLElement, deltaState: RectangleState): void {
         replaceOnlyChild(element, deltaState.child);
 
         setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
