@@ -9,6 +9,7 @@ export type WidgetState = {
     _margin_?: [number, number, number, number];
     _size_?: [number | null, number | null];
     _align_?: [number | null, number | null];
+    _grow_?: [boolean, boolean];
 };
 
 /// Base class for all widgets

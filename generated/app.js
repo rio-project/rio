@@ -1005,7 +1005,9 @@ var PlotWidget = /** @class */function (_super) {
       element.innerHTML = '';
       loadPlotly(function () {
         var plotJson = JSON.parse(deltaState.plotJson);
-        Plotly.newPlot(element, plotJson.data, plotJson.layout);
+        Plotly.newPlot(element, plotJson.data, plotJson.layout, {
+          responsive: true
+        });
       });
     }
   };
@@ -1281,22 +1283,22 @@ function commonUpdate(outerElement, innerElement, state) {
   var newMarginX = newMarginLeft + newMarginRight;
   var newMarginY = newMarginTop + newMarginBottom;
   if (newWidth !== null) {
-    innerElement.style.width = "".concat(newWidth, "em");
+    innerElement.style.minWidth = "".concat(newWidth, "em");
   } else if (newAlignX !== null) {
-    innerElement.style.width = 'max-content';
+    innerElement.style.minWidth = 'max-content';
   } else if (newMarginX !== 0) {
-    innerElement.style.width = "calc(100% - ".concat(newMarginX, "em)");
+    innerElement.style.minWidth = "calc(100% - ".concat(newMarginX, "em)");
   } else {
-    innerElement.style.removeProperty('width');
+    innerElement.style.removeProperty('min-width');
   }
   if (newHeight != null) {
-    innerElement.style.height = "".concat(newHeight, "em");
+    innerElement.style.minHeight = "".concat(newHeight, "em");
   } else if (newAlignY !== null) {
-    innerElement.style.height = 'max-content';
+    innerElement.style.minHeight = 'max-content';
   } else if (newMarginY !== 0) {
-    innerElement.style.height = "calc(100% - ".concat(newMarginY, "em)");
+    innerElement.style.minHeight = "calc(100% - ".concat(newMarginY, "em)");
   } else {
-    innerElement.style.removeProperty('height');
+    innerElement.style.removeProperty('min-height');
   }
 }
 function updateFlexGrow(widget) {
@@ -1305,17 +1307,17 @@ function updateFlexGrow(widget) {
   var parentFlexDirection = getComputedStyle(outerElement.parentElement).flexDirection;
   var isParentHorizontal = parentFlexDirection !== 'column';
   // Get this widget's relevant property
-  var sizeIsOverridden;
+  var grow;
   if (isParentHorizontal) {
-    sizeIsOverridden = widget.state['_size_'][0] !== null;
+    grow = widget.state['_grow_'][0];
   } else {
-    sizeIsOverridden = widget.state['_size_'][1] !== null;
+    grow = widget.state['_grow_'][1];
   }
   // If the size is overridden, don't grow
-  if (sizeIsOverridden) {
-    outerElement.style.flexGrow = '0';
-  } else {
+  if (grow) {
     outerElement.style.removeProperty('flex-grow');
+  } else {
+    outerElement.style.flexGrow = '0';
   }
 }
 function replaceOnlyChild(parentElement, childId) {

@@ -306,23 +306,23 @@ function commonUpdate(
     let newMarginY = newMarginTop + newMarginBottom;
 
     if (newWidth !== null) {
-        innerElement.style.width = `${newWidth}em`;
+        innerElement.style.minWidth = `${newWidth}em`;
     } else if (newAlignX !== null) {
-        innerElement.style.width = 'max-content';
+        innerElement.style.minWidth = 'max-content';
     } else if (newMarginX !== 0) {
-        innerElement.style.width = `calc(100% - ${newMarginX}em)`;
+        innerElement.style.minWidth = `calc(100% - ${newMarginX}em)`;
     } else {
-        innerElement.style.removeProperty('width');
+        innerElement.style.removeProperty('min-width');
     }
 
     if (newHeight != null) {
-        innerElement.style.height = `${newHeight}em`;
+        innerElement.style.minHeight = `${newHeight}em`;
     } else if (newAlignY !== null) {
-        innerElement.style.height = 'max-content';
+        innerElement.style.minHeight = 'max-content';
     } else if (newMarginY !== 0) {
-        innerElement.style.height = `calc(100% - ${newMarginY}em)`;
+        innerElement.style.minHeight = `calc(100% - ${newMarginY}em)`;
     } else {
-        innerElement.style.removeProperty('height');
+        innerElement.style.removeProperty('min-height');
     }
 }
 
@@ -335,18 +335,18 @@ function updateFlexGrow(widget: WidgetBase) {
     let isParentHorizontal = parentFlexDirection !== 'column';
 
     // Get this widget's relevant property
-    let sizeIsOverridden;
+    let grow;
     if (isParentHorizontal) {
-        sizeIsOverridden = widget.state['_size_'][0] !== null;
+        grow = widget.state['_grow_'][0];
     } else {
-        sizeIsOverridden = widget.state['_size_'][1] !== null;
+        grow = widget.state['_grow_'][1];
     }
 
     // If the size is overridden, don't grow
-    if (sizeIsOverridden) {
-        outerElement.style.flexGrow = '0';
-    } else {
+    if (grow) {
         outerElement.style.removeProperty('flex-grow');
+    } else {
+        outerElement.style.flexGrow = '0';
     }
 }
 

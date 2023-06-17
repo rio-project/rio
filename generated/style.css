@@ -29,8 +29,8 @@ body {
 .reflex-inner {
   position: relative;
   box-sizing: border-box;
-  width: 100%;
-  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .reflex-placeholder {
@@ -95,7 +95,7 @@ body {
 
 /* Text Input */
 .reflex-text-input {
-  height: 1.2rem;
+  min-height: 1.2rem;
   background-color: var(--color-dim);
   color: black;
   caret-color: var(--color-accent);
@@ -126,7 +126,7 @@ body {
 
 /* Dropdown */
 .reflex-dropdown {
-  height: 2rem;
+  min-height: 2rem;
   background-color: var(--color-dim);
   color: black;
   caret-color: var(--color-accent);

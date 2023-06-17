@@ -514,6 +514,10 @@ class Session:
             widget.align_x,
             widget.align_y,
         )
+        result["_grow_"] = (
+            widget.grow_x,
+            widget.grow_y,
+        )
 
         # Add user-defined state
         for name, type_ in typing.get_type_hints(type(widget)).items():
@@ -537,6 +541,8 @@ class Session:
                 "margin_y",
                 "margin",
                 "width",
+                "grow_x",
+                "grow_y",
             ):
                 continue
 

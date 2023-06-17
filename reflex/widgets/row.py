@@ -32,6 +32,8 @@ class Row(widget_base.HtmlWidget):
         height: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
+    grow_x: bool = True,
+    grow_y: bool = True,
     ):
         assert isinstance(children, tuple), children
         for child in children:
@@ -50,6 +52,8 @@ class Row(widget_base.HtmlWidget):
             height=height,
             align_x=align_x,
             align_y=align_y,
+            grow_x=grow_x,
+            grow_y=grow_y,
         )
 
         self.children = list(children)

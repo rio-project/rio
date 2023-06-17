@@ -29,7 +29,9 @@ export class PlotWidget extends WidgetBase {
             element.innerHTML = '';
             loadPlotly(() => {
                 let plotJson = JSON.parse(deltaState.plotJson);
-                Plotly.newPlot(element, plotJson.data, plotJson.layout);
+                Plotly.newPlot(element, plotJson.data, plotJson.layout, {
+                    responsive: true,
+                });
             });
         }
     }

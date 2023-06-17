@@ -30,7 +30,10 @@ class Card(rx.Widget):
 
     def build(self) -> rx.Widget:
         return rx.Rectangle(
-            child=self.child,
+            child=rx.Container(
+                self.child,
+                margin=1.0,
+            ),
             style=CARD_STYLE,
             hover_style=CARD_STYLE_HOVER,
             transition_time=0.2,
@@ -89,7 +92,10 @@ class WidgetShowcase(rx.Widget):
 
         return rx.Rectangle(
             child=rx.Row(
-                Sidebar(width=30),
+                Sidebar(
+                    width=30,
+                    grow_x=False,
+                ),
                 ShowcaseCard(
                     "Hello Worlds",
                     "Much hello!",
@@ -99,7 +105,7 @@ class WidgetShowcase(rx.Widget):
                         rx.Text("Hello World"),
                         rx.Plot(
                             figure=fig,
-                            height=30,
+                            height=20,
                         ),
                     ),
                     margin_x=4,

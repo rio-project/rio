@@ -35,6 +35,8 @@ class ProgressCircle(widget_base.HtmlWidget):
         margin_bottom: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
+    grow_x: bool = True,
+    grow_y: bool = True,
     ):
         super().__init__(
             key=key,
@@ -49,6 +51,8 @@ class ProgressCircle(widget_base.HtmlWidget):
             height=size,
             align_x=align_x,
             align_y=align_y,
+            grow_x=grow_x,
+            grow_y=grow_y,
         )
 
         self.color = color

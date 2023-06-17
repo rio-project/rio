@@ -253,6 +253,9 @@ class Widget(ABC):
     align_x: Optional[float] = None
     align_y: Optional[float] = None
 
+    grow_x: bool = True
+    grow_y: bool = True
+
     # Weak reference to the widget whose `build` method returned this widget.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
         # Dataclasses seem to unintentionally turn this function into a method.

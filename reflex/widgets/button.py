@@ -61,6 +61,8 @@ class Button(widget_base.Widget):
         height: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
+    grow_x: bool = True,
+    grow_y: bool = True,
     ):
         return cls(
             text,
@@ -111,6 +113,8 @@ class Button(widget_base.Widget):
             height=height,
             align_x=align_x,
             align_y=align_y,
+            grow_x=grow_x,
+            grow_y=grow_y,
         )
 
     @classmethod
@@ -134,6 +138,8 @@ class Button(widget_base.Widget):
         height: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
+    grow_x: bool = True,
+    grow_y: bool = True,
     ):
         base_style = rx.BoxStyle(
             fill=styling.Color.TRANSPARENT,
@@ -184,6 +190,8 @@ class Button(widget_base.Widget):
             height=height,
             align_x=align_x,
             align_y=align_y,
+            grow_x=grow_x,
+            grow_y=grow_y,
         )
 
     def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
