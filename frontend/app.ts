@@ -329,7 +329,9 @@ function commonUpdate(
 function updateFlexGrow(widget: WidgetBase) {
     // Is the parent horizontally or vertically oriented?
     let outerElement = widget.outerElement;
-    let parentFlexDirection = outerElement.parentElement!.style.flexDirection;
+    let parentFlexDirection = getComputedStyle(
+        outerElement.parentElement!
+    ).flexDirection;
     let isParentHorizontal = parentFlexDirection !== 'column';
 
     // Get this widget's relevant property

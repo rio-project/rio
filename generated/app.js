@@ -1302,7 +1302,7 @@ function commonUpdate(outerElement, innerElement, state) {
 function updateFlexGrow(widget) {
   // Is the parent horizontally or vertically oriented?
   var outerElement = widget.outerElement;
-  var parentFlexDirection = outerElement.parentElement.style.flexDirection;
+  var parentFlexDirection = getComputedStyle(outerElement.parentElement).flexDirection;
   var isParentHorizontal = parentFlexDirection !== 'column';
   // Get this widget's relevant property
   var sizeIsOverridden;

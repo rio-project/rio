@@ -43,6 +43,10 @@ body {
     @include container;
 }
 
+.reflex-mouse-event-listener {
+    @include container;
+}
+
 .reflex-column {
     @include container;
     flex-direction: column;

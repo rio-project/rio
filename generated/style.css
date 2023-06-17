@@ -38,6 +38,11 @@ body {
   align-items: stretch;
 }
 
+.reflex-mouse-event-listener {
+  display: flex;
+  align-items: stretch;
+}
+
 .reflex-column {
   display: flex;
   align-items: stretch;
