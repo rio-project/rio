@@ -1,0 +1,243 @@
+:root {
+  --color-dim: #dddddd;
+  --color-light: #eeeeee;
+  --color-font: #000000;
+  --color-accent: #e80265;
+  --color-placeholder: #666666;
+  --corner-radius: 0.4rem;
+  --transition-slow: 0.6s;
+  --transition-med: 0.2s;
+  --transition-fast: 0.1s;
+}
+
+body {
+  display: flex;
+  align-items: stretch;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  background-color: black;
+}
+
+.reflex-outer {
+  flex-grow: 1;
+}
+
+.reflex-inner {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+.reflex-placeholder {
+  display: flex;
+  align-items: stretch;
+}
+
+.reflex-column {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.reflex-row {
+  display: flex;
+  align-items: stretch;
+  flex-direction: row;
+}
+
+.reflex-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reflex-rectangle {
+  display: flex;
+  align-items: stretch;
+  border-style: solid;
+  transition-timing-function: ease; /* The transition time is set via JS */
+  /*
+  The following attributes are controlled via variables, to allow JavaScript
+  to change them, even on pseudo-classes.
+  */
+  background: var(--rectangle-background);
+  border-color: var(--rectangle-stroke-color);
+  border-width: var(--rectangle-stroke-width);
+  border-radius: var(--rectangle-corner-radius-top-left) var(--rectangle-corner-radius-top-right) var(--rectangle-corner-radius-bottom-right) var(--rectangle-corner-radius-bottom-left);
+  box-shadow: var(--rectangle-shadow-offset-x) var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius) var(--rectangle-shadow-color);
+}
+
+.reflex-rectangle-hover:hover {
+  background: var(--rectangle-background-hover);
+  border-color: var(--rectangle-stroke-color-hover);
+  border-width: var(--rectangle-stroke-width-hover);
+  border-radius: var(--rectangle-corner-radius-top-left-hover) var(--rectangle-corner-radius-top-right-hover) var(--rectangle-corner-radius-bottom-right-hover) var(--rectangle-corner-radius-bottom-left-hover);
+  box-shadow: var(--rectangle-shadow-offset-x-hover) var(--rectangle-shadow-offset-y-hover) var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
+}
+
+.reflex-stack > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Text Input */
+.reflex-text-input {
+  height: 1.2rem;
+  background-color: var(--color-dim);
+  color: black;
+  caret-color: var(--color-accent);
+  border-radius: var(--corner-radius);
+  border: 1.5px solid transparent;
+  padding: 0.7rem 0.5rem;
+  text-align: center;
+  outline: none;
+  transition: background-color var(--transition-slow) ease-in-out;
+  -moz-transition: background-color var(--transition-slow) ease-in-out;
+  transition: border var(--transition-fast) ease-in-out;
+  -moz-transition: border var(--transition-fast) ease-in-out;
+}
+
+.reflex-text-input:hover {
+  background-color: var(--color-light);
+  border: 1.5px solid var(--color-accent);
+}
+
+.reflex-text-input:focus {
+  background-color: var(--color-light);
+  border: 1.5px solid var(--color-accent);
+}
+
+::placeholder {
+  color: var(--color-placeholder);
+}
+
+/* Dropdown */
+.reflex-dropdown {
+  height: 2rem;
+  background-color: var(--color-dim);
+  color: black;
+  caret-color: var(--color-accent);
+  border-radius: var(--corner-radius);
+  border: 1.5px solid transparent;
+  padding: 0.3rem 0.5rem;
+  text-align: center;
+  outline: none;
+}
+
+.reflex-dropdown:hover {
+  background-color: var(--color-light);
+  border: 1.5px solid var(--color-accent);
+}
+
+/* Loading Circle */
+.reflex-progress-circle circle {
+  fill: none;
+  stroke-width: 3.5;
+}
+
+.spinning svg {
+  transform-origin: center;
+  animation: rotate 2s linear infinite;
+}
+
+.spinning .progress {
+  stroke-dasharray: 1, 200;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+.spinning .background {
+  stroke: none;
+}
+
+.reflex-progress-circle:not(.spinning) .progress {
+  stroke-dashoffset: -94.25;
+  stroke-dasharray: var(--dasharray);
+  transition: stroke-dasharray 0.5s ease;
+}
+
+.reflex-progress-circle:not(.spinning) .background {
+  stroke: var(--background-color);
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dashoffset: -125px;
+  }
+}
+.reflex-switch .container {
+  position: relative;
+  width: 3.182em;
+  height: 1.548em;
+  margin: auto;
+  border-radius: 4.3em;
+  background-color: var(--switch-background-color-off);
+  transition: 0.3s ease all;
+  z-index: 1;
+}
+
+.reflex-switch.is-on .container {
+  background-color: var(--switch-background-color-on);
+}
+
+.reflex-switch input {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.reflex-switch .knob {
+  z-index: 2;
+  position: absolute;
+  top: 0.172em;
+  left: 0.172em;
+  width: 0.86em;
+  height: 0.43em;
+  padding: 0.387em 0.172em;
+  background-color: var(--switch-knob-color-off);
+  border-radius: 50%;
+  transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+}
+
+.reflex-switch input:active + .knob {
+  width: 1.978em;
+  border-radius: 4.3em;
+}
+
+.reflex-switch.is-on input:active + .knob {
+  margin-left: -1.118em;
+}
+
+.reflex-switch.is-on input + .knob {
+  left: 1.806em;
+  background-color: var(--switch-knob-color-on);
+}
+
+/*# sourceMappingURL=/style.css.map */
