@@ -96,7 +96,7 @@ export class MouseEventListenerWidget extends WidgetBase {
     }
 
     updateChildLayouts(): void {
-        getInstanceByWidgetId(this.state['_child_']).replaceLayoutCssProperties(
+        getInstanceByWidgetId(this.state['child']).replaceLayoutCssProperties(
             {}
         );
     }

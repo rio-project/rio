@@ -253,8 +253,8 @@ class Widget(ABC):
     align_x: Optional[float] = None
     align_y: Optional[float] = None
 
-    grow_x: bool = True
-    grow_y: bool = True
+    grow_x: bool = False
+    grow_y: bool = False
 
     # Weak reference to the widget whose `build` method returned this widget.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(

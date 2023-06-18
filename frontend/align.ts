@@ -28,16 +28,20 @@ export class AlignWidget extends WidgetBase {
 
         let transform_x;
         if (align_x === null) {
+            cssProperties['width'] = '100%';
             transform_x = 0;
         } else {
+            cssProperties['width'] = 'max-content';
             cssProperties['left'] = `${align_x * 100}%`;
             transform_x = align_x * -100;
         }
 
         let transform_y;
         if (align_y === null) {
+            cssProperties['height'] = '100%';
             transform_y = 0;
         } else {
+            cssProperties['height'] = 'max-content';
             cssProperties['top'] = `${align_y * 100}%`;
             transform_y = align_y * -100;
         }

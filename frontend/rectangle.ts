@@ -110,7 +110,7 @@ export class RectangleWidget extends WidgetBase {
     }
 
     updateChildLayouts(): void {
-        let child = this.state['_child_'];
+        let child = this.state['child'];
 
         if (child !== undefined && child !== null) {
             getInstanceByWidgetId(child).replaceLayoutCssProperties({});

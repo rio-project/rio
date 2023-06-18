@@ -61,8 +61,8 @@ class Button(widget_base.Widget):
         height: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
-    grow_x: bool = True,
-    grow_y: bool = True,
+        grow_x: bool = False,
+        grow_y: bool = False,
     ):
         return cls(
             text,
@@ -138,8 +138,8 @@ class Button(widget_base.Widget):
         height: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
-    grow_x: bool = True,
-    grow_y: bool = True,
+        grow_x: bool = False,
+        grow_y: bool = False,
     ):
         base_style = rx.BoxStyle(
             fill=styling.Color.TRANSPARENT,
@@ -260,7 +260,9 @@ class Button(widget_base.Widget):
                 style=style,
                 hover_style=hover_style,
                 transition_time=theme.TRANSITION_FAST,
-                cursor=common.CursorStyle.POINTER if self.is_sensitive else common.CursorStyle.DEFAULT,
+                cursor=common.CursorStyle.POINTER
+                if self.is_sensitive
+                else common.CursorStyle.DEFAULT,
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

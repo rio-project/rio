@@ -587,7 +587,7 @@ var RectangleWidget = /** @class */function (_super) {
     }
   };
   RectangleWidget.prototype.updateChildLayouts = function () {
-    var child = this.state['_child_'];
+    var child = this.state['child'];
     if (child !== undefined && child !== null) {
       (0, app_1.getInstanceByWidgetId)(child).replaceLayoutCssProperties({});
     }
@@ -758,7 +758,7 @@ var MouseEventListenerWidget = /** @class */function (_super) {
     }
   };
   MouseEventListenerWidget.prototype.updateChildLayouts = function () {
-    (0, app_1.getInstanceByWidgetId)(this.state['_child_']).replaceLayoutCssProperties({});
+    (0, app_1.getInstanceByWidgetId)(this.state['child']).replaceLayoutCssProperties({});
   };
   return MouseEventListenerWidget;
 }(widgetBase_1.WidgetBase);
@@ -1140,15 +1140,19 @@ var AlignWidget = /** @class */function (_super) {
     var cssProperties = {};
     var transform_x;
     if (align_x === null) {
+      cssProperties['width'] = '100%';
       transform_x = 0;
     } else {
+      cssProperties['width'] = 'max-content';
       cssProperties['left'] = "".concat(align_x * 100, "%");
       transform_x = align_x * -100;
     }
     var transform_y;
     if (align_y === null) {
+      cssProperties['height'] = '100%';
       transform_y = 0;
     } else {
+      cssProperties['height'] = 'max-content';
       cssProperties['top'] = "".concat(align_y * 100, "%");
       transform_y = align_y * -100;
     }
@@ -1417,18 +1421,19 @@ function injectLayoutWidgetsInplace(message) {
   var newWidgets = {};
   for (var parentId in message) {
     // Get the up to date state for this widget
-    var parentState = getCurrentWidgetState(parentId, message[parentId]);
+    var deltaState = message[parentId];
+    var parentState = getCurrentWidgetState(parentId, deltaState);
     // Iterate over the widget's children
     var propertyNamesWithChildren = CHILD_ATTRIBUTE_NAMES[parentState['_type_']] || [];
     for (var _i = 0, propertyNamesWithChildren_1 = propertyNamesWithChildren; _i < propertyNamesWithChildren_1.length; _i++) {
       var propertyName = propertyNamesWithChildren_1[_i];
       var propertyValue = parentState[propertyName];
       if (Array.isArray(propertyValue)) {
-        parentState[propertyName] = propertyValue.map(function (childId) {
+        deltaState[propertyName] = propertyValue.map(function (childId) {
           return injectSingleWidget(childId, message[childId] || {}, newWidgets);
         });
-      } else {
-        parentState[propertyName] = injectSingleWidget(propertyValue, message[propertyValue] || {}, newWidgets);
+      } else if (propertyValue !== null) {
+        deltaState[propertyName] = injectSingleWidget(propertyValue, message[propertyValue] || {}, newWidgets);
       }
     }
   }

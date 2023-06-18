@@ -135,6 +135,11 @@ body {
 }
 
 /* Loading Circle */
+.reflex-progress-circle {
+  width: 0;
+  height: 0;
+}
+
 .reflex-progress-circle circle {
   fill: none;
   stroke-width: 3.5;

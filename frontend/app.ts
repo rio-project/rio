@@ -213,7 +213,8 @@ function injectLayoutWidgetsInplace(message: {
 
     for (let parentId in message) {
         // Get the up to date state for this widget
-        let parentState = getCurrentWidgetState(parentId, message[parentId]);
+        let deltaState = message[parentId];
+        let parentState = getCurrentWidgetState(parentId, deltaState);
 
         // Iterate over the widget's children
         let propertyNamesWithChildren =
@@ -223,15 +224,15 @@ function injectLayoutWidgetsInplace(message: {
             let propertyValue = parentState[propertyName];
 
             if (Array.isArray(propertyValue)) {
-                parentState[propertyName] = propertyValue.map((childId) => {
+                deltaState[propertyName] = propertyValue.map((childId) => {
                     return injectSingleWidget(
                         childId,
                         message[childId] || {},
                         newWidgets
                     );
                 });
-            } else {
-                parentState[propertyName] = injectSingleWidget(
+            } else if (propertyValue !== null) {
+                deltaState[propertyName] = injectSingleWidget(
                     propertyValue,
                     message[propertyValue] || {},
                     newWidgets
