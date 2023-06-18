@@ -12,13 +12,12 @@
     --transition-fast: 0.1s;
 }
 
-@mixin container {
-    display: flex;
-    align-items: stretch;
+.reflex-single-container > * {
+    width: 100%;
+    height: 100%;
 }
 
 body {
-    @include container;
     width: 100vw;
     height: 100vh;
     margin: 0;
@@ -28,33 +27,28 @@ body {
     background-color: black;
 }
 
-.reflex-outer {
-    flex-grow: 1;
-}
-
-.reflex-inner {
-    position: relative;
+.reflex-widget {
     box-sizing: border-box;
-    min-width: 100%;
-    min-height: 100%;
 }
 
-.reflex-placeholder {
-    @include container;
+.reflex-align > * {
+    position: relative;
 }
 
-.reflex-mouse-event-listener {
-    @include container;
+.reflex-margin > * {
+    position: relative;
 }
 
 .reflex-column {
-    @include container;
+    display: flex;
     flex-direction: column;
+    align-items: stretch;
 }
 
 .reflex-row {
-    @include container;
+    display: flex;
     flex-direction: row;
+    align-items: stretch;
 }
 
 .reflex-text {
@@ -64,8 +58,6 @@ body {
 }
 
 .reflex-rectangle {
-    @include container;
-
     border-style: solid;
 
     transition-timing-function: ease; /* The transition time is set via JS */
@@ -97,9 +89,6 @@ body {
     box-shadow: var(--rectangle-shadow-offset-x-hover)
         var(--rectangle-shadow-offset-y-hover)
         var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
-}
-
-.reflex-stack {
 }
 
 .reflex-stack > * {

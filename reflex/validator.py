@@ -34,6 +34,8 @@ _CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
 }
 
 
+
+
 @dataclass
 class ClientWidget:
     id: int

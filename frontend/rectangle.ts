@@ -1,11 +1,16 @@
-import { colorToCss, fillToCss, replaceOnlyChild } from './app';
+import {
+    colorToCss,
+    fillToCss,
+    getInstanceByWidgetId,
+    replaceOnlyChild,
+} from './app';
 import { BoxStyle } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type RectangleState = WidgetState & {
-    _type_: 'rectangle';
+    _type_: 'Rectangle-builtin';
     style?: BoxStyle;
-    child?: number;
+    child?: null | number | string;
     hover_style?: BoxStyle | null;
     transition_time?: number;
     cursor?: string;
@@ -67,13 +72,14 @@ function setBoxStyleVariables(
 }
 
 export class RectangleWidget extends WidgetBase {
-    createInnerElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');
+        element.classList.add('reflex-single-container');
         return element;
     }
 
-    updateInnerElement(element: HTMLElement, deltaState: RectangleState): void {
+    updateElement(element: HTMLElement, deltaState: RectangleState): void {
         replaceOnlyChild(element, deltaState.child);
 
         setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
@@ -100,6 +106,14 @@ export class RectangleWidget extends WidgetBase {
             } else {
                 element.style.cursor = deltaState.cursor;
             }
+        }
+    }
+
+    updateChildLayouts(): void {
+        let child = this.state['_child_'];
+
+        if (child !== undefined && child !== null) {
+            getInstanceByWidgetId(child).replaceLayoutCssProperties({});
         }
     }
 }

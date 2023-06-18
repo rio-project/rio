@@ -84,7 +84,8 @@ class AppServer(fastapi.FastAPI):
 
         # Fastapi
         self.add_api_route("/", self._serve_index, methods=["GET"])
-        self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
+        # self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
+        self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
         self.add_api_route("/reflex/favicon.ico", self._serve_favicon, methods=["GET"])
         self.add_api_route(
             "/reflex/asset/{asset_id}", self._serve_asset, methods=["GET"]
@@ -159,6 +160,15 @@ class AppServer(fastapi.FastAPI):
         """
         return fastapi.responses.Response(
             content=read_frontend_template("app.js.map"),
+            media_type="application/json",
+        )
+
+    async def _serve_css_map(self) -> fastapi.responses.Response:
+        """
+        Handler for serving the `style.css.map` file via fastapi.
+        """
+        return fastapi.responses.Response(
+            content=read_frontend_template("style.css.map"),
             media_type="application/json",
         )
 

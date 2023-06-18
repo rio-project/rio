@@ -12,6 +12,8 @@ import { SwitchWidget } from './switch';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { ProgressCircleWidget } from './progressCircle';
 import { PlotWidget } from './plot';
+import { AlignWidget } from './align';
+import { MarginWidget } from './margin';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
@@ -19,7 +21,7 @@ const initialMessages = '{initial_messages}';
 let socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
 
-const outerElementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
+const elementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
 
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
@@ -74,9 +76,33 @@ export function fillToCss(fill: Fill): string {
     throw `Invalid fill type: ${fill.type}`;
 }
 
+export function getElementByWidgetId(id: number | string): HTMLElement {
+    let element = document.getElementById(`reflex-id-${id}`);
+
+    if (element === null) {
+        throw `Could not find widget with id ${id}`;
+    }
+
+    return element;
+}
+
+export function getInstanceByWidgetId(id: number | string): WidgetBase {
+    let element = getElementByWidgetId(id);
+
+    let instance = elementsToInstances.get(element);
+
+    if (instance === undefined) {
+        throw `Could not find widget with id ${id}`;
+    }
+
+    return instance;
+}
+
 const widgetClasses = {
+    'Align-builtin': AlignWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
+    'Margin-builtin': MarginWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
     'Plot-builtin': PlotWidget,
     'ProgressCircle-builtin': ProgressCircleWidget,
@@ -90,6 +116,21 @@ const widgetClasses = {
 };
 
 globalThis.widgetClasses = widgetClasses;
+
+const childAttributeNames = {
+    'Column-builtin': ['children'],
+    'Dropdown-builtin': [],
+    'MouseEventListener-builtin': ['child'],
+    'ProgressCircle-builtin': [],
+    'Rectangle-builtin': ['child'],
+    'Row-builtin': ['children'],
+    'Stack-builtin': ['children'],
+    'Switch-builtin': [],
+    'Text-builtin': [],
+    'TextInput-builtin': [],
+    'Plot-builtin': [],
+    Placeholder: ['_child_'],
+};
 
 function processMessage(message: any) {
     console.log('Received message: ', message);
@@ -105,10 +146,123 @@ function processMessage(message: any) {
     }
 }
 
+function getCurrentWidgetState(
+    id: number | string,
+    deltaState: WidgetState
+): WidgetState {
+    let parentElement = document.getElementById(`reflex-id-${id}`);
+
+    if (parentElement === null) {
+        return deltaState;
+    }
+
+    let parentInstance = elementsToInstances.get(parentElement);
+
+    if (parentInstance === undefined) {
+        return deltaState;
+    }
+
+    return {
+        ...parentInstance.state,
+        ...deltaState,
+    };
+}
+
+function injectSingleWidget(
+    widgetId: number | string,
+    deltaState: WidgetState,
+    newWidgets: { [id: number | string]: WidgetState }
+): number | string {
+    let widgetState = getCurrentWidgetState(widgetId, deltaState);
+    let resultId = widgetId;
+
+    // Margin
+    let margin = widgetState['_margin_']!;
+    if (
+        margin[0] !== 0 ||
+        margin[1] !== 0 ||
+        margin[2] !== 0 ||
+        margin[3] !== 0
+    ) {
+        let marginId = `${widgetId}-margin`;
+        newWidgets[marginId] = {
+            _type_: 'Margin-builtin',
+            _python_type_: 'Margin (injected)',
+            _size_: widgetState['_size_'],
+            _grow_: widgetState['_grow_'],
+            // @ts-ignore
+            child: resultId,
+            margin_left: margin[0],
+            margin_top: margin[1],
+            margin_right: margin[2],
+            margin_bottom: margin[3],
+        };
+        resultId = marginId;
+    }
+
+    // Align
+    let align = widgetState['_align_']!;
+    if (align[0] !== null || align[1] !== null) {
+        let alignId = `${widgetId}-align`;
+        newWidgets[alignId] = {
+            _type_: 'Align-builtin',
+            _python_type_: 'Align (injected)',
+            _size_: widgetState['_size_'],
+            _grow_: widgetState['_grow_'],
+            // @ts-ignore
+            child: resultId,
+            align_x: align[0],
+            align_y: align[1],
+        };
+        resultId = alignId;
+    }
+
+    return resultId;
+}
+
+function injectLayoutWidgetsInplace(message: {
+    [id: number | string]: WidgetState;
+}): void {
+    let newWidgets: { [id: number | string]: WidgetState } = {};
+
+    for (let parentId in message) {
+        // Get the up to date state for this widget
+        let parentState = getCurrentWidgetState(parentId, message[parentId]);
+
+        // Iterate over the widget's children
+        let propertyNamesWithChildren =
+            childAttributeNames[parentState['_type_']!];
+
+        for (let propertyName of propertyNamesWithChildren) {
+            let propertyValue = parentState[propertyName];
+
+            if (Array.isArray(propertyValue)) {
+                parentState[propertyName] = propertyValue.map((childId) => {
+                    return injectSingleWidget(
+                        childId,
+                        message[childId] || {},
+                        newWidgets
+                    );
+                });
+            } else {
+                parentState[propertyName] = injectSingleWidget(
+                    propertyValue,
+                    message[propertyValue] || {},
+                    newWidgets
+                );
+            }
+        }
+    }
+
+    Object.assign(message, newWidgets);
+}
+
 function updateWidgetStates(
     message: { [id: number]: WidgetState },
     rootWidgetId: number | null
 ) {
+    injectLayoutWidgetsInplace(message);
+
     // Create a HTML element to hold all latent widgets, so they aren't
     // garbage collected while updating the DOM.
     let latentWidgets = document.createElement('div');
@@ -121,15 +275,15 @@ function updateWidgetStates(
     for (let id in message) {
         let deltaState = message[id];
         let elementId = `reflex-id-${id}`;
-        let outerElement = document.getElementById(elementId);
+        let element = document.getElementById(elementId);
 
         // This is a reused element, nothing to do
-        if (outerElement) {
+        if (element) {
             continue;
         }
 
         // Get the class for this widget
-        const widgetClass = widgetClasses[deltaState._type_];
+        const widgetClass = widgetClasses[deltaState._type_!];
 
         // Make sure the widget type is valid (Just helpful for debugging)
         if (!widgetClass) {
@@ -140,54 +294,39 @@ function updateWidgetStates(
         let instance: WidgetBase = new widgetClass(elementId, deltaState);
 
         // Build the widget
-        outerElement = document.createElement('div');
-
-        let innerElement = instance.createInnerElement();
-        outerElement.appendChild(innerElement);
-
-        // Add a unique ID to the widget
-        outerElement.id = elementId;
-
-        // Add the common css class to the widget
-        innerElement.classList.add('reflex-inner');
-        outerElement.classList.add('reflex-outer');
+        element = instance.createElement();
+        element.id = elementId;
+        element.classList.add('reflex-widget');
 
         // Store the widget's class name in the element. Used for debugging.
-        outerElement.setAttribute('dbg-py-class', deltaState._python_type_);
+        element.setAttribute('dbg-py-class', deltaState._python_type_!);
 
         // Set the widget's key, if it has one. Used for debugging.
         let key = deltaState['key'];
         if (key !== undefined) {
-            outerElement.setAttribute('dbg-key', `${key}`);
+            element.setAttribute('dbg-key', `${key}`);
         }
 
         // Create a mapping from the element to the widget instance
-        outerElementsToInstances.set(outerElement, instance);
+        elementsToInstances.set(element, instance);
 
         // Keep the widget alive
-        latentWidgets.appendChild(outerElement);
+        latentWidgets.appendChild(element);
     }
 
     // Update all widgets mentioned in the message
-    let widgetsNeedingGrowUpdate = new Set<WidgetBase>();
+    let widgetsNeedingLayoutUpdate = new Set<WidgetBase>();
 
     for (let id in message) {
         let deltaState = message[id];
-        let outerElement = document.getElementById('reflex-id-' + id);
-        let innerElement = outerElement!.firstChild as HTMLElement;
-
-        if (!outerElement) {
-            throw `Failed to find widget with id ${id}, despite only just creating it!?`;
-        }
+        let element = getElementByWidgetId(id);
 
         // Perform updates common to all widgets
-        commonUpdate(outerElement, innerElement, deltaState);
+        commonUpdate(element, deltaState);
 
         // Perform updates specific to this widget type
-        let instance = outerElementsToInstances.get(
-            outerElement!
-        ) as WidgetBase;
-        instance.updateInnerElement(innerElement, deltaState);
+        let instance = elementsToInstances.get(element!) as WidgetBase;
+        instance.updateElement(element, deltaState);
 
         // Update the widget's state
         instance.state = {
@@ -195,27 +334,30 @@ function updateWidgetStates(
             ...deltaState,
         };
 
-        // Mark the widget and its children as needing a flex-grow update
-        widgetsNeedingGrowUpdate.add(instance);
+        // Queue the widget and its parent for a layout update
+        widgetsNeedingLayoutUpdate.add(instance);
 
-        for (let childElement of outerElement.childNodes) {
-            let childInstance = outerElementsToInstances.get(
-                childElement as any
-            );
+        let parentElement = instance.parentWidgetElement;
+        if (parentElement) {
+            let parentInstance = elementsToInstances.get(parentElement);
 
-            if (childInstance !== undefined) {
-                widgetsNeedingGrowUpdate.add(childInstance);
+            if (!parentInstance) {
+                throw `Failed to find parent widget for ${id}`;
             }
+
+            widgetsNeedingLayoutUpdate.add(parentInstance);
         }
     }
 
     // Update each element's `flex-grow`. This can only be done after all
     // widgets have their correct parent set.
-    widgetsNeedingGrowUpdate.forEach(updateFlexGrow);
+    widgetsNeedingLayoutUpdate.forEach((widget) => {
+        widget.updateChildLayouts();
+    });
 
     // Replace the root widget if requested
     if (rootWidgetId !== null) {
-        let rootElement = document.getElementById(`reflex-id-${rootWidgetId}`);
+        let rootElement = getElementByWidgetId(rootWidgetId);
         document.body.innerHTML = '';
         document.body.appendChild(rootElement!);
     }
@@ -224,135 +366,25 @@ function updateWidgetStates(
     latentWidgets.remove();
 }
 
-function commonUpdate(
-    outerElement: HTMLElement,
-    innerElement: HTMLElement,
-    state: WidgetState
-) {
-    // Margins
-    if (state._margin_ !== undefined) {
-        let [left, top, right, bottom] = state._margin_;
-
-        if (left === 0) {
-            innerElement.style.removeProperty('margin-left');
+function commonUpdate(element: HTMLElement, state: WidgetState) {
+    if (state._size_ !== undefined) {
+        if (state._size_[0] === null) {
+            element.style.removeProperty('min-width');
         } else {
-            innerElement.style.marginLeft = `${left}em`;
+            element.style.minWidth = `${state._size_[0]}em`;
         }
 
-        if (top === 0) {
-            innerElement.style.removeProperty('margin-top');
+        if (state._size_[1] === null) {
+            element.style.removeProperty('min-height');
         } else {
-            innerElement.style.marginTop = `${top}em`;
+            element.style.minHeight = `${state._size_[1]}em`;
         }
-
-        if (right === 0) {
-            innerElement.style.removeProperty('margin-right');
-        } else {
-            innerElement.style.marginRight = `${right}em`;
-        }
-
-        if (bottom === 0) {
-            innerElement.style.removeProperty('margin-bottom');
-        } else {
-            innerElement.style.marginBottom = `${bottom}em`;
-        }
-    }
-
-    // Alignment
-    if (state._align_ !== undefined) {
-        let [align_x, align_y] = state._align_;
-
-        let transform_x;
-        if (align_x === null) {
-            innerElement.style.removeProperty('left');
-            transform_x = 0;
-        } else {
-            innerElement.style.left = `${align_x * 100}%`;
-            transform_x = align_x * -100;
-        }
-
-        let transform_y;
-        if (align_y === null) {
-            innerElement.style.removeProperty('top');
-            transform_y = 0;
-        } else {
-            innerElement.style.top = `${align_y * 100}%`;
-            transform_y = align_y * -100;
-        }
-
-        if (transform_x === 0 && transform_y === 0) {
-            innerElement.style.removeProperty('transform');
-        } else {
-            innerElement.style.transform = `translate(${transform_x}%, ${transform_y}%)`;
-        }
-    }
-
-    // Width
-    //
-    // - If the width is set, use that
-    // - Widgets with an alignment don't grow, but use their natural size
-    // - Otherwise the widget's size is 100%. In this case however, margins must
-    //   be taken into account, since they aren't part of the `border-box`.
-    let newSize = state._size_ ? state._size_ : this.state._size_;
-    let [newWidth, newHeight] = newSize;
-
-    let newAlign = state._align_ ? state._align_ : this.state._align_;
-    let [newAlignX, newAlignY] = newAlign;
-
-    let newMargins = state._margin_ ? state._margin_ : this.state._margin_;
-    let [newMarginLeft, newMarginTop, newMarginRight, newMarginBottom] =
-        newMargins;
-    let newMarginX = newMarginLeft + newMarginRight;
-    let newMarginY = newMarginTop + newMarginBottom;
-
-    if (newWidth !== null) {
-        innerElement.style.minWidth = `${newWidth}em`;
-    } else if (newAlignX !== null) {
-        innerElement.style.minWidth = 'max-content';
-    } else if (newMarginX !== 0) {
-        innerElement.style.minWidth = `calc(100% - ${newMarginX}em)`;
-    } else {
-        innerElement.style.removeProperty('min-width');
-    }
-
-    if (newHeight != null) {
-        innerElement.style.minHeight = `${newHeight}em`;
-    } else if (newAlignY !== null) {
-        innerElement.style.minHeight = 'max-content';
-    } else if (newMarginY !== 0) {
-        innerElement.style.minHeight = `calc(100% - ${newMarginY}em)`;
-    } else {
-        innerElement.style.removeProperty('min-height');
-    }
-}
-
-function updateFlexGrow(widget: WidgetBase) {
-    // Is the parent horizontally or vertically oriented?
-    let outerElement = widget.outerElement;
-    let parentFlexDirection = getComputedStyle(
-        outerElement.parentElement!
-    ).flexDirection;
-    let isParentHorizontal = parentFlexDirection !== 'column';
-
-    // Get this widget's relevant property
-    let grow;
-    if (isParentHorizontal) {
-        grow = widget.state['_grow_'][0];
-    } else {
-        grow = widget.state['_grow_'][1];
-    }
-
-    // If the size is overridden, don't grow
-    if (grow) {
-        outerElement.style.removeProperty('flex-grow');
-    } else {
-        outerElement.style.flexGrow = '0';
     }
 }
 
 export function replaceOnlyChild(
     parentElement: HTMLElement,
-    childId: null | undefined | number
+    childId: null | undefined | number | string
 ) {
     // If undefined, do nothing
     if (childId === undefined) {
@@ -383,24 +415,18 @@ export function replaceOnlyChild(
     }
 
     // Add the replacement widget
-    let newElement = document.getElementById('reflex-id-' + childId);
-
-    if (!newElement) {
-        throw `Failed to find replacement widget with id ${childId}`;
-    }
-
+    let newElement = getElementByWidgetId(childId);
     parentElement?.appendChild(newElement);
 }
 
 export function replaceChildren(
     parentElement: HTMLElement,
-    childIds: undefined | number[]
+    childIds: undefined | (number | string)[]
 ) {
     // If undefined, do nothing
     if (childIds === undefined) {
         return;
     }
-
     let latentWidgets = document.getElementById('reflex-latent-widgets')!;
 
     let curElement = parentElement.firstElementChild;
@@ -412,7 +438,7 @@ export function replaceChildren(
         if (curElement === null) {
             while (curIdIndex < childIds.length) {
                 let curId = childIds[curIdIndex];
-                let newElement = document.getElementById('reflex-id-' + curId);
+                let newElement = getElementByWidgetId(curId);
                 parentElement.appendChild(newElement!);
                 curIdIndex++;
             }
@@ -432,7 +458,7 @@ export function replaceChildren(
 
         // This element is the correct element, move on
         let curId = childIds[curIdIndex];
-        if (curElement.id === 'reflex-id-' + curId) {
+        if (curElement.id === `reflex-id-${curId}`) {
             curElement = curElement.nextElementSibling;
             curIdIndex++;
             continue;
@@ -440,7 +466,7 @@ export function replaceChildren(
 
         // This element is not the correct element, insert the correct one
         // instead
-        let newElement = document.getElementById('reflex-id-' + curId);
+        let newElement = getElementByWidgetId(curId);
         parentElement.insertBefore(newElement!, curElement);
         curIdIndex++;
     }

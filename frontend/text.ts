@@ -9,7 +9,7 @@ export type TextState = WidgetState & {
 };
 
 export class TextWidget extends WidgetBase {
-    createInnerElement(): HTMLElement {
+    createElement(): HTMLElement {
         let containerElement = document.createElement('div');
         containerElement.classList.add('reflex-text');
 
@@ -18,7 +18,7 @@ export class TextWidget extends WidgetBase {
         return containerElement;
     }
 
-    updateInnerElement(containerElement: HTMLElement, deltaState: TextState): void {
+    updateElement(containerElement: HTMLElement, deltaState: TextState): void {
         let textElement = containerElement.firstElementChild as HTMLElement;
 
         if (deltaState.text !== undefined) {
@@ -41,7 +41,9 @@ export class TextWidget extends WidgetBase {
             textElement.style.textDecoration = style.underlined
                 ? 'underline'
                 : 'none';
-            textElement.style.textTransform = style.allCaps ? 'uppercase' : 'none';
+            textElement.style.textTransform = style.allCaps
+                ? 'uppercase'
+                : 'none';
         }
     }
 }

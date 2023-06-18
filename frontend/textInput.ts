@@ -8,7 +8,7 @@ export type TextInputState = WidgetState & {
 };
 
 export class TextInputWidget extends WidgetBase {
-    createInnerElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('input');
         element.classList.add('reflex-text-input');
 
@@ -35,7 +35,7 @@ export class TextInputWidget extends WidgetBase {
         return element;
     }
 
-    updateInnerElement(element: HTMLElement, deltaState: TextInputState): void {
+    updateElement(element: HTMLElement, deltaState: TextInputState): void {
         let cast_element = element as HTMLInputElement;
 
         if (deltaState.secret !== undefined) {

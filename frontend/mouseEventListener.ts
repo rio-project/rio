@@ -1,4 +1,4 @@
-import { pixelsPerEm, replaceOnlyChild } from './app';
+import { getInstanceByWidgetId, pixelsPerEm, replaceOnlyChild } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 function eventMouseButtonToString(event: MouseEvent): object {
@@ -16,7 +16,7 @@ function eventMousePositionToString(event: MouseEvent): object {
 
 export type MouseEventListenerState = WidgetState & {
     _type_: 'mouseEventListener';
-    child?: number;
+    child?: number | string;
     reportMouseDown?: boolean;
     reportMouseUp?: boolean;
     reportMouseMove?: boolean;
@@ -25,13 +25,13 @@ export type MouseEventListenerState = WidgetState & {
 };
 
 export class MouseEventListenerWidget extends WidgetBase {
-    createInnerElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-mouse-event-listener');
+        element.classList.add('reflex-single-container');
         return element;
     }
 
-    updateInnerElement(
+    updateElement(
         element: HTMLElement,
         deltaState: MouseEventListenerState
     ): void {
@@ -93,5 +93,11 @@ export class MouseEventListenerWidget extends WidgetBase {
         } else {
             element.onmouseleave = null;
         }
+    }
+
+    updateChildLayouts(): void {
+        getInstanceByWidgetId(this.state['_child_']).replaceLayoutCssProperties(
+            {}
+        );
     }
 }

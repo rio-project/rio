@@ -18,13 +18,13 @@ function loadPlotly(callback) {
 }
 
 export class PlotWidget extends WidgetBase {
-    createInnerElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.style.display = 'inline-block';
         return element;
     }
 
-    updateInnerElement(element: HTMLElement, deltaState: PlotState): void {
+    updateElement(element: HTMLElement, deltaState: PlotState): void {
         if (deltaState.plotJson !== undefined) {
             element.innerHTML = '';
             loadPlotly(() => {
