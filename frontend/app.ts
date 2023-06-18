@@ -17,6 +17,7 @@ import { MarginWidget } from './margin';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
+const CHILD_ATTRIBUTE_NAMES = {}; // {child_attribute_names};
 
 let socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
@@ -117,21 +118,6 @@ const widgetClasses = {
 
 globalThis.widgetClasses = widgetClasses;
 
-const childAttributeNames = {
-    'Column-builtin': ['children'],
-    'Dropdown-builtin': [],
-    'MouseEventListener-builtin': ['child'],
-    'ProgressCircle-builtin': [],
-    'Rectangle-builtin': ['child'],
-    'Row-builtin': ['children'],
-    'Stack-builtin': ['children'],
-    'Switch-builtin': [],
-    'Text-builtin': [],
-    'TextInput-builtin': [],
-    'Plot-builtin': [],
-    Placeholder: ['_child_'],
-};
-
 function processMessage(message: any) {
     console.log('Received message: ', message);
 
@@ -231,7 +217,7 @@ function injectLayoutWidgetsInplace(message: {
 
         // Iterate over the widget's children
         let propertyNamesWithChildren =
-            childAttributeNames[parentState['_type_']!];
+            CHILD_ATTRIBUTE_NAMES[parentState['_type_']!] || [];
 
         for (let propertyName of propertyNamesWithChildren) {
             let propertyValue = parentState[propertyName];

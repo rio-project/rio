@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import asyncio
+import reflex.widgets.metadata
 import plotly
 import io
 import reflex as rx
@@ -24,6 +25,13 @@ from .common import Jsonable
 __all__ = [
     "AppServer",
 ]
+
+CHILD_ATTRIBUTE_NAMES_JSON = json.dumps(
+    {
+        unique_id: list(attribute_names)
+        for unique_id, attribute_names in reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES.items()
+    }
+)
 
 
 @functools.lru_cache(maxsize=None)
@@ -146,6 +154,7 @@ class AppServer(fastapi.FastAPI):
             "'{initial_messages}'",
             json.dumps(initial_messages, indent=4),
         )
+        js = js.replace("{}; // {child_attribute_names}", CHILD_ATTRIBUTE_NAMES_JSON)
 
         html = html.replace("{title}", self.app.name)
         html = html.replace("/*{style}*/", css)

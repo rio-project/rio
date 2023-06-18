@@ -2,6 +2,7 @@ import copy
 import json
 import re
 from dataclasses import dataclass
+import reflex.widgets.metadata
 from . import session
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Union
@@ -14,26 +15,6 @@ __all__ = [
     "ValidationError",
     "Validator",
 ]
-
-
-# Given a widget type, this dict contains the attribute names which contain
-# children / child ids
-_CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
-    "Column-builtin": {"children"},
-    "Dropdown-builtin": set(),
-    "MouseEventListener-builtin": {"child"},
-    "Placeholder": {"_child_"},
-    "ProgressCircle-builtin": set(),
-    "Rectangle-builtin": {"child"},
-    "Row-builtin": {"children"},
-    "Stack-builtin": {"children"},
-    "Switch-builtin": set(),
-    "Text-builtin": set(),
-    "TextInput-builtin": set(),
-    "Plot-builtin": set(),
-}
-
-
 
 
 @dataclass
@@ -61,7 +42,10 @@ class ClientWidget:
         if not isinstance(type, str):
             raise ValidationError(f"Widget with id `{id}` has non-string type `{type}`")
 
-        if type not in _CHILD_ATTRIBUTE_NAMES and type not in registered_html_widgets:
+        if (
+            type not in reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES
+            and type not in registered_html_widgets
+        ):
             raise ValidationError(f"Widget with id `{id}` has unknown type `{type}`")
 
         # Construct the result
@@ -73,7 +57,7 @@ class ClientWidget:
 
     def _get_child_attribute_names(self) -> Iterable[str]:
         try:
-            return _CHILD_ATTRIBUTE_NAMES[self.type]
+            return reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES[self.type]
         except KeyError:
             return tuple()  # TODO: How to get the children of HTML widgets?
 
@@ -145,7 +129,9 @@ class Validator:
 
         # HTML widgets must be registered with the frontend before use. This set
         # contains the ids (`HtmlWidget._unique_id`) of all registered widgets.
-        self.registered_html_widgets: Set[str] = set(_CHILD_ATTRIBUTE_NAMES.keys())
+        self.registered_html_widgets: Set[str] = set(
+            reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES.keys()
+        )
 
     def dump_message(
         self,

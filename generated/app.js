@@ -1265,6 +1265,7 @@ var align_1 = require("./align");
 var margin_1 = require("./margin");
 var sessionToken = '{session_token}';
 var initialMessages = '{initial_messages}';
+var CHILD_ATTRIBUTE_NAMES = {}; // {child_attribute_names};
 var socket = null;
 exports.pixelsPerEm = 16;
 var elementsToInstances = new WeakMap();
@@ -1350,20 +1351,6 @@ var widgetClasses = {
   Placeholder: placeholder_1.PlaceholderWidget
 };
 globalThis.widgetClasses = widgetClasses;
-var childAttributeNames = {
-  'Column-builtin': ['children'],
-  'Dropdown-builtin': [],
-  'MouseEventListener-builtin': ['child'],
-  'ProgressCircle-builtin': [],
-  'Rectangle-builtin': ['child'],
-  'Row-builtin': ['children'],
-  'Stack-builtin': ['children'],
-  'Switch-builtin': [],
-  'Text-builtin': [],
-  'TextInput-builtin': [],
-  'Plot-builtin': [],
-  Placeholder: ['_child_']
-};
 function processMessage(message) {
   console.log('Received message: ', message);
   if (message.type == 'updateWidgetStates') {
@@ -1432,7 +1419,7 @@ function injectLayoutWidgetsInplace(message) {
     // Get the up to date state for this widget
     var parentState = getCurrentWidgetState(parentId, message[parentId]);
     // Iterate over the widget's children
-    var propertyNamesWithChildren = childAttributeNames[parentState['_type_']];
+    var propertyNamesWithChildren = CHILD_ATTRIBUTE_NAMES[parentState['_type_']] || [];
     for (var _i = 0, propertyNamesWithChildren_1 = propertyNamesWithChildren; _i < propertyNamesWithChildren_1.length; _i++) {
       var propertyName = propertyNamesWithChildren_1[_i];
       var propertyValue = parentState[propertyName];

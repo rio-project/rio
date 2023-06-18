@@ -14,3 +14,4 @@ from .text import *
 from .text_input import *
 from .widget_base import *
 from .plot import *
+from .metadata import *
