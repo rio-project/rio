@@ -121,6 +121,8 @@ export function getParentWidgetElementExcludingInjected(
     let curElement: HTMLElement | null = element;
 
     while (true) {
+        curElement = getParentWidgetElementIncludingInjected(curElement);
+
         if (curElement === null) {
             return null;
         }
@@ -128,8 +130,6 @@ export function getParentWidgetElementExcludingInjected(
         if (curElement.id.match(/reflex-id-\d+$/)) {
             return curElement;
         }
-
-        curElement = getParentWidgetElementIncludingInjected(curElement);
     }
 }
 
@@ -191,7 +191,7 @@ function getCurrentWidgetState(
 function createLayoutWidgetStates(
     widgetId: number | string,
     deltaState: WidgetState,
-    message: { [id: number | string]: WidgetState }
+    message: { [id: string]: WidgetState }
 ): number | string {
     let entireState = getCurrentWidgetState(widgetId, deltaState);
     let resultId = widgetId;
@@ -243,37 +243,41 @@ function createLayoutWidgetStates(
 function replaceChildrenWithLayoutWidgets(
     deltaState: WidgetState,
     childIds: Set<string>,
-    message: { [id: number | string]: WidgetState }
+    message: { [id: string]: WidgetState }
 ): void {
     let propertyNamesWithChildren =
         CHILD_ATTRIBUTE_NAMES[deltaState['_type_']!] || [];
+
+    function cleanId(id: string): string {
+        return id.split('-')[0];
+    }
 
     for (let propertyName of propertyNamesWithChildren) {
         let propertyValue = deltaState[propertyName];
 
         if (Array.isArray(propertyValue)) {
             deltaState[propertyName] = propertyValue.map((childId) => {
+                childId = cleanId(childId.toString());
+                childIds.add(childId);
                 return createLayoutWidgetStates(
                     childId,
                     message[childId] || {},
                     message
                 );
             });
-            propertyValue.forEach((x) => childIds.add(x.toString()));
         } else if (propertyValue !== null) {
+            let childId = cleanId(propertyValue.toString());
             deltaState[propertyName] = createLayoutWidgetStates(
-                propertyValue,
-                message[propertyValue] || {},
+                childId,
+                message[childId] || {},
                 message
             );
-            childIds.add(propertyValue.toString());
+            childIds.add(childId);
         }
     }
 }
 
-function preprocessMessage(message: {
-    [id: number | string]: WidgetState;
-}): void {
+function preprocessMessage(message: { [id: string]: WidgetState }): void {
     let originalWidgetIds = Object.keys(message);
 
     // Keep track of which widgets have their parents in the message
@@ -281,27 +285,30 @@ function preprocessMessage(message: {
 
     // Walk over all widgets in the message and inject layout widgets. The
     // message is modified in-place, so take care to have a copy of all keys
-    for (let widgetId in originalWidgetIds) {
+    for (let widgetId of originalWidgetIds) {
         replaceChildrenWithLayoutWidgets(message[widgetId], childIds, message);
     }
 
     // Find all widgets which have had a layout widget  injected, and make sure
     // their parents are updated to point to the new widget.
-    for (let widgetId in originalWidgetIds) {
+    for (let widgetId of originalWidgetIds) {
         // Child of another widget in the message
         if (childIds.has(widgetId)) {
+            console.log(`Discarding ${widgetId} because it is a child`);
             continue;
         }
 
         // The parent isn't contained in the message. Find and add it.
         let childElement = document.getElementById(`reflex-id-${widgetId}`);
         if (childElement === null) {
+            console.log(`Discarding ${widgetId} because it is not in the DOM`);
             continue;
         }
 
         let parentElement =
             getParentWidgetElementExcludingInjected(childElement);
         if (parentElement === null) {
+            console.log(`Discarding ${widgetId} because it has no parent`);
             continue;
         }
 
@@ -314,16 +321,18 @@ function preprocessMessage(message: {
         let newParentState = { ...parentInstance.state };
         replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
         message[parentId] = newParentState;
+        console.log(`Parent of ${widgetId} is ${parentId}`);
     }
 }
 
 function updateWidgetStates(
-    message: { [id: number]: WidgetState },
+    message: { [id: string]: WidgetState },
     rootWidgetId: number | null
 ) {
     // Preprocess the message. This converts `_align_` and `_margin_` properties
     // into actual widgets, amongst other things.
     preprocessMessage(message);
+    console.log(message);
 
     // Create a HTML element to hold all latent widgets, so they aren't
     // garbage collected while updating the DOM.

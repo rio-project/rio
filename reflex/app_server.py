@@ -92,8 +92,8 @@ class AppServer(fastapi.FastAPI):
 
         # Fastapi
         self.add_api_route("/", self._serve_index, methods=["GET"])
-        self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
-        self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
+        # self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
+        # self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
         self.add_api_route("/reflex/favicon.ico", self._serve_favicon, methods=["GET"])
         self.add_api_route(
             "/reflex/asset/{asset_id}", self._serve_asset, methods=["GET"]

@@ -1335,13 +1335,13 @@ exports.getParentWidgetElementIncludingInjected = getParentWidgetElementIncludin
 function getParentWidgetElementExcludingInjected(element) {
   var curElement = element;
   while (true) {
+    curElement = getParentWidgetElementIncludingInjected(curElement);
     if (curElement === null) {
       return null;
     }
     if (curElement.id.match(/reflex-id-\d+$/)) {
       return curElement;
     }
-    curElement = getParentWidgetElementIncludingInjected(curElement);
   }
 }
 exports.getParentWidgetElementExcludingInjected = getParentWidgetElementExcludingInjected;
@@ -1426,19 +1426,22 @@ function createLayoutWidgetStates(widgetId, deltaState, message) {
 }
 function replaceChildrenWithLayoutWidgets(deltaState, childIds, message) {
   var propertyNamesWithChildren = CHILD_ATTRIBUTE_NAMES[deltaState['_type_']] || [];
+  function cleanId(id) {
+    return id.split('-')[0];
+  }
   for (var _i = 0, propertyNamesWithChildren_1 = propertyNamesWithChildren; _i < propertyNamesWithChildren_1.length; _i++) {
     var propertyName = propertyNamesWithChildren_1[_i];
     var propertyValue = deltaState[propertyName];
     if (Array.isArray(propertyValue)) {
       deltaState[propertyName] = propertyValue.map(function (childId) {
+        childId = cleanId(childId.toString());
+        childIds.add(childId);
         return createLayoutWidgetStates(childId, message[childId] || {}, message);
       });
-      propertyValue.forEach(function (x) {
-        return childIds.add(x.toString());
-      });
     } else if (propertyValue !== null) {
-      deltaState[propertyName] = createLayoutWidgetStates(propertyValue, message[propertyValue] || {}, message);
-      childIds.add(propertyValue.toString());
+      var childId = cleanId(propertyValue.toString());
+      deltaState[propertyName] = createLayoutWidgetStates(childId, message[childId] || {}, message);
+      childIds.add(childId);
     }
   }
 }
@@ -1448,23 +1451,28 @@ function preprocessMessage(message) {
   var childIds = new Set();
   // Walk over all widgets in the message and inject layout widgets. The
   // message is modified in-place, so take care to have a copy of all keys
-  for (var widgetId in originalWidgetIds) {
+  for (var _i = 0, originalWidgetIds_1 = originalWidgetIds; _i < originalWidgetIds_1.length; _i++) {
+    var widgetId = originalWidgetIds_1[_i];
     replaceChildrenWithLayoutWidgets(message[widgetId], childIds, message);
   }
   // Find all widgets which have had a layout widget  injected, and make sure
   // their parents are updated to point to the new widget.
-  for (var widgetId in originalWidgetIds) {
+  for (var _a = 0, originalWidgetIds_2 = originalWidgetIds; _a < originalWidgetIds_2.length; _a++) {
+    var widgetId = originalWidgetIds_2[_a];
     // Child of another widget in the message
     if (childIds.has(widgetId)) {
+      console.log("Discarding ".concat(widgetId, " because it is a child"));
       continue;
     }
     // The parent isn't contained in the message. Find and add it.
     var childElement = document.getElementById("reflex-id-".concat(widgetId));
     if (childElement === null) {
+      console.log("Discarding ".concat(widgetId, " because it is not in the DOM"));
       continue;
     }
     var parentElement = getParentWidgetElementExcludingInjected(childElement);
     if (parentElement === null) {
+      console.log("Discarding ".concat(widgetId, " because it has no parent"));
       continue;
     }
     var parentInstance = elementsToInstances.get(parentElement);
@@ -1475,12 +1483,14 @@ function preprocessMessage(message) {
     var newParentState = __assign({}, parentInstance.state);
     replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
     message[parentId] = newParentState;
+    console.log("Parent of ".concat(widgetId, " is ").concat(parentId));
   }
 }
 function updateWidgetStates(message, rootWidgetId) {
   // Preprocess the message. This converts `_align_` and `_margin_` properties
   // into actual widgets, amongst other things.
   preprocessMessage(message);
+  console.log(message);
   // Create a HTML element to hold all latent widgets, so they aren't
   // garbage collected while updating the DOM.
   var latentWidgets = document.createElement('div');
