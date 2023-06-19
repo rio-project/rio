@@ -58,6 +58,11 @@ class TextInput(widget_base.HtmlWidget):
         self.text = msg["text"]
 
         await self._call_event_handler(
+            self.on_change,
+            TextInputChangeEvent(self.text),
+        )
+
+        await self._call_event_handler(
             self.on_confirm,
             TextInputConfirmEvent(self.text),
         )
