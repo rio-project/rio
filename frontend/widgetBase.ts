@@ -18,8 +18,11 @@ export abstract class WidgetBase {
     state: object;
     layoutCssProperties: object;
 
-    constructor(outerElementId: string, state: WidgetState) {
-        this.elementId = outerElementId;
+    constructor(
+        elementId: string,
+        state: WidgetState
+    ) {
+        this.elementId = elementId;
         this.state = state;
         this.layoutCssProperties = {};
     }
@@ -38,22 +41,6 @@ export abstract class WidgetBase {
         return element;
     }
 
-    /// Returns the `HTMLELement` of this widget's parent. Returns `null` if this
-    /// is the root widget. This is a slow operation and should be avoided if
-    /// possible.
-    get parentWidgetElement(): HTMLElement | null {
-        let curElement = this.element.parentElement;
-
-        while (curElement !== null) {
-            if (curElement.id.startsWith('reflex-id-')) {
-                return curElement;
-            }
-
-            curElement = curElement.parentElement;
-        }
-
-        return null;
-    }
 
     /// Creates the HTML element associated with this widget. This function does
     /// not attach the element to the DOM, but merely returns it.

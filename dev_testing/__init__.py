@@ -110,6 +110,7 @@ class WidgetShowcase(rx.Widget):
                     ),
                     margin_x=4,
                     align_y=0.2,
+                    grow_x=True,
                 ),
             ),
             style=rx.BoxStyle(fill=COLOR_BG),

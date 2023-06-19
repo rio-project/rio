@@ -137,8 +137,8 @@ exports.WidgetBase = void 0;
 var app_1 = require("./app");
 /// Base class for all widgets
 var WidgetBase = /** @class */function () {
-  function WidgetBase(outerElementId, state) {
-    this.elementId = outerElementId;
+  function WidgetBase(elementId, state) {
+    this.elementId = elementId;
     this.state = state;
     this.layoutCssProperties = {};
   }
@@ -151,23 +151,6 @@ var WidgetBase = /** @class */function () {
         throw new Error("Instance for element with id ".concat(this.elementId, " cannot find its element"));
       }
       return element;
-    },
-    enumerable: false,
-    configurable: true
-  });
-  Object.defineProperty(WidgetBase.prototype, "parentWidgetElement", {
-    /// Returns the `HTMLELement` of this widget's parent. Returns `null` if this
-    /// is the root widget. This is a slow operation and should be avoided if
-    /// possible.
-    get: function get() {
-      var curElement = this.element.parentElement;
-      while (curElement !== null) {
-        if (curElement.id.startsWith('reflex-id-')) {
-          return curElement;
-        }
-        curElement = curElement.parentElement;
-      }
-      return null;
     },
     enumerable: false,
     configurable: true
@@ -1252,7 +1235,7 @@ var __assign = this && this.__assign || function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.sendMessageOverWebsocket = exports.replaceChildren = exports.replaceOnlyChild = exports.getInstanceByWidgetId = exports.getElementByWidgetId = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
+exports.sendMessageOverWebsocket = exports.replaceChildren = exports.replaceOnlyChild = exports.getParentWidgetElementExcludingInjected = exports.getParentWidgetElementIncludingInjected = exports.getInstanceByWidgetId = exports.getElementByWidgetId = exports.fillToCss = exports.colorToCss = exports.pixelsPerEm = void 0;
 var text_1 = require("./text");
 var row_1 = require("./row");
 var column_1 = require("./column");
@@ -1338,6 +1321,30 @@ function getInstanceByWidgetId(id) {
   return instance;
 }
 exports.getInstanceByWidgetId = getInstanceByWidgetId;
+function getParentWidgetElementIncludingInjected(element) {
+  var curElement = element.parentElement;
+  while (curElement !== null) {
+    if (curElement.id.startsWith('reflex-id-')) {
+      return curElement;
+    }
+    curElement = curElement.parentElement;
+  }
+  return null;
+}
+exports.getParentWidgetElementIncludingInjected = getParentWidgetElementIncludingInjected;
+function getParentWidgetElementExcludingInjected(element) {
+  var curElement = element;
+  while (true) {
+    if (curElement === null) {
+      return null;
+    }
+    if (curElement.id.match(/reflex-id-\d+$/)) {
+      return curElement;
+    }
+    curElement = getParentWidgetElementIncludingInjected(curElement);
+  }
+}
+exports.getParentWidgetElementExcludingInjected = getParentWidgetElementExcludingInjected;
 var widgetClasses = {
   'Align-builtin': align_1.AlignWidget,
   'Column-builtin': column_1.ColumnWidget,
@@ -1378,18 +1385,18 @@ function getCurrentWidgetState(id, deltaState) {
   }
   return __assign(__assign({}, parentInstance.state), deltaState);
 }
-function injectSingleWidget(widgetId, deltaState, newWidgets) {
-  var widgetState = getCurrentWidgetState(widgetId, deltaState);
+function createLayoutWidgetStates(widgetId, deltaState, message) {
+  var entireState = getCurrentWidgetState(widgetId, deltaState);
   var resultId = widgetId;
   // Margin
-  var margin = widgetState['_margin_'];
+  var margin = entireState['_margin_'];
   if (margin[0] !== 0 || margin[1] !== 0 || margin[2] !== 0 || margin[3] !== 0) {
     var marginId = "".concat(widgetId, "-margin");
-    newWidgets[marginId] = {
+    message[marginId] = {
       _type_: 'Margin-builtin',
       _python_type_: 'Margin (injected)',
-      _size_: widgetState['_size_'],
-      _grow_: widgetState['_grow_'],
+      _size_: entireState['_size_'],
+      _grow_: entireState['_grow_'],
       // @ts-ignore
       child: resultId,
       margin_left: margin[0],
@@ -1400,14 +1407,14 @@ function injectSingleWidget(widgetId, deltaState, newWidgets) {
     resultId = marginId;
   }
   // Align
-  var align = widgetState['_align_'];
+  var align = entireState['_align_'];
   if (align[0] !== null || align[1] !== null) {
     var alignId = "".concat(widgetId, "-align");
-    newWidgets[alignId] = {
+    message[alignId] = {
       _type_: 'Align-builtin',
       _python_type_: 'Align (injected)',
-      _size_: widgetState['_size_'],
-      _grow_: widgetState['_grow_'],
+      _size_: entireState['_size_'],
+      _grow_: entireState['_grow_'],
       // @ts-ignore
       child: resultId,
       align_x: align[0],
@@ -1417,30 +1424,63 @@ function injectSingleWidget(widgetId, deltaState, newWidgets) {
   }
   return resultId;
 }
-function injectLayoutWidgetsInplace(message) {
-  var newWidgets = {};
-  for (var parentId in message) {
-    // Get the up to date state for this widget
-    var deltaState = message[parentId];
-    var parentState = getCurrentWidgetState(parentId, deltaState);
-    // Iterate over the widget's children
-    var propertyNamesWithChildren = CHILD_ATTRIBUTE_NAMES[parentState['_type_']] || [];
-    for (var _i = 0, propertyNamesWithChildren_1 = propertyNamesWithChildren; _i < propertyNamesWithChildren_1.length; _i++) {
-      var propertyName = propertyNamesWithChildren_1[_i];
-      var propertyValue = parentState[propertyName];
-      if (Array.isArray(propertyValue)) {
-        deltaState[propertyName] = propertyValue.map(function (childId) {
-          return injectSingleWidget(childId, message[childId] || {}, newWidgets);
-        });
-      } else if (propertyValue !== null) {
-        deltaState[propertyName] = injectSingleWidget(propertyValue, message[propertyValue] || {}, newWidgets);
-      }
+function replaceChildrenWithLayoutWidgets(deltaState, childIds, message) {
+  var propertyNamesWithChildren = CHILD_ATTRIBUTE_NAMES[deltaState['_type_']] || [];
+  for (var _i = 0, propertyNamesWithChildren_1 = propertyNamesWithChildren; _i < propertyNamesWithChildren_1.length; _i++) {
+    var propertyName = propertyNamesWithChildren_1[_i];
+    var propertyValue = deltaState[propertyName];
+    if (Array.isArray(propertyValue)) {
+      deltaState[propertyName] = propertyValue.map(function (childId) {
+        return createLayoutWidgetStates(childId, message[childId] || {}, message);
+      });
+      propertyValue.forEach(function (x) {
+        return childIds.add(x.toString());
+      });
+    } else if (propertyValue !== null) {
+      deltaState[propertyName] = createLayoutWidgetStates(propertyValue, message[propertyValue] || {}, message);
+      childIds.add(propertyValue.toString());
     }
   }
-  Object.assign(message, newWidgets);
+}
+function preprocessMessage(message) {
+  var originalWidgetIds = Object.keys(message);
+  // Keep track of which widgets have their parents in the message
+  var childIds = new Set();
+  // Walk over all widgets in the message and inject layout widgets. The
+  // message is modified in-place, so take care to have a copy of all keys
+  for (var widgetId in originalWidgetIds) {
+    replaceChildrenWithLayoutWidgets(message[widgetId], childIds, message);
+  }
+  // Find all widgets which have had a layout widget  injected, and make sure
+  // their parents are updated to point to the new widget.
+  for (var widgetId in originalWidgetIds) {
+    // Child of another widget in the message
+    if (childIds.has(widgetId)) {
+      continue;
+    }
+    // The parent isn't contained in the message. Find and add it.
+    var childElement = document.getElementById("reflex-id-".concat(widgetId));
+    if (childElement === null) {
+      continue;
+    }
+    var parentElement = getParentWidgetElementExcludingInjected(childElement);
+    if (parentElement === null) {
+      continue;
+    }
+    var parentInstance = elementsToInstances.get(parentElement);
+    if (parentInstance === undefined) {
+      throw "Parent widget with id ".concat(parentElement, " not found");
+    }
+    var parentId = parentElement.id.slice('reflex-id-'.length);
+    var newParentState = __assign({}, parentInstance.state);
+    replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
+    message[parentId] = newParentState;
+  }
 }
 function updateWidgetStates(message, rootWidgetId) {
-  injectLayoutWidgetsInplace(message);
+  // Preprocess the message. This converts `_align_` and `_margin_` properties
+  // into actual widgets, amongst other things.
+  preprocessMessage(message);
   // Create a HTML element to hold all latent widgets, so they aren't
   // garbage collected while updating the DOM.
   var latentWidgets = document.createElement('div');
@@ -1449,11 +1489,11 @@ function updateWidgetStates(message, rootWidgetId) {
   latentWidgets.style.display = 'none';
   // Make sure all widgets mentioned in the message have a corresponding HTML
   // element
-  for (var id in message) {
-    var deltaState = message[id];
-    var elementId = "reflex-id-".concat(id);
+  for (var widgetId in message) {
+    var deltaState = message[widgetId];
+    var elementId = "reflex-id-".concat(widgetId);
     var element = document.getElementById(elementId);
-    // This is a reused element, nothing to do
+    // This is a reused element, no need to instantiate a new one
     if (element) {
       continue;
     }
@@ -1495,7 +1535,7 @@ function updateWidgetStates(message, rootWidgetId) {
     instance.state = __assign(__assign({}, instance.state), deltaState);
     // Queue the widget and its parent for a layout update
     widgetsNeedingLayoutUpdate.add(instance);
-    var parentElement = instance.parentWidgetElement;
+    var parentElement = getParentWidgetElementIncludingInjected(element);
     if (parentElement) {
       var parentInstance = elementsToInstances.get(parentElement);
       if (!parentInstance) {
@@ -1504,8 +1544,8 @@ function updateWidgetStates(message, rootWidgetId) {
       widgetsNeedingLayoutUpdate.add(parentInstance);
     }
   }
-  // Update each element's `flex-grow`. This can only be done after all
-  // widgets have their correct parent set.
+  // Widgets that have changed, or had their parents changed need to have
+  // their layout updated
   widgetsNeedingLayoutUpdate.forEach(function (widget) {
     widget.updateChildLayouts();
   });
