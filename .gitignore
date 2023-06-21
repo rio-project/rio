@@ -4,9 +4,18 @@ __pycache__
 *.pyo
 
 
+# Code coverage data
+/.coverage
+/htmlcov
+
+
 # Poetry
-.venv
-poetry.lock
+/.venv
+/poetry.lock
+
+
+# Pytest
+/.pytest_cache
 
 
 # Editor Files

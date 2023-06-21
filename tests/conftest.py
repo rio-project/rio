@@ -30,7 +30,6 @@ class _MockApp:
         self._session._register_dirty_widget(
             root_widget, include_fundamental_children_recursively=True
         )
-        asyncio.run(self._session._refresh())
 
     async def _send_message(self, message: OutgoingMessage) -> None:
         self.outgoing_messages.append(message)
@@ -41,8 +40,17 @@ class _MockApp:
 
     def get_build_output(self, widget: rx.Widget) -> rx.Widget:
         return self._session._weak_widget_data_by_widget[widget].build_result
+    
+    async def refresh(self) -> None:
+        await self._session._refresh()
+
+
+async def _create_mockapp(root_widget: rx.Widget) -> _MockApp:
+    app = _MockApp(root_widget)
+    await app.refresh()
+    return app
 
 
 @pytest.fixture
 def MockApp():
-    return _MockApp
+    return _create_mockapp
