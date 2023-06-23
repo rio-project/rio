@@ -76,6 +76,15 @@ def is_widget_class(cls: Type[Any]) -> bool:
     return inspect.isclass(cls) and issubclass(cls, Widget)
 
 
+def make_default_factory_for_value(value: T) -> Callable[[], T]:
+    def default_factory() -> T:
+        return value
+    
+    default_factory.__name__ = default_factory.__qualname__ = f"return_{value!r}"
+
+    return default_factory
+
+
 @dataclass(eq=False)
 class StateBinding:
     # Weak reference to the widget containing this binding
@@ -281,6 +290,36 @@ class Widget(ABC):
     # Cache for the set of all `StateProperty` instances in this class
     _state_properties_: ClassVar[Set["StateProperty"]]
 
+    @classmethod
+    def _preprocess_dataclass_fields(cls):
+        # When a field has a default value (*not* default factory!), the
+        # constructor actually doesn't assign the default value to the instance.
+        # The default value is actually permanently stored in the class. So the
+        # instance doesn't have the attribute, but the class does, and
+        # everything is fine, right? Wrong. We create a `StateProperty` for each
+        # field, which overrides that default value. We absolutely need every
+        # attribute to be an instance attribute, which we can achieve by
+        # replacing every default value with a default factory.
+        cls_vars = vars(cls)
+
+        for attr_name in cls_vars.get('__annotations__', {}):
+            try:
+                field_or_default = cls_vars[attr_name]
+            except KeyError:
+                continue
+
+            if not isinstance(field_or_default, dataclasses.Field):
+                field = dataclasses.field(default_factory=make_default_factory_for_value(field_or_default))
+                setattr(cls, attr_name, field)
+                continue
+
+            # If it doesn't have a default value, we can ignore it
+            if field_or_default.default is dataclasses.MISSING:
+                continue
+
+            field_or_default.default_factory = make_default_factory_for_value(field_or_default.default)
+            field_or_default.default = dataclasses.MISSING
+
     @staticmethod
     def _determine_explicitly_set_properties(
         original_init,
@@ -295,7 +334,15 @@ class Widget(ABC):
         bound_args = inspect.signature(original_init).bind(self, *args, **kwargs)
         self._explicitly_set_properties_.update(bound_args.arguments)
 
-    def _determine_margins(self):
+    @staticmethod
+    def _post_init(
+        original_init,
+        self: "Widget",
+        *args,
+        **kwargs,
+    ):
+        original_init(self, *args, **kwargs)
+
         def elvis(*args):
             for arg in args:
                 if arg is not None:
@@ -314,6 +361,7 @@ class Widget(ABC):
         has_custom_init = "__init__" in vars(cls)
 
         # Apply the dataclass transform
+        cls._preprocess_dataclass_fields()
         dataclasses.dataclass(eq=False, repr=False)(cls)
 
         # Keep track of which properties were explicitly set in the constructor.
@@ -328,14 +376,11 @@ class Widget(ABC):
         # by the `@dataclass` decorator, wrap it with a custom `__init__` that
         # calls our initialization code.
         if not has_custom_init:
-            original_init = cls.__init__
-
-            @functools.wraps(original_init)
-            def replacement_init(self: "Widget", *args, **kwargs):
-                original_init(self, *args, **kwargs)  # type: ignore
-                self._determine_margins()
-
-            cls.__init__ = replacement_init  # type: ignore
+            introspection.wrap_method(
+                cls._post_init,
+                cls,
+                "__init__",
+            )
 
         # Replace all properties with custom state properties
         cls._initialize_state_properties(Widget._state_properties_)

@@ -122,6 +122,10 @@ class App:
         quiet: bool = True,
         _validator_factory: Optional[Callable[[rx.Session], validator.Validator]] = None,
     ):
+        # Unfortunately, WebView must run in the main thread, which makes this
+        # tricky. We'll have to banish uvicorn to a background thread, and shut
+        # it down when the window is closed.
+
         # TODO: How to choose a free port?
         host = 'localhost'
         port = 8000
