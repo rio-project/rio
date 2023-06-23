@@ -3,7 +3,9 @@ from .button import *
 from .column import *
 from .container import *
 from .dropdown import *
+from .image import *
 from .markdown_view import *
+from .media_player import *
 from .mouse_event_listener import *
 from .progress_circle import *
 from .rectangle import *

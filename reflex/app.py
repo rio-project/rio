@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import threading
 import webbrowser
 from typing import Awaitable, Callable, Optional
 
 import fastapi
-import PIL.Image
 import uvicorn
 import webview
 
@@ -74,18 +74,18 @@ class App:
             }
 
         # Create the FastAPI server
-        fastapi_server = self.as_fastapi(
+        fastapi_app = self.as_fastapi(
             external_url=external_url,
             _validator_factory=_validator_factory,
         )
 
         # Register the startup event
         if _on_startup is not None:
-            fastapi_server.add_event_handler("startup", _on_startup)
+            fastapi_app.add_event_handler("startup", _on_startup)
 
         # Serve
         uvicorn.run(
-            fastapi_server,
+            fastapi_app,
             host=host,
             port=port,
             **kwargs,
@@ -120,32 +120,43 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[], validator.Validator]] = None,
+        _validator_factory: Optional[Callable[[rx.Session], validator.Validator]] = None,
     ):
         # TODO: How to choose a free port?
+        host = 'localhost'
         port = 8000
-        url = f"http://127.0.0.1:{port}"
+        url = f"http://{host}:{port}"
 
         # This lock is released once the server is running
         lock = threading.Lock()
         lock.acquire()
 
+        server: Optional[uvicorn.Server] = None
+
         # Start the server, and release the lock once it's running
-        async def on_startup():
-            lock.release()
+        def run_web_server():
+            fastapi_app = self.as_fastapi(url, _validator_factory=_validator_factory)
+            fastapi_app.add_event_handler("startup", lock.release)
 
-        server_thread = threading.Thread(
-            target=self.run_as_web_server,
-            kwargs={
-                "external_url": url,
-                "host": "127.0.0.1",
-                "port": port,
-                "quiet": quiet,
-                "_validator_factory": _validator_factory,
-                "_on_startup": on_startup,
-            },
-        )
+            # Suppress stdout messages if requested
+            kwargs = {}
 
+            if quiet:
+                kwargs["log_config"] = {
+                    "version": 1,
+                    "disable_existing_loggers": True,
+                    "formatters": {},
+                    "handlers": {},
+                    "loggers": {},
+                }
+
+            nonlocal server
+            config = uvicorn.Config(fastapi_app, host=host, port=port, **kwargs)
+            server = uvicorn.Server(config)
+
+            asyncio.run(server.serve())
+
+        server_thread = threading.Thread(target=run_web_server)
         server_thread.start()
 
         # Wait for the server to start
@@ -160,5 +171,7 @@ class App:
             webview.start()
 
         finally:
-            # TODO: This thread should really be killed rather than just waiting
+            assert server is not None
+
+            server.should_exit = True
             server_thread.join()

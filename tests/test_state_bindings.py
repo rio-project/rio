@@ -106,7 +106,7 @@ async def test_binding_assignment_on_child_after_reconciliation(MockApp):
 
     assert not app.dirty_widgets
 
-    # Rebuild the parent, which reconciles the child
+    # Rebuild the root widget, which reconciles the child
     await root_widget.force_refresh()
 
     text_widget.text = "Hello"
@@ -123,7 +123,7 @@ async def test_binding_assignment_on_parent_after_reconciliation(MockApp):
 
     assert not app.dirty_widgets
 
-    # Rebuild the parent, which reconciles the child
+    # Rebuild the root widget, which reconciles the child
     await root_widget.force_refresh()
 
     root_widget.text = "Hello"
@@ -149,7 +149,7 @@ async def test_binding_assignment_on_sibling_after_reconciliation(MockApp):
 
     assert not app.dirty_widgets
 
-    # Rebuild the parent, which reconciles the children
+    # Rebuild the root widget, which reconciles the children
     await root_widget.force_refresh()
 
     text1.text = "Hello"
@@ -168,7 +168,7 @@ async def test_binding_assignment_on_grandchild_after_reconciliation(MockApp):
 
     assert not app.dirty_widgets
 
-    # Rebuild the parent, which reconciles the child
+    # Rebuild the root widget, which reconciles the child
     await root_widget.force_refresh()
 
     text_widget.text = "Hello"
@@ -187,7 +187,7 @@ async def test_binding_assignment_on_middle_after_reconciliation(MockApp):
 
     assert not app.dirty_widgets
 
-    # Rebuild the parent, which reconciles the child
+    # Rebuild the root widget, which reconciles the child
     await root_widget.force_refresh()
 
     parent.text = "Hello"
