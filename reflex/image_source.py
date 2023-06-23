@@ -8,13 +8,11 @@ from PIL.Image import Image
 
 from . import assets
 
-ImageLike = Union[Path, Image, str, "ImageSource"]
-
 
 class ImageSource:
     def __init__(
         self,
-        image: ImageLike,
+        image: 'ImageLike',
         *,
         media_type: Optional[str] = None,
     ):
@@ -83,3 +81,6 @@ class ImageSource:
             return self._asset.data.read_bytes(), self._asset.media_type
         except (FileNotFoundError, IOError, OSError):
             raise ValueError(f"Failed to read image from {self._asset.data}")
+
+
+ImageLike = Union[Path, Image, str, ImageSource]

@@ -277,7 +277,13 @@ function replaceChildrenWithLayoutWidgets(
     }
 }
 
-function preprocessMessage(message: { [id: string]: WidgetState }): void {
+function preprocessMessage(message: { [id: string]: WidgetState }, rootWidgetId: string | number | null): string | number | null {
+    // Make sure the rootWidgetId is not a number, but a string. This ensures
+    // that there are no false negatives when compared to an id in the message.
+    if (typeof rootWidgetId === 'number') {
+        rootWidgetId = rootWidgetId.toString();
+    }
+
     let originalWidgetIds = Object.keys(message);
 
     // Keep track of which widgets have their parents in the message
@@ -289,12 +295,17 @@ function preprocessMessage(message: { [id: string]: WidgetState }): void {
         replaceChildrenWithLayoutWidgets(message[widgetId], childIds, message);
     }
 
-    // Find all widgets which have had a layout widget  injected, and make sure
+    // Find all widgets which have had a layout widget injected, and make sure
     // their parents are updated to point to the new widget.
     for (let widgetId of originalWidgetIds) {
         // Child of another widget in the message
         if (childIds.has(widgetId)) {
             console.log(`Discarding ${widgetId} because it is a child`);
+            continue;
+        }
+        
+        if (widgetId === rootWidgetId) {
+            rootWidgetId = createLayoutWidgetStates(widgetId, message[widgetId], message);
             continue;
         }
 
@@ -323,15 +334,17 @@ function preprocessMessage(message: { [id: string]: WidgetState }): void {
         message[parentId] = newParentState;
         console.log(`Parent of ${widgetId} is ${parentId}`);
     }
+
+    return rootWidgetId;
 }
 
 function updateWidgetStates(
     message: { [id: string]: WidgetState },
-    rootWidgetId: number | null
-) {
+    rootWidgetId: string | number | null
+): void {
     // Preprocess the message. This converts `_align_` and `_margin_` properties
     // into actual widgets, amongst other things.
-    preprocessMessage(message);
+    rootWidgetId = preprocessMessage(message, rootWidgetId);
     console.log(message);
 
     // Create a HTML element to hold all latent widgets, so they aren't

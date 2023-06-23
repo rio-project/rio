@@ -40,7 +40,7 @@ def read_frontend_template(template_name: str) -> str:
     Read a text file from the frontend directory and return its content. The
     results are cached to avoid repeated disk access.
     """
-    return (common.GENREATED_DIR / template_name).read_text()
+    return (common.GENREATED_DIR / template_name).read_text(encoding="utf-8")
 
 
 class AppServer(fastapi.FastAPI):
@@ -151,7 +151,7 @@ class AppServer(fastapi.FastAPI):
         # Fill in all placeholders
         js = js.replace("{session_token}", session_token)
         js = js.replace(
-            "'{initial_messages}'",
+            '"{initial_messages}"',
             json.dumps(initial_messages, indent=4),
         )
         js = js.replace("{}; // {child_attribute_names}", CHILD_ATTRIBUTE_NAMES_JSON)
