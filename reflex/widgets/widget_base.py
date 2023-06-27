@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import functools
 import weakref
 import inspect
 import json
@@ -15,20 +14,16 @@ from typing import (
     Callable,
     ClassVar,
     Dict,
-    Generic,
     Iterable,
     Optional,
     ParamSpec,
     Set,
     Type,
     TypeVar,
-    Union,
-    dataclass_transform,
-    overload,
 )
 
 import introspection
-from typing_extensions import Self
+from typing_extensions import dataclass_transform
 
 from .. import common, messages, session
 from ..common import Jsonable
@@ -70,6 +65,16 @@ def _make_unique_id() -> int:
     global _unique_id_counter
     _unique_id_counter += 1
     return _unique_id_counter
+
+
+def _get_annotated_instance_attributes(cls):
+    attrs = set()
+
+    for cls in cls.__mro__:
+        annotations = vars(cls).get("__annotations__", {})
+        attrs.update(annotations.keys())
+    
+    return attrs
 
 
 def is_widget_class(cls: Type[Any]) -> bool:
@@ -472,7 +477,7 @@ class Widget(ABC):
         raise NotImplementedError()
 
     def _iter_direct_children(self) -> Iterable["Widget"]:
-        for name in typing.get_type_hints(self.__class__):
+        for name in _get_annotated_instance_attributes(self.__class__):
             try:
                 value = getattr(self, name)
             except AttributeError:

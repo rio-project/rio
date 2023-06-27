@@ -4,9 +4,9 @@ import inspect
 import uniserde
 import enum
 import logging
-import functools
 import json
 import secrets
+import sys
 import logging
 from . import errors
 import asyncio
@@ -29,6 +29,30 @@ __all__ = ["Session"]
 
 
 T = typing.TypeVar("T")
+
+
+def _get_type_hints(cls: type) -> Dict[str, type]:
+    """
+    Reimplementation of `typing.get_type_hints` because it has a stupid bug in
+    python 3.10 where it dies if something is annotated as `dataclasses.KW_ONLY`.
+    """
+    type_hints = {}
+
+    for cls in cls.__mro__:
+        for attr_name, annotation in vars(cls).get('__annotations__', {}).items():
+            if attr_name in type_hints:
+                continue
+            
+            if isinstance(annotation, typing.ForwardRef):
+                annotation = annotation.__forward_code__
+            
+            if isinstance(annotation, str):
+                globs = vars(sys.modules[cls.__module__])
+                annotation = eval(annotation, globs)
+
+            type_hints[attr_name] = annotation
+
+    return type_hints
 
 
 @dataclass
@@ -520,7 +544,7 @@ class Session:
         )
 
         # Add user-defined state
-        for name, type_ in typing.get_type_hints(type(widget)).items():
+        for name, type_ in _get_type_hints(type(widget)).items():
             # Skip some values
             if name in (
                 "_",

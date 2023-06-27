@@ -14,6 +14,7 @@ import { ProgressCircleWidget } from './progressCircle';
 import { PlotWidget } from './plot';
 import { AlignWidget } from './align';
 import { MarginWidget } from './margin';
+import { MediaPlayerWidget } from './mediaPlayer';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
@@ -138,6 +139,7 @@ const widgetClasses = {
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Margin-builtin': MarginWidget,
+    'MediaPlayer-builtin': MediaPlayerWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
     'Plot-builtin': PlotWidget,
     'ProgressCircle-builtin': ProgressCircleWidget,

@@ -1,7 +1,7 @@
 import io
 import mimetypes
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import aiohttp
 from PIL.Image import Image
