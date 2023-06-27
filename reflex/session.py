@@ -42,10 +42,10 @@ def _get_type_hints(cls: type) -> Dict[str, type]:
         for attr_name, annotation in vars(cls).get('__annotations__', {}).items():
             if attr_name in type_hints:
                 continue
-            
+
             if isinstance(annotation, typing.ForwardRef):
                 annotation = annotation.__forward_code__
-            
+
             if isinstance(annotation, str):
                 globs = vars(sys.modules[cls.__module__])
                 annotation = eval(annotation, globs)
@@ -865,7 +865,7 @@ class Session:
             # Iterate over the children, but make sure to preserve the topology.
             # Can't just use `iter_direct_children` here, since that would
             # discard topological information.
-            for name, typ in typing.get_type_hints(type(new_widget)).items():
+            for name, typ in _get_type_hints(type(new_widget)).items():
                 origin, args = typing.get_origin(typ), typing.get_args(typ)
 
                 old_widgets: List[rx.Widget]
