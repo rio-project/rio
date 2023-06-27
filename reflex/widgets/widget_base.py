@@ -8,19 +8,8 @@ import traceback
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterable,
-    Optional,
-    ParamSpec,
-    Set,
-    Type,
-    TypeVar,
-)
+from typing import *  # type: ignore
+from typing_extensions import dataclass_transform
 
 import introspection
 from typing_extensions import dataclass_transform
@@ -73,7 +62,7 @@ def _get_annotated_instance_attributes(cls):
     for cls in cls.__mro__:
         annotations = vars(cls).get("__annotations__", {})
         attrs.update(annotations.keys())
-    
+
     return attrs
 
 
@@ -84,7 +73,7 @@ def is_widget_class(cls: Type[Any]) -> bool:
 def make_default_factory_for_value(value: T) -> Callable[[], T]:
     def default_factory() -> T:
         return value
-    
+
     default_factory.__name__ = default_factory.__qualname__ = f"return_{value!r}"
 
     return default_factory

@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "reflex" }]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 typing-extensions = "^4.5.0"
 fastapi = "^0.95.1"
 uvicorn = "^0.22.0"
@@ -21,6 +21,7 @@ pywebview = "^4.1"
 aiohttp = "^3.8.4"
 python-multipart = "^0.0.6"
 plotly = "^5.15.0"
+pytest = "^7.3.1"
 
 [tool.poetry.group.dev.dependencies]
 alt-pytest-asyncio = "^0.7.0"

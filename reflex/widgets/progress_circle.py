@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from .. import theme
 import reflex as rx
+from dataclasses import KW_ONLY
 
 from . import widget_base
 from .. import styling
@@ -11,9 +12,8 @@ __all__ = [
     "ProgressCircle",
 ]
 
-
 class ProgressCircle(widget_base.HtmlWidget):
-    _: rx.KW_ONLY
+    _: KW_ONLY
     color: styling.Color = theme.COLOR_ACCENT
     background_color: styling.Color = theme.COLOR_NEUTRAL
     progress: Optional[float] = None
