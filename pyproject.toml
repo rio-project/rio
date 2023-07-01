@@ -2,12 +2,12 @@
 name = "reflex-ui"
 version = "0.1.0"
 description = ""
-authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>"]
+authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>", "Paul Pinterits"]
 readme = "README.md"
 packages = [{ include = "reflex" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 typing-extensions = "^4.5.0"
 fastapi = "^0.95.1"
 uvicorn = "^0.22.0"

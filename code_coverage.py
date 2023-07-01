@@ -1,4 +1,3 @@
-
 import coverage
 import pytest
 import webbrowser

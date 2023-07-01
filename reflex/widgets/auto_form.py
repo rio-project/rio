@@ -92,6 +92,6 @@ class AutoFormBuilder:
 
         # Wrap everything in one container
         return rx.Column(
-            rows,
+            *rows,
             spacing=self.spacing,
         )

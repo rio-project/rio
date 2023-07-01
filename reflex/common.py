@@ -15,8 +15,8 @@ _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
 
 PACKAGE_ROOT_DIR = Path(__file__).resolve().parent
-GENREATED_DIR = PACKAGE_ROOT_DIR.parent / "generated"
-HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR.parent / "hosted-assets"
+GENREATED_DIR = PACKAGE_ROOT_DIR / "generated"
+HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR / "hosted-assets"
 
 
 Jsonable: TypeAlias = uniserde.Jsonable
