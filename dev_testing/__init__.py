@@ -78,6 +78,7 @@ class Sidebar(rx.Widget):
                     margin_top=4.0,
                 ),
                 align_y=0,
+                grow_y=False,
             ),
             style=rx.BoxStyle(
                 fill=COLOR_FG,
@@ -128,6 +129,8 @@ rx_app = rx.App(
     "Web Scheduler",
     WidgetShowcase,
 )
+
+rx_app.run_in_window()
 
 
 if __name__ == "__main__":
