@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Literal
-import reflex.common
+
 import plotly.express as px
 
 import reflex as rx
+import reflex.common
 import reflex.validator
-
 
 COLOR_BG = rx.Color.from_grey(0.6)
 COLOR_FG = rx.Color.from_grey(1.0)
@@ -88,6 +88,12 @@ class Sidebar(rx.Widget):
 
 class WidgetShowcase(rx.Widget):
     def build(self) -> rx.Widget:
+        return rx.Text(
+            "Fooo",
+            grow_x=False,
+            align_x=0.2,
+        )
+
         df = px.data.gapminder().query("country=='Canada'")
         fig = px.line(df, x="year", y="lifeExp", title="Life expectancy in Canada")
 
@@ -129,8 +135,6 @@ rx_app = rx.App(
     "Web Scheduler",
     WidgetShowcase,
 )
-
-rx_app.run_in_window()
 
 
 if __name__ == "__main__":

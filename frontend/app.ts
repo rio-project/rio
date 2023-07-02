@@ -18,7 +18,10 @@ import { MediaPlayerWidget } from './mediaPlayer';
 
 const sessionToken = '{session_token}';
 const initialMessages = '{initial_messages}';
-const CHILD_ATTRIBUTE_NAMES = {}; // {child_attribute_names};
+
+// @ts-ignore
+const CHILD_ATTRIBUTE_NAMES: { [id: string]: string[] } =
+    '{child_attribute_names}';
 
 let socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
@@ -279,7 +282,10 @@ function replaceChildrenWithLayoutWidgets(
     }
 }
 
-function preprocessMessage(message: { [id: string]: WidgetState }, rootWidgetId: string | number | null): string | number | null {
+function preprocessMessage(
+    message: { [id: string]: WidgetState },
+    rootWidgetId: string | number | null
+): string | number | null {
     // Make sure the rootWidgetId is not a number, but a string. This ensures
     // that there are no false negatives when compared to an id in the message.
     if (typeof rootWidgetId === 'number') {
@@ -302,26 +308,27 @@ function preprocessMessage(message: { [id: string]: WidgetState }, rootWidgetId:
     for (let widgetId of originalWidgetIds) {
         // Child of another widget in the message
         if (childIds.has(widgetId)) {
-            console.log(`Discarding ${widgetId} because it is a child`);
             continue;
         }
-        
+
         if (widgetId === rootWidgetId) {
-            rootWidgetId = createLayoutWidgetStates(widgetId, message[widgetId], message);
+            rootWidgetId = createLayoutWidgetStates(
+                widgetId,
+                message[widgetId],
+                message
+            );
             continue;
         }
 
         // The parent isn't contained in the message. Find and add it.
         let childElement = document.getElementById(`reflex-id-${widgetId}`);
         if (childElement === null) {
-            console.log(`Discarding ${widgetId} because it is not in the DOM`);
             continue;
         }
 
         let parentElement =
             getParentWidgetElementExcludingInjected(childElement);
         if (parentElement === null) {
-            console.log(`Discarding ${widgetId} because it has no parent`);
             continue;
         }
 
@@ -334,8 +341,10 @@ function preprocessMessage(message: { [id: string]: WidgetState }, rootWidgetId:
         let newParentState = { ...parentInstance.state };
         replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
         message[parentId] = newParentState;
-        console.log(`Parent of ${widgetId} is ${parentId}`);
     }
+
+    console.log('new message', message);
+    console.log(CHILD_ATTRIBUTE_NAMES);
 
     return rootWidgetId;
 }
@@ -347,7 +356,6 @@ function updateWidgetStates(
     // Preprocess the message. This converts `_align_` and `_margin_` properties
     // into actual widgets, amongst other things.
     rootWidgetId = preprocessMessage(message, rootWidgetId);
-    console.log(message);
 
     // Create a HTML element to hold all latent widgets, so they aren't
     // garbage collected while updating the DOM.

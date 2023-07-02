@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import functools
 import asyncio
-import reflex.widgets.metadata
-import plotly
+import functools
 import io
-import reflex as rx
 import json
 import secrets
 import traceback
@@ -15,9 +12,13 @@ from pathlib import Path
 from typing import *  # type: ignore
 
 import fastapi
+import plotly
 import timer_dict
 import uniserde
 from PIL import Image
+
+import reflex as rx
+import reflex.widgets.metadata
 
 from . import app, assets, common, messages, session, validator
 from .common import Jsonable
@@ -40,7 +41,7 @@ def read_frontend_template(template_name: str) -> str:
     Read a text file from the frontend directory and return its content. The
     results are cached to avoid repeated disk access.
     """
-    return (common.GENREATED_DIR / template_name).read_text(encoding="utf-8")
+    return (common.GENERATED_DIR / template_name).read_text(encoding="utf-8")
 
 
 class AppServer(fastapi.FastAPI):
@@ -154,7 +155,7 @@ class AppServer(fastapi.FastAPI):
             '"{initial_messages}"',
             json.dumps(initial_messages, indent=4),
         )
-        js = js.replace("{}; // {child_attribute_names}", CHILD_ATTRIBUTE_NAMES_JSON)
+        js = js.replace('"{child_attribute_names}"', CHILD_ATTRIBUTE_NAMES_JSON)
 
         html = html.replace("{title}", self.app.name)
         html = html.replace("/*{style}*/", css)

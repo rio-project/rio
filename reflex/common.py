@@ -1,21 +1,21 @@
-import hashlib
-from dataclasses import dataclass
-import fastapi
-import traceback
-import inspect
 import enum
+import hashlib
+import inspect
 import secrets
+import traceback
+from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
-import uniserde
 
+import fastapi
+import uniserde
 from typing_extensions import Annotated
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
 
 PACKAGE_ROOT_DIR = Path(__file__).resolve().parent
-GENREATED_DIR = PACKAGE_ROOT_DIR / "generated"
+GENERATED_DIR = PACKAGE_ROOT_DIR / "generated"
 HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR / "hosted-assets"
 
 
