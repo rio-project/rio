@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import dataclasses
-import weakref
 import inspect
 import json
 import traceback
 import typing
+import weakref
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
-from typing_extensions import dataclass_transform
 
 import introspection
 from typing_extensions import dataclass_transform
@@ -250,14 +249,11 @@ class Widget(ABC):
     margin_right: Optional[float] = None
     margin_bottom: Optional[float] = None
 
-    width: Optional[float] = None
-    height: Optional[float] = None
+    width: Union[Literal["natural", "grow"], float] = "natural"
+    height: Union[Literal["natural", "grow"], float] = "natural"
 
     align_x: Optional[float] = None
     align_y: Optional[float] = None
-
-    grow_x: bool = False
-    grow_y: bool = False
 
     # Weak reference to the widget whose `build` method returned this widget.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
@@ -296,14 +292,16 @@ class Widget(ABC):
         # replacing every default value with a default factory.
         cls_vars = vars(cls)
 
-        for attr_name in cls_vars.get('__annotations__', {}):
+        for attr_name in cls_vars.get("__annotations__", {}):
             try:
                 field_or_default = cls_vars[attr_name]
             except KeyError:
                 continue
 
             if not isinstance(field_or_default, dataclasses.Field):
-                field = dataclasses.field(default_factory=make_default_factory_for_value(field_or_default))
+                field = dataclasses.field(
+                    default_factory=make_default_factory_for_value(field_or_default)
+                )
                 setattr(cls, attr_name, field)
                 continue
 
@@ -311,7 +309,9 @@ class Widget(ABC):
             if field_or_default.default is dataclasses.MISSING:
                 continue
 
-            field_or_default.default_factory = make_default_factory_for_value(field_or_default.default)
+            field_or_default.default_factory = make_default_factory_for_value(
+                field_or_default.default
+            )
             field_or_default.default = dataclasses.MISSING
 
     @staticmethod

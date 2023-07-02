@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import *  # type: ignore
+
 import reflex as rx
 
 from . import widget_base
@@ -26,12 +27,10 @@ class Column(widget_base.HtmlWidget):
         margin_top: Optional[float] = None,
         margin_right: Optional[float] = None,
         margin_bottom: Optional[float] = None,
-        width: Optional[float] = None,
-        height: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
-        grow_x: bool = False,
-        grow_y: bool = False,
     ):
         assert isinstance(children, tuple), children
         for child in children:
@@ -50,8 +49,6 @@ class Column(widget_base.HtmlWidget):
             height=height,
             align_x=align_x,
             align_y=align_y,
-            grow_x=grow_x,
-            grow_y=grow_y,
         )
 
         self.children = list(children)

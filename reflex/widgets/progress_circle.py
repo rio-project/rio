@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from typing import Optional
-from .. import theme
-import reflex as rx
 from dataclasses import KW_ONLY
+from typing import *  # type: ignore
 
+import reflex as rx
+
+from .. import styling, theme
 from . import widget_base
-from .. import styling
 
 __all__ = [
     "ProgressCircle",
 ]
+
 
 class ProgressCircle(widget_base.HtmlWidget):
     _: KW_ONLY
@@ -24,7 +25,7 @@ class ProgressCircle(widget_base.HtmlWidget):
         color: rx.Color = theme.COLOR_ACCENT,
         background_color: rx.Color = theme.COLOR_NEUTRAL,
         progress: Optional[float] = None,
-        size: float = 3.5,
+        size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -35,8 +36,6 @@ class ProgressCircle(widget_base.HtmlWidget):
         margin_bottom: Optional[float] = None,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
-        grow_x: bool = False,
-        grow_y: bool = False,
     ):
         super().__init__(
             key=key,
@@ -51,8 +50,6 @@ class ProgressCircle(widget_base.HtmlWidget):
             height=size,
             align_x=align_x,
             align_y=align_y,
-            grow_x=grow_x,
-            grow_y=grow_y,
         )
 
         self.color = color

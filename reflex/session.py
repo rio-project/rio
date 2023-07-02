@@ -1,29 +1,24 @@
 from __future__ import annotations
 
-import inspect
-import uniserde
+import asyncio
 import enum
-import logging
+import inspect
 import json
+import logging
 import secrets
 import sys
-import logging
-from . import errors
-import asyncio
-from . import common
 import typing
-from . import styling
 import weakref
 from dataclasses import dataclass
-from typing import *  #  type: ignore
-from . import assets
+from typing import *  # type: ignore
+
+import uniserde
 
 import reflex as rx
 
-from . import app_server, messages
+from . import app_server, assets, common, errors, messages, styling
 from .common import Jsonable
 from .widgets import widget_base
-
 
 __all__ = ["Session"]
 
@@ -39,7 +34,7 @@ def _get_type_hints(cls: type) -> Dict[str, type]:
     type_hints = {}
 
     for cls in cls.__mro__:
-        for attr_name, annotation in vars(cls).get('__annotations__', {}).items():
+        for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
             if attr_name in type_hints:
                 continue
 
@@ -531,16 +526,16 @@ class Session:
             widget.margin_bottom,
         )
         result["_size_"] = (
-            widget.width,
-            widget.height,
+            widget.width if isinstance(widget.width, (int, float)) else None,
+            widget.height if isinstance(widget.height, (int, float)) else None,
         )
         result["_align_"] = (
             widget.align_x,
             widget.align_y,
         )
         result["_grow_"] = (
-            widget.grow_x,
-            widget.grow_y,
+            widget.width == "grow",
+            widget.height == "grow",
         )
 
         # Add user-defined state

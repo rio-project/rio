@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from .. import common
-
-from .. import styling
+from typing import *  # type: ignore
 from typing import Optional
 
 import reflex as rx
 
-from .. import theme
+from .. import common, styling, theme
 from . import widget_base
 
 __all__ = [
@@ -57,12 +55,10 @@ class Button(widget_base.Widget):
         margin_top: Optional[float] = None,
         margin_right: Optional[float] = None,
         margin_bottom: Optional[float] = None,
-        width: Optional[float] = None,
-        height: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
-        grow_x: bool = False,
-        grow_y: bool = False,
     ):
         return cls(
             text,
@@ -113,8 +109,6 @@ class Button(widget_base.Widget):
             height=height,
             align_x=align_x,
             align_y=align_y,
-            grow_x=grow_x,
-            grow_y=grow_y,
         )
 
     @classmethod
@@ -134,12 +128,10 @@ class Button(widget_base.Widget):
         margin_top: Optional[float] = None,
         margin_right: Optional[float] = None,
         margin_bottom: Optional[float] = None,
-        width: Optional[float] = None,
-        height: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
-        grow_x: bool = False,
-        grow_y: bool = False,
     ):
         base_style = rx.BoxStyle(
             fill=styling.Color.TRANSPARENT,
@@ -190,8 +182,6 @@ class Button(widget_base.Widget):
             height=height,
             align_x=align_x,
             align_y=align_y,
-            grow_x=grow_x,
-            grow_y=grow_y,
         )
 
     def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:

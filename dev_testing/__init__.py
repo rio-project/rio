@@ -78,7 +78,6 @@ class Sidebar(rx.Widget):
                     margin_top=4.0,
                 ),
                 align_y=0,
-                grow_y=False,
             ),
             style=rx.BoxStyle(
                 fill=COLOR_FG,
@@ -88,12 +87,6 @@ class Sidebar(rx.Widget):
 
 class WidgetShowcase(rx.Widget):
     def build(self) -> rx.Widget:
-        return rx.Text(
-            "Fooo",
-            grow_x=False,
-            align_x=0.2,
-        )
-
         df = px.data.gapminder().query("country=='Canada'")
         fig = px.line(df, x="year", y="lifeExp", title="Life expectancy in Canada")
 
@@ -101,7 +94,6 @@ class WidgetShowcase(rx.Widget):
             child=rx.Row(
                 Sidebar(
                     width=30,
-                    grow_x=False,
                 ),
                 ShowcaseCard(
                     "Hello Worlds",
@@ -117,7 +109,7 @@ class WidgetShowcase(rx.Widget):
                     ),
                     margin_x=4,
                     align_y=0.2,
-                    grow_x=True,
+                    width="grow",
                 ),
             ),
             style=rx.BoxStyle(fill=COLOR_BG),
