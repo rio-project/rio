@@ -443,7 +443,7 @@ class Session:
             ):
                 self.app_server.weakly_host_asset(as_fill._image._asset)
 
-            return as_fill._serialize(self.app_server.external_url)
+            return as_fill._serialize()
 
         # Colors
         if type_ is styling.Color:
@@ -465,7 +465,7 @@ class Session:
             ):
                 self.app_server.weakly_host_asset(value.fill._image._asset)
 
-            return value._serialize(self.app_server.external_url)
+            return value._serialize()
 
         # MarkdownStyle
         if type_ is styling.MarkdownStyle:
@@ -1037,7 +1037,7 @@ class Session:
             messages.EvaluateJavascript(
                 f"""
 const a = document.createElement('a')
-a.href = {json.dumps(as_asset.url(self.app_server.external_url))}
+a.href = {json.dumps(as_asset.url(None))}
 a.download = {json.dumps(file_name)}
 a.target = "_blank"
 document.body.appendChild(a)

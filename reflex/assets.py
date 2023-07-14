@@ -1,6 +1,6 @@
 import secrets
 from pathlib import Path
-from typing import Union
+from typing import *  # type: ignore
 
 
 class HostedAsset:
@@ -25,13 +25,23 @@ class HostedAsset:
         if isinstance(data, Path):
             assert data.exists(), f"Asset file {data} does not exist"
 
-    def url(self, server_external_url: str) -> str:
-        # TODO document this and/or enfoce it in the `AppServer` class already
-        assert not server_external_url.endswith(
-            "/"
-        ), "server_external_url must not end with a slash"
+    def url(self, server_external_url: Optional[str] = None) -> str:
+        """
+        Returns the URL at which the asset can be accessed. If
+        `server_external_url` is passed the result will be an absolute URL. If
+        not, a relative URL is returned instead.
+        """
 
-        return f"{server_external_url}/reflex/asset/temp-{self.secret_id}"
+        relative_url = f"/reflex/asset/temp-{self.secret_id}"
+
+        if server_external_url is None:
+            return relative_url
+        else:
+            # TODO document this and/or enfoce it in the `AppServer` class already
+            assert not server_external_url.endswith(
+                "/"
+            ), "server_external_url must not end with a slash"
+            return server_external_url + relative_url
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HostedAsset):

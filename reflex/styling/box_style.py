@@ -1,9 +1,11 @@
-from typing_extensions import Self
-from typing import Optional, Dict, Union, Tuple
-from .color import Color
 from dataclasses import dataclass
+from typing import Dict, Optional, Tuple, Union
+
+from typing_extensions import Self
+
 from ..common import Jsonable
 from . import fills
+from .color import Color
 
 
 @dataclass(frozen=True)
@@ -96,9 +98,9 @@ class BoxStyle:
             else shadow_offset_y,
         )
 
-    def _serialize(self, external_server_url: str) -> Dict[str, Jsonable]:
+    def _serialize(self) -> Dict[str, Jsonable]:
         return {
-            "fill": self.fill._serialize(external_server_url),
+            "fill": self.fill._serialize(),
             "strokeColor": self.stroke_color.rgba,
             "strokeWidth": self.stroke_width,
             "cornerRadius": self.corner_radius,

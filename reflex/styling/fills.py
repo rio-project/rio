@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, Iterable, Literal, Tuple, Union
-from ..image_source import ImageLike, ImageSource
 
 from ..common import Jsonable
+from ..image_source import ImageLike, ImageSource
 from .color import Color
 
 __all__ = [
@@ -30,7 +30,7 @@ class Fill(ABC):
         raise TypeError(f"Expected Fill or Color, got {type(value)}")
 
     @abstractmethod
-    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
+    def _serialize(self) -> Dict[str, Jsonable]:
         raise NotImplementedError()
 
 
@@ -38,7 +38,7 @@ class Fill(ABC):
 class SolidFill(Fill):
     color: Color
 
-    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
+    def _serialize(self) -> Dict[str, Jsonable]:
         return {
             "type": "solid",
             "color": self.color.rgba,
@@ -65,7 +65,7 @@ class LinearGradientFill(Fill):
             angle_degrees=angle_degrees,
         )
 
-    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
+    def _serialize(self) -> Dict[str, Jsonable]:
         return {
             "type": "linearGradient",
             "stops": [(color.rgba, position) for color, position in self.stops],
@@ -85,9 +85,9 @@ class ImageFill(Fill):
         self._image = ImageSource(image)
         self._fill_mode = fill_mode
 
-    def _serialize(self, server_external_url: str) -> Dict[str, Jsonable]:
+    def _serialize(self) -> Dict[str, Jsonable]:
         image_url = (
-            self._image._asset.url(server_external_url)
+            self._image._asset.url()
             if self._image._asset is not None
             else self._image._url
         )
