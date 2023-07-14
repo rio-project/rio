@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-import io
-from typing import Dict
-import plotly
-import plotly.graph_objects
-from abc import ABC, abstractmethod
+from typing import *  # type: ignore
 
 from reflex.common import Jsonable
 
 from . import widget_base
+
+try:
+    import plotly
+    import plotly.graph_objects
+except ImportError:
+    if TYPE_CHECKING:
+        import plotly
+
 
 __all__ = ["Plot"]
 

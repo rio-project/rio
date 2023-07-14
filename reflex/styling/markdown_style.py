@@ -1,6 +1,8 @@
-from dataclasses import dataclass, KW_ONLY
+from dataclasses import KW_ONLY, dataclass
+from typing import Literal, Optional, Tuple, Union
+
 from typing_extensions import Self
-from typing import Optional, Literal, Union, Tuple
+
 from .. import theme
 from . import text_style
 

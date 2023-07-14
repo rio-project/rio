@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import reflex as rx
+import enum
 from dataclasses import dataclass
 from typing import *  # type: ignore
-import enum
 
+import reflex as rx
 
 __all__ = [
     "AutoFormBuilder",
@@ -77,8 +77,8 @@ class AutoFormBuilder:
         for field in self.fields:
             rows.append(
                 rx.Row(
-                        rx.Text(field.name),
-                        self._build_input_field(field),
+                    rx.Text(field.name),
+                    self._build_input_field(field),
                     spacing=self.spacing,
                 )
             )

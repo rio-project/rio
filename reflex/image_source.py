@@ -12,7 +12,7 @@ from . import assets
 class ImageSource:
     def __init__(
         self,
-        image: 'ImageLike',
+        image: "ImageLike",
         *,
         media_type: Optional[str] = None,
     ):

@@ -1,7 +1,7 @@
-import pytest
-
 import asyncio
 from typing import Container, List, Mapping
+
+import pytest
 
 import reflex as rx
 from reflex.app_server import AppServer
@@ -40,7 +40,7 @@ class _MockApp:
 
     def get_build_output(self, widget: rx.Widget) -> rx.Widget:
         return self._session._weak_widget_data_by_widget[widget].build_result
-    
+
     async def refresh(self) -> None:
         await self._session._refresh()
 

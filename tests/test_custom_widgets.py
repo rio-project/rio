@@ -1,6 +1,7 @@
-import reflex as rx
-from typing import List
 import dataclasses
+from typing import List
+
+import reflex as rx
 
 
 def test_fields_with_defaults():

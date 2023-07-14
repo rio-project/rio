@@ -1,12 +1,11 @@
-
 from __future__ import annotations
 
 from typing import Literal
 
 import reflex as rx
 
-from . import widget_base
 from ..image_source import ImageLike
+from . import widget_base
 
 __all__ = ["Image"]
 

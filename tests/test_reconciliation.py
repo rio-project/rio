@@ -1,4 +1,3 @@
-
 import reflex as rx
 
 
@@ -9,7 +8,7 @@ async def test_default_values_arent_considered_explicitly_set(MockApp):
         def __init__(self, label, size=5):
             super().__init__(width=size, height=size)
             self.label = label
-        
+
         def build(self):
             return rx.Text(self.label, width=self.width, height=self.height)
 

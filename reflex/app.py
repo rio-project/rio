@@ -7,12 +7,18 @@ from typing import Awaitable, Callable, Optional
 
 import fastapi
 import uvicorn
-import webview
+
+import reflex as rx
 
 from . import app_server, validator
 from .image_source import ImageLike, ImageSource
 from .widgets import widget_base
-import reflex as rx
+
+# Only available with the `window` extra
+try:
+    import webview
+except ImportError:
+    webview = None
 
 
 __all__ = [
@@ -120,14 +126,21 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[rx.Session], validator.Validator]] = None,
+        _validator_factory: Optional[
+            Callable[[rx.Session], validator.Validator]
+        ] = None,
     ):
+        if webview is None:
+            raise Exception(
+                "The `window` extra is required to use `App.run_in_window`. Use `pip install reflex[window]` to install it."
+            )
+
         # Unfortunately, WebView must run in the main thread, which makes this
         # tricky. We'll have to banish uvicorn to a background thread, and shut
         # it down when the window is closed.
 
         # TODO: How to choose a free port?
-        host = 'localhost'
+        host = "localhost"
         port = 8000
         url = f"http://{host}:{port}"
 

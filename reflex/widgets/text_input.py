@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-
 from ..common import Jsonable
 from . import widget_base
 

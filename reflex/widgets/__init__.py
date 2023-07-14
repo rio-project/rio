@@ -1,3 +1,4 @@
+from . import metadata
 from .auto_form import *
 from .button import *
 from .column import *
@@ -7,6 +8,7 @@ from .image import *
 from .markdown_view import *
 from .media_player import *
 from .mouse_event_listener import *
+from .plot import *
 from .progress_circle import *
 from .rectangle import *
 from .row import *
@@ -15,5 +17,3 @@ from .switch import *
 from .text import *
 from .text_input import *
 from .widget_base import *
-from .plot import *
-from .metadata import *

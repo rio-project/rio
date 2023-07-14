@@ -1,8 +1,10 @@
-from dataclasses import dataclass, KW_ONLY
+from dataclasses import KW_ONLY, dataclass
+from typing import Dict, Literal, Optional
+
 from typing_extensions import Self
-from typing import Optional, Literal, Dict
-from .color import Color
+
 from ..common import Jsonable
+from .color import Color
 
 
 @dataclass(frozen=True)

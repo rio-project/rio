@@ -1,6 +1,6 @@
 from __future__ import annotations
-from .. import session
 
+from .. import session
 from . import widget_base
 
 __all__ = [

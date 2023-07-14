@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional, Literal
-from .. import theme
-from .. import common
+from typing import Literal, Optional
+
 import reflex as rx
 
+from .. import common, styling, theme
 from . import widget_base
-from .. import styling
 
 __all__ = [
     "Rectangle",

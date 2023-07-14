@@ -124,9 +124,11 @@ def validator_factory(sess: rx.Session) -> rx.validator.Validator:  # type: igno
 
 
 rx_app = rx.App(
-    "Web Scheduler",
+    "Reflex Showcase",
     WidgetShowcase,
 )
+
+rx_app.run_in_window()
 
 
 if __name__ == "__main__":

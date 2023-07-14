@@ -3,13 +3,12 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import Dict
 
-from reflex.common import Jsonable
-from .. import theme
-
 from typing_extensions import Self
 
 import reflex as rx
+from reflex.common import Jsonable
 
+from .. import theme
 from ..common import Jsonable
 from . import widget_base
 
