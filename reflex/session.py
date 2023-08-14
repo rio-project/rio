@@ -1130,3 +1130,7 @@ document.body.removeChild(a)
 
         # Let the widget handle the message
         await widget._handle_message(payload)
+
+    @unicall.local(name="ping")
+    async def _ping(self, ping: str) -> str:
+        return "pong"

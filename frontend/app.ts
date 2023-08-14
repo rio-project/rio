@@ -160,7 +160,7 @@ async function processMessage(message: any) {
     console.log('Received message: ', message);
 
     // If this isn't a method call, ignore it
-    if (message.method === null) {
+    if (message.method === undefined) {
         return;
     }
 
@@ -179,7 +179,7 @@ async function processMessage(message: any) {
         await requestFileUpload(message.params);
         response = null;
     } else {
-        throw `Encountered unknown message type: ${message}`;
+        throw `Encountered unknown RPC method: ${message}`;
     }
 
     // Respond to the message
@@ -670,6 +670,19 @@ function main() {
     socket.addEventListener('message', onMessage);
     socket.addEventListener('error', onError);
     socket.addEventListener('close', onClose);
+
+    // Some proxies kill idle websocket connections. Send pings occasionally to
+    // keep the connection alive.
+    //
+    // Make sure to set an ID so the server replies
+    setInterval(() => {
+        sendMessageOverWebsocket({
+            jsonrpc: '2.0',
+            method: 'ping',
+            params: ['ping'],
+            id: `ping-${Date.now()}`,
+        });
+    }, 20_000);
 }
 
 function onOpen() {

@@ -376,7 +376,7 @@ class AppServer(fastapi.FastAPI):
         sess = session.Session(
             root_widget,
             send_message,
-            websocket.receive_json,
+            receive_message,
             self,
         )
 
@@ -388,12 +388,16 @@ class AppServer(fastapi.FastAPI):
         # Trigger the `on_session_started` event
         await common.call_event_handler(self.on_session_started, sess)
 
-        # Trigger an initial build. This will also send the initial state to
-        # the frontend.
+        # Trigger an initial build. This will also send the initial state to the
+        # frontend.
+        #
+        # This is done in a task, because the server is not yet running, so the
+        # method would never receive a response, and thus would hang
+        # indefinitely.
         sess._register_dirty_widget(
             root_widget, include_fundamental_children_recursively=True
         )
-        await sess._refresh()
+        asyncio.create_task(sess._refresh())
 
         # Serve the socket
         await sess.serve()
