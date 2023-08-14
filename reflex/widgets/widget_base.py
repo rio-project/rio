@@ -492,7 +492,7 @@ class Widget(ABC):
         for child in self._iter_direct_children():
             yield from child._iter_direct_and_indirect_children(True)
 
-    async def _handle_message(self, msg: Jsonable) -> None:
+    async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
     @typing.overload

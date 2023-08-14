@@ -1085,13 +1085,6 @@ document.body.removeChild(a)
         because a widget has been deleted while the message was in flight.
         """
 
-        # Get the widget this message is addressed to
-        try:
-            widget_id = msg.widget_id  # type: ignore
-        except AttributeError:
-            raise NotImplementedError("Encountered message without widget ID")
-
-        # Let the widget handle the message
         try:
             return self._lookup_widget(widget_id)
         except KeyError:
@@ -1129,7 +1122,7 @@ document.body.removeChild(a)
             return
 
         # Let the widget handle the message
-        await widget._handle_message(payload)
+        await widget._on_message(payload)
 
     @unicall.local(name="ping")
     async def _ping(self, ping: str) -> str:
