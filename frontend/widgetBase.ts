@@ -1,4 +1,4 @@
-import { sendMessageOverWebsocket } from './app';
+import { callRemoteMethodDiscardResponse } from './app';
 
 /// Base for all widget states. Updates received from the backend are partial,
 /// hence most properties may be undefined.
@@ -18,10 +18,7 @@ export abstract class WidgetBase {
     state: object;
     layoutCssProperties: object;
 
-    constructor(
-        elementId: string,
-        state: WidgetState
-    ) {
+    constructor(elementId: string, state: WidgetState) {
         this.elementId = elementId;
         this.state = state;
         this.layoutCssProperties = {};
@@ -40,7 +37,6 @@ export abstract class WidgetBase {
 
         return element;
     }
-
 
     /// Creates the HTML element associated with this widget. This function does
     /// not attach the element to the DOM, but merely returns it.
@@ -83,8 +79,7 @@ export abstract class WidgetBase {
     /// message is an arbitrary JSON object and will be passed to the instance's
     /// `_on_message` method.
     sendMessageToBackend(message: object): void {
-        sendMessageOverWebsocket({
-            type: 'widgetMessage',
+        callRemoteMethodDiscardResponse('widgetMessage', {
             // Remove the leading `reflex-id-` from the element's ID
             widgetId: parseInt(this.elementId.substring(10)),
             payload: message,
@@ -108,8 +103,7 @@ export abstract class WidgetBase {
         this._setStateDontNotifyBackend(deltaState);
 
         // Notify the backend
-        sendMessageOverWebsocket({
-            type: 'widgetStateUpdate',
+        callRemoteMethodDiscardResponse('widgetStateUpdate', {
             // Remove the leading `reflex-id-` from the element's ID
             widgetId: parseInt(this.elementId.substring(10)),
             deltaState: deltaState,

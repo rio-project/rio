@@ -12,11 +12,12 @@ import weakref
 from dataclasses import dataclass
 from typing import *  # type: ignore
 
+import unicall
 import uniserde
 
 import reflex as rx
 
-from . import app_server, assets, common, errors, messages, styling
+from . import app_server, assets, common, errors, styling
 from .common import Jsonable
 from .widgets import widget_base
 
@@ -69,7 +70,7 @@ class WontSerialize(Exception):
     pass
 
 
-class Session:
+class Session(unicall.Unicall):
     """
     A session corresponds to a single connection to a client. It maintains all
     state related to this client including the GUI.
@@ -78,11 +79,13 @@ class Session:
     def __init__(
         self,
         root_widget: rx.Widget,
-        send_message: Callable[[messages.OutgoingMessage], Awaitable[None]],
+        send_message: Callable[[Jsonable], Awaitable[None]],
+        receive_message: Callable[[], Awaitable[Jsonable]],
         app_server_: app_server.AppServer,
     ):
+        super().__init__(send_message=send_message, receive_message=receive_message)
+
         self.root_widget = root_widget
-        self.send_message = send_message
         self.app_server = app_server_
 
         # Weak dictionaries to hold additional information about widgets. These
@@ -376,9 +379,7 @@ class Session:
                 ):
                     continue
 
-                for msg in widget._build_initialization_messages(self):
-                    await self.send_message(msg)
-
+                await widget._initialize_on_client(self)
                 self._initialized_html_widgets.add(type(widget))
 
             # Send the new state to the client if necessary
@@ -393,9 +394,7 @@ class Session:
             else:
                 root_widget_id = None
 
-            await self.send_message(
-                messages.UpdateWidgetStates(delta_states, root_widget_id)
-            )
+            await self._update_widget_states(delta_states, root_widget_id)
 
     def _serialize_and_host_value(self, value: Any, type_: Type) -> Jsonable:
         """
@@ -574,28 +573,6 @@ class Session:
                 pass
 
         return result
-
-    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
-        """
-        Handle a message from the client. This is the main entry point for
-        messages from the client.
-        """
-        # Get the widget this message is addressed to
-        try:
-            widget_id = msg.widget_id  # type: ignore
-        except AttributeError:
-            raise NotImplementedError("Encountered message without widget ID")
-
-        # Let the widget handle the message
-        try:
-            widget = self._lookup_widget(widget_id)
-        except KeyError:
-            logging.warn(
-                f"Encountered message for unknown widget {widget_id}. (The widget might have been deleted in the meantime.)"
-            )
-            return
-
-        await widget._handle_message(msg)
 
     def _reconcile_tree(self, old_build_data: WidgetData, new_build: rx.Widget) -> None:
         # Find all pairs of widgets which should be reconciled
@@ -983,12 +960,10 @@ class Session:
             ]
 
         # Tell the frontend to upload a file
-        await self.send_message(
-            messages.RequestFileUpload(
-                upload_url=f"{self.app_server.external_url}/reflex/upload/{upload_id}",
-                file_extensions=file_extensions,
-                multiple=multiple,
-            )
+        await self._request_file_upload(
+            upload_url=f"/reflex/upload/{upload_id}",
+            file_extensions=file_extensions,
+            multiple=multiple,
         )
 
         # Wait for the user to upload files
@@ -1033,9 +1008,8 @@ class Session:
         self.app_server.weakly_host_asset(as_asset)
 
         # Tell the frontend to download the file
-        await self.send_message(
-            messages.EvaluateJavascript(
-                f"""
+        await self._evaluate_javascript(
+            f"""
 const a = document.createElement('a')
 a.href = {json.dumps(as_asset.url(None))}
 a.download = {json.dumps(file_name)}
@@ -1044,7 +1018,6 @@ document.body.appendChild(a)
 a.click()
 document.body.removeChild(a)
 """
-            )
         )
 
         # Keep the asset alive for some time
@@ -1071,3 +1044,89 @@ document.body.removeChild(a)
             return self._attachments[typ]
         except KeyError:
             raise KeyError(typ)
+
+    @unicall.remote(name="updateWidgetStates", parameter_format="dict")
+    async def _update_widget_states(
+        self,
+        # Maps widget ids to serialized widgets. The widgets may be partial,
+        # i.e. any property may be missing.
+        delta_states: Dict[int, Any],
+        # Tells the client to make the given widget the new root widget.
+        root_widget_id: Optional[int],
+    ) -> None:
+        """
+        Replace all widgets in the UI with the given one.
+        """
+        raise NotImplementedError
+
+    @unicall.remote(name="evaluateJavaScript", parameter_format="dict")
+    async def _evaluate_javascript(self, java_script_source: str) -> Any:
+        """
+        Evaluate the given javascript code in the client.
+        """
+        raise NotImplementedError
+
+    @unicall.remote(name="requestFileUpload", parameter_format="dict")
+    async def _request_file_upload(
+        self,
+        upload_url: str,
+        file_extensions: Optional[List[str]],
+        multiple: bool,
+    ) -> None:
+        """
+        Tell the client to upload a file to the server.
+        """
+        raise NotImplementedError
+
+    def _try_get_widget_for_message(self, widget_id: int) -> Optional[rx.Widget]:
+        """
+        Attempts to get the widget referenced by `widget_id`. Returns `None` if
+        there is no such widget. This can happen during normal opration, e.g.
+        because a widget has been deleted while the message was in flight.
+        """
+
+        # Get the widget this message is addressed to
+        try:
+            widget_id = msg.widget_id  # type: ignore
+        except AttributeError:
+            raise NotImplementedError("Encountered message without widget ID")
+
+        # Let the widget handle the message
+        try:
+            return self._lookup_widget(widget_id)
+        except KeyError:
+            logging.warn(
+                f"Encountered message for unknown widget {widget_id}. (The widget might have been deleted in the meantime.)"
+            )
+            return None
+
+    @unicall.local(name="widgetStateUpdate")
+    async def _widget_state_update(
+        self,
+        widget_id: int,
+        delta_state: Any,
+    ) -> None:
+        # Get the widget
+        widget = self._try_get_widget_for_message(widget_id)
+
+        if widget is None:
+            return
+
+        # Update the widget's state
+        assert isinstance(widget, widget_base.HtmlWidget), widget
+        await widget._on_state_update(delta_state)
+
+    @unicall.local(name="widgetMessage")
+    async def widget_message(
+        self,
+        widget_id: int,
+        payload: Any,
+    ) -> None:
+        # Get the widget
+        widget = self._try_get_widget_for_message(widget_id)
+
+        if widget is None:
+            return
+
+        # Let the widget handle the message
+        await widget._handle_message(payload)

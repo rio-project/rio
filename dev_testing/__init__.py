@@ -128,8 +128,6 @@ rx_app = rx.App(
     WidgetShowcase,
 )
 
-rx_app.run_in_window()
-
 
 if __name__ == "__main__":
     rx_app.run_as_web_server(

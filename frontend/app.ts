@@ -17,7 +17,6 @@ import { MarginWidget } from './margin';
 import { MediaPlayerWidget } from './mediaPlayer';
 
 const sessionToken = '{session_token}';
-const initialMessages = '{initial_messages}';
 
 // @ts-ignore
 const CHILD_ATTRIBUTE_NAMES: { [id: string]: string[] } =
@@ -157,18 +156,38 @@ const widgetClasses = {
 
 globalThis.widgetClasses = widgetClasses;
 
-function processMessage(message: any) {
+async function processMessage(message: any) {
     console.log('Received message: ', message);
 
-    if (message.type == 'updateWidgetStates') {
-        updateWidgetStates(message.deltaStates, message.rootWidgetId);
-    } else if (message.type == 'evaluateJavascript') {
-        eval(message.javascriptSource);
-    } else if (message.type == 'requestFileUpload') {
-        requestFileUpload(message);
+    // If this isn't a method call, ignore it
+    if (message.method === null) {
+        return;
+    }
+
+    // Delegate to the appropriate handler
+    let response;
+
+    if (message.method == 'updateWidgetStates') {
+        await updateWidgetStates(
+            message.params.deltaStates,
+            message.params.rootWidgetId
+        );
+        response = null;
+    } else if (message.method == 'evaluateJavascript') {
+        response = await eval(message.params.javaScriptSource);
+    } else if (message.method == 'requestFileUpload') {
+        await requestFileUpload(message.params);
+        response = null;
     } else {
         throw `Encountered unknown message type: ${message}`;
     }
+
+    // Respond to the message
+    await sendMessageOverWebsocket({
+        jsonrpc: '2.0',
+        id: message.id,
+        result: response,
+    });
 }
 
 function getCurrentWidgetState(
@@ -342,9 +361,6 @@ function preprocessMessage(
         replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
         message[parentId] = newParentState;
     }
-
-    console.log('new message', message);
-    console.log(CHILD_ATTRIBUTE_NAMES);
 
     return rootWidgetId;
 }
@@ -566,7 +582,7 @@ export function replaceChildren(
     }
 }
 
-function requestFileUpload(message: any) {
+function requestFileUpload(message: any): void {
     // Create a file upload input element
     let input = document.createElement('input');
     input.type = 'file';
@@ -641,12 +657,6 @@ function main() {
     pixelsPerEm = measure.offsetHeight / 10;
     document.body.removeChild(measure);
 
-    // Process initial messages
-    console.log(`Processing ${initialMessages.length} initial message(s)`);
-    for (let message of initialMessages) {
-        processMessage(message);
-    }
-
     // Connect to the websocket
     var url = new URL(
         `/reflex/ws?sessionToken=${sessionToken}`,
@@ -693,6 +703,17 @@ export function sendMessageOverWebsocket(message: object) {
     console.log('Sending message: ', message);
 
     socket.send(JSON.stringify(message));
+}
+
+export function callRemoteMethodDiscardResponse(
+    method: string,
+    params: object
+) {
+    sendMessageOverWebsocket({
+        jsonrpc: '2.0',
+        method: method,
+        params: params,
+    });
 }
 
 main();

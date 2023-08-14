@@ -13,7 +13,7 @@ from typing import *  # type: ignore
 import introspection
 from typing_extensions import dataclass_transform
 
-from .. import common, messages, session
+from .. import common, session
 from ..common import Jsonable
 
 __all__ = [
@@ -492,7 +492,7 @@ class Widget(ABC):
         for child in self._iter_direct_children():
             yield from child._iter_direct_and_indirect_children(True)
 
-    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
+    async def _handle_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
     @typing.overload
@@ -587,9 +587,7 @@ class HtmlWidget(Widget):
         super().__init_subclass__()
 
     @classmethod
-    def _build_initialization_messages(
-        cls, sess: session.Session
-    ) -> Iterable[messages.OutgoingMessage]:
+    async def _initialize_on_client(cls, sess: session.Session) -> None:
         message_source = ""
 
         javascript_source = cls.build_javascript_source(sess)
@@ -608,20 +606,7 @@ class HtmlWidget(Widget):
             }
 
         if message_source:
-            yield messages.EvaluateJavascript(javascript_source=message_source)
-
-    async def _handle_message(self, msg: messages.IncomingMessage) -> None:
-        # The frontend has requested the widget's staet to be changed
-        if isinstance(msg, messages.WidgetStateUpdate):
-            await self._on_state_update(msg.delta_state)
-
-        # A custom message was sent by the frontend
-        elif isinstance(msg, messages.WidgetMessage):
-            await self._on_message(msg.payload)
-
-        # Unknown, chain up
-        else:
-            await super()._handle_message(msg)
+            await sess._evaluate_javascript(message_source)
 
     async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
         """

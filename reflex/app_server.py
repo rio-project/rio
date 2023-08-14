@@ -20,7 +20,7 @@ from PIL import Image
 import reflex as rx
 import reflex.widgets.metadata
 
-from . import app, assets, common, messages, session, validator
+from . import app, assets, common, session, validator
 from .common import Jsonable
 
 __all__ = [
@@ -141,9 +141,6 @@ class AppServer(fastapi.FastAPI):
         session_token = secrets.token_urlsafe()
         self._active_session_tokens[session_token] = None
 
-        # Create a list of all messages the frontend should process immediately
-        initial_messages: List[Jsonable] = [m.as_json() for m in []]
-
         # Load the templates
         html = read_frontend_template("index.html")
         js = read_frontend_template("app.js")
@@ -151,10 +148,6 @@ class AppServer(fastapi.FastAPI):
 
         # Fill in all placeholders
         js = js.replace("{session_token}", session_token)
-        js = js.replace(
-            '"{initial_messages}"',
-            json.dumps(initial_messages, indent=4),
-        )
         js = js.replace('"{child_attribute_names}"', CHILD_ATTRIBUTE_NAMES_JSON)
 
         html = html.replace("{title}", self.app.name)
@@ -361,15 +354,21 @@ class AppServer(fastapi.FastAPI):
 
         # Create a function for sending messages to the frontend. This function
         # will also pipe the message to the validator if one is present.
-        async def send_message(
-            msg: messages.OutgoingMessage,
-        ) -> None:
-            nonlocal validator
+        if self.validator_factory is None:
+            send_message = websocket.send_json  # type: ignore
+            receive_message = websocket.receive_json  # type: ignore
+        else:
 
-            if validator is not None:
-                validator.handle_outgoing_message(msg)
+            async def send_message(msg: uniserde.Jsonable) -> None:
+                assert isinstance(validator_instance, validator.Validator)
+                validator_instance.handle_outgoing_message(msg)
+                await websocket.send_json(msg)
 
-            await websocket.send_json(msg.as_json())
+            async def receive_message() -> uniserde.Jsonable:
+                assert isinstance(validator_instance, validator.Validator)
+                msg = await websocket.receive_json()
+                validator_instance.handle_incoming_message(msg)
+                return msg
 
         # Create a session instance to hold all of this state in an organized
         # fashion
@@ -377,11 +376,12 @@ class AppServer(fastapi.FastAPI):
         sess = session.Session(
             root_widget,
             send_message,
+            websocket.receive_json,
             self,
         )
 
         # Optionally create a validator
-        validator = (
+        validator_instance = (
             None if self.validator_factory is None else self.validator_factory(sess)
         )
 
@@ -395,34 +395,5 @@ class AppServer(fastapi.FastAPI):
         )
         await sess._refresh()
 
-        while True:
-            # Refresh the session's duration
-            self._active_session_tokens[session_token] = None
-
-            # Listen for incoming messages and react to them
-            try:
-                message_json = await websocket.receive_json()
-                message = messages.IncomingMessage.from_json(message_json)
-
-            # Don't spam when a client disconnects
-            except fastapi.websockets.WebSocketDisconnect:
-                return
-
-            # Handle invalid JSON
-            except (
-                uniserde.SerdeError,
-                json.JSONDecodeError,
-                UnicodeDecodeError,
-            ):
-                traceback.print_exc()
-                raise fastapi.HTTPException(
-                    status_code=fastapi.status.HTTP_400_BAD_REQUEST,
-                    detail="Received invalid JSON in websocket message",
-                )
-
-            # Invoke the validator if one is present
-            if validator is not None:
-                validator.handle_incoming_message(message)
-
-            # Delegate to the session
-            await sess._handle_message(message)
+        # Serve the socket
+        await sess.serve()

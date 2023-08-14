@@ -3,11 +3,13 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set, Union
+from typing import *  # type: ignore
+
+import uniserde
 
 import reflex.widgets.metadata
 
-from . import messages, session
+from . import session
 from .common import Jsonable
 
 __all__ = [
@@ -135,7 +137,9 @@ class Validator:
 
     def dump_message(
         self,
-        msg: Union[messages.IncomingMessage, messages.OutgoingMessage],
+        msg: Jsonable,
+        *,
+        incoming: bool,
     ):
         """
         Dump the message to a JSON file.
@@ -145,17 +149,11 @@ class Validator:
         if self.dump_directory_path is None:
             return
 
-        direction = (
-            "incoming" if isinstance(msg, messages.IncomingMessage) else "outgoing"
-        )
+        direction = "incoming" if incoming else "outgoing"
         path = self.dump_directory_path / f"message-{direction}.json"
 
-        with open(path, "w") as f:
-            json.dump(
-                msg.as_json(),
-                f,
-                indent=4,
-            )
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(msg, f, indent=4)
 
     def dump_client_state(
         self,
@@ -260,7 +258,7 @@ class Validator:
 
         return result
 
-    def handle_incoming_message(self, msg: messages.IncomingMessage) -> None:
+    def handle_incoming_message(self, msg: Any) -> None:
         """
         Process a message passed from Client -> Server.
 
@@ -269,16 +267,21 @@ class Validator:
         """
 
         # Delegate to the appropriate handler
-        handler_name = f"_handle_incoming_{type(msg).__name__}"
+        try:
+            method = msg["method"]
+        except KeyError:
+            return
+
+        handler_name = f"_handle_incoming_{method}"
 
         try:
             handler = getattr(self, handler_name)
         except AttributeError:
             return
 
-        handler(msg)
+        handler(msg["params"])
 
-    def handle_outgoing_message(self, msg: messages.OutgoingMessage) -> None:
+    def handle_outgoing_message(self, msg: Any) -> None:
         """
         Process a message passed from Server -> Client.
 
@@ -287,24 +290,26 @@ class Validator:
         """
 
         # Delegate to the appropriate handler
-        handler_name = f"_handle_outgoing_{type(msg).__name__}"
+        try:
+            method = msg["method"]
+        except KeyError:
+            return
+
+        handler_name = f"_handle_outgoing_{method}"
 
         try:
             handler = getattr(self, handler_name)
         except AttributeError:
             return
 
-        handler(msg)
+        handler(msg["params"])
 
-    def _handle_outgoing_UpdateWidgetStates(
-        self,
-        msg: messages.UpdateWidgetStates,
-    ) -> None:
+    def _handle_outgoing_updateWidgetStates(self, msg: Any) -> None:
         # Dump the message, if requested
-        self.dump_message(msg)
+        self.dump_message(msg, incoming=False)
 
         # Update the individual widget states
-        for widget_id, delta_state in msg.delta_states.items():
+        for widget_id, delta_state in msg["deltaStates"].items():
             # Get the widget's existing state
             try:
                 widget = self.widgets_by_id[widget_id]
@@ -335,12 +340,12 @@ class Validator:
                 widget.state.update(delta_state)
 
         # Update the root widget if requested
-        if msg.root_widget_id is not None:
+        if msg["rootWidgetId"] is not None:
             try:
-                self.root_widget = self.widgets_by_id[msg.root_widget_id]
+                self.root_widget = self.widgets_by_id[msg["rootWidgetId"]]
             except KeyError:
                 raise ValidationError(
-                    f"Attempted to set root widget to unknown widget with id `{msg.root_widget_id}`"
+                    f"Attempted to set root widget to unknown widget with id `{msg['rootWidgetId']}`"
                 ) from None
 
         # If no root widget is known yet, this message has to contain one
@@ -375,7 +380,7 @@ class Validator:
 
         # Look for any widgets which were sent in the message, but are not
         # actually used in the widget tree
-        ids_sent = set(msg.delta_states.keys())
+        ids_sent = set(msg["deltaStates"].keys())
         ids_existing = set(self.widgets_by_id.keys())
         ids_superfluous = sorted(ids_sent - ids_existing)
 
@@ -387,9 +392,9 @@ class Validator:
         # Dump the client state if requested
         self.dump_client_state()
 
-    def _handle_outgoing_EvaluateJavascript(self, msg: messages.EvaluateJavascript):
+    def _handle_outgoing_evaluateJavascript(self, msg: Any):
         # Is this message registering a new widget class?
-        match = re.search(r"window.widgetClasses\['(.*)'\]", msg.javascript_source)
+        match = re.search(r"window.widgetClasses\['(.*)'\]", msg["javaScriptSource"])
 
         if match is None:
             return

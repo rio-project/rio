@@ -16,7 +16,7 @@ from .widgets import widget_base
 
 # Only available with the `window` extra
 try:
-    import webview
+    import webview  # type: ignore
 except ImportError:
     webview = None
 
