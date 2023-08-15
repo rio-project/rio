@@ -1,11 +1,12 @@
 import asyncio
+import copy
 from typing import Container, List, Mapping
 
 import pytest
+import uniserde
 
 import reflex as rx
 from reflex.app_server import AppServer
-from reflex.messages import OutgoingMessage
 
 
 class _MockApp:
@@ -18,12 +19,16 @@ class _MockApp:
         self._app_server = AppServer(
             self._app,
             external_url="https://unit.test",
-            on_session_started=None,
+            on_session_start=None,
+            on_session_end=None,
+            default_user_settings=rx.UserSettings(),
             validator_factory=None,
         )
         self._session = rx.Session(
             root_widget,
             self._send_message,
+            self._receive_message,
+            copy.deepcopy(self._app_server.default_user_settings),
             self._app_server,
         )
 
@@ -33,6 +38,9 @@ class _MockApp:
 
     async def _send_message(self, message: OutgoingMessage) -> None:
         self.outgoing_messages.append(message)
+
+    async def _receive_message(self) -> uniserde.Jsonable:
+        raise NotImplementedError("This is a placeholder that should never be called")
 
     @property
     def dirty_widgets(self) -> Container[rx.Widget]:

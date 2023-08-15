@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import *  # type: ignore
 
 import plotly.express as px
 
@@ -23,6 +24,18 @@ CARD_STYLE = rx.BoxStyle(
 CARD_STYLE_HOVER = CARD_STYLE.replace(
     shadow_radius=3.0,
 )
+
+
+@dataclass
+class SubConfig:
+    sub_foo: int
+    sub_bar: List[str]
+
+
+class UserSettings(rx.UserSettings):
+    counter: int
+    foo: bool
+    bar: Dict[str, SubConfig]
 
 
 class Card(rx.Widget):
@@ -56,6 +69,11 @@ class ShowcaseCard(rx.Widget):
 
 
 class Sidebar(rx.Widget):
+    async def _on_button_press(self, _: rx.ButtonPressedEvent) -> None:
+        sett = self.session.attachments[UserSettings]
+        sett.counter += 1
+        await self.force_refresh()
+
     def build(self) -> rx.Widget:
         return rx.Rectangle(
             child=rx.Column(
@@ -77,6 +95,11 @@ class Sidebar(rx.Widget):
                     margin_x=1.0,
                     margin_top=4.0,
                 ),
+                rx.Button.minor(
+                    "Button",
+                    on_press=self._on_button_press,
+                ),
+                rx.Text(str(self.session.attachments[UserSettings].counter)),
                 align_y=0,
             ),
             style=rx.BoxStyle(
@@ -126,6 +149,22 @@ def validator_factory(sess: rx.Session) -> rx.validator.Validator:  # type: igno
 rx_app = rx.App(
     "Reflex Showcase",
     WidgetShowcase,
+    on_session_start=lambda sess: print("Session Started"),
+    on_session_end=lambda sess: print("Session Ended"),
+    default_user_settings=UserSettings(
+        counter=0,
+        foo=True,
+        bar={
+            "a": SubConfig(
+                sub_foo=1,
+                sub_bar=["a", "b", "c"],
+            ),
+            "b": SubConfig(
+                sub_foo=2,
+                sub_bar=["d", "e", "f"],
+            ),
+        },
+    ),
 )
 
 

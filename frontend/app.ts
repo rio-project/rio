@@ -167,18 +167,35 @@ async function processMessage(message: any) {
     // Delegate to the appropriate handler
     let response;
 
+    // New widgets received
     if (message.method == 'updateWidgetStates') {
         await updateWidgetStates(
             message.params.deltaStates,
             message.params.rootWidgetId
         );
         response = null;
-    } else if (message.method == 'evaluateJavascript') {
+    }
+    // Allow the server to run JavaScript
+    else if (message.method == 'evaluateJavascript') {
         response = await eval(message.params.javaScriptSource);
-    } else if (message.method == 'requestFileUpload') {
+    }
+    // Upload a file to the server
+    else if (message.method == 'requestFileUpload') {
         await requestFileUpload(message.params);
         response = null;
-    } else {
+    }
+    // Persistently store user settings
+    else if (message.method == 'setUserSettings') {
+        for (let key in message.params.deltaSettings) {
+            localStorage.setItem(
+                `reflex:userSetting:${key}`,
+                JSON.stringify(message.params.deltaSettings[key])
+            );
+        }
+        response = null;
+    }
+    // Invalid method
+    else {
         throw `Encountered unknown RPC method: ${message}`;
     }
 
@@ -687,6 +704,26 @@ function main() {
 
 function onOpen() {
     console.log('Connection opened');
+
+    // Send the initial message with user information to the server
+    let userSettings = {};
+    for (let key in localStorage) {
+        if (!key.startsWith('reflex:userSetting:')) {
+            continue;
+        }
+
+        try {
+            userSettings[key.slice('reflex:userSetting:'.length)] = JSON.parse(
+                localStorage[key]
+            );
+        } catch (e) {
+            console.log(`Failed to parse user setting ${key}: ${e}`);
+        }
+    }
+
+    sendMessageOverWebsocket({
+        userSettings: userSettings,
+    });
 }
 
 function onMessage(event: any) {

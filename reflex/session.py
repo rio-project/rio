@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import collections.abc
+import copy
 import enum
 import inspect
 import json
@@ -17,7 +19,7 @@ import uniserde
 
 import reflex as rx
 
-from . import app_server, assets, common, errors, styling
+from . import app_server, assets, common, errors, styling, user_settings_module
 from .common import Jsonable
 from .widgets import widget_base
 
@@ -70,6 +72,53 @@ class WontSerialize(Exception):
     pass
 
 
+class SessionAttachments:
+    def __init__(self, sess: Session, user_settings: user_settings_module.UserSettings):
+        self._session = sess
+        self._user_settings_type = type(user_settings)
+        self._attachments = {
+            self._user_settings_type: user_settings,
+        }
+
+        user_settings._reflex_session_ = sess
+
+    def __getitem__(self, typ: Type[T]) -> T:
+        """
+        Retrieves an attachment from this session.
+
+        Attached values are:
+        - the session's user settings
+        - any value that was previously attached using `Session.attach`
+        """
+        try:
+            return self._attachments[typ]  # type: ignore
+        except KeyError:
+            raise KeyError(typ) from None
+
+    def add(self, value: Any) -> None:
+        """
+        Attaches the given value to the `Session`. It can be retrieved later
+        using `session.attachments[...]`.
+        """
+        # User settings need special care
+        if type(value) is self._user_settings_type:
+            # Get the previously attached value, and unlink it from the session
+            old_value = self[self._user_settings_type]
+            old_value._reflex_session_ = None
+
+            # Link the new value to the session
+            value._reflex_session_ = self._session
+
+            # Trigger a resync
+            asyncio.create_task(
+                value._synchronize_now(self._session),
+                name="write back user settings (entire settings instance changed)",
+            )
+
+        # Save it with the rest of the attachments
+        self._attachments[type(value)] = value
+
+
 class Session(unicall.Unicall):
     """
     A session corresponds to a single connection to a client. It maintains all
@@ -81,12 +130,16 @@ class Session(unicall.Unicall):
         root_widget: rx.Widget,
         send_message: Callable[[Jsonable], Awaitable[None]],
         receive_message: Callable[[], Awaitable[Jsonable]],
+        user_settings: user_settings_module.UserSettings,
         app_server_: app_server.AppServer,
     ):
         super().__init__(send_message=send_message, receive_message=receive_message)
 
-        self.root_widget = root_widget
-        self.app_server = app_server_
+        self._root_widget = root_widget
+        self._app_server = app_server_
+
+        # Must be acquired while synchronizing the user's settings
+        self._settings_sync_lock = asyncio.Lock()
 
         # Weak dictionaries to hold additional information about widgets. These
         # are split in two to avoid the dictionaries keeping the widgets alive.
@@ -125,7 +178,7 @@ class Session(unicall.Unicall):
 
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
-        self._attachments: Dict[Type[Any], Any] = {}
+        self.attachments = SessionAttachments(self, user_settings)
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
@@ -321,7 +374,7 @@ class Session(unicall.Unicall):
         # Determine which widgets are alive, to avoid sending references to dead
         # widgets to the frontend.
         alive_cache: Dict[rx.Widget, bool] = {
-            self.root_widget: True,
+            self._root_widget: True,
         }
 
         def is_alive(widget: widget_base.Widget) -> bool:
@@ -389,8 +442,8 @@ class Session(unicall.Unicall):
             }
 
             # Check whether the root widget needs replacing
-            if self.root_widget in visited_widgets:
-                root_widget_id = self.root_widget._id
+            if self._root_widget in visited_widgets:
+                root_widget_id = self._root_widget._id
             else:
                 root_widget_id = None
 
@@ -440,7 +493,7 @@ class Session(unicall.Unicall):
                 isinstance(as_fill, styling.ImageFill)
                 and as_fill._image._asset is not None
             ):
-                self.app_server.weakly_host_asset(as_fill._image._asset)
+                self._app_server.weakly_host_asset(as_fill._image._asset)
 
             return as_fill._serialize()
 
@@ -462,7 +515,7 @@ class Session(unicall.Unicall):
                 isinstance(value.fill, styling.ImageFill)
                 and value.fill._image._asset is not None
             ):
-                self.app_server.weakly_host_asset(value.fill._image._asset)
+                self._app_server.weakly_host_asset(value.fill._image._asset)
 
             return value._serialize()
 
@@ -951,7 +1004,7 @@ class Session(unicall.Unicall):
         upload_id = secrets.token_urlsafe()
         future = asyncio.Future()
 
-        self.app_server._pending_file_uploads[upload_id] = future
+        self._app_server._pending_file_uploads[upload_id] = future
 
         # Allow the user to specify both `jpg` and `.jpg`
         if file_extensions is not None:
@@ -1005,7 +1058,7 @@ class Session(unicall.Unicall):
 
         # Host the file as asset
         as_asset = assets.HostedAsset(media_type, file_contents)
-        self.app_server.weakly_host_asset(as_asset)
+        self._app_server.weakly_host_asset(as_asset)
 
         # Tell the frontend to download the file
         await self._evaluate_javascript(
@@ -1028,22 +1081,6 @@ document.body.removeChild(a)
             await asyncio.sleep(60)
 
         asyncio.create_task(keepaliver())
-
-    def attach(self, value: Any) -> None:
-        """
-        Attaches the given value to the `Session`. It can be retrieved later
-        using `get_attachment`.
-        """
-        self._attachments[type(value)] = value
-
-    def get_attachment(self, typ: Type[T]) -> T:
-        """
-        Retrieves an attachment that was previously attached using `attach`.
-        """
-        try:
-            return self._attachments[typ]
-        except KeyError:
-            raise KeyError(typ)
 
     @unicall.remote(name="updateWidgetStates", parameter_format="dict")
     async def _update_widget_states(
@@ -1075,6 +1112,14 @@ document.body.removeChild(a)
     ) -> None:
         """
         Tell the client to upload a file to the server.
+        """
+        raise NotImplementedError
+
+    @unicall.remote(name="setUserSettings")
+    async def _set_user_settings(self, delta_settings: Dict[str, Any]) -> None:
+        """
+        Persistently store the given key-value pairs at the user. The values
+        have to be jsonable.
         """
         raise NotImplementedError
 

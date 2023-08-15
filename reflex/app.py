@@ -3,14 +3,14 @@ from __future__ import annotations
 import asyncio
 import threading
 import webbrowser
-from typing import Awaitable, Callable, Optional
+from typing import *  # type: ignore
 
 import fastapi
 import uvicorn
 
 import reflex as rx
 
-from . import app_server, validator
+from . import app_server, user_settings_module, validator
 from .image_source import ImageLike, ImageSource
 from .widgets import widget_base
 
@@ -33,12 +33,16 @@ class App:
         build: Callable[[], widget_base.Widget],
         *,
         icon: Optional[ImageLike] = None,
-        on_session_started: rx.EventHandler[rx.Session] = None,
+        on_session_start: rx.EventHandler[rx.Session] = None,
+        on_session_end: rx.EventHandler[rx.Session] = None,
+        default_user_settings: user_settings_module.UserSettings = user_settings_module.UserSettings(),
     ):
         self.name = name
         self.build = build
         self._icon = None if icon is None else ImageSource(icon)
-        self.on_session_started = on_session_started
+        self.on_session_start = on_session_start
+        self.on_session_end = on_session_end
+        self.default_user_settings = default_user_settings
 
     def as_fastapi(
         self,
@@ -51,7 +55,9 @@ class App:
         return app_server.AppServer(
             self,
             external_url=external_url,
-            on_session_started=self.on_session_started,
+            on_session_start=self.on_session_start,
+            on_session_end=self.on_session_end,
+            default_user_settings=self.default_user_settings,
             validator_factory=_validator_factory,
         )
 

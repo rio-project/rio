@@ -1,26 +1,26 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import functools
 import io
 import json
 import secrets
-import traceback
 import weakref
 from datetime import timedelta
-from pathlib import Path
 from typing import *  # type: ignore
 
 import fastapi
 import plotly
 import timer_dict
 import uniserde
+import uniserde.case_convert
 from PIL import Image
 
 import reflex as rx
 import reflex.widgets.metadata
 
-from . import app, assets, common, session, validator
+from . import app, assets, common, session, user_settings_module, validator
 from .common import Jsonable
 
 __all__ = [
@@ -44,12 +44,18 @@ def read_frontend_template(template_name: str) -> str:
     return (common.GENERATED_DIR / template_name).read_text(encoding="utf-8")
 
 
+class InitialClientMessage(uniserde.Serde):
+    user_settings: Dict[str, Any]
+
+
 class AppServer(fastapi.FastAPI):
     def __init__(
         self,
         app_: app.App,
         external_url: str,
-        on_session_started: rx.EventHandler[rx.Session],
+        on_session_start: rx.EventHandler[rx.Session],
+        on_session_end: rx.EventHandler[rx.Session],
+        default_user_settings: user_settings_module.UserSettings,
         validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
     ):
         super().__init__()
@@ -60,7 +66,9 @@ class AppServer(fastapi.FastAPI):
 
         self.app = app_
         self.external_url = external_url
-        self.on_session_started = on_session_started
+        self.on_session_start = on_session_start
+        self.on_session_end = on_session_end
+        self.default_user_settings = default_user_settings
         self.validator_factory = validator_factory
 
         # Initialized lazily, when the favicon is first requested.
@@ -370,6 +378,43 @@ class AppServer(fastapi.FastAPI):
                 validator_instance.handle_incoming_message(msg)
                 return msg
 
+        # Upon connecting, the client sends an initial message containing
+        # information about it. Wait for it.
+        # Update the local user settings instance
+        initial_message_json: Jsonable = await websocket.receive_json()
+        initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
+        session_user_settings = user_settings_module.UserSettings()
+        object.__setattr__(
+            session_user_settings,
+            "__class__",
+            type(self.default_user_settings),
+        )
+
+        for field_name, field_type in get_type_hints(
+            type(self.default_user_settings)
+        ).items():
+            # Skip internal fields
+            if field_name in user_settings_module.UserSettings.__annotations__:
+                continue
+
+            # Try to parse the field value
+            try:
+                field_value = uniserde.from_json(
+                    initial_message.user_settings[field_name],
+                    field_type,
+                )
+            except (KeyError, uniserde.SerdeError):
+                field_value = copy.deepcopy(
+                    getattr(self.default_user_settings, field_name)
+                )
+
+            # Set the field value
+            vars(session_user_settings)[field_name] = field_value
+
+        assert (
+            not session_user_settings._reflex_dirty_attribute_names_
+        ), session_user_settings._reflex_dirty_attribute_names_
+
         # Create a session instance to hold all of this state in an organized
         # fashion
         root_widget = self.app.build()
@@ -377,6 +422,7 @@ class AppServer(fastapi.FastAPI):
             root_widget,
             send_message,
             receive_message,
+            session_user_settings,
             self,
         )
 
@@ -386,18 +432,28 @@ class AppServer(fastapi.FastAPI):
         )
 
         # Trigger the `on_session_started` event
-        await common.call_event_handler(self.on_session_started, sess)
+        await common.call_event_handler(self.on_session_start, sess)
 
-        # Trigger an initial build. This will also send the initial state to the
-        # frontend.
-        #
-        # This is done in a task, because the server is not yet running, so the
-        # method would never receive a response, and thus would hang
-        # indefinitely.
-        sess._register_dirty_widget(
-            root_widget, include_fundamental_children_recursively=True
-        )
-        asyncio.create_task(sess._refresh())
+        try:
+            # Trigger an initial build. This will also send the initial state to
+            # the frontend.
+            #
+            # This is done in a task, because the server is not yet running, so
+            # the method would never receive a response, and thus would hang
+            # indefinitely.
+            sess._register_dirty_widget(
+                root_widget,
+                include_fundamental_children_recursively=True,
+            )
+            asyncio.create_task(sess._refresh())
 
-        # Serve the socket
-        await sess.serve()
+            # Serve the socket
+            await sess.serve()
+
+        # Don't spam the terminal just because a client disconnected
+        except fastapi.WebSocketDisconnect:
+            pass
+
+        # Fire the session end event
+        finally:
+            await common.call_event_handler(self.on_session_end, sess)

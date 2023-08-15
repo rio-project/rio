@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import json
 import re
@@ -367,7 +369,7 @@ class Validator:
             )
 
         # Make sure all widgets in the session have had their session injected
-        for widget in self.session.root_widget._iter_direct_and_indirect_children(
+        for widget in self.session._root_widget._iter_direct_and_indirect_children(
             include_self=True
         ):
             if widget._session_ is None:
