@@ -3,7 +3,7 @@ import copy
 from typing import Container, List, Mapping
 
 import pytest
-import uniserde
+from uniserde import Jsonable
 
 import reflex as rx
 from reflex.app_server import AppServer
@@ -13,7 +13,7 @@ class _MockApp:
     def __init__(self, root_widget: rx.Widget):
         self._root_widget = root_widget
 
-        self.outgoing_messages: List[OutgoingMessage] = []
+        self.outgoing_messages: List[Jsonable] = []
 
         self._app = rx.App("MockApp", lambda: root_widget)
         self._app_server = AppServer(
@@ -36,10 +36,10 @@ class _MockApp:
             root_widget, include_fundamental_children_recursively=True
         )
 
-    async def _send_message(self, message: OutgoingMessage) -> None:
+    async def _send_message(self, message: Jsonable) -> None:
         self.outgoing_messages.append(message)
 
-    async def _receive_message(self) -> uniserde.Jsonable:
+    async def _receive_message(self) -> Jsonable:
         raise NotImplementedError("This is a placeholder that should never be called")
 
     @property
