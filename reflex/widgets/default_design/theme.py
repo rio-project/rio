@@ -31,6 +31,7 @@ class Theme:
 
     # Other
     corner_radius: float
+    base_spacing: float
 
     # Animation
     transition_scale: float
@@ -84,6 +85,7 @@ class Theme:
             danger_color=rx.Color.from_hex("D42C24"),
             # Line styles
             outline_width=0.1,
+            base_spacing=0.5,
             # Other
             corner_radius=0.45,
             # Animation

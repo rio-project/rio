@@ -11,7 +11,6 @@ from datetime import timedelta
 from typing import *  # type: ignore
 
 import fastapi
-import plotly
 import timer_dict
 import uniserde.case_convert
 from PIL import Image
@@ -21,6 +20,12 @@ import reflex as rx
 
 from . import app, assets, common, session, user_settings_module, validator, widgets
 from .widgets import widget_metadata
+
+
+try:
+    import plotly  # type: ignore
+except ImportError:
+    plotly = None
 
 __all__ = [
     "AppServer",
@@ -229,7 +234,7 @@ class AppServer(fastapi.FastAPI):
         # The python plotly library already includes a minified version of
         # plotly.js. Rather than shipping another one, just serve the one
         # included in the library.
-        if asset_id == "plotly.min.js":
+        if asset_id == "plotly.min.js" and plotly is not None:
             return fastapi.responses.Response(
                 content=plotly.offline.get_plotlyjs(),
                 media_type="text/javascript",

@@ -12,11 +12,11 @@ from .. import fundamental
 from . import theme
 
 try:
-    import plotly
-    import plotly.graph_objects
+    import plotly  # type: ignore
+    import plotly.graph_objects  # type: ignore
 except ImportError:
     if TYPE_CHECKING:
-        import plotly
+        import plotly  # type: ignore
 
 
 __all__ = [

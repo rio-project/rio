@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import enum
-from dataclasses import dataclass
 from typing import *  # type: ignore
+from . import notification_bar
+from dataclasses import KW_ONLY
+from . import number_input
 
 import reflex as rx
 
@@ -10,18 +12,8 @@ from .. import fundamental
 from . import button, switch, text
 
 __all__ = [
-    "AutoFormBuilder",
+    "AutoForm",
 ]
-
-
-T = TypeVar("T")
-
-
-@dataclass(frozen=True)
-class FormField(Generic[T]):
-    name: str
-    type: Type[T]
-    check: Optional[Callable[[T], Optional[str]]]
 
 
 def prettify_name(name: str) -> str:
@@ -29,65 +21,167 @@ def prettify_name(name: str) -> str:
     return " ".join(p.title() for p in parts)
 
 
-class AutoFormBuilder:
-    def __init__(
-        self,
-        fields: Iterable[FormField],
-        check: Optional[Callable[[Dict[str, Any]], Optional[str]]] = None,
-        *,
-        spacing: float = 0.4,
-    ):
-        self.fields = tuple(fields)
-        self.check = check
-        self.spacing = spacing
+class AutoForm(rx.Widget):
+    _: KW_ONLY
+    spacing: float = 0.5
+    label_width: float = 15.0
+    error_message: Optional[str] = None
+    submit_text: str = "Submit"
 
-    def _build_input_field(self, field: FormField) -> rx.Widget:
-        origin = get_origin(field.type)
-        args = get_args(field.type)
+    # Internal
+    _is_loading: bool = False
+
+    def validate(self) -> Optional[str]:
+        """
+        Override this method to validate the form's values. If a string is
+        returned it will be displayed to the user, and the form will not be
+        submittable.
+        """
+        return None
+
+    async def on_submit(self) -> None:
+        """
+        Called when the user clicks the submit button. Override this method to
+        perform some action when the form is submitted.
+        """
+        pass
+
+    async def _on_submit(self, ev: button.ButtonPressEvent) -> None:
+        # Display the loading indicator
+        self._is_loading = True
+        await self.force_refresh()
+
+        # Delegate to the user's submit method
+        try:
+            await self._call_event_handler(self.on_submit)
+        finally:
+            self._is_loading = False
+
+    def make_notification_bar(
+        self,
+        text: str,
+        level: Literal["info", "warning", "error"],
+    ) -> rx.Widget:
+        return notification_bar.NotificationBar(
+            text=text,
+            level=level,
+        )
+
+    def make_switch(self, is_on: bool) -> fundamental.widget_base.Widget:
+        return switch.Switch(is_on=is_on)
+
+    def make_button(
+        self,
+        *,
+        text: str,
+        on_press: fundamental.EventHandler[button.ButtonPressEvent],
+        is_sensitive: bool,
+        is_loading: bool,
+        is_major: bool,
+    ) -> fundamental.widget_base.Widget:
+        build_method = button.MajorButton if is_major else button.MinorButton
+
+        return build_method(
+            text=text,
+            on_press=on_press,
+            is_sensitive=is_sensitive,
+            is_loading=is_loading,
+        )
+
+    def _build_input_field(
+        self,
+        field_name: str,
+        field_type: Type,
+    ) -> fundamental.widget_base.Widget:
+        # Get sensible type information
+        origin = get_origin(field_type)
+        field_args = get_args(field_type)
+        field_type = field_type if origin is None else origin
+        del origin
+
+        # Grab the field instance
+        field_instance = vars(type(self))[field_name]
 
         # `bool` -> `Switch`
-        if field.type is bool:
-            return switch.Switch()
+        if field_type is bool:
+            return self.make_switch(
+                is_on=field_instance,
+            )
 
         # `int` -> `NumberInput`
-        if field.type is int:
-            raise NotImplementedError("TODO: Support `NumberInput`")
+        if field_type is int:
+            return number_input.NumberInput(
+                value=field_instance,
+                round_to_integer=True,
+            )
 
         # `float` -> `NumberInput`
-        if field.type is float:
-            raise NotImplementedError("TODO: Support `NumberInput`")
+        if field_type is float:
+            return number_input.NumberInput(
+                value=field_instance,
+            )
 
         # `str` -> `TextInput`
-        if field.type is str:
-            return fundamental.TextInput()
+        if field_type is str:
+            return fundamental.TextInput(
+                text=field_instance,
+            )
 
         # `Literal` or `Enum` -> `Dropdown`
-        if origin is Literal or issubclass(field.type, enum.Enum):
-            if origin is Literal:
-                mapping = {a: a for a in args}
+        if field_type is Literal or issubclass(field_type, enum.Enum):
+            if field_type is Literal:
+                mapping = {str(a): a for a in field_args}
             else:
-                mapping = {prettify_name(f.name): f.value for f in field.type}
+                mapping = {prettify_name(f.name): f.value for f in field_type}
 
-            return fundamental.Dropdown(mapping)
+            return fundamental.Dropdown(
+                mapping,
+                selected_value=field_instance,
+            )
 
         # Unsupported type
-        raise TypeError(f"{__class__.__name__} does not support type `{field.type}`")
+        raise TypeError(f"AutoForm does not support fields of type `{field_type}`")
 
-    def build(self) -> rx.Widget:
+    def build(self) -> fundamental.widget_base.Widget:
         rows: List[rx.Widget] = []
 
+        # Look for errors
+        error_message = (
+            self.validate() if self.error_message is None else self.error_message
+        )
+
+        # Display any errors
+        if error_message is not None:
+            rows.append(
+                self.make_notification_bar(
+                    text=error_message,
+                    level="error",
+                )
+            )
+
         # One row per field
-        for field in self.fields:
+        for field_name, field_type in get_type_hints(self).items():
             rows.append(
                 fundamental.Row(
-                    text.Text(field.name),
-                    self._build_input_field(field),
+                    text.Text(
+                        prettify_name(field_name),
+                        width=self.label_width,
+                    ),
+                    self._build_input_field(field_name, field_type),
                     spacing=self.spacing,
                 )
             )
 
         # Add a submit button
-        rows.append(button.MajorButton("Submit"))
+        rows.append(
+            self.make_button(
+                text=self.submit_text,
+                on_press=self._on_submit,
+                is_sensitive=not self._is_loading and error_message is None,
+                is_loading=self._is_loading,
+                is_major=True,
+            )
+        )
 
         # Wrap everything in one container
         return fundamental.Column(
