@@ -260,7 +260,7 @@ class Color:
         return Color.from_hsv(hue, saturation, brightness)
 
     def as_plotly(self) -> str:
-        return f"rgb({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))})"
+        return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {int(round(self.alpha*255))})"
 
     def __repr__(self) -> str:
         return f"<Color {self.hex}>"
