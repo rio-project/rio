@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 import reflex as rx
 
-from .. import styling, theme
+from ... import styling, theme
 from . import widget_base
 
 __all__ = [

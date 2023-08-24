@@ -6,8 +6,8 @@ from typing import Optional
 
 import reflex as rx
 
-from .. import common, styling, theme
-from . import widget_base
+from ... import common, styling, theme
+from .. import fundamental
 
 __all__ = [
     "Button",
@@ -19,9 +19,9 @@ class ButtonPressedEvent:
     pass
 
 
-class Button(widget_base.Widget):
+class Button(fundamental.Widget):
     text: str
-    on_press: rx.EventHandler[ButtonPressedEvent] = None
+    on_press: fundamental.EventHandler[ButtonPressedEvent] = None
     _: KW_ONLY
     style: rx.BoxStyle
     hover_style: rx.BoxStyle
@@ -41,7 +41,7 @@ class Button(widget_base.Widget):
     def major(
         cls,
         text: str,
-        on_press: rx.EventHandler[ButtonPressedEvent] = None,
+        on_press: fundamental.EventHandler[ButtonPressedEvent] = None,
         *,
         is_sensitive: bool = True,
         is_loading: bool = False,
@@ -115,7 +115,7 @@ class Button(widget_base.Widget):
     def minor(
         cls,
         text: str,
-        on_press: rx.EventHandler[ButtonPressedEvent] = None,
+        on_press: fundamental.EventHandler[ButtonPressedEvent] = None,
         *,
         is_sensitive: bool = True,
         is_loading: bool = False,
@@ -184,22 +184,22 @@ class Button(widget_base.Widget):
             align_y=align_y,
         )
 
-    def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
+    def _on_mouse_enter(self, event: fundamental.MouseEnterEvent) -> None:
         self._is_entered = True
 
-    def _on_mouse_leave(self, event: rx.MouseLeaveEvent) -> None:
+    def _on_mouse_leave(self, event: fundamental.MouseLeaveEvent) -> None:
         self._is_entered = False
 
-    def _on_mouse_down(self, event: rx.MouseDownEvent) -> None:
+    def _on_mouse_down(self, event: fundamental.MouseDownEvent) -> None:
         # Only react to left mouse button
-        if event.button != rx.MouseButton.LEFT:
+        if event.button != fundamental.MouseButton.LEFT:
             return
 
         self._is_pressed = True
 
-    async def _on_mouse_up(self, event: rx.MouseUpEvent) -> None:
+    async def _on_mouse_up(self, event: fundamental.MouseUpEvent) -> None:
         # Only react to left mouse button, and only if sensitive
-        if event.button != rx.MouseButton.LEFT or not self.is_sensitive:
+        if event.button != fundamental.MouseButton.LEFT or not self.is_sensitive:
             return
 
         await self._call_event_handler(
@@ -231,21 +231,21 @@ class Button(widget_base.Widget):
         # Prepare the child
         if self.is_loading:
             scale = text_style.font_size
-            child = rx.ProgressCircle(
+            child = fundamental.ProgressCircle(
                 color=text_style.font_color,
                 size=scale * 1.2,
                 align_x=0.5,
                 margin=0.3,
             )
         else:
-            child = rx.Text(
+            child = fundamental.Text(
                 self.text,
                 style=text_style,
                 margin=0.3,
             )
 
-        return rx.MouseEventListener(
-            rx.Rectangle(
+        return fundamental.MouseEventListener(
+            fundamental.Rectangle(
                 child=child,
                 style=style,
                 hover_style=hover_style,

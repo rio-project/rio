@@ -7,12 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import uniserde
-
-import reflex.widgets.metadata
+from uniserde import Jsonable, JsonDoc
 
 from . import session
-from .common import Jsonable
+from .widgets.fundamental import widget_metadata
 
 __all__ = [
     "ClientWidget",
@@ -25,13 +23,13 @@ __all__ = [
 class ClientWidget:
     id: int
     type: str
-    state: Dict[str, Jsonable]
+    state: JsonDoc
 
     @classmethod
     def from_json(
         cls,
         id: int,
-        delta_state: Dict[str, Jsonable],
+        delta_state: JsonDoc,
         registered_html_widgets: Set[str],
     ) -> "ClientWidget":
         # Don't modify the original dict
@@ -47,7 +45,7 @@ class ClientWidget:
             raise ValidationError(f"Widget with id `{id}` has non-string type `{type}`")
 
         if (
-            type not in reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES
+            type not in widget_metadata.CHILD_ATTRIBUTE_NAMES
             and type not in registered_html_widgets
         ):
             raise ValidationError(f"Widget with id `{id}` has unknown type `{type}`")
@@ -61,14 +59,14 @@ class ClientWidget:
 
     def _get_child_attribute_names(self) -> Iterable[str]:
         try:
-            return reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES[self.type]
+            return widget_metadata.CHILD_ATTRIBUTE_NAMES[self.type]
         except KeyError:
             return tuple()  # TODO: How to get the children of HTML widgets?
 
     @property
     def non_child_containing_properties(
         self,
-    ) -> Dict[str, Jsonable]:
+    ) -> JsonDoc:
         child_attribute_names = self._get_child_attribute_names()
 
         result = {}
@@ -134,7 +132,7 @@ class Validator:
         # HTML widgets must be registered with the frontend before use. This set
         # contains the ids (`HtmlWidget._unique_id`) of all registered widgets.
         self.registered_html_widgets: Set[str] = set(
-            reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES.keys()
+            widget_metadata.CHILD_ATTRIBUTE_NAMES.keys()
         )
 
     def dump_message(
@@ -229,7 +227,7 @@ class Validator:
             id: widget for id, widget in self.widgets_by_id.items() if id in visited_ids
         }
 
-    def as_json(self, widget: Optional[ClientWidget] = None) -> Dict[str, Jsonable]:
+    def as_json(self, widget: Optional[ClientWidget] = None) -> JsonDoc:
         """
         Return a JSON-serializable representation of the client state.
         """

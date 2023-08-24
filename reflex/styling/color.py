@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, ClassVar, Dict, Iterable, Literal, Tuple, Union
 
-from ..common import Jsonable
+from uniserde import JsonDoc
+
 from ..image_source import ImageLike, ImageSource
 
 __all__ = [
@@ -63,9 +64,14 @@ class Color:
 
     @classmethod
     def from_hex(cls, hex_color: str) -> "Color":
+        # Drop the leading `#` if present
+        hex_color = hex_color.removeprefix("#")
+
+        # Make sure the string is the correct length
         if len(hex_color) not in (6, 8):
             raise ValueError("The hex string must be 6 or 8 characters long")
 
+        # Parse it
         return cls.from_rgb(
             red=int(hex_color[0:2], 16) / 255,
             green=int(hex_color[2:4], 16) / 255,

@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, Iterable, Literal, Tuple, Union
 
-from ..common import Jsonable
+from uniserde import JsonDoc
+
 from ..image_source import ImageLike, ImageSource
 from .color import Color
 
@@ -30,7 +31,7 @@ class Fill(ABC):
         raise TypeError(f"Expected Fill or Color, got {type(value)}")
 
     @abstractmethod
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self) -> JsonDoc:
         raise NotImplementedError()
 
 
@@ -38,7 +39,7 @@ class Fill(ABC):
 class SolidFill(Fill):
     color: Color
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self) -> JsonDoc:
         return {
             "type": "solid",
             "color": self.color.rgba,
@@ -65,7 +66,7 @@ class LinearGradientFill(Fill):
             angle_degrees=angle_degrees,
         )
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self) -> JsonDoc:
         return {
             "type": "linearGradient",
             "stops": [(color.rgba, position) for color, position in self.stops],
@@ -85,7 +86,7 @@ class ImageFill(Fill):
         self._image = ImageSource(image)
         self._fill_mode = fill_mode
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self) -> JsonDoc:
         image_url = (
             self._image._asset.url()
             if self._image._asset is not None

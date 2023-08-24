@@ -2,8 +2,8 @@ from dataclasses import KW_ONLY, dataclass
 from typing import Dict, Literal, Optional
 
 from typing_extensions import Self
+from uniserde import JsonDoc
 
-from ..common import Jsonable
 from .color import Color
 
 
@@ -39,7 +39,7 @@ class TextStyle:
             all_caps=self.all_caps if all_caps is None else all_caps,
         )
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self) -> JsonDoc:
         return {
             "fontName": self.font_name,
             "fontColor": self.font_color.rgba,

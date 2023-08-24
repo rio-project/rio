@@ -4,12 +4,11 @@ from dataclasses import KW_ONLY, dataclass
 from typing import Dict
 
 from typing_extensions import Self
+from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
-from reflex.common import Jsonable
 
-from .. import theme
-from ..common import Jsonable
+from ... import theme
 from . import widget_base
 
 __all__ = ["Switch", "SwitchChangeEvent"]
@@ -23,10 +22,10 @@ class SwitchChangeEvent:
 class Switch(widget_base.HtmlWidget):
     is_on: bool = False
     _: KW_ONLY
-    on_change: rx.EventHandler[SwitchChangeEvent] = None
+    on_change: widget_base.EventHandler[SwitchChangeEvent] = None
     accent_color: rx.Color = theme.COLOR_ACCENT
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> JsonDoc:
         knob_color_on = self.accent_color
         background_color_on = self.accent_color.brighter(0.3).desaturated(0.4)
 
@@ -37,7 +36,7 @@ class Switch(widget_base.HtmlWidget):
             "backgroundColorOff": background_color_on.darker(0.2).desaturated(1.0).rgba,
         }
 
-    async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
+    async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event
         try:
             new_value = delta_state["is_on"]

@@ -4,9 +4,9 @@ import copy
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
-from reflex.common import Jsonable
+from uniserde import JsonDoc
 
-from .. import styling, theme
+from ... import styling, theme
 from . import widget_base
 
 try:
@@ -41,7 +41,7 @@ class Plot(widget_base.HtmlWidget):
     _: KW_ONLY
     style: styling.BoxStyle = field(default_factory=lambda: _DEFAULT_STYLE)
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> JsonDoc:
         # Make the plot transparent, so the background configured by JavaScript
         # shines through.
         figure = copy.copy(self.figure)

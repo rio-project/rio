@@ -1,3 +1,4 @@
+import json
 from typing import *  # type: ignore
 
 from .column import Column
@@ -28,3 +29,11 @@ CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     Plot._unique_id: set(),
     "Placeholder": {"_child_"},
 }
+
+
+CHILD_ATTRIBUTE_NAMES_JSON = json.dumps(
+    {
+        unique_id: list(attribute_names)
+        for unique_id, attribute_names in CHILD_ATTRIBUTE_NAMES.items()
+    }
+)

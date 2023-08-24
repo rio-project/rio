@@ -13,26 +13,18 @@ from typing import *  # type: ignore
 import fastapi
 import plotly
 import timer_dict
-import uniserde
 import uniserde.case_convert
 from PIL import Image
+from uniserde import Jsonable
 
 import reflex as rx
-import reflex.widgets.metadata
 
-from . import app, assets, common, session, user_settings_module, validator
-from .common import Jsonable
+from . import app, assets, common, session, user_settings_module, validator, widgets
+from .widgets.fundamental import widget_metadata
 
 __all__ = [
     "AppServer",
 ]
-
-CHILD_ATTRIBUTE_NAMES_JSON = json.dumps(
-    {
-        unique_id: list(attribute_names)
-        for unique_id, attribute_names in reflex.widgets.metadata.CHILD_ATTRIBUTE_NAMES.items()
-    }
-)
 
 
 @functools.lru_cache(maxsize=None)
@@ -53,8 +45,8 @@ class AppServer(fastapi.FastAPI):
         self,
         app_: app.App,
         external_url: str,
-        on_session_start: rx.EventHandler[rx.Session],
-        on_session_end: rx.EventHandler[rx.Session],
+        on_session_start: widgets.fundamental.EventHandler[rx.Session],
+        on_session_end: widgets.fundamental.EventHandler[rx.Session],
         default_user_settings: user_settings_module.UserSettings,
         validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
     ):
@@ -156,7 +148,10 @@ class AppServer(fastapi.FastAPI):
 
         # Fill in all placeholders
         js = js.replace("{session_token}", session_token)
-        js = js.replace('"{child_attribute_names}"', CHILD_ATTRIBUTE_NAMES_JSON)
+        js = js.replace(
+            '"{child_attribute_names}"',
+            widget_metadata.CHILD_ATTRIBUTE_NAMES_JSON,
+        )
 
         html = html.replace("{title}", self.app.name)
         html = html.replace("/*{style}*/", css)

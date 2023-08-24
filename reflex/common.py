@@ -19,9 +19,6 @@ GENERATED_DIR = PACKAGE_ROOT_DIR / "generated"
 HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR / "hosted-assets"
 
 
-Jsonable: TypeAlias = uniserde.Jsonable
-
-
 _READONLY = object()
 T = TypeVar("T")
 Readonly = Annotated[T, _READONLY]

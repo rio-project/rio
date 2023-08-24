@@ -6,6 +6,9 @@ from typing import *  # type: ignore
 
 import reflex as rx
 
+from .. import fundamental
+from . import button
+
 __all__ = [
     "AutoFormBuilder",
 ]
@@ -44,7 +47,7 @@ class AutoFormBuilder:
 
         # `bool` -> `Switch`
         if field.type is bool:
-            return rx.Switch()
+            return fundamental.Switch()
 
         # `int` -> `NumberInput`
         if field.type is int:
@@ -56,7 +59,7 @@ class AutoFormBuilder:
 
         # `str` -> `TextInput`
         if field.type is str:
-            return rx.TextInput()
+            return fundamental.TextInput()
 
         # `Literal` or `Enum` -> `Dropdown`
         if origin is Literal or issubclass(field.type, enum.Enum):
@@ -65,7 +68,7 @@ class AutoFormBuilder:
             else:
                 mapping = {prettify_name(f.name): f.value for f in field.type}
 
-            return rx.Dropdown(mapping)
+            return fundamental.Dropdown(mapping)
 
         # Unsupported type
         raise TypeError(f"{__class__.__name__} does not support type `{field.type}`")
@@ -76,8 +79,8 @@ class AutoFormBuilder:
         # One row per field
         for field in self.fields:
             rows.append(
-                rx.Row(
-                    rx.Text(field.name),
+                fundamental.Row(
+                    fundamental.Text(field.name),
                     self._build_input_field(field),
                     spacing=self.spacing,
                 )
@@ -85,13 +88,13 @@ class AutoFormBuilder:
 
         # Add a submit button
         rows.append(
-            rx.Button.major(
+            button.Button.major(
                 "Submit",
             )
         )
 
         # Wrap everything in one container
-        return rx.Column(
+        return fundamental.Column(
             *rows,
             spacing=self.spacing,
         )

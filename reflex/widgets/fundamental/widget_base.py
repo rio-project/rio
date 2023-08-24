@@ -12,14 +12,17 @@ from typing import *  # type: ignore
 
 import introspection
 from typing_extensions import dataclass_transform
+from uniserde import Jsonable, JsonDoc
 
-from .. import common, session
-from ..common import Jsonable
+from ... import common, session
 
 __all__ = [
     "EventHandler",
-    "Widget",
     "HtmlWidget",
+    "is_widget_class",
+    "StateBinding",
+    "StateProperty",
+    "Widget",
 ]
 
 
@@ -454,7 +457,7 @@ class Widget(ABC):
 
         return self._session_
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> JsonDoc:
         """
         Return any additional properties to be serialized, which cannot be
         deduced automatically from the type annotations.
@@ -608,7 +611,7 @@ class HtmlWidget(Widget):
         if message_source:
             await sess._evaluate_javascript(message_source)
 
-    async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
+    async def _on_state_update(self, delta_state: JsonDoc) -> None:
         """
         This function is called when the frontend sends a state update to this
         widget.

@@ -10,9 +10,8 @@ import uvicorn
 
 import reflex as rx
 
-from . import app_server, user_settings_module, validator
+from . import app_server, user_settings_module, validator, widgets
 from .image_source import ImageLike, ImageSource
-from .widgets import widget_base
 
 # Only available with the `window` extra
 try:
@@ -30,11 +29,11 @@ class App:
     def __init__(
         self,
         name: str,
-        build: Callable[[], widget_base.Widget],
+        build: Callable[[], widgets.fundamental.Widget],
         *,
         icon: Optional[ImageLike] = None,
-        on_session_start: rx.EventHandler[rx.Session] = None,
-        on_session_end: rx.EventHandler[rx.Session] = None,
+        on_session_start: widgets.fundamental.EventHandler[rx.Session] = None,
+        on_session_end: widgets.fundamental.EventHandler[rx.Session] = None,
         default_user_settings: user_settings_module.UserSettings = user_settings_module.UserSettings(),
     ):
         self.name = name

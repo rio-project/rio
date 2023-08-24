@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, Union
 
 from typing_extensions import Self
+from uniserde import JsonDoc
 
-from ..common import Jsonable
 from . import fills
 from .color import Color
 
@@ -98,7 +98,7 @@ class BoxStyle:
             else shadow_offset_y,
         )
 
-    def _serialize(self) -> Dict[str, Jsonable]:
+    def _serialize(self) -> JsonDoc:
         return {
             "fill": self.fill._serialize(),
             "strokeColor": self.stroke_color.rgba,

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import Literal, Optional
 
-from .. import styling
+from ... import styling
 from . import widget_base
 
 __all__ = [

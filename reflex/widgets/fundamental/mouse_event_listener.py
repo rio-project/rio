@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import enum
 from dataclasses import KW_ONLY, dataclass
-from typing import Any, Dict
+from typing import *  # type: ignore
 
-import reflex as rx
+from uniserde import JsonDoc
 
-from ..common import Jsonable
-from ..styling import *
 from . import widget_base
 
 __all__ = [
@@ -63,13 +61,13 @@ class MouseLeaveEvent(_MousePositionedEvent):
 class MouseEventListener(widget_base.HtmlWidget):
     child: widget_base.Widget
     _: KW_ONLY
-    on_mouse_down: rx.EventHandler[MouseDownEvent] = None
-    on_mouse_up: rx.EventHandler[MouseUpEvent] = None
-    on_mouse_move: rx.EventHandler[MouseMoveEvent] = None
-    on_mouse_enter: rx.EventHandler[MouseEnterEvent] = None
-    on_mouse_leave: rx.EventHandler[MouseLeaveEvent] = None
+    on_mouse_down: widget_base.EventHandler[MouseDownEvent] = None
+    on_mouse_up: widget_base.EventHandler[MouseUpEvent] = None
+    on_mouse_move: widget_base.EventHandler[MouseMoveEvent] = None
+    on_mouse_enter: widget_base.EventHandler[MouseEnterEvent] = None
+    on_mouse_leave: widget_base.EventHandler[MouseLeaveEvent] = None
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> JsonDoc:
         return {
             "reportMouseDown": self.on_mouse_down is not None,
             "reportMouseUp": self.on_mouse_up is not None,

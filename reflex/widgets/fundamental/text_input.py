@@ -3,7 +3,8 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-from ..common import Jsonable
+from uniserde import JsonDoc
+
 from . import widget_base
 
 __all__ = [
@@ -31,7 +32,7 @@ class TextInput(widget_base.HtmlWidget):
     on_change: widget_base.EventHandler[TextInputChangeEvent] = None
     on_confirm: widget_base.EventHandler[TextInputConfirmEvent] = None
 
-    async def _on_state_update(self, delta_state: Dict[str, Jsonable]) -> None:
+    async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event
         try:
             new_value = delta_state["text"]

@@ -4,9 +4,7 @@ from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-import reflex as rx
-
-from ..styling import *
+from ...styling import *
 from . import widget_base
 
 __all__ = [
@@ -26,7 +24,7 @@ class Dropdown(widget_base.HtmlWidget, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
     selected_value: Optional[T] = None
-    on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
+    on_change: widget_base.EventHandler[DropdownChangeEvent[T]] = None
 
     def _custom_serialize(self) -> Dict[str, Any]:
         if not self.options:
