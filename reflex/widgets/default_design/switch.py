@@ -8,10 +8,13 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from ... import theme
-from . import widget_base
+from ..fundamental import widget_base
+from . import theme
 
-__all__ = ["Switch", "SwitchChangeEvent"]
+__all__ = [
+    "Switch",
+    "SwitchChangeEvent",
+]
 
 
 @dataclass
@@ -23,11 +26,11 @@ class Switch(widget_base.HtmlWidget):
     is_on: bool = False
     _: KW_ONLY
     on_change: widget_base.EventHandler[SwitchChangeEvent] = None
-    accent_color: rx.Color = theme.COLOR_ACCENT
 
     def _custom_serialize(self) -> JsonDoc:
-        knob_color_on = self.accent_color
-        background_color_on = self.accent_color.brighter(0.3).desaturated(0.4)
+        thm = self.session.attachments[theme.Theme]
+        knob_color_on = thm.accent_color
+        background_color_on = thm.accent_color.brighter(0.3).desaturated(0.4)
 
         return {
             "knobColorOn": knob_color_on.rgba,

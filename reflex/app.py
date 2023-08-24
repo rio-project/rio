@@ -34,14 +34,14 @@ class App:
         icon: Optional[ImageLike] = None,
         on_session_start: widgets.fundamental.EventHandler[rx.Session] = None,
         on_session_end: widgets.fundamental.EventHandler[rx.Session] = None,
-        default_user_settings: user_settings_module.UserSettings = user_settings_module.UserSettings(),
+        default_attachments: Iterable[Any],
     ):
         self.name = name
         self.build = build
         self._icon = None if icon is None else ImageSource(icon)
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
-        self.default_user_settings = default_user_settings
+        self.default_attachments = tuple(default_attachments)
 
     def as_fastapi(
         self,
@@ -56,7 +56,7 @@ class App:
             external_url=external_url,
             on_session_start=self.on_session_start,
             on_session_end=self.on_session_end,
-            default_user_settings=self.default_user_settings,
+            default_attachments=self.default_attachments,
             validator_factory=_validator_factory,
         )
 

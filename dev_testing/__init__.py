@@ -8,20 +8,17 @@ import reflex as rx
 import reflex.validator
 import reflex.widgets.default_design as widgets
 
-COLOR_BG = rx.Color.from_grey(0.6)
-COLOR_FG = rx.Color.from_grey(1.0)
-COLOR_ACCENT = rx.theme.COLOR_ACCENT
-CORNER_RADIUS = rx.theme.CORNER_RADIUS
+theme = widgets.Theme.dark()
 
-
-CARD_STYLE = rx.BoxStyle(
-    fill=COLOR_FG,
-    corner_radius=CORNER_RADIUS,
-    shadow_color=rx.Color.from_rgb(0.3, 0.6, 1.0),
+CARD_STYLE = widgets.BoxStyle(
+    fill=theme.neutral_color,
+    corner_radius=theme.corner_radius,
+    shadow_color=theme.active_color.replace(opacity=0.1),
 )
 
 CARD_STYLE_HOVER = CARD_STYLE.replace(
-    shadow_radius=3.0,
+    fill=theme.neutral_active_color,
+    shadow_radius=2.5,
 )
 
 
@@ -68,7 +65,7 @@ class ShowcaseCard(rx.Widget):
 
 
 class Sidebar(rx.Widget):
-    async def _on_button_press(self, _: widgets.ButtonPressedEvent) -> None:
+    async def _on_button_press(self, _: widgets.ButtonPressEvent) -> None:
         sett = self.session.attachments[UserSettings]
         sett.counter += 1
         await self.force_refresh()
@@ -77,16 +74,16 @@ class Sidebar(rx.Widget):
         return widgets.Rectangle(
             child=widgets.Column(
                 widgets.Text(
-                    "Reflex IO",
-                    style=rx.TextStyle(
-                        font_color=COLOR_ACCENT,
+                    "Reflex UI",
+                    style=widgets.TextStyle(
+                        font_color=theme.main_color,
                         font_size=3.0,
                     ),
                     margin_top=1.0,
                 ),
                 widgets.Text(
                     "The reactive UI library for Python",
-                    style=rx.TextStyle(font_color=COLOR_ACCENT),
+                    style=widgets.TextStyle(font_color=theme.main_color),
                     margin_top=0.6,
                 ),
                 widgets.TextInput(
@@ -94,15 +91,20 @@ class Sidebar(rx.Widget):
                     margin_x=1.0,
                     margin_top=4.0,
                 ),
-                widgets.Button.minor(
+                widgets.MajorButton(
                     "Button",
                     on_press=self._on_button_press,
+                    margin_x=1.0,
+                    margin_top=1.0,
                 ),
-                widgets.Text(str(self.session.attachments[UserSettings].counter)),
+                widgets.Text(
+                    str(self.session.attachments[UserSettings].counter),
+                    margin_top=1.0,
+                ),
                 align_y=0,
             ),
-            style=rx.BoxStyle(
-                fill=COLOR_FG,
+            style=widgets.BoxStyle(
+                fill=theme.neutral_color,
             ),
         )
 
@@ -134,7 +136,7 @@ class WidgetShowcase(rx.Widget):
                     width="grow",
                 ),
             ),
-            style=rx.BoxStyle(fill=COLOR_BG),
+            style=widgets.BoxStyle(fill=theme.neutral_color.darker(0.1)),
         )
 
 
@@ -150,20 +152,23 @@ rx_app = rx.App(
     WidgetShowcase,
     on_session_start=lambda sess: print("Session Started"),
     on_session_end=lambda sess: print("Session Ended"),
-    default_user_settings=UserSettings(
-        counter=0,
-        foo=True,
-        bar={
-            "a": SubConfig(
-                sub_foo=1,
-                sub_bar=["a", "b", "c"],
-            ),
-            "b": SubConfig(
-                sub_foo=2,
-                sub_bar=["d", "e", "f"],
-            ),
-        },
-    ),
+    default_attachments=[
+        theme,
+        UserSettings(
+            counter=0,
+            foo=True,
+            bar={
+                "a": SubConfig(
+                    sub_foo=1,
+                    sub_bar=["a", "b", "c"],
+                ),
+                "b": SubConfig(
+                    sub_foo=2,
+                    sub_bar=["d", "e", "f"],
+                ),
+            },
+        ),
+    ],
 )
 
 

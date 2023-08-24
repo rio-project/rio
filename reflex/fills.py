@@ -4,8 +4,8 @@ from typing import Dict, Iterable, Literal, Tuple, Union
 
 from uniserde import JsonDoc
 
-from ..image_source import ImageLike, ImageSource
 from .color import Color
+from .image_source import ImageLike, ImageSource
 
 __all__ = [
     "Fill",

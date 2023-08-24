@@ -4,11 +4,16 @@ from typing import Dict, Literal, Optional
 from typing_extensions import Self
 from uniserde import JsonDoc
 
+from . import self_serializing
 from .color import Color
+
+__all__ = [
+    "TextStyle",
+]
 
 
 @dataclass(frozen=True)
-class TextStyle:
+class TextStyle(self_serializing.SelfSerializing):
     _: KW_ONLY
     font_name: Optional[str] = None
     font_color: Color = Color.BLACK

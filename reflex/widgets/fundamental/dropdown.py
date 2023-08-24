@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-from ...styling import *
 from . import widget_base
 
 __all__ = [

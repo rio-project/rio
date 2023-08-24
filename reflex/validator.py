@@ -10,7 +10,7 @@ from typing import *  # type: ignore
 from uniserde import Jsonable, JsonDoc
 
 from . import session
-from .widgets.fundamental import widget_metadata
+from .widgets import widget_metadata
 
 __all__ = [
     "ClientWidget",

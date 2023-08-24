@@ -4,7 +4,7 @@ import { WidgetBase, WidgetState } from './widgetBase';
 type PlotState = WidgetState & {
     _type_: 'plot';
     plotJson: string;
-    style: object;
+    boxStyle: object;
 };
 
 function loadPlotly(callback) {
@@ -47,7 +47,7 @@ export class PlotWidget extends WidgetBase {
                 responsive: true,
             });
 
-            applyStyle(element, deltaState.style);
+            applyStyle(element, deltaState.boxStyle);
         });
     }
 }

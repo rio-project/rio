@@ -18,7 +18,17 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from . import app_server, assets, common, errors, styling, user_settings_module, widgets
+from . import (
+    app_server,
+    assets,
+    color,
+    common,
+    errors,
+    fills,
+    self_serializing,
+    user_settings_module,
+    widgets,
+)
 
 __all__ = ["Session"]
 
@@ -485,43 +495,37 @@ class Session(unicall.Unicall):
         # Special case: `FillLike`
         #
         # TODO: Is there a nicer way to detect these?
-        if origin is Union and set(args) == {styling.Fill, styling.Color}:
-            as_fill = styling.Fill._try_from(value)
+        if origin is Union and set(args) == {fills.Fill, color.Color}:
+            as_fill = fills.Fill._try_from(value)
 
             # Image fills may contain an image source which needs to be hosted
             # by the server so the client can access it
             if (
-                isinstance(as_fill, styling.ImageFill)
+                isinstance(as_fill, fills.ImageFill)
                 and as_fill._image._asset is not None
             ):
                 self._app_server.weakly_host_asset(as_fill._image._asset)
 
             return as_fill._serialize()
 
-        # Colors
-        if type_ is styling.Color:
-            return value.rgba
-
-        # TextStyle
-        if type_ is styling.TextStyle:
-            return value._serialize()
-
         # BoxStyle
-        if type_ is styling.BoxStyle:
-            assert isinstance(value, styling.BoxStyle), value
+        if type_ is widgets.fundamental.BoxStyle:
+            assert isinstance(value, widgets.fundamental.BoxStyle), value
 
             # Image fills may contain an image source which needs to be hosted
             # by the server so the client can access it
             if (
-                isinstance(value.fill, styling.ImageFill)
+                isinstance(value.fill, fills.ImageFill)
                 and value.fill._image._asset is not None
             ):
                 self._app_server.weakly_host_asset(value.fill._image._asset)
 
             return value._serialize()
 
-        # MarkdownStyle
-        if type_ is styling.MarkdownStyle:
+        # Self-Serializing
+        if inspect.isclass(type_) and issubclass(
+            type_, self_serializing.SelfSerializing
+        ):
             return value._serialize()
 
         # Optional
@@ -551,24 +555,9 @@ class Session(unicall.Unicall):
         Non-fundamental widgets must have been built, and their output cached in
         the session.
         """
-        result: JsonDoc
-
-        # Encode any internal state
-        if isinstance(widget, widgets.fundamental.HtmlWidget):
-            result = {
-                "_type_": widget._unique_id,
-                "_python_type_": type(widget).__name__,
-            }
-            result.update(widget._custom_serialize())
-
-        else:
-            # Take care to add underscores to any properties here, as the
-            # user-defined state is also added and could clash
-            result = {
-                "_type_": "Placeholder",
-                "_python_type_": type(widget).__name__,
-                "_child_": self._lookup_widget_data(widget).build_result._id,
-            }
+        result: JsonDoc = {
+            "_python_type_": type(widget).__name__,
+        }
 
         # Add layout properties, in a more succinct way than sending them
         # separately
@@ -625,6 +614,18 @@ class Session(unicall.Unicall):
                 )
             except WontSerialize:
                 pass
+
+        # Encode any internal additional state. Doing it this late allows the custom
+        # serialization to overwrite automatically generated values.
+        if isinstance(widget, widgets.fundamental.HtmlWidget):
+            result["_type_"] = widget._unique_id
+            result.update(widget._custom_serialize())
+
+        else:
+            # Take care to add underscores to any properties here, as the
+            # user-defined state is also added and could clash
+            result["_type_"] = "Placeholder"
+            result["_child_"] = self._lookup_widget_data(widget).build_result._id
 
         return result
 

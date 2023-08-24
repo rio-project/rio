@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 import reflex as rx
 
 from .. import fundamental
-from . import button
+from . import button, switch, text
 
 __all__ = [
     "AutoFormBuilder",
@@ -47,7 +47,7 @@ class AutoFormBuilder:
 
         # `bool` -> `Switch`
         if field.type is bool:
-            return fundamental.Switch()
+            return switch.Switch()
 
         # `int` -> `NumberInput`
         if field.type is int:
@@ -80,18 +80,14 @@ class AutoFormBuilder:
         for field in self.fields:
             rows.append(
                 fundamental.Row(
-                    fundamental.Text(field.name),
+                    text.Text(field.name),
                     self._build_input_field(field),
                     spacing=self.spacing,
                 )
             )
 
         # Add a submit button
-        rows.append(
-            button.Button.major(
-                "Submit",
-            )
-        )
+        rows.append(button.MajorButton("Submit"))
 
         # Wrap everything in one container
         return fundamental.Column(

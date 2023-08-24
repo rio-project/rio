@@ -20,7 +20,7 @@ from uniserde import Jsonable
 import reflex as rx
 
 from . import app, assets, common, session, user_settings_module, validator, widgets
-from .widgets.fundamental import widget_metadata
+from .widgets import widget_metadata
 
 __all__ = [
     "AppServer",
@@ -47,7 +47,7 @@ class AppServer(fastapi.FastAPI):
         external_url: str,
         on_session_start: widgets.fundamental.EventHandler[rx.Session],
         on_session_end: widgets.fundamental.EventHandler[rx.Session],
-        default_user_settings: user_settings_module.UserSettings,
+        default_attachments: Tuple[Any],
         validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
     ):
         super().__init__()
@@ -60,8 +60,30 @@ class AppServer(fastapi.FastAPI):
         self.external_url = external_url
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
-        self.default_user_settings = default_user_settings
         self.validator_factory = validator_factory
+
+        # Find the user settings in the attachments. They need special treatment
+        # later
+        user_settings = None
+        other_attachments = []
+
+        for ii, attachment in enumerate(default_attachments):
+            if isinstance(attachment, user_settings_module.UserSettings):
+                if user_settings is not None:
+                    raise ValueError(
+                        f"Cannot attach multiple instances of `UserSettings` to the same app."
+                    )
+
+                user_settings = attachment
+
+            else:
+                other_attachments.append(attachment)
+
+        if user_settings is None:
+            user_settings = user_settings_module.UserSettings()
+
+        self.default_user_settings = user_settings
+        self.default_attachments = tuple(other_attachments)
 
         # Initialized lazily, when the favicon is first requested.
         self._icon_as_ico_blob: Optional[bytes] = None
@@ -420,6 +442,10 @@ class AppServer(fastapi.FastAPI):
             session_user_settings,
             self,
         )
+
+        # Add any attachments
+        for attachment in self.default_attachments:
+            sess.attachments.add(copy.deepcopy(attachment))
 
         # Optionally create a validator
         validator_instance = (

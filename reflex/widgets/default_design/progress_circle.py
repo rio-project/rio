@@ -3,10 +3,12 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
+from uniserde import JsonDoc
+
 import reflex as rx
 
-from ... import styling, theme
-from . import widget_base
+from ..fundamental import widget_base
+from . import theme
 
 __all__ = [
     "ProgressCircle",
@@ -15,16 +17,16 @@ __all__ = [
 
 class ProgressCircle(widget_base.HtmlWidget):
     _: KW_ONLY
-    color: styling.Color = theme.COLOR_ACCENT
-    background_color: styling.Color = theme.COLOR_NEUTRAL
     progress: Optional[float] = None
+    color: Optional[rx.Color] = None
+    background_color: Optional[rx.Color] = None
 
     def __init__(
         self,
         *,
-        color: rx.Color = theme.COLOR_ACCENT,
-        background_color: rx.Color = theme.COLOR_NEUTRAL,
         progress: Optional[float] = None,
+        color: Optional[rx.Color] = None,
+        background_color: Optional[rx.Color] = None,
         size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,
@@ -52,9 +54,24 @@ class ProgressCircle(widget_base.HtmlWidget):
             align_y=align_y,
         )
 
+        self.progress = progress
         self.color = color
         self.background_color = background_color
-        self.progress = progress
+
+    def _custom_serialize(self) -> JsonDoc:
+        thm = self.session.attachments[theme.Theme]
+
+        color = thm.accent_color if self.color is None else self.color
+        background_color = (
+            thm.neutral_color
+            if self.background_color is None
+            else self.background_color
+        )
+
+        return {
+            "color": color.rgba,
+            "background_color": background_color.rgba,
+        }
 
 
 ProgressCircle._unique_id = "ProgressCircle-builtin"

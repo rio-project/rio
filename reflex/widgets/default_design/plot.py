@@ -6,8 +6,10 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-from ... import styling, theme
-from . import widget_base
+import reflex as rx
+
+from .. import fundamental
+from . import theme
 
 try:
     import plotly
@@ -17,16 +19,12 @@ except ImportError:
         import plotly
 
 
-__all__ = ("Plot",)
+__all__ = [
+    "Plot",
+]
 
 
-_DEFAULT_STYLE = styling.BoxStyle(
-    fill=theme.COLOR_NEUTRAL,
-    corner_radius=theme.CORNER_RADIUS,
-)
-
-
-class Plot(widget_base.HtmlWidget):
+class Plot(fundamental.HtmlWidget):
     """
     Displays the given figure in the website.
 
@@ -39,9 +37,19 @@ class Plot(widget_base.HtmlWidget):
 
     figure: plotly.graph_objects.Figure
     _: KW_ONLY
-    style: styling.BoxStyle = field(default_factory=lambda: _DEFAULT_STYLE)
+    style: Optional[fundamental.BoxStyle] = None
 
     def _custom_serialize(self) -> JsonDoc:
+        # Determine a style
+        if self.style is None:
+            thm = self.session.attachments[theme.Theme]
+            box_style = fundamental.BoxStyle(
+                fill=thm.neutral_contrast_color,
+                corner_radius=thm.corner_radius,
+            )
+        else:
+            box_style = self.style
+
         # Make the plot transparent, so the background configured by JavaScript
         # shines through.
         figure = copy.copy(self.figure)
@@ -54,7 +62,7 @@ class Plot(widget_base.HtmlWidget):
 
         return {
             "plotJson": figure.to_json(),
-            "boxStyle": self.style._serialize(),
+            "boxStyle": box_style._serialize(),
         }
 
 

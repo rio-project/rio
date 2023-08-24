@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import *  # type: ignore
 
 import reflex as rx
 
-from ... import common, styling, theme
-from . import widget_base
+from ... import common
+from . import box_style, widget_base
 
 __all__ = [
     "Rectangle",
@@ -13,10 +13,10 @@ __all__ = [
 
 
 class Rectangle(widget_base.HtmlWidget):
-    style: styling.BoxStyle
+    style: box_style.BoxStyle
     child: Optional[rx.Widget] = None
-    hover_style: Optional[styling.BoxStyle] = None
-    transition_time: float = theme.TRANSITION_MED
+    hover_style: Optional[box_style.BoxStyle] = None
+    transition_time: float = 1.0
     cursor: common.CursorStyle = common.CursorStyle.DEFAULT
 
 

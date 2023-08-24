@@ -3,8 +3,7 @@ from typing import Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
-from .. import theme
-from . import text_style
+from ... import color, text_style
 
 
 @dataclass(frozen=True)
@@ -12,7 +11,7 @@ class MarkdownStyle:
     # Headers
     header_1_style: text_style.TextStyle = text_style.TextStyle(
         font_size=1.5,
-        font_color=theme.COLOR_FONT,
+        font_color=color.Color.BLACK,
     )
     header_2_style: text_style.TextStyle = header_1_style.replace(
         font_size=1.35,
@@ -36,7 +35,7 @@ class MarkdownStyle:
     text_body_style: text_style.TextStyle = text_style.TextStyle()
 
     hyperlink_style: text_style.TextStyle = text_style.TextStyle(
-        font_color=theme.COLOR_ACCENT,
+        font_color=color.Color.BLUE,
     )
 
     def replace(

@@ -1,11 +1,7 @@
 import colorsys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable, ClassVar, Dict, Iterable, Literal, Tuple, Union
-
-from uniserde import JsonDoc
-
-from ..image_source import ImageLike, ImageSource
+from typing import *  # type: ignore
 
 __all__ = [
     "Color",
@@ -16,7 +12,7 @@ class Color:
     _red: float
     _green: float
     _blue: float
-    _alpha: float
+    _opacity: float
 
     def __init__(self):
         raise RuntimeError(
@@ -29,7 +25,7 @@ class Color:
         red: float = 1.0,
         green: float = 1.0,
         blue: float = 1.0,
-        alpha: float = 1.0,
+        opacity: float = 1.0,
         *,
         gamma: Union[float, Literal["linear", "srgb"]] = 1.0,
     ) -> "Color":
@@ -47,8 +43,8 @@ class Color:
         if blue < 0.0 or blue > 1.0:
             raise ValueError("`blue` must be between 0.0 and 1.0")
 
-        if alpha < 0.0 or alpha > 1.0:
-            raise ValueError("`alpha` must be between 0.0 and 1.0")
+        if opacity < 0.0 or opacity > 1.0:
+            raise ValueError("`opacity` must be between 0.0 and 1.0")
 
         if gamma < 0.0:
             raise ValueError("`gamma` must be positive")
@@ -58,7 +54,7 @@ class Color:
         self._red = red**gamma
         self._green = green**gamma
         self._blue = blue**gamma
-        self._alpha = alpha
+        self._opacity = opacity
 
         return self
 
@@ -76,7 +72,7 @@ class Color:
             red=int(hex_color[0:2], 16) / 255,
             green=int(hex_color[2:4], 16) / 255,
             blue=int(hex_color[4:6], 16) / 255,
-            alpha=int(hex_color[6:8], 16) / 255 if len(hex_color) == 8 else 1.0,
+            opacity=int(hex_color[6:8], 16) / 255 if len(hex_color) == 8 else 1.0,
         )
 
     @classmethod
@@ -85,7 +81,7 @@ class Color:
         hue: float,
         saturation: float,
         value: float,
-        alpha: float = 1.0,
+        opacity: float = 1.0,
     ) -> "Color":
         if hue < 0.0 or hue > 1.0:
             raise ValueError("`hue` must be between 0.0 and 1.0")
@@ -96,15 +92,15 @@ class Color:
         if value < 0.0 or value > 1.0:
             raise ValueError("`value` must be between 0.0 and 1.0")
 
-        # Alpha will be checked by `from_rgb`
+        # Opacity will be checked by `from_rgb`
 
         return cls.from_rgb(
             *colorsys.hsv_to_rgb(hue, saturation, value),
-            alpha=alpha,
+            opacity=opacity,
         )
 
     @classmethod
-    def from_grey(cls, grey: float, alpha: float = 1.0) -> "Color":
+    def from_grey(cls, grey: float, opacity: float = 1.0) -> "Color":
         """
         Create a grey color with the given intensity. A `grey` value of 0.0
         corresponds to black, and 1.0 to white.
@@ -112,9 +108,9 @@ class Color:
         if grey < 0.0 or grey > 1.0:
             raise ValueError("`grey` must be between 0.0 and 1.0")
 
-        # Alpha will be checked by `from_rgb`
+        # Opacity will be checked by `from_rgb`
 
-        return cls.from_rgb(grey, grey, grey, alpha)
+        return cls.from_rgb(grey, grey, grey, opacity)
 
     @property
     def red(self) -> float:
@@ -129,8 +125,8 @@ class Color:
         return self._blue
 
     @property
-    def alpha(self) -> float:
-        return self._alpha
+    def opacity(self) -> float:
+        return self._opacity
 
     @property
     def rgb(self) -> Tuple[float, float, float]:
@@ -138,7 +134,7 @@ class Color:
 
     @property
     def rgba(self) -> Tuple[float, float, float, float]:
-        return (self._red, self._green, self._blue, self._alpha)
+        return (self._red, self._green, self._blue, self._opacity)
 
     @property
     def hsv(self) -> Tuple[float, float, float]:
@@ -163,17 +159,32 @@ class Color:
         blue_hex = f"{int(round(self.blue*255)):02x}"
         return red_hex + green_hex + blue_hex
 
+    def replace(
+        self,
+        *,
+        red: Optional[float] = None,
+        green: Optional[float] = None,
+        blue: Optional[float] = None,
+        opacity: Optional[float] = None,
+    ) -> "Color":
+        return Color.from_rgb(
+            red=self.red if red is None else red,
+            green=self.green if green is None else green,
+            blue=self.blue if blue is None else blue,
+            opacity=self.opacity if opacity is None else opacity,
+        )
+
     def _map_rgb(self, func: Callable[[float], float]) -> "Color":
         """
         Apply a function to each of the RGB values of this color, and return
-        a new `Color` instance with the result. The alpha value is copied
+        a new `Color` instance with the result. The opacity value is copied
         unchanged.
         """
         return Color.from_rgb(
             func(self.red),
             func(self.green),
             func(self.blue),
-            self.alpha,
+            self.opacity,
         )
 
     def brighter(self, amount: float) -> "Color":
@@ -236,10 +247,6 @@ class Color:
 
         hue, saturation, brightness = self.hsv
 
-        # Human vision is nonlinear. Convert the color to something more akin
-        # to how it is perceived.
-        brightness = brightness ** (1 / 2.2)
-
         if brightness > 0.5:
             brightness = brightness * (1 - scale)
         else:
@@ -265,8 +272,27 @@ class Color:
 
         return Color.from_hsv(hue, saturation, brightness)
 
+    def blend(self, other: "Color", factor: float) -> "Color":
+        """
+        Return a new `Color` instance that is a blend of this color and the
+        given `other` color. `factor` controls how much of the other color is
+        used. A value of `0` will return this color, a value of `1` will return
+        the other color.
+
+        Values outside of the range `0` to `1` are allowed and will lead to the
+        color being extrapolated.
+        """
+        one_minus_factor = 1 - factor
+
+        return Color.from_rgb(
+            red=self.red * one_minus_factor + other.red * factor,
+            green=self.green * one_minus_factor + other.green * factor,
+            blue=self.blue * one_minus_factor + other.blue * factor,
+            opacity=self.opacity * one_minus_factor + other.opacity * factor,
+        )
+
     def as_plotly(self) -> str:
-        return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {int(round(self.alpha*255))})"
+        return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {int(round(self.opacity*255))})"
 
     def __repr__(self) -> str:
         return f"<Color {self.hex}>"

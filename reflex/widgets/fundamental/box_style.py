@@ -4,8 +4,8 @@ from typing import Dict, Optional, Tuple, Union
 from typing_extensions import Self
 from uniserde import JsonDoc
 
-from . import fills
-from .color import Color
+from ... import fills
+from ...color import Color
 
 
 @dataclass(frozen=True)

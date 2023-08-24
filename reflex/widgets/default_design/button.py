@@ -1,188 +1,36 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
+from abc import ABC, abstractproperty
+from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 from typing import Optional
 
 import reflex as rx
 
-from ... import common, styling, theme
+from ... import common
 from .. import fundamental
+from . import progress_circle, text, theme
 
 __all__ = [
-    "Button",
-    "ButtonPressedEvent",
+    "ButtonPressEvent",
+    "CustomButton",
+    "MinorButton",
+    "MajorButton",
 ]
 
 
-class ButtonPressedEvent:
+class ButtonPressEvent:
     pass
 
 
-class Button(fundamental.Widget):
+class _BaseButton(fundamental.Widget, ABC):
     text: str
-    on_press: fundamental.EventHandler[ButtonPressedEvent] = None
+    on_press: fundamental.EventHandler[ButtonPressEvent] = None
     _: KW_ONLY
-    style: rx.BoxStyle
-    hover_style: rx.BoxStyle
-    click_style: rx.BoxStyle
-    insensitive_style: rx.BoxStyle
-    text_style: rx.TextStyle
-    text_style_hover: rx.TextStyle
-    text_style_click: rx.TextStyle
-    text_style_insensitive: rx.TextStyle
-    transition_speed: float
     is_sensitive: bool = True
     is_loading: bool = False
-    _is_pressed: bool = False
-    _is_entered: bool = False
-
-    @classmethod
-    def major(
-        cls,
-        text: str,
-        on_press: fundamental.EventHandler[ButtonPressedEvent] = None,
-        *,
-        is_sensitive: bool = True,
-        is_loading: bool = False,
-        font_color: rx.Color = theme.COLOR_FONT,
-        accent_color: rx.Color = theme.COLOR_ACCENT,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
-    ):
-        return cls(
-            text,
-            on_press,
-            is_sensitive=is_sensitive,
-            is_loading=is_loading,
-            style=rx.BoxStyle(
-                fill=accent_color,
-                corner_radius=theme.CORNER_RADIUS,
-            ),
-            hover_style=rx.BoxStyle(
-                fill=accent_color.brighter(0.1),
-                corner_radius=theme.CORNER_RADIUS,
-            ),
-            click_style=rx.BoxStyle(
-                fill=accent_color.brighter(0.2),
-                corner_radius=theme.CORNER_RADIUS,
-            ),
-            insensitive_style=rx.BoxStyle(
-                fill=accent_color.desaturated(0.8),
-                corner_radius=theme.CORNER_RADIUS,
-            ),
-            text_style=rx.TextStyle(
-                font_color=font_color,
-                font_weight="bold",
-            ),
-            text_style_hover=rx.TextStyle(
-                font_color=accent_color.contrasting(),
-                font_weight="bold",
-            ),
-            text_style_click=rx.TextStyle(
-                font_color=accent_color.contrasting(),
-                font_weight="bold",
-            ),
-            text_style_insensitive=rx.TextStyle(
-                font_color=accent_color.desaturated(0.8).contrasting(0.25),
-            ),
-            transition_speed=theme.TRANSITION_FAST,
-            key=key,
-            margin=margin,
-            margin_x=margin_x,
-            margin_y=margin_y,
-            margin_left=margin_left,
-            margin_top=margin_top,
-            margin_right=margin_right,
-            margin_bottom=margin_bottom,
-            width=width,
-            height=height,
-            align_x=align_x,
-            align_y=align_y,
-        )
-
-    @classmethod
-    def minor(
-        cls,
-        text: str,
-        on_press: fundamental.EventHandler[ButtonPressedEvent] = None,
-        *,
-        is_sensitive: bool = True,
-        is_loading: bool = False,
-        accent_color: rx.Color = theme.COLOR_ACCENT,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
-    ):
-        base_style = rx.BoxStyle(
-            fill=styling.Color.TRANSPARENT,
-            corner_radius=theme.CORNER_RADIUS,
-            stroke_width=theme.OUTLINE_WIDTH,
-            stroke_color=accent_color,
-        )
-
-        return cls(
-            text,
-            on_press,
-            is_sensitive=is_sensitive,
-            is_loading=is_loading,
-            style=base_style,
-            hover_style=base_style.replace(
-                fill=accent_color.brighter(0.1),
-                stroke_color=accent_color.brighter(0.1),
-            ),
-            click_style=base_style.replace(
-                fill=accent_color.brighter(0.2),
-                stroke_color=accent_color.brighter(0.2),
-            ),
-            insensitive_style=base_style.replace(
-                stroke_color=accent_color.desaturated(0.8),
-            ),
-            text_style=rx.TextStyle(
-                font_color=accent_color,
-            ),
-            text_style_hover=rx.TextStyle(
-                font_color=accent_color.contrasting(),
-            ),
-            text_style_click=rx.TextStyle(
-                font_color=accent_color.contrasting(),
-            ),
-            text_style_insensitive=rx.TextStyle(
-                font_color=accent_color.desaturated(0.8).contrasting(),
-            ),
-            transition_speed=theme.TRANSITION_FAST,
-            key=key,
-            margin=margin,
-            margin_x=margin_x,
-            margin_y=margin_y,
-            margin_left=margin_left,
-            margin_top=margin_top,
-            margin_right=margin_right,
-            margin_bottom=margin_bottom,
-            width=width,
-            height=height,
-            align_x=align_x,
-            align_y=align_y,
-        )
+    _is_pressed: bool = field(init=False, default=False)
+    _is_entered: bool = field(init=False, default=False)
 
     def _on_mouse_enter(self, event: fundamental.MouseEnterEvent) -> None:
         self._is_entered = True
@@ -204,41 +52,59 @@ class Button(fundamental.Widget):
 
         await self._call_event_handler(
             self.on_press,
-            ButtonPressedEvent(),
+            ButtonPressEvent(),
         )
 
         self._is_pressed = False
 
-    def build(self) -> rx.Widget:
-        # If not sensitive, use the insensitive styles
-        if not self.is_sensitive:
-            style = self.insensitive_style
-            hover_style = None
-            text_style = self.text_style_insensitive
+    @abstractproperty
+    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        raise NotImplementedError
 
-        # If pressed use the click styles
-        elif self._is_pressed:
-            style = self.click_style
+    @abstractproperty
+    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        raise NotImplementedError
+
+    @abstractproperty
+    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        raise NotImplementedError
+
+    @abstractproperty
+    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        raise NotImplementedError
+
+    @abstractproperty
+    def _transition_speed(self) -> float:
+        raise NotImplementedError
+
+    def build(self) -> rx.Widget:
+        # If not sensitive, use the insensitive style
+        if not self.is_sensitive:
+            style, text_style = self._insensitive_style
             hover_style = None
-            text_style = self.text_style_click
+
+        # If pressed use the click style
+        elif self._is_pressed:
+            style, text_style = self._click_style
+            hover_style = None
 
         # Otherwise use the regular styles
         else:
-            style = self.style
-            hover_style = self.hover_style
-            text_style = self.text_style_hover if self._is_entered else self.text_style
+            style, text_style = self._style
+            hover_style, text_style_hover = self._hover_style
+            text_style = text_style_hover if self._is_entered else text_style
 
         # Prepare the child
         if self.is_loading:
             scale = text_style.font_size
-            child = fundamental.ProgressCircle(
+            child = progress_circle.ProgressCircle(
                 color=text_style.font_color,
                 size=scale * 1.2,
                 align_x=0.5,
                 margin=0.3,
             )
         else:
-            child = fundamental.Text(
+            child = text.Text(
                 self.text,
                 style=text_style,
                 margin=0.3,
@@ -249,7 +115,7 @@ class Button(fundamental.Widget):
                 child=child,
                 style=style,
                 hover_style=hover_style,
-                transition_time=theme.TRANSITION_FAST,
+                transition_time=self._transition_speed,
                 cursor=common.CursorStyle.POINTER
                 if self.is_sensitive
                 else common.CursorStyle.DEFAULT,
@@ -259,3 +125,197 @@ class Button(fundamental.Widget):
             on_mouse_down=self._on_mouse_down,
             on_mouse_up=self._on_mouse_up,
         )
+
+
+class CustomButton(_BaseButton):
+    _: KW_ONLY
+    style: fundamental.BoxStyle
+    hover_style: fundamental.BoxStyle
+    click_style: fundamental.BoxStyle
+    insensitive_style: fundamental.BoxStyle
+    text_style: rx.TextStyle
+    text_style_hover: rx.TextStyle
+    text_style_click: rx.TextStyle
+    text_style_insensitive: rx.TextStyle
+    transition_speed: float
+
+    @property
+    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        return self.style, self.text_style
+
+    @property
+    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        return self.hover_style, self.text_style_hover
+
+    @property
+    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        return self.click_style, self.text_style_click
+
+    @property
+    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        return self.insensitive_style, self.text_style_insensitive
+
+    @property
+    def _transition_speed(self) -> float:
+        return self.transition_speed
+
+
+class MajorButton(_BaseButton):
+    _: KW_ONLY
+    color: Optional[rx.Color] = None
+    font_color: Optional[rx.Color] = None
+
+    def _get_attributes(self) -> Tuple[theme.Theme, rx.Color, rx.Color]:
+        thm = self.session.attachments[theme.Theme]
+
+        return (
+            thm,
+            thm.main_color if self.color is None else self.color,
+            thm.text_style.font_color if self.font_color is None else self.font_color,
+        )
+
+    @property
+    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color, font_color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=color,
+                corner_radius=thm.corner_radius,
+            ),
+            rx.TextStyle(
+                font_color=font_color,
+                font_weight="bold",
+            ),
+        )
+
+    @property
+    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color, font_color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=color.brighter(0.1),
+                corner_radius=thm.corner_radius,
+            ),
+            rx.TextStyle(
+                font_color=font_color.contrasting(),
+                font_weight="bold",
+            ),
+        )
+
+    @property
+    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color, font_color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=color.brighter(0.2),
+                corner_radius=thm.corner_radius,
+            ),
+            rx.TextStyle(
+                font_color=font_color.contrasting(),
+                font_weight="bold",
+            ),
+        )
+
+    @property
+    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color, font_color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=color.desaturated(0.8),
+                corner_radius=thm.corner_radius,
+            ),
+            rx.TextStyle(
+                font_color=font_color.desaturated(0.8).contrasting(0.25),
+            ),
+        )
+
+    @property
+    def _transition_speed(self) -> float:
+        thm = self.session.attachments[theme.Theme]
+        return 0.1 * thm.transition_scale
+
+
+class MinorButton(_BaseButton):
+    _: KW_ONLY
+    color: Optional[rx.Color] = None
+
+    def _get_attributes(self) -> Tuple[theme.Theme, rx.Color]:
+        thm = self.session.attachments[theme.Theme]
+
+        return (
+            thm,
+            thm.main_color if self.color is None else self.color,
+        )
+
+    @property
+    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=rx.Color.TRANSPARENT,
+                corner_radius=thm.corner_radius,
+                stroke_width=thm.outline_width,
+                stroke_color=color,
+            ),
+            rx.TextStyle(
+                font_color=color,
+            ),
+        )
+
+    @property
+    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=color.brighter(0.1),
+                corner_radius=thm.corner_radius,
+                stroke_width=thm.outline_width,
+                stroke_color=color.brighter(0.1),
+            ),
+            rx.TextStyle(
+                font_color=color.contrasting(),
+            ),
+        )
+
+    @property
+    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=color.brighter(0.2),
+                corner_radius=thm.corner_radius,
+                stroke_width=thm.outline_width,
+                stroke_color=color.brighter(0.2),
+            ),
+            rx.TextStyle(
+                font_color=color.contrasting(),
+            ),
+        )
+
+    @property
+    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+        thm, color = self._get_attributes()
+
+        return (
+            fundamental.BoxStyle(
+                fill=rx.Color.TRANSPARENT,
+                corner_radius=thm.corner_radius,
+                stroke_width=thm.outline_width,
+                stroke_color=color.desaturated(0.8),
+            ),
+            rx.TextStyle(
+                font_color=color.desaturated(0.8).contrasting(),
+            ),
+        )
+
+    @property
+    def _transition_speed(self) -> float:
+        thm = self.session.attachments[theme.Theme]
+        return 0.1 * thm.transition_scale
