@@ -740,6 +740,9 @@ function onError(event: any) {
 
 function onClose(event: any) {
     console.log(`Connection closed: ${event.reason}`);
+
+    // Sho the user that the connection was lost
+    displayConnectionLostPopup();
 }
 
 export function sendMessageOverWebsocket(message: object) {
@@ -764,6 +767,25 @@ export function callRemoteMethodDiscardResponse(
         method: method,
         params: params,
     });
+}
+
+function displayConnectionLostPopup() {
+    const popup = document.createElement('div');
+    popup.textContent = 'Connection lost. Please refresh the page.';
+
+    popup.style.position = 'fixed';
+    popup.style.top = '2em';
+    popup.style.left = '50%';
+    popup.style.transform = 'translateX(-50%)';
+    popup.style.width = 'unset';
+    popup.style.height = 'unset';
+    popup.style.backgroundColor = '#ffffff';
+    popup.style.color = '#000000';
+    popup.style.fontWeight = 'bold';
+    popup.style.padding = '1.5em';
+    popup.style.borderRadius = '1em';
+
+    document.body.appendChild(popup);
 }
 
 main();
