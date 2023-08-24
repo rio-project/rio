@@ -28,7 +28,7 @@ class SubConfig:
     sub_bar: List[str]
 
 
-class UserSettings(rx.UserSettings):
+class TestUserSettings(rx.UserSettings):
     counter: int
     foo: bool
     bar: Dict[str, SubConfig]
@@ -66,7 +66,7 @@ class ShowcaseCard(rx.Widget):
 
 class Sidebar(rx.Widget):
     async def _on_button_press(self, _: widgets.ButtonPressEvent) -> None:
-        sett = self.session.attachments[UserSettings]
+        sett = self.session.attachments[TestUserSettings]
         sett.counter += 1
         await self.force_refresh()
 
@@ -98,7 +98,7 @@ class Sidebar(rx.Widget):
                     margin_top=1.0,
                 ),
                 widgets.Text(
-                    str(self.session.attachments[UserSettings].counter),
+                    str(self.session.attachments[TestUserSettings].counter),
                     margin_top=1.0,
                 ),
                 widgets.ProgressCircle(
@@ -158,7 +158,7 @@ rx_app = rx.App(
     on_session_end=lambda sess: print("Session Ended"),
     default_attachments=[
         theme,
-        UserSettings(
+        TestUserSettings(
             counter=0,
             foo=True,
             bar={

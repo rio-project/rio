@@ -80,14 +80,9 @@ class WontSerialize(Exception):
 
 
 class SessionAttachments:
-    def __init__(self, sess: Session, user_settings: user_settings_module.UserSettings):
+    def __init__(self, sess: Session):
         self._session = sess
-        self._user_settings_type = type(user_settings)
-        self._attachments = {
-            self._user_settings_type: user_settings,
-        }
-
-        user_settings._reflex_session_ = sess
+        self._attachments = {}
 
     def __getitem__(self, typ: Type[T]) -> T:
         """
@@ -102,28 +97,36 @@ class SessionAttachments:
         except KeyError:
             raise KeyError(typ) from None
 
-    def add(self, value: Any) -> None:
-        """
-        Attaches the given value to the `Session`. It can be retrieved later
-        using `session.attachments[...]`.
-        """
+    def _add(self, value: Any, synchronize: bool) -> None:
         # User settings need special care
-        if type(value) is self._user_settings_type:
+        if isinstance(value, user_settings_module.UserSettings):
             # Get the previously attached value, and unlink it from the session
-            old_value = self[self._user_settings_type]
-            old_value._reflex_session_ = None
+            try:
+                old_value = self[type(value)]
+            except KeyError:
+                pass
+            else:
+                old_value._reflex_session_ = None
 
             # Link the new value to the session
             value._reflex_session_ = self._session
 
             # Trigger a resync
-            asyncio.create_task(
-                value._synchronize_now(self._session),
-                name="write back user settings (entire settings instance changed)",
-            )
+            if synchronize:
+                asyncio.create_task(
+                    value._synchronize_now(self._session),
+                    name="write back user settings (entire settings instance changed)",
+                )
 
         # Save it with the rest of the attachments
         self._attachments[type(value)] = value
+
+    def add(self, value: Any) -> None:
+        """
+        Attaches the given value to the `Session`. It can be retrieved later
+        using `session.attachments[...]`.
+        """
+        self._add(value, synchronize=True)
 
 
 class Session(unicall.Unicall):
@@ -137,7 +140,6 @@ class Session(unicall.Unicall):
         root_widget: rx.Widget,
         send_message: Callable[[Jsonable], Awaitable[None]],
         receive_message: Callable[[], Awaitable[Jsonable]],
-        user_settings: user_settings_module.UserSettings,
         app_server_: app_server.AppServer,
     ):
         super().__init__(send_message=send_message, receive_message=receive_message)
@@ -187,7 +189,7 @@ class Session(unicall.Unicall):
 
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
-        self.attachments = SessionAttachments(self, user_settings)
+        self.attachments = SessionAttachments(self)
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
@@ -1122,6 +1124,9 @@ document.body.removeChild(a)
         """
         Persistently store the given key-value pairs at the user. The values
         have to be jsonable.
+
+        Any keys not present here are still preserved. Thus the function
+        effectively behaves like `dict.update`.
         """
         raise NotImplementedError
 

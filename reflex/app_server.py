@@ -60,30 +60,8 @@ class AppServer(fastapi.FastAPI):
         self.external_url = external_url
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
+        self.default_attachments = default_attachments
         self.validator_factory = validator_factory
-
-        # Find the user settings in the attachments. They need special treatment
-        # later
-        user_settings = None
-        other_attachments = []
-
-        for ii, attachment in enumerate(default_attachments):
-            if isinstance(attachment, user_settings_module.UserSettings):
-                if user_settings is not None:
-                    raise ValueError(
-                        f"Cannot attach multiple instances of `UserSettings` to the same app."
-                    )
-
-                user_settings = attachment
-
-            else:
-                other_attachments.append(attachment)
-
-        if user_settings is None:
-            user_settings = user_settings_module.UserSettings()
-
-        self.default_user_settings = user_settings
-        self.default_attachments = tuple(other_attachments)
 
         # Initialized lazily, when the favicon is first requested.
         self._icon_as_ico_blob: Optional[bytes] = None
@@ -395,43 +373,6 @@ class AppServer(fastapi.FastAPI):
                 validator_instance.handle_incoming_message(msg)
                 return msg
 
-        # Upon connecting, the client sends an initial message containing
-        # information about it. Wait for it.
-        # Update the local user settings instance
-        initial_message_json: Jsonable = await websocket.receive_json()
-        initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
-        session_user_settings = user_settings_module.UserSettings()
-        object.__setattr__(
-            session_user_settings,
-            "__class__",
-            type(self.default_user_settings),
-        )
-
-        for field_name, field_type in get_type_hints(
-            type(self.default_user_settings)
-        ).items():
-            # Skip internal fields
-            if field_name in user_settings_module.UserSettings.__annotations__:
-                continue
-
-            # Try to parse the field value
-            try:
-                field_value = uniserde.from_json(
-                    initial_message.user_settings[field_name],
-                    field_type,
-                )
-            except (KeyError, uniserde.SerdeError):
-                field_value = copy.deepcopy(
-                    getattr(self.default_user_settings, field_name)
-                )
-
-            # Set the field value
-            vars(session_user_settings)[field_name] = field_value
-
-        assert (
-            not session_user_settings._reflex_dirty_attribute_names_
-        ), session_user_settings._reflex_dirty_attribute_names_
-
         # Create a session instance to hold all of this state in an organized
         # fashion
         root_widget = self.app.build()
@@ -439,12 +380,75 @@ class AppServer(fastapi.FastAPI):
             root_widget,
             send_message,
             receive_message,
-            session_user_settings,
             self,
         )
 
-        # Add any attachments
+        # Upon connecting, the client sends an initial message containing
+        # information about it. Wait for it.
+        initial_message_json: Jsonable = await websocket.receive_json()
+        initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
+
+        # Deserialize the user settings
+        visited_settings: Dict[str, user_settings_module.UserSettings] = {}
+
+        for att_defaults in self.default_attachments:
+            if not isinstance(att_defaults, user_settings_module.UserSettings):
+                continue
+
+            # Create the instance for this attachment. Bypass the constructor so
+            # the instance doesn't immediately try to synchronize with the
+            # frontend.
+            att_instance = user_settings_module.UserSettings()
+            object.__setattr__(
+                att_instance,
+                "__class__",
+                type(att_defaults),
+            )
+
+            section_prefix = (
+                f"{att_instance.section_name}:" if att_instance.section_name else ""
+            )
+
+            for py_field_name, field_type in get_type_hints(type(att_instance)).items():
+                # Skip internal fields
+                if py_field_name in user_settings_module.UserSettings.__annotations__:
+                    continue
+
+                # Make sure this field isn't clashing with another attachment
+                doc_field_name = f"{section_prefix}{py_field_name}"
+
+                try:
+                    att_other = visited_settings[doc_field_name]
+                except KeyError:
+                    visited_settings[doc_field_name] = att_instance
+                else:
+                    raise RuntimeError(
+                        f'The field "{py_field_name}" is used by multiple `UserSetting` attachments:\n'
+                        f"- `{att_instance.__class__.__name__}` and \n"
+                        f"- `{att_other.__class__.__name__}`.\n\n"
+                        f"Rename one of the fields, or assign a `section_name` to one of the classes."
+                    ) from None
+
+                # Try to parse the field value
+                try:
+                    field_value = uniserde.from_json(
+                        initial_message.user_settings[doc_field_name],
+                        field_type,
+                    )
+                except (KeyError, uniserde.SerdeError):
+                    field_value = copy.deepcopy(getattr(att_defaults, py_field_name))
+
+                # Set the field value
+                vars(att_instance)[py_field_name] = field_value
+
+                # Attach the instance to the session
+                sess.attachments._add(att_instance, synchronize=False)
+
+        # Add any other attachments
         for attachment in self.default_attachments:
+            if isinstance(attachment, user_settings_module.UserSettings):
+                continue
+
             sess.attachments.add(copy.deepcopy(attachment))
 
         # Optionally create a validator
@@ -475,6 +479,6 @@ class AppServer(fastapi.FastAPI):
         except fastapi.WebSocketDisconnect:
             pass
 
-        # Fire the session end event
         finally:
+            # Fire the session end event
             await common.call_event_handler(self.on_session_end, sess)
