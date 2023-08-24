@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import *  # type: ignore
 
 import reflex as rx
 
@@ -48,10 +49,21 @@ class Theme:
     @staticmethod
     def dark(
         *,
-        neutral_color=rx.Color.from_hex("36393b"),
-        main_color=rx.Color.from_hex("ff785a"),
-        accent_color=rx.Color.from_hex("b4e1ff"),
+        neutral_color: Optional[rx.Color] = None,
+        main_color: Optional[rx.Color] = None,
+        accent_color: Optional[rx.Color] = None,
     ) -> "Theme":
+        # Impute defaults
+        if neutral_color is None:
+            neutral_color = rx.Color.from_hex("36393b")
+
+        if main_color is None:
+            main_color = rx.Color.from_hex("ff785a")
+
+        if accent_color is None:
+            accent_color = main_color
+
+        # Prepare values which are referenced later
         text_style = rx.TextStyle(
             font_color=neutral_color.contrasting(0.9),
         )

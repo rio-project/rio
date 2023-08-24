@@ -170,7 +170,7 @@ class MajorButton(_BaseButton):
 
         return (
             thm,
-            thm.main_color if self.color is None else self.color,
+            thm.accent_color if self.color is None else self.color,
             thm.text_style.font_color if self.font_color is None else self.font_color,
         )
 
@@ -248,7 +248,7 @@ class MinorButton(_BaseButton):
 
         return (
             thm,
-            thm.main_color if self.color is None else self.color,
+            thm.accent_color if self.color is None else self.color,
         )
 
     @property

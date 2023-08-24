@@ -63,7 +63,7 @@ class ProgressCircle(widget_base.HtmlWidget):
 
         color = thm.accent_color if self.color is None else self.color
         background_color = (
-            thm.neutral_color
+            rx.Color.TRANSPARENT
             if self.background_color is None
             else self.background_color
         )

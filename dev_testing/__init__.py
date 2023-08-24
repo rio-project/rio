@@ -101,6 +101,10 @@ class Sidebar(rx.Widget):
                     str(self.session.attachments[UserSettings].counter),
                     margin_top=1.0,
                 ),
+                widgets.ProgressCircle(
+                    progress=0.4,
+                    margin_top=1.0,
+                ),
                 align_y=0,
             ),
             style=widgets.BoxStyle(
