@@ -157,6 +157,10 @@ class AppServer(fastapi.FastAPI):
             '"{child_attribute_names}"',
             widget_metadata.CHILD_ATTRIBUTE_NAMES_JSON,
         )
+        js = js.replace(
+            '"{ping_pong_interval}"',
+            str(self.app.ping_pong_interval.total_seconds()),
+        )
 
         html = html.replace("{title}", self.app.name)
         html = html.replace("/*{style}*/", css)

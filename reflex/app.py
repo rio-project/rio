@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+from datetime import timedelta
 import webbrowser
 from typing import *  # type: ignore
 
@@ -32,9 +33,10 @@ class App:
         build: Callable[[], widgets.fundamental.Widget],
         *,
         icon: Optional[ImageLike] = None,
-        on_session_start: widgets.fundamental.EventHandler[rx.Session] = None,
-        on_session_end: widgets.fundamental.EventHandler[rx.Session] = None,
+        on_session_start: rx.EventHandler[rx.Session] = None,
+        on_session_end: rx.EventHandler[rx.Session] = None,
         default_attachments: Iterable[Any],
+        ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
     ):
         self.name = name
         self.build = build
@@ -42,6 +44,11 @@ class App:
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)
+
+        if isinstance(ping_pong_interval, timedelta):
+            self.ping_pong_interval = ping_pong_interval
+        else:
+            self.ping_pong_interval = timedelta(seconds=ping_pong_interval)
 
     def as_fastapi(
         self,

@@ -4,6 +4,7 @@ from .color import *
 from .errors import *
 from .session import *
 from .text_style import *
+from .common import EventHandler
 from .user_settings_module import *
 
 # Expose important values

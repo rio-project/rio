@@ -19,6 +19,9 @@ import { MediaPlayerWidget } from './mediaPlayer';
 const sessionToken = '{session_token}';
 
 // @ts-ignore
+const pingPongIntervalSeconds: number = '{ping_pong_interval}';
+
+// @ts-ignore
 const CHILD_ATTRIBUTE_NAMES: { [id: string]: string[] } =
     '{child_attribute_names}';
 
@@ -176,7 +179,7 @@ async function processMessage(message: any) {
         response = null;
     }
     // Allow the server to run JavaScript
-    else if (message.method == 'evaluateJavascript') {
+    else if (message.method == 'evaluateJavaScript') {
         response = await eval(message.params.javaScriptSource);
     }
     // Upload a file to the server
@@ -196,7 +199,7 @@ async function processMessage(message: any) {
     }
     // Invalid method
     else {
-        throw `Encountered unknown RPC method: ${message}`;
+        throw `Encountered unknown RPC method: ${message.method}`;
     }
 
     // Respond to the message
@@ -699,7 +702,7 @@ function main() {
             params: ['ping'],
             id: `ping-${Date.now()}`,
         });
-    }, 20_000);
+    }, pingPongIntervalSeconds * 1000);
 }
 
 function onOpen() {
