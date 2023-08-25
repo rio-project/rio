@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, KW_ONLY
 from typing import *  # type: ignore
 
 import reflex as rx
@@ -10,6 +10,8 @@ __all__ = [
 
 @dataclass(frozen=True)
 class Theme:
+    _: KW_ONLY
+
     # Neutral colors are often used as background, for inactive and unimportant
     # elements
     neutral_color: rx.Color

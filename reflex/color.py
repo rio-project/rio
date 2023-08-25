@@ -247,6 +247,10 @@ class Color:
 
         hue, saturation, brightness = self.hsv
 
+        # Human vision is nonlinear. Account for that
+        brightness = brightness ** (1/2.2)
+
+        # Brighten or darken?
         if brightness > 0.5:
             brightness = brightness * (1 - scale)
         else:
