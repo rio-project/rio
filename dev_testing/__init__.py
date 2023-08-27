@@ -65,6 +65,8 @@ class ShowcaseCard(rx.Widget):
 
 
 class Sidebar(rx.Widget):
+    search_text: str = ""
+
     async def _on_button_press(self, _: widgets.ButtonPressEvent) -> None:
         sett = self.session.attachments[TestUserSettings]
         sett.counter += 1
@@ -88,6 +90,7 @@ class Sidebar(rx.Widget):
                 ),
                 widgets.TextInput(
                     placeholder="Search...",
+                    text=Sidebar.search_text,
                     margin_x=1.0,
                     margin_top=4.0,
                 ),
@@ -96,6 +99,8 @@ class Sidebar(rx.Widget):
                     on_press=self._on_button_press,
                     margin_x=1.0,
                     margin_top=1.0,
+                    is_sensitive=bool(self.search_text),
+                    color=rx.Color.BLACK if bool(self.search_text) else rx.Color.RED,
                 ),
                 widgets.Text(
                     str(self.session.attachments[TestUserSettings].counter),

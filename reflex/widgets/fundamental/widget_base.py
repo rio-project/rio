@@ -380,11 +380,20 @@ class Widget(ABC):
             )
 
         # Replace all properties with custom state properties
-        cls._initialize_state_properties(Widget._state_properties_)
+        all_parent_state_properties = set()
+
+        for base in cls.__bases__:
+            if not issubclass(base, Widget):
+                continue
+
+            all_parent_state_properties.update(base._state_properties_)
+
+        cls._initialize_state_properties(all_parent_state_properties)
 
     @classmethod
     def _initialize_state_properties(
-        cls, parent_state_properties: Set["StateProperty"]
+        cls,
+        parent_state_properties: Set["StateProperty"],
     ) -> None:
         """
         Spawn `StateProperty` instances for all annotated properties in this
