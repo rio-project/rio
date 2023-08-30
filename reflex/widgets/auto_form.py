@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import enum
-from typing import *  # type: ignore
-from . import notification_bar
 from dataclasses import KW_ONLY
-from . import number_input
+from typing import *  # type: ignore
+from . import widget_base
 
 import reflex as rx
 
-from .. import fundamental
-from . import button, switch, text
+from . import button, notification_bar, number_input, switch, text
 
 __all__ = [
     "AutoForm",
@@ -21,7 +19,7 @@ def prettify_name(name: str) -> str:
     return " ".join(p.title() for p in parts)
 
 
-class AutoForm(rx.Widget):
+class AutoForm(widget_base.Widget):
     _: KW_ONLY
     spacing: float = 0.5
     label_width: float = 15.0
@@ -67,18 +65,18 @@ class AutoForm(rx.Widget):
             level=level,
         )
 
-    def make_switch(self, is_on: bool) -> fundamental.widget_base.Widget:
+    def make_switch(self, is_on: bool) -> rx.Widget:
         return switch.Switch(is_on=is_on)
 
     def make_button(
         self,
         *,
         text: str,
-        on_press: fundamental.EventHandler[button.ButtonPressEvent],
+        on_press: rx.EventHandler[button.ButtonPressEvent],
         is_sensitive: bool,
         is_loading: bool,
         is_major: bool,
-    ) -> fundamental.widget_base.Widget:
+    ) -> rx.Widget:
         build_method = button.MajorButton if is_major else button.MinorButton
 
         return build_method(
@@ -92,7 +90,7 @@ class AutoForm(rx.Widget):
         self,
         field_name: str,
         field_type: Type,
-    ) -> fundamental.widget_base.Widget:
+    ) -> rx.Widget:
         # Get sensible type information
         origin = get_origin(field_type)
         field_args = get_args(field_type)
@@ -123,7 +121,7 @@ class AutoForm(rx.Widget):
 
         # `str` -> `TextInput`
         if field_type is str:
-            return fundamental.TextInput(
+            return rx.TextInput(
                 text=field_instance,
             )
 
@@ -134,7 +132,7 @@ class AutoForm(rx.Widget):
             else:
                 mapping = {prettify_name(f.name): f.value for f in field_type}
 
-            return fundamental.Dropdown(
+            return rx.Dropdown(
                 mapping,
                 selected_value=field_instance,
             )
@@ -142,7 +140,7 @@ class AutoForm(rx.Widget):
         # Unsupported type
         raise TypeError(f"AutoForm does not support fields of type `{field_type}`")
 
-    def build(self) -> fundamental.widget_base.Widget:
+    def build(self) -> rx.Widget:
         rows: List[rx.Widget] = []
 
         # Look for errors
@@ -162,7 +160,7 @@ class AutoForm(rx.Widget):
         # One row per field
         for field_name, field_type in get_type_hints(self).items():
             rows.append(
-                fundamental.Row(
+                rx.Row(
                     text.Text(
                         prettify_name(field_name),
                         width=self.label_width,
@@ -184,7 +182,7 @@ class AutoForm(rx.Widget):
         )
 
         # Wrap everything in one container
-        return fundamental.Column(
+        return rx.Column(
             *rows,
             spacing=self.spacing,
         )

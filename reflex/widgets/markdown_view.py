@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ... import session
+import reflex as rx
+
 from . import widget_base
 
 __all__ = [
@@ -12,7 +13,7 @@ class MarkdownView(widget_base.HtmlWidget):
     text: str
 
     @classmethod
-    def build_javascript_source(cls, sess: session.Session) -> str:
+    def build_javascript_source(cls, sess: rx.Session) -> str:
         return """
 
 function loadShowdown(callback) {

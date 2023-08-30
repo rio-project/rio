@@ -105,6 +105,3 @@ async def call_event_handler(  # type: ignore
         traceback.print_exc()
 
 
-class CursorStyle(enum.Enum):
-    DEFAULT = enum.auto()
-    POINTER = enum.auto()

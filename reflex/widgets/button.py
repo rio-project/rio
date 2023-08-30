@@ -4,12 +4,11 @@ from abc import ABC, abstractproperty
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 from typing import Optional
+from . import widget_base
 
 import reflex as rx
 
-from ... import common
-from .. import fundamental
-from . import progress_circle, text, theme
+from . import progress_circle, text
 
 __all__ = [
     "ButtonPressEvent",
@@ -23,31 +22,31 @@ class ButtonPressEvent:
     pass
 
 
-class _BaseButton(fundamental.Widget, ABC):
+class _BaseButton(widget_base.Widget, ABC):
     text: str
-    on_press: fundamental.EventHandler[ButtonPressEvent] = None
+    on_press: rx.EventHandler[ButtonPressEvent] = None
     _: KW_ONLY
     is_sensitive: bool = True
     is_loading: bool = False
     _is_pressed: bool = field(init=False, default=False)
     _is_entered: bool = field(init=False, default=False)
 
-    def _on_mouse_enter(self, event: fundamental.MouseEnterEvent) -> None:
+    def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
         self._is_entered = True
 
-    def _on_mouse_leave(self, event: fundamental.MouseLeaveEvent) -> None:
+    def _on_mouse_leave(self, event: rx.MouseLeaveEvent) -> None:
         self._is_entered = False
 
-    def _on_mouse_down(self, event: fundamental.MouseDownEvent) -> None:
+    def _on_mouse_down(self, event: rx.MouseDownEvent) -> None:
         # Only react to left mouse button
-        if event.button != fundamental.MouseButton.LEFT:
+        if event.button != rx.MouseButton.LEFT:
             return
 
         self._is_pressed = True
 
-    async def _on_mouse_up(self, event: fundamental.MouseUpEvent) -> None:
+    async def _on_mouse_up(self, event: rx.MouseUpEvent) -> None:
         # Only react to left mouse button, and only if sensitive
-        if event.button != fundamental.MouseButton.LEFT or not self.is_sensitive:
+        if event.button != rx.MouseButton.LEFT or not self.is_sensitive:
             return
 
         await self._call_event_handler(
@@ -58,19 +57,19 @@ class _BaseButton(fundamental.Widget, ABC):
         self._is_pressed = False
 
     @abstractproperty
-    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         raise NotImplementedError
 
     @abstractproperty
-    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _hover_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         raise NotImplementedError
 
     @abstractproperty
-    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _click_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         raise NotImplementedError
 
     @abstractproperty
-    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _insensitive_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         raise NotImplementedError
 
     @abstractproperty
@@ -110,15 +109,15 @@ class _BaseButton(fundamental.Widget, ABC):
                 margin=0.3,
             )
 
-        return fundamental.MouseEventListener(
-            fundamental.Rectangle(
+        return rx.MouseEventListener(
+            rx.Rectangle(
                 child=child,
                 style=style,
                 hover_style=hover_style,
                 transition_time=self._transition_speed,
-                cursor=common.CursorStyle.POINTER
+                cursor=rx.CursorStyle.POINTER
                 if self.is_sensitive
-                else common.CursorStyle.DEFAULT,
+                else rx.CursorStyle.DEFAULT,
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,
@@ -129,10 +128,10 @@ class _BaseButton(fundamental.Widget, ABC):
 
 class CustomButton(_BaseButton):
     _: KW_ONLY
-    style: fundamental.BoxStyle
-    hover_style: fundamental.BoxStyle
-    click_style: fundamental.BoxStyle
-    insensitive_style: fundamental.BoxStyle
+    style: rx.BoxStyle
+    hover_style: rx.BoxStyle
+    click_style: rx.BoxStyle
+    insensitive_style: rx.BoxStyle
     text_style: rx.TextStyle
     text_style_hover: rx.TextStyle
     text_style_click: rx.TextStyle
@@ -140,19 +139,19 @@ class CustomButton(_BaseButton):
     transition_speed: float
 
     @property
-    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         return self.style, self.text_style
 
     @property
-    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _hover_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         return self.hover_style, self.text_style_hover
 
     @property
-    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _click_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         return self.click_style, self.text_style_click
 
     @property
-    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _insensitive_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         return self.insensitive_style, self.text_style_insensitive
 
     @property
@@ -165,8 +164,8 @@ class MajorButton(_BaseButton):
     color: Optional[rx.Color] = None
     font_color: Optional[rx.Color] = None
 
-    def _get_attributes(self) -> Tuple[theme.Theme, rx.Color, rx.Color]:
-        thm = self.session.attachments[theme.Theme]
+    def _get_attributes(self) -> Tuple[rx.Theme, rx.Color, rx.Color]:
+        thm = self.session.attachments[rx.Theme]
 
         return (
             thm,
@@ -175,11 +174,11 @@ class MajorButton(_BaseButton):
         )
 
     @property
-    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color, font_color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=color,
                 corner_radius=thm.corner_radius,
             ),
@@ -190,11 +189,11 @@ class MajorButton(_BaseButton):
         )
 
     @property
-    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _hover_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color, font_color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=color.brighter(0.1),
                 corner_radius=thm.corner_radius,
             ),
@@ -205,11 +204,11 @@ class MajorButton(_BaseButton):
         )
 
     @property
-    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _click_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color, font_color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=color.brighter(0.2),
                 corner_radius=thm.corner_radius,
             ),
@@ -220,11 +219,11 @@ class MajorButton(_BaseButton):
         )
 
     @property
-    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _insensitive_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color, font_color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=color.desaturated(0.8),
                 corner_radius=thm.corner_radius,
             ),
@@ -235,7 +234,7 @@ class MajorButton(_BaseButton):
 
     @property
     def _transition_speed(self) -> float:
-        thm = self.session.attachments[theme.Theme]
+        thm = self.session.attachments[rx.Theme]
         return 0.1 * thm.transition_scale
 
 
@@ -243,8 +242,8 @@ class MinorButton(_BaseButton):
     _: KW_ONLY
     color: Optional[rx.Color] = None
 
-    def _get_attributes(self) -> Tuple[theme.Theme, rx.Color]:
-        thm = self.session.attachments[theme.Theme]
+    def _get_attributes(self) -> Tuple[rx.Theme, rx.Color]:
+        thm = self.session.attachments[rx.Theme]
 
         return (
             thm,
@@ -252,11 +251,11 @@ class MinorButton(_BaseButton):
         )
 
     @property
-    def _style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=rx.Color.TRANSPARENT,
                 corner_radius=thm.corner_radius,
                 stroke_width=thm.outline_width,
@@ -268,11 +267,11 @@ class MinorButton(_BaseButton):
         )
 
     @property
-    def _hover_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _hover_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=color.brighter(0.1),
                 corner_radius=thm.corner_radius,
                 stroke_width=thm.outline_width,
@@ -284,11 +283,11 @@ class MinorButton(_BaseButton):
         )
 
     @property
-    def _click_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _click_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=color.brighter(0.2),
                 corner_radius=thm.corner_radius,
                 stroke_width=thm.outline_width,
@@ -300,11 +299,11 @@ class MinorButton(_BaseButton):
         )
 
     @property
-    def _insensitive_style(self) -> Tuple[fundamental.BoxStyle, rx.TextStyle]:
+    def _insensitive_style(self) -> Tuple[rx.BoxStyle, rx.TextStyle]:
         thm, color = self._get_attributes()
 
         return (
-            fundamental.BoxStyle(
+            rx.BoxStyle(
                 fill=rx.Color.TRANSPARENT,
                 corner_radius=thm.corner_radius,
                 stroke_width=thm.outline_width,
@@ -317,5 +316,5 @@ class MinorButton(_BaseButton):
 
     @property
     def _transition_speed(self) -> float:
-        thm = self.session.attachments[theme.Theme]
+        thm = self.session.attachments[rx.Theme]
         return 0.1 * thm.transition_scale

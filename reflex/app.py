@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import threading
-from datetime import timedelta
 import webbrowser
+from datetime import timedelta
 from typing import *  # type: ignore
 
 import fastapi
@@ -30,7 +30,7 @@ class App:
     def __init__(
         self,
         name: str,
-        build: Callable[[], widgets.fundamental.Widget],
+        build: Callable[[], rx.Widget],
         *,
         icon: Optional[ImageLike] = None,
         on_session_start: rx.EventHandler[rx.Session] = None,

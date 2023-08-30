@@ -20,9 +20,10 @@ pywebview = { version = "^4.2.2", optional = true }
 timer-dict = "^1.0.0"
 typing-extensions = "^4.5.0"
 uniserde = "^0.3.8"
-uvicorn = "^0.22.0"
-websockets = "^11.0.3"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
 unicall = "^0.1.2"
+pandas = {version = "^2.0.3", optional = true}
+plotly = {version = "^5.16.1", optional = true}
 
 [tool.poetry.extras]
 window = ["cefpython3", "pygobject", "pywebview"]

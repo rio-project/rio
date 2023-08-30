@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
-from . import text
-from . import theme
-from .. import fundamental
+from . import widget_base
 
 import reflex as rx
 
+from .. import theme
+from . import text
 
 __all__ = [
     "NotificationBar",
 ]
 
 
-class NotificationBar(fundamental.widget_base.Widget):
+class NotificationBar(widget_base.Widget):
     text: Optional[str]
     level: Literal["success", "info", "warning", "error"]
 
@@ -25,10 +25,10 @@ class NotificationBar(fundamental.widget_base.Widget):
     def build(self) -> rx.Widget:
         # Early out: Nothing to show
         if self.text is None:
-            return fundamental.Column()
+            return rx.Column()
 
         # Determine the color
-        thm = self.session.attachments[theme.Theme]
+        thm = self.session.attachments[rx.Theme]
 
         if self.level == "success":
             color = thm.success_color
@@ -42,7 +42,7 @@ class NotificationBar(fundamental.widget_base.Widget):
             raise ValueError(f"Invalid level: {self.level!r}")
 
         # Build the result
-        return fundamental.Rectangle(
+        return rx.Rectangle(
             child=text.Text(
                 self.text,
                 margin=thm.base_spacing,
@@ -51,7 +51,7 @@ class NotificationBar(fundamental.widget_base.Widget):
                     font_color=color.contrasting(0.9),
                 ),
             ),
-            style=fundamental.BoxStyle(
+            style=rx.BoxStyle(
                 fill=color,
                 corner_radius=thm.corner_radius,
             ),

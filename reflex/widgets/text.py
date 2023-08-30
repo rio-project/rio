@@ -1,34 +1,25 @@
+from __future__ import annotations
+
+from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
 import reflex as rx
 
-from . import theme
+from .. import text_style
+from . import widget_base
 
 __all__ = [
     "Text",
 ]
 
 
-from dataclasses import KW_ONLY
-from typing import *  # type: ignore
-
-import reflex as rx
-
-from .. import fundamental
-from . import theme
-
-__all__ = [
-    "Text",
-]
-
-
-class Text(fundamental.widget_base.HtmlWidget):
+class Text(widget_base.HtmlWidget):
     text: str
     _: KW_ONLY
     multiline: bool = False
-    style: Optional[rx.TextStyle] = None
+    style: Optional[text_style.TextStyle] = None
 
     def _custom_serialize(self) -> JsonDoc:
         # If a custom style is set, there is nothing to do
@@ -36,7 +27,7 @@ class Text(fundamental.widget_base.HtmlWidget):
             return {}
 
         # Otherwise fetch and serialize the style from the theme
-        thm = self.session.attachments[theme.Theme]
+        thm = self.session.attachments[rx.Theme]
         return {
             "style": thm.text_style._serialize(),
         }

@@ -21,7 +21,6 @@ import reflex as rx
 from . import app, assets, common, session, user_settings_module, validator, widgets
 from .widgets import widget_metadata
 
-
 try:
     import plotly  # type: ignore
 except ImportError:
@@ -50,8 +49,8 @@ class AppServer(fastapi.FastAPI):
         self,
         app_: app.App,
         external_url: str,
-        on_session_start: widgets.fundamental.EventHandler[rx.Session],
-        on_session_end: widgets.fundamental.EventHandler[rx.Session],
+        on_session_start: rx.EventHandler[rx.Session],
+        on_session_end: rx.EventHandler[rx.Session],
         default_attachments: Tuple[Any],
         validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
     ):

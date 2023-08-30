@@ -7,9 +7,9 @@ from typing import *  # type: ignore
 from uniserde import JsonDoc
 
 import reflex as rx
+from . import widget_base
 
-from .. import fundamental
-from . import theme
+from .. import theme
 
 try:
     import plotly  # type: ignore
@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-class Plot(fundamental.HtmlWidget):
+class Plot(widget_base.HtmlWidget):
     """
     Displays the given figure in the website.
 
@@ -37,13 +37,13 @@ class Plot(fundamental.HtmlWidget):
 
     figure: plotly.graph_objects.Figure
     _: KW_ONLY
-    style: Optional[fundamental.BoxStyle] = None
+    style: Optional[rx.BoxStyle] = None
 
     def _custom_serialize(self) -> JsonDoc:
         # Determine a style
         if self.style is None:
-            thm = self.session.attachments[theme.Theme]
-            box_style = fundamental.BoxStyle(
+            thm = self.session.attachments[rx.Theme]
+            box_style = rx.BoxStyle(
                 fill=thm.neutral_contrast_color,
                 corner_radius=thm.corner_radius,
             )

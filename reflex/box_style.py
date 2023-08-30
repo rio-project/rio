@@ -1,20 +1,23 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, Union
 
 from typing_extensions import Self
 from uniserde import JsonDoc
 
-from ... import fills
-from ...color import Color
+import reflex as rx
+
+from . import color
 
 
 @dataclass(frozen=True)
 class BoxStyle:
-    fill: fills.Fill
-    stroke_color: Color
+    fill: rx.Fill
+    stroke_color: rx.Color
     stroke_width: float
     corner_radius: Tuple[float, float, float, float]
-    shadow_color: Color
+    shadow_color: rx.Color
     shadow_radius: float
     shadow_offset_x: float
     shadow_offset_y: float
@@ -22,16 +25,16 @@ class BoxStyle:
     def __init__(
         self,
         *,
-        fill: fills.FillLike,
-        stroke_color: Color = Color.BLACK,
+        fill: rx.FillLike,
+        stroke_color: rx.Color = color.Color.BLACK,
         stroke_width: float = 0.0,
         corner_radius: Union[float, Tuple[float, float, float, float]] = 0.0,
-        shadow_color: Color = Color.BLACK,
+        shadow_color: rx.Color = color.Color.BLACK,
         shadow_radius: float = 0.0,
         shadow_offset_x: float = 0.0,
         shadow_offset_y: float = 0.0,
     ):
-        fill = fills.Fill._try_from(fill)
+        fill = rx.Fill._try_from(fill)
 
         if isinstance(corner_radius, (int, float)):
             corner_radius = (
@@ -55,17 +58,17 @@ class BoxStyle:
     def replace(
         self,
         *,
-        fill: Optional[fills.FillLike] = None,
-        stroke_color: Optional[Color] = None,
+        fill: Optional[rx.FillLike] = None,
+        stroke_color: Optional[rx.Color] = None,
         stroke_width: Optional[float] = None,
         corner_radius: Optional[Union[float, Tuple[float, float, float, float]]] = None,
-        shadow_color: Optional[Color] = None,
+        shadow_color: Optional[rx.Color] = None,
         shadow_radius: Optional[float] = None,
         shadow_offset_x: Optional[float] = None,
         shadow_offset_y: Optional[float] = None,
     ) -> Self:
         if fill is not None:
-            fill = fills.Fill._try_from(fill)
+            fill = rx.Fill._try_from(fill)
 
         if isinstance(corner_radius, (int, float)):
             corner_radius = (
@@ -77,7 +80,7 @@ class BoxStyle:
 
         return BoxStyle(
             fill=fill if fill is not None else self.fill,
-            # Stroke Color
+            # Stroke rx.Color
             stroke_color=self.stroke_color if stroke_color is None else stroke_color,
             # Stroke Width
             stroke_width=self.stroke_width if stroke_width is None else stroke_width,

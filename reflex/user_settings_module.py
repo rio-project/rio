@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from typing import *  # type: ignore
-from typing_extensions import dataclass_transform
 
 import uniserde
 from typing_extensions import dataclass_transform

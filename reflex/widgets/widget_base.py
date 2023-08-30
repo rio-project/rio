@@ -14,7 +14,9 @@ import introspection
 from typing_extensions import dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
-from ... import common, session
+import reflex as rx
+
+from .. import common
 
 __all__ = [
     "EventHandler",
@@ -272,7 +274,7 @@ class Widget(ABC):
     _build_generation_: int = dataclasses.field(default=-1, init=False)
 
     # Injected by the session when the widget is refreshed
-    _session_: Optional["session.Session"] = dataclasses.field(default=None, init=False)
+    _session_: Optional["rx.Session"] = dataclasses.field(default=None, init=False)
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
@@ -452,7 +454,7 @@ class Widget(ABC):
             return _id
 
     @property
-    def session(self) -> "session.Session":
+    def session(self) -> "rx.Session":
         """
         Return the session this widget is part of.
 
@@ -580,11 +582,11 @@ class HtmlWidget(Widget):
         raise RuntimeError(f"Attempted to call `build` on `HtmlWidget` {self}")
 
     @classmethod
-    def build_javascript_source(cls, sess: session.Session) -> str:
+    def build_javascript_source(cls, sess: rx.Session) -> str:
         return ""
 
     @classmethod
-    def build_css_source(cls, sess: session.Session) -> str:
+    def build_css_source(cls, sess: rx.Session) -> str:
         return ""
 
     def __init_subclass__(cls):
@@ -599,7 +601,7 @@ class HtmlWidget(Widget):
         super().__init_subclass__()
 
     @classmethod
-    async def _initialize_on_client(cls, sess: session.Session) -> None:
+    async def _initialize_on_client(cls, sess: rx.Session) -> None:
         message_source = ""
 
         javascript_source = cls.build_javascript_source(sess)

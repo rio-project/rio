@@ -8,6 +8,11 @@ from PIL.Image import Image
 
 from . import assets
 
+__all__ = [
+    "ImageSource",
+    "ImageLike",
+]
+
 
 class ImageSource:
     def __init__(

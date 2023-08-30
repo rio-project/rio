@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, KW_ONLY
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 from typing import Optional
-from .. import fundamental
+from . import widget_base
 
 import reflex as rx
 
@@ -30,7 +30,11 @@ class NumberInputConfirmEvent:
     value: float
 
 
-class NumberInput(rx.Widget):
+class NumberInput(widget_base.Widget):
+    """
+    Like `TextInput`, but specifically for inputting numbers.
+    """
+
     value: float = 0
     placeholder: str = ""
     _: KW_ONLY
@@ -40,8 +44,8 @@ class NumberInput(rx.Widget):
     thousands_separator: str = ","
     decimal_separator: str = "."
     decimals: int = 2
-    on_change: fundamental.EventHandler[NumberInputChangeEvent] = None
-    on_confirm: fundamental.EventHandler[NumberInputConfirmEvent] = None
+    on_change: rx.EventHandler[NumberInputChangeEvent] = None
+    on_confirm: rx.EventHandler[NumberInputConfirmEvent] = None
 
     def _try_set_value(self, raw_value: str) -> bool:
         """
@@ -95,7 +99,7 @@ class NumberInput(rx.Widget):
         self.value = value
         return True
 
-    async def _on_change(self, ev: fundamental.TextInputChangeEvent) -> None:
+    async def _on_change(self, ev: rx.TextInputChangeEvent) -> None:
         was_updated = self._try_set_value(ev.text)
 
         if was_updated:
@@ -104,7 +108,7 @@ class NumberInput(rx.Widget):
                 NumberInputChangeEvent(self.value),
             )
 
-    async def _on_confirm(self, ev: fundamental.TextInputConfirmEvent) -> None:
+    async def _on_confirm(self, ev: rx.TextInputConfirmEvent) -> None:
         was_updated = self._try_set_value(ev.text)
 
         if was_updated:
@@ -135,7 +139,7 @@ class NumberInput(rx.Widget):
             value_str = int_str + self.decimal_separator + frac_str
 
         # Build the widget
-        return fundamental.TextInput(
+        return rx.TextInput(
             text=value_str,
             placeholder=self.placeholder,
             on_change=self._on_change,

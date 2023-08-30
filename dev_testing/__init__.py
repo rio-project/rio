@@ -5,41 +5,29 @@ from typing import *  # type: ignore
 import plotly.express as px
 
 import reflex as rx
-import reflex.validator
-import reflex.widgets.default_design as widgets
 
-theme = widgets.Theme.dark()
+theme = rx.Theme.dark()
 
-CARD_STYLE = widgets.BoxStyle(
+CARD_STYLE = rx.BoxStyle(
     fill=theme.neutral_color,
     corner_radius=theme.corner_radius,
-    shadow_color=theme.active_color.replace(opacity=0.1),
+    # shadow_color=theme.active_color.replace(opacity=0.1),
 )
 
 CARD_STYLE_HOVER = CARD_STYLE.replace(
     fill=theme.neutral_active_color,
-    shadow_radius=2.5,
+    # shadow_radius=2.5,
 )
 
 
-@dataclass
-class SubConfig:
-    sub_foo: int
-    sub_bar: List[str]
-
-
-class TestUserSettings(rx.UserSettings):
-    counter: int
-    foo: bool
-    bar: Dict[str, SubConfig]
 
 
 class Card(rx.Widget):
     child: rx.Widget
 
     def build(self) -> rx.Widget:
-        return widgets.Rectangle(
-            child=widgets.Container(
+        return rx.Rectangle(
+            child=rx.Container(
                 self.child,
                 margin=1.0,
             ),
@@ -56,9 +44,9 @@ class ShowcaseCard(rx.Widget):
 
     def build(self) -> rx.Widget:
         return Card(
-            widgets.Column(
-                widgets.Text(self.title, multiline=True),
-                widgets.Text(self.description, multiline=True),
+            rx.Column(
+                rx.Text(self.title, multiline=True),
+                rx.Text(self.description, multiline=True),
                 self.child,
             )
         )
@@ -67,54 +55,42 @@ class ShowcaseCard(rx.Widget):
 class Sidebar(rx.Widget):
     search_text: str = ""
 
-    async def _on_button_press(self, _: widgets.ButtonPressEvent) -> None:
-        sett = self.session.attachments[TestUserSettings]
-        sett.counter += 1
-        await self.force_refresh()
-
     def build(self) -> rx.Widget:
-        return widgets.Rectangle(
-            child=widgets.Column(
-                widgets.Text(
+        return Card(
+            child=rx.Column(
+                rx.Text(
                     "Reflex UI",
-                    style=widgets.TextStyle(
+                    style=rx.TextStyle(
                         font_color=theme.main_color,
                         font_size=3.0,
                     ),
                     margin_top=1.0,
                 ),
-                widgets.Text(
+                rx.Text(
                     "The reactive UI library for Python",
-                    style=widgets.TextStyle(font_color=theme.main_color),
+                    style=rx.TextStyle(font_color=theme.main_color),
                     margin_top=0.6,
                 ),
-                widgets.TextInput(
+                rx.TextInput(
                     placeholder="Search...",
                     text=Sidebar.search_text,
                     margin_x=1.0,
                     margin_top=4.0,
                 ),
-                widgets.MajorButton(
+                rx.MajorButton(
                     "Button",
-                    on_press=self._on_button_press,
                     margin_x=1.0,
                     margin_top=1.0,
                     is_sensitive=bool(self.search_text),
                     color=rx.Color.BLACK if bool(self.search_text) else rx.Color.RED,
                 ),
-                widgets.Text(
-                    str(self.session.attachments[TestUserSettings].counter),
-                    margin_top=1.0,
-                ),
-                widgets.ProgressCircle(
-                    progress=0.4,
+                rx.ProgressCircle(
+                    progress=None,
                     margin_top=1.0,
                 ),
                 align_y=0,
             ),
-            style=widgets.BoxStyle(
-                fill=theme.neutral_color,
-            ),
+            margin=1.0,
         )
 
 
@@ -123,19 +99,19 @@ class WidgetShowcase(rx.Widget):
         df = px.data.gapminder().query("country=='Canada'")
         fig = px.line(df, x="year", y="lifeExp", title="Life expectancy in Canada")
 
-        return widgets.Rectangle(
-            child=widgets.Row(
+        return rx.Rectangle(
+            child=rx.Row(
                 Sidebar(
                     width=30,
                 ),
                 ShowcaseCard(
                     "Hello Worlds",
                     "Much hello!",
-                    widgets.Column(
-                        widgets.Text("Hello World"),
-                        widgets.Text("Hello World"),
-                        widgets.Text("Hello World"),
-                        widgets.Plot(
+                    rx.Column(
+                        rx.Text("Hello World"),
+                        rx.Text("Hello World"),
+                        rx.Text("Hello World"),
+                        rx.Plot(
                             figure=fig,
                             height=20,
                         ),
@@ -145,7 +121,7 @@ class WidgetShowcase(rx.Widget):
                     width="grow",
                 ),
             ),
-            style=widgets.BoxStyle(fill=theme.neutral_color.darker(0.1)),
+            style=rx.BoxStyle(fill=theme.neutral_color),
         )
 
 
@@ -163,20 +139,6 @@ rx_app = rx.App(
     on_session_end=lambda sess: print("Session Ended"),
     default_attachments=[
         theme,
-        TestUserSettings(
-            counter=0,
-            foo=True,
-            bar={
-                "a": SubConfig(
-                    sub_foo=1,
-                    sub_bar=["a", "b", "c"],
-                ),
-                "b": SubConfig(
-                    sub_foo=2,
-                    sub_bar=["d", "e", "f"],
-                ),
-            },
-        ),
     ],
 )
 

@@ -3,52 +3,56 @@ from typing import Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
-from ... import color, text_style
+import reflex as rx
+
+__all__ = [
+    "MarkdownStyle",
+]
 
 
 @dataclass(frozen=True)
 class MarkdownStyle:
     # Headers
-    header_1_style: text_style.TextStyle = text_style.TextStyle(
+    header_1_style: rx.TextStyle = rx.TextStyle(
         font_size=1.5,
-        font_color=color.Color.BLACK,
+        font_color=rx.Color.BLACK,
     )
-    header_2_style: text_style.TextStyle = header_1_style.replace(
+    header_2_style: rx.TextStyle = header_1_style.replace(
         font_size=1.35,
     )
-    header_3_style: text_style.TextStyle = header_1_style.replace(
+    header_3_style: rx.TextStyle = header_1_style.replace(
         font_size=1.25,
     )
-    header_4_style: text_style.TextStyle = header_1_style.replace(
+    header_4_style: rx.TextStyle = header_1_style.replace(
         font_size=1.15,
         font_weight="bold",
     )
-    header_5_style: text_style.TextStyle = header_1_style.replace(
+    header_5_style: rx.TextStyle = header_1_style.replace(
         font_size=1.05,
         font_weight="bold",
     )
-    header_6_style: text_style.TextStyle = header_1_style.replace(
+    header_6_style: rx.TextStyle = header_1_style.replace(
         font_size=1.0,
         font_weight="bold",
     )
 
-    text_body_style: text_style.TextStyle = text_style.TextStyle()
+    text_body_style: rx.TextStyle = rx.TextStyle()
 
-    hyperlink_style: text_style.TextStyle = text_style.TextStyle(
-        font_color=color.Color.BLUE,
+    hyperlink_style: rx.TextStyle = rx.TextStyle(
+        font_color=rx.Color.BLUE,
     )
 
     def replace(
         self,
         *,
-        header_1_style: Optional[text_style.TextStyle] = None,
-        header_2_style: Optional[text_style.TextStyle] = None,
-        header_3_style: Optional[text_style.TextStyle] = None,
-        header_4_style: Optional[text_style.TextStyle] = None,
-        header_5_style: Optional[text_style.TextStyle] = None,
-        header_6_style: Optional[text_style.TextStyle] = None,
-        text_body_style: Optional[text_style.TextStyle] = None,
-        hyperlink_style: Optional[text_style.TextStyle] = None,
+        header_1_style: Optional[rx.TextStyle] = None,
+        header_2_style: Optional[rx.TextStyle] = None,
+        header_3_style: Optional[rx.TextStyle] = None,
+        header_4_style: Optional[rx.TextStyle] = None,
+        header_5_style: Optional[rx.TextStyle] = None,
+        header_6_style: Optional[rx.TextStyle] = None,
+        text_body_style: Optional[rx.TextStyle] = None,
+        hyperlink_style: Optional[rx.TextStyle] = None,
     ) -> Self:
         return MarkdownStyle(
             header_1_style=self.header_1_style

@@ -5,11 +5,11 @@ from typing import Dict
 
 from typing_extensions import Self
 from uniserde import Jsonable, JsonDoc
+from . import widget_base
 
 import reflex as rx
 
-from ..fundamental import widget_base
-from . import theme
+from .. import theme
 
 __all__ = [
     "Switch",
@@ -25,10 +25,10 @@ class SwitchChangeEvent:
 class Switch(widget_base.HtmlWidget):
     is_on: bool = False
     _: KW_ONLY
-    on_change: widget_base.EventHandler[SwitchChangeEvent] = None
+    on_change: rx.EventHandler[SwitchChangeEvent] = None
 
     def _custom_serialize(self) -> JsonDoc:
-        thm = self.session.attachments[theme.Theme]
+        thm = self.session.attachments[rx.Theme]
         knob_color_on = thm.accent_color
         background_color_on = thm.accent_color.brighter(0.3).desaturated(0.4)
 

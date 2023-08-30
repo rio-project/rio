@@ -6,7 +6,10 @@ from typing import *  # type: ignore
 CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "Column-builtin": {"children"},
     "Dropdown-builtin": set(),
+    "Icon-builtin": set(),
     "MouseEventListener-builtin": {"child"},
+    "Placeholder": {"_child_"},
+    "Plot-builtin": set(),
     "ProgressCircle-builtin": set(),
     "Rectangle-builtin": {"child"},
     "Row-builtin": {"children"},
@@ -14,8 +17,6 @@ CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "Switch-builtin": set(),
     "Text-builtin": set(),
     "TextInput-builtin": set(),
-    "Plot-builtin": set(),
-    "Placeholder": {"_child_"},
 }
 
 

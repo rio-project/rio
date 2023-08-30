@@ -7,8 +7,7 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from ..fundamental import widget_base
-from . import theme
+from . import widget_base
 
 __all__ = [
     "ProgressCircle",
@@ -59,7 +58,7 @@ class ProgressCircle(widget_base.HtmlWidget):
         self.background_color = background_color
 
     def _custom_serialize(self) -> JsonDoc:
-        thm = self.session.attachments[theme.Theme]
+        thm = self.session.attachments[rx.Theme]
 
         color = thm.accent_color if self.color is None else self.color
         background_color = (

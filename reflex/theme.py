@@ -1,7 +1,11 @@
-from dataclasses import dataclass, KW_ONLY
+from __future__ import annotations
+
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
 import reflex as rx
+
+from . import color
 
 __all__ = [
     "Theme",
