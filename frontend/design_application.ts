@@ -58,9 +58,21 @@ function applyLinearGradientFill(
     angleDegrees: number,
     stops: [Color, number][]
 ): void {
+    // Create a new linear gradient
     const gradientId = generateUniqueId();
     const gradient = createLinearGradient(gradientId, angleDegrees, stops);
-    svgRoot.appendChild(gradient);
+
+    // Add it to the "defs" section of the SVG
+    let defs = svgRoot.querySelector('defs');
+
+    if (defs === null) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svgRoot.appendChild(defs);
+    }
+
+    defs.appendChild(gradient);
+
+    // Add the gradient to the path
     svgPath.style.fill = `url(#${gradientId})`;
 }
 
@@ -89,14 +101,22 @@ function createLinearGradient(
     gradient.setAttribute('id', gradientId);
     gradient.setAttribute('gradientTransform', `rotate(${angleDegrees})`);
 
+    let ii = -1;
     for (const [color, offset] of stops) {
+        ii += 1;
+
         const [r, g, b, a] = color;
         const stop = document.createElementNS(
             'http://www.w3.org/2000/svg',
             'stop'
         );
+
         stop.setAttribute('offset', `${offset}`);
-        stop.setAttribute('stop-color', `rgba(${r}, ${g}, ${b}, ${a})`);
+        stop.setAttribute(
+            'style',
+            `stop-color: rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`
+        );
+        stop.setAttribute('id', `${gradientId}-stop-${ii}`);
         gradient.appendChild(stop);
     }
 

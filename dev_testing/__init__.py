@@ -95,6 +95,7 @@ class Sidebar(rx.Widget):
                     fill=rx.LinearGradientFill(
                         (rx.Color.RED, 0),
                         (rx.Color.BLUE, 1),
+                        angle_degrees=20,
                     ),
                 ),
                 align_y=0,

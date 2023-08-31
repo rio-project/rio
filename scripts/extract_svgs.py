@@ -77,8 +77,8 @@ def extract_svg_canvas_size(svg_string: str) -> tuple[float, float]:
 
     size_pattern = r"(\d+)(\.\d+)?"
 
-    width = float(re.match(size_pattern, width).group(0))
-    height = float(re.match(size_pattern, height).group(0))
+    width = float(re.match(size_pattern, width).group(0))  # type: ignore
+    height = float(re.match(size_pattern, height).group(0))  # type: ignore
 
     return width, height
 
