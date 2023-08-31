@@ -42,7 +42,7 @@ export function applyFillToSVG(
             break;
 
         case 'image':
-            applyImageFill(svgPath, fill.imageUrl, fill.fillMode);
+            applyImageFill(svgRoot, svgPath, fill.imageUrl, fill.fillMode);
             break;
     }
 }
@@ -77,12 +77,45 @@ function applyLinearGradientFill(
 }
 
 function applyImageFill(
-    svgElement: SVGPathElement,
+    svgRoot: SVGSVGElement,
+    svgPath: SVGPathElement,
     imageUrl: string,
     fillMode: 'fit' | 'stretch' | 'tile' | 'zoom'
 ): void {
-    svgElement.style.fill = `url(${imageUrl})`;
-    svgElement.style.backgroundSize = fillMode;
+    // Create a pattern
+    const patternId = generateUniqueId();
+    const pattern = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'pattern'
+    );
+    pattern.setAttribute('id', patternId);
+    pattern.setAttribute('width', '100%');
+    pattern.setAttribute('height', '100%');
+    pattern.setAttribute('preserveAspectRatio', 'none');
+
+    // Create an image
+    const image = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'image'
+    );
+    image.setAttribute('width', '100%');
+    image.setAttribute('height', '100%');
+    image.setAttribute('href', imageUrl);
+    image.setAttribute('preserveAspectRatio', 'none');
+    pattern.appendChild(image);
+
+    // Add the pattern to the "defs" section of the SVG
+    let defs = svgRoot.querySelector('defs');
+
+    if (defs === null) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svgRoot.appendChild(defs);
+    }
+
+    defs.appendChild(pattern);
+
+    // Apply the pattern to the path
+    svgPath.setAttribute('fill', `url(#${patternId})`);
 }
 
 function generateUniqueId(): string {

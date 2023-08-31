@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
+import PIL.Image as pim
 import bootstrap_icons
 
 import plotly.express as px
@@ -92,10 +93,15 @@ class Sidebar(rx.Widget):
                     # "reflex/circle",
                     "bootstrap/zoom-out",
                     # fill=rx.Color.RED,
-                    fill=rx.LinearGradientFill(
-                        (rx.Color.RED, 0),
-                        (rx.Color.BLUE, 1),
-                        angle_degrees=20,
+                    # fill=rx.LinearGradientFill(
+                    #     (rx.Color.RED, 0),
+                    #     (rx.Color.BLUE, 1),
+                    #     angle_degrees=20,
+                    # ),
+                    fill=rx.ImageFill(
+                        "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.startupsos.com%2Fwp-content%2Fuploads%2F2015%2F07%2Ftest.jpg&f=1&nofb=1&ipt=81f5c2bb33cee7310da4b016f5b4ec00afacfc2155ba2e929d873be00fdc15bf&ipo=images"
+                        # Path(__file__).parent
+                        # / "test.png"
                     ),
                 ),
                 align_y=0,
