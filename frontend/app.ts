@@ -7,6 +7,7 @@ import { StackWidget } from './stack';
 import { Color, Fill } from './models';
 import { MouseEventListenerWidget } from './mouseEventListener';
 import { TextInputWidget } from './textInput';
+import { IconWidget } from './Icon';
 import { PlaceholderWidget } from './placeholder';
 import { SwitchWidget } from './switch';
 import { WidgetBase, WidgetState } from './widgetBase';
@@ -143,6 +144,7 @@ const widgetClasses = {
     'Align-builtin': AlignWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
+    'Icon-builtin': IconWidget,
     'Margin-builtin': MarginWidget,
     'MediaPlayer-builtin': MediaPlayerWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,

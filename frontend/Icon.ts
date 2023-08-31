@@ -1,38 +1,45 @@
 import { Fill } from './models';
-import { colorToCss } from './app';
+import { fillToCss } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { applyFillToSVG } from './design_application';
 
 export type IconState = WidgetState & {
-    iconPath: Array<[number, number]>;
+    width: number;
+    height: number;
+    path: string;
     fill: Fill;
 };
 
-function createSVGPath(div, bezierPoints, fill) {
+function createSVGPath(
+    div: HTMLElement,
+    width: number,
+    height: number,
+    path: string,
+    fill: Fill
+) {
     // Create an SVG element
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '100');
-    svg.setAttribute('height', '100');
+    const svgRoot = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+    );
+    svgRoot.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
     // Create an SVG path
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const svgPath = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+    );
 
-    // Construct the path data using the Bezier control points
-    const pathData =
-        `M${bezierPoints[0][0]} ${bezierPoints[0][1]} ` +
-        `C${bezierPoints
-            .slice(1)
-            .map((point) => point.join(' '))
-            .join(', ')}`;
+    svgPath.setAttribute('d', path);
 
-    // Set attributes for the path
-    path.setAttribute('d', pathData);
-    path.setAttribute('fill', fill);
+    // Apply the style
+    applyFillToSVG(svgRoot, svgPath, fill);
 
     // Append the path to the SVG
-    svg.appendChild(path);
+    svgRoot.appendChild(svgPath);
 
     // Append the SVG to the provided div element
-    div.appendChild(svg);
+    div.appendChild(svgRoot);
 }
 
 export class IconWidget extends WidgetBase {
@@ -47,6 +54,12 @@ export class IconWidget extends WidgetBase {
         element.innerHTML = '';
 
         // Add the SVG
-        createSVGPath(element, deltaState.iconPath, deltaState.fill);
+        createSVGPath(
+            element,
+            deltaState.width,
+            deltaState.height,
+            deltaState.path,
+            deltaState.fill
+        );
     }
 }

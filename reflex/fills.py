@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Iterable, Literal, Tuple, Union
+from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
@@ -57,7 +57,7 @@ class LinearGradientFill(Fill):
         angle_degrees: float = 0.0,
     ):
         # Make sure there's at least one stop
-        if not self.stops:
+        if not stops:
             raise ValueError("Gradients must have at least 1 stop")
 
         # Sort and store the stops
@@ -80,8 +80,6 @@ class ImageFill(Fill):
         image: ImageLike,
         *,
         fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit",
-        keep_aspect_ratio: bool = True,
-        fill_entire_shape: bool = False,
     ):
         self._image = ImageSource(image)
         self._fill_mode = fill_mode

@@ -26,6 +26,7 @@ class _BaseButton(widget_base.Widget, ABC):
     text: str
     on_press: rx.EventHandler[ButtonPressEvent] = None
     _: KW_ONLY
+    icon: Optional[str] = None
     is_sensitive: bool = True
     is_loading: bool = False
     _is_pressed: bool = field(init=False, default=False)
@@ -93,7 +94,7 @@ class _BaseButton(widget_base.Widget, ABC):
             hover_style, text_style_hover = self._hover_style
             text_style = text_style_hover if self._is_entered else text_style
 
-        # Prepare the child
+        # Prepare the children
         if self.is_loading:
             scale = text_style.font_size
             child = progress_circle.ProgressCircle(
@@ -103,10 +104,34 @@ class _BaseButton(widget_base.Widget, ABC):
                 margin=0.3,
             )
         else:
-            child = text.Text(
-                self.text,
-                style=text_style,
+            children = []
+
+            if self.icon is not None:
+                children.append(
+                    rx.Icon(
+                        self.icon,
+                        fill_mode="fit",
+                        fill=text_style.font_color,
+                        height=1.0,
+                        width=1.0,
+                    )
+                )
+
+            if self.text.strip():
+                children.append(
+                    text.Text(
+                        self.text.strip(),
+                        style=text_style,
+                    )
+                )
+
+            child = rx.Row(
+                *children,
+                spacing=0.3,
                 margin=0.3,
+                height=1.0,
+                # align_x=0.5,
+                # align_y=0.5,
             )
 
         return rx.MouseEventListener(

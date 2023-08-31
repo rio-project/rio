@@ -15,8 +15,9 @@ _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
 
 PACKAGE_ROOT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT_DIR = PACKAGE_ROOT_DIR.parent
 GENERATED_DIR = PACKAGE_ROOT_DIR / "generated"
-HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR / "hosted-assets"
+HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR/ "hosted-assets"
 
 
 _READONLY = object()
@@ -103,5 +104,3 @@ async def call_event_handler(  # type: ignore
     except Exception:
         print("Exception in event handler:")
         traceback.print_exc()
-
-

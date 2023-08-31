@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
+import bootstrap_icons
 
 import plotly.express as px
 
@@ -18,8 +19,6 @@ CARD_STYLE_HOVER = CARD_STYLE.replace(
     fill=theme.neutral_active_color,
     # shadow_radius=2.5,
 )
-
-
 
 
 class Card(rx.Widget):
@@ -79,6 +78,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.MajorButton(
                     "Button",
+                    icon="bootstrap/zoom-out",
                     margin_x=1.0,
                     margin_top=1.0,
                     is_sensitive=bool(self.search_text),
@@ -87,6 +87,15 @@ class Sidebar(rx.Widget):
                 rx.ProgressCircle(
                     progress=None,
                     margin_top=1.0,
+                ),
+                rx.Icon(
+                    # "reflex/circle",
+                    "bootstrap/zoom-out",
+                    # fill=rx.Color.RED,
+                    fill=rx.LinearGradientFill(
+                        (rx.Color.RED, 0),
+                        (rx.Color.BLUE, 1),
+                    ),
                 ),
                 align_y=0,
             ),
@@ -97,7 +106,12 @@ class Sidebar(rx.Widget):
 class WidgetShowcase(rx.Widget):
     def build(self) -> rx.Widget:
         df = px.data.gapminder().query("country=='Canada'")
-        fig = px.line(df, x="year", y="lifeExp", title="Life expectancy in Canada")
+        fig = px.line(
+            df,
+            x="year",
+            y="lifeExp",
+            title="Life expectancy in Canada",
+        )
 
         return rx.Rectangle(
             child=rx.Row(
@@ -113,7 +127,7 @@ class WidgetShowcase(rx.Widget):
                         rx.Text("Hello World"),
                         rx.Plot(
                             figure=fig,
-                            height=20,
+                            # height=20,
                         ),
                     ),
                     margin_x=4,
