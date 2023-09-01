@@ -195,7 +195,9 @@ class MajorButton(_BaseButton):
         return (
             thm,
             thm.accent_color if self.color is None else self.color,
-            thm.text_style.font_color if self.font_color is None else self.font_color,
+            thm.text_on_primary_color_style.font_color
+            if self.font_color is None
+            else self.font_color,
         )
 
     @property
@@ -260,7 +262,7 @@ class MajorButton(_BaseButton):
     @property
     def _transition_speed(self) -> float:
         thm = self.session.attachments[rx.Theme]
-        return 0.1 * thm.transition_scale
+        return 0.1 * thm.animation_speed
 
 
 class MinorButton(_BaseButton):
@@ -342,4 +344,4 @@ class MinorButton(_BaseButton):
     @property
     def _transition_speed(self) -> float:
         thm = self.session.attachments[rx.Theme]
-        return 0.1 * thm.transition_scale
+        return 0.1 * thm.animation_speed

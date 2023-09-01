@@ -4,10 +4,16 @@ from abc import ABC, abstractmethod
 
 from uniserde import Jsonable
 
-# Importing this causes a hard to avoid circular import. It's currently skipped,
-# because it's only needed for a type annotation.
-#
-# from . import app_server
+from typing import *  # type: ignore
+
+# Only import `app_server` if type checking. This is to avoid a circular import.
+if TYPE_CHECKING:
+    from . import app_server
+
+
+__all__ = [
+    "SelfSerializing",
+]
 
 
 class SelfSerializing(ABC):

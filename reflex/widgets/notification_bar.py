@@ -46,7 +46,7 @@ class NotificationBar(widget_base.Widget):
                 self.text,
                 margin=thm.base_spacing,
                 multiline=self.multiline,
-                style=thm.text_style.replace(
+                style=thm.text_on_primary_color_style.replace(
                     font_color=color.contrasting(0.9),
                 ),
             ),
