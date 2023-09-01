@@ -16,7 +16,7 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import common
+from .. import app_server, common
 
 __all__ = [
     "EventHandler",
@@ -468,7 +468,7 @@ class Widget(ABC):
 
         return self._session_
 
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         """
         Return any additional properties to be serialized, which cannot be
         deduced automatically from the type annotations.

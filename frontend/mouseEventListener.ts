@@ -17,11 +17,11 @@ function eventMousePositionToString(event: MouseEvent): object {
 export type MouseEventListenerState = WidgetState & {
     _type_: 'mouseEventListener';
     child?: number | string;
-    reportMouseDown?: boolean;
-    reportMouseUp?: boolean;
-    reportMouseMove?: boolean;
-    reportMouseEnter?: boolean;
-    reportMouseLeave?: boolean;
+    reportMouseDown: boolean;
+    reportMouseUp: boolean;
+    reportMouseMove: boolean;
+    reportMouseEnter: boolean;
+    reportMouseLeave: boolean;
 };
 
 export class MouseEventListenerWidget extends WidgetBase {

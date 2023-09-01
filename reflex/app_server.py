@@ -113,7 +113,12 @@ class AppServer(fastapi.FastAPI):
         Register an asset with this session. The asset will be held weakly,
         meaning the session will host assets for as long as their corresponding
         Python objects are alive.
+
+        If another asset with the same id is already hosted, it will be
+        replaced.
         """
+        # FIXME: This is unsafe. What if first a long lived instance is
+        # assigned, then overwritten by a short-lived one?
         self._assets[asset.secret_id] = asset
 
     def check_and_refresh_session(self, session_token: str) -> None:

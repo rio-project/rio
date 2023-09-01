@@ -3,10 +3,11 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-from uniserde import JsonDoc
+from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
+from .. import app_server
 from . import widget_base
 
 __all__ = [
@@ -57,7 +58,7 @@ class ProgressCircle(widget_base.HtmlWidget):
         self.color = color
         self.background_color = background_color
 
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         thm = self.session.attachments[rx.Theme]
 
         color = thm.accent_color if self.color is None else self.color

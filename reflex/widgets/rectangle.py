@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from typing import *  # type: ignore
-from .. import cursor_style
 
 import reflex as rx
 
+from .. import cursor_style
 from . import widget_base
 
 __all__ = [

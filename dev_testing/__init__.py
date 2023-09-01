@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
-import PIL.Image as pim
-import bootstrap_icons
 
+import PIL.Image as pim
 import plotly.express as px
 
+import bootstrap_icons
 import reflex as rx
 
 theme = rx.Theme.dark()

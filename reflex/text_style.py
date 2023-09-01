@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from dataclasses import KW_ONLY, dataclass
-from typing import Dict, Literal, Optional
+from typing import *  # type: ignore
 
 from typing_extensions import Self
-from uniserde import JsonDoc
+from uniserde import Jsonable
 
-from . import self_serializing
+from . import app_server, self_serializing
 from .color import Color
 
 __all__ = [
@@ -44,7 +46,7 @@ class TextStyle(self_serializing.SelfSerializing):
             all_caps=self.all_caps if all_caps is None else all_caps,
         )
 
-    def _serialize(self) -> JsonDoc:
+    def _serialize(self, server: app_server.AppServer) -> Jsonable:
         return {
             "fontName": self.font_name,
             "fontColor": self.font_color.rgba,

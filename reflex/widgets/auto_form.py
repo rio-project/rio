@@ -3,11 +3,10 @@ from __future__ import annotations
 import enum
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
-from . import widget_base
 
 import reflex as rx
 
-from . import button, notification_bar, number_input, switch, text
+from . import button, notification_bar, number_input, switch, text, widget_base
 
 __all__ = [
     "AutoForm",

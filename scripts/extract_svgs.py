@@ -12,12 +12,14 @@ well have to improve this file to support all icons you're trying to process.
 """
 
 
-from pathlib import Path
-import reflex as rx
-from xml.etree import ElementTree as ET
-from typing import *  # type: ignore
-from stream_tui import *  # type: ignore
 import re
+from pathlib import Path
+from typing import *  # type: ignore
+from xml.etree import ElementTree as ET
+
+from stream_tui import *  # type: ignore
+
+import reflex as rx
 
 # Configure these values to match your icon set
 

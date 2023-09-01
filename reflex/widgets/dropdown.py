@@ -4,6 +4,9 @@ from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
+from uniserde import JsonDoc
+
+from .. import app_server
 from . import widget_base
 
 __all__ = [
@@ -25,7 +28,7 @@ class Dropdown(widget_base.HtmlWidget, Generic[T]):
     selected_value: Optional[T] = None
     on_change: widget_base.EventHandler[DropdownChangeEvent[T]] = None
 
-    def _custom_serialize(self) -> Dict[str, Any]:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         if not self.options:
             raise ValueError("`Dropdown` must have at least one option.")
 

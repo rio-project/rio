@@ -21,14 +21,13 @@ class _MockApp:
             external_url="https://unit.test",
             on_session_start=None,
             on_session_end=None,
-            default_user_settings=rx.UserSettings(),
+            default_attachments=tuple(),
             validator_factory=None,
         )
         self._session = rx.Session(
             root_widget,
             self._send_message,
             self._receive_message,
-            copy.deepcopy(self._app_server.default_user_settings),
             self._app_server,
         )
 

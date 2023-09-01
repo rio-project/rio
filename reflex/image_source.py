@@ -61,7 +61,7 @@ class ImageSource:
     def __hash__(self) -> int:
         return hash((self._url, self._asset))
 
-    async def _try_fetch_as_blob(self) -> Tuple[bytes, str]:
+    async def _try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
         """
         Try to fetch the image as blob & media type. Raises a `ValueError` if
         fetching fails.

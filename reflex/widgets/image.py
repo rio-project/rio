@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from typing import Literal
-from . import widget_base
 
 import reflex as rx
+
+from . import widget_base
 
 __all__ = [
     "Image",

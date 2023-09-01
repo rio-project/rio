@@ -4,11 +4,10 @@ from abc import ABC, abstractproperty
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 from typing import Optional
-from . import widget_base
 
 import reflex as rx
 
-from . import progress_circle, text
+from . import progress_circle, text, widget_base
 
 __all__ = [
     "ButtonPressEvent",
@@ -122,15 +121,16 @@ class _BaseButton(widget_base.Widget, ABC):
                     text.Text(
                         self.text.strip(),
                         style=text_style,
+                        width="grow",
                     )
                 )
 
             child = rx.Row(
                 *children,
-                spacing=0.3,
+                spacing=0.6,
                 margin=0.3,
-                height=1.0,
-                # align_x=0.5,
+                # height=1.0,
+                align_x=0.5,
                 # align_y=0.5,
             )
 

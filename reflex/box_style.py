@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple, Union
+from typing import *  # type: ignore
 
 from typing_extensions import Self
-from uniserde import JsonDoc
+from uniserde import Jsonable
 
 import reflex as rx
 
-from . import color
+from . import app_server, color, self_serializing
+
+__all__ = [
+    "BoxStyle",
+]
 
 
 @dataclass(frozen=True)
-class BoxStyle:
+class BoxStyle(self_serializing.SelfSerializing):
     fill: rx.Fill
     stroke_color: rx.Color
     stroke_width: float
@@ -101,9 +105,9 @@ class BoxStyle:
             else shadow_offset_y,
         )
 
-    def _serialize(self) -> JsonDoc:
+    def _serialize(self, server: app_server.AppServer) -> Jsonable:
         return {
-            "fill": self.fill._serialize(),
+            "fill": self.fill._serialize(server),
             "strokeColor": self.stroke_color.rgba,
             "strokeWidth": self.stroke_width,
             "cornerRadius": self.corner_radius,

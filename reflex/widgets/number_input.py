@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 from typing import Optional
-from . import widget_base
 
 import reflex as rx
+
+from . import widget_base
 
 __all__ = [
     "NumberInput",

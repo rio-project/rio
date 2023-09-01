@@ -490,41 +490,9 @@ class Session(unicall.Unicall):
         if origin is tuple or origin is list:
             return [self._serialize_and_host_value(v, args[0]) for v in value]
 
-        # Special case: `FillLike`
-        #
-        # TODO: Is there a nicer way to detect these?
-        if origin is Union and set(args) == {fills.Fill, rx.Color}:
-            as_fill = fills.Fill._try_from(value)
-
-            # Image fills may contain an image source which needs to be hosted
-            # by the server so the client can access it
-            if (
-                isinstance(as_fill, fills.ImageFill)
-                and as_fill._image._asset is not None
-            ):
-                self._app_server.weakly_host_asset(as_fill._image._asset)
-
-            return as_fill._serialize()
-
-        # BoxStyle
-        if type_ is rx.BoxStyle:
-            assert isinstance(value, rx.BoxStyle), value
-
-            # Image fills may contain an image source which needs to be hosted
-            # by the server so the client can access it
-            if (
-                isinstance(value.fill, fills.ImageFill)
-                and value.fill._image._asset is not None
-            ):
-                self._app_server.weakly_host_asset(value.fill._image._asset)
-
-            return value._serialize()
-
         # Self-Serializing
-        if inspect.isclass(type_) and issubclass(
-            type_, self_serializing.SelfSerializing
-        ):
-            return value._serialize()
+        if isinstance(value, self_serializing.SelfSerializing):
+            return value._serialize(self._app_server)
 
         # Optional
         if origin is Union and len(args) == 2 and type(None) in args:
@@ -617,7 +585,7 @@ class Session(unicall.Unicall):
         # serialization to overwrite automatically generated values.
         if isinstance(widget, rx.HtmlWidget):
             result["_type_"] = widget._unique_id
-            result.update(widget._custom_serialize())
+            result.update(widget._custom_serialize(self._app_server))
 
         else:
             # Take care to add underscores to any properties here, as the

@@ -51,7 +51,8 @@ class Theme:
 
     @staticmethod
     def light() -> "Theme":
-        raise NotImplementedError("TODO: Implement light default theme")
+        print("WARNING: Light themes aren't supported yet. Using dark theme instead.")
+        return Theme.dark()
 
     @staticmethod
     def dark(

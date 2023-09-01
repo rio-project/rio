@@ -1,5 +1,4 @@
 import { Fill } from './models';
-import { fillToCss } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { applyFillToSVG } from './design_application';
 

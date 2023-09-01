@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-from uniserde import JsonDoc
+from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import text_style
+from .. import app_server, text_style
 from . import widget_base
 
 __all__ = [
@@ -21,7 +21,7 @@ class Text(widget_base.HtmlWidget):
     multiline: bool = False
     style: Optional[text_style.TextStyle] = None
 
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         # If a custom style is set, there is nothing to do
         if self.style is not None:
             return {}
@@ -29,7 +29,7 @@ class Text(widget_base.HtmlWidget):
         # Otherwise fetch and serialize the style from the theme
         thm = self.session.attachments[rx.Theme]
         return {
-            "style": thm.text_style._serialize(),
+            "style": thm.text_style._serialize(server),
         }
 
 

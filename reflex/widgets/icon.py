@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
-from . import widget_base
 
 from uniserde import JsonDoc
 
 import reflex as rx
+
+from .. import app_server
+from . import widget_base
 
 __all__ = [
     "Icon",
@@ -62,7 +64,7 @@ class Icon(widget_base.HtmlWidget):
 
         return self.icon[:pos], self.icon[pos + 1 :]
 
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         # Find the icon path
         set_name, icon_name = self._icon_set_and_name
 
@@ -90,7 +92,7 @@ class Icon(widget_base.HtmlWidget):
             "width": width,
             "height": height,
             "path": icon_path,
-            "fill": rx.Fill._try_from(fill)._serialize(),
+            "fill": rx.Fill._try_from(fill)._serialize(server),
         }
 
 

@@ -4,8 +4,9 @@ import enum
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-from uniserde import JsonDoc
+from uniserde import Jsonable, JsonDoc
 
+from .. import app_server
 from . import widget_base
 
 __all__ = [
@@ -67,7 +68,7 @@ class MouseEventListener(widget_base.HtmlWidget):
     on_mouse_enter: widget_base.EventHandler[MouseEnterEvent] = None
     on_mouse_leave: widget_base.EventHandler[MouseLeaveEvent] = None
 
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         return {
             "reportMouseDown": self.on_mouse_down is not None,
             "reportMouseUp": self.on_mouse_up is not None,

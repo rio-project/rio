@@ -35,7 +35,7 @@ class App:
         icon: Optional[ImageLike] = None,
         on_session_start: rx.EventHandler[rx.Session] = None,
         on_session_end: rx.EventHandler[rx.Session] = None,
-        default_attachments: Iterable[Any],
+        default_attachments: Iterable[Any] = (),
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
     ):
         self.name = name

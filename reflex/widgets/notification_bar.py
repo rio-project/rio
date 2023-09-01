@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
-from . import widget_base
 
 import reflex as rx
 
 from .. import theme
-from . import text
+from . import text, widget_base
 
 __all__ = [
     "NotificationBar",

@@ -4,12 +4,12 @@ import copy
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
-from uniserde import JsonDoc
+from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
-from . import widget_base
 
-from .. import theme
+from .. import app_server, theme
+from . import widget_base
 
 try:
     import plotly  # type: ignore
@@ -39,7 +39,7 @@ class Plot(widget_base.HtmlWidget):
     _: KW_ONLY
     style: Optional[rx.BoxStyle] = None
 
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         # Determine a style
         if self.style is None:
             thm = self.session.attachments[rx.Theme]
@@ -62,7 +62,7 @@ class Plot(widget_base.HtmlWidget):
 
         return {
             "plotJson": figure.to_json(),
-            "boxStyle": box_style._serialize(),
+            "boxStyle": box_style._serialize(server),
         }
 
 
