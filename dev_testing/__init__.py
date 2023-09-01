@@ -3,7 +3,7 @@ from typing import *  # type: ignore
 
 import plotly.express as px
 
-import bootstrap_icons
+# import bootstrap_icons
 import reflex as rx
 
 theme = rx.Theme.dark()
@@ -77,7 +77,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.MajorButton(
                     "Button",
-                    icon="bootstrap/zoom-out",
+                    # icon="bootstrap/zoom-out",
                     margin_x=1.0,
                     margin_top=1.0,
                     is_sensitive=bool(self.search_text),
