@@ -1,0 +1,22 @@
+{
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "dependencies": {
+    "@material/animation": "^14.0.0",
+    "@material/base": "^14.0.0",
+    "@material/dom": "^14.0.0",
+    "@material/elevation": "^14.0.0",
+    "@material/feature-targeting": "^14.0.0",
+    "@material/ripple": "^14.0.0",
+    "@material/rtl": "^14.0.0",
+    "@material/theme": "^14.0.0",
+    "@material/typography": "^14.0.0",
+    "@parcel/transformer-sass": "^2.9.3",
+    "cssnano": "^6.0.1",
+    "material-components-web": "^14.0.0",
+    "parcel": "^2.9.3",
+    "postcss": "^8.4.29",
+    "sass": "^1.66.1",
+    "tslib": "^2.1.0",
+    "typescript": "^5.2.2"
+  }
+}
