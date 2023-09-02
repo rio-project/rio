@@ -18,6 +18,7 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { ProgressBarWidget } from './ProgressBar';
 
 const sessionToken = '{session_token}';
 
@@ -152,6 +153,7 @@ const widgetClasses = {
     'MediaPlayer-builtin': MediaPlayerWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
     'Plot-builtin': PlotWidget,
+    'ProgressBar-builtin': ProgressBarWidget,
     'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
     'Row-builtin': RowWidget,

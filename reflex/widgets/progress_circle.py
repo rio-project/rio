@@ -3,11 +3,6 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-from uniserde import Jsonable, JsonDoc
-
-import reflex as rx
-
-from .. import app_server
 from . import widget_base
 
 __all__ = [

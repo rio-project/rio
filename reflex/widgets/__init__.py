@@ -13,6 +13,7 @@ from .number_input import *
 from .plot import *
 from .progress_circle import *
 from .rectangle import *
+from .progress_bar import *
 from .row import *
 from .slider import *
 from .stack import *

@@ -1,5 +1,8 @@
 @use '@material/slider/styles';
 @use '@material/ripple';
+@use "@material/linear-progress";
+
+@include linear-progress.core-styles;
 
 :root {
     // Theming variables. These are injected by the Python server before serving
@@ -333,8 +336,6 @@ body {
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
 
-    cursor: pointer;
-
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
@@ -345,9 +346,10 @@ body {
     color: var(--local-text-color);
 }
 
-.reflex-buttonstyle-major:hover {
+.reflex-buttonstyle-major:hover:not(.reflex-switcheroo-disabled) {
     background: var(--reflex-local-accent-color);
     color: var(--local-text-color);
+    cursor: pointer;
 }
 
 .reflex-buttonstyle-minor {
@@ -355,9 +357,10 @@ body {
     outline: 0.15em solid var(--reflex-local-accent-color);
 }
 
-.reflex-buttonstyle-minor:hover {
+.reflex-buttonstyle-minor:hover:not(.reflex-switcheroo-disabled) {
     color: var(--local-text-color);
     background: var(--reflex-local-accent-color);
+    cursor: pointer;
 }
 
 .reflex-shape-rounded {

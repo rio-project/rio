@@ -36,12 +36,14 @@ class HostedAsset:
         # allows the client to cache the asset efficiently, since the URL is
         # always the same.
         if isinstance(data, bytes):
+            # TODO: Consider only hashing part of the data + media type + size
+            # rather than processing everything
             secret_id_prefix = "b-"
             secret_id_bytes = _securely_hash_bytes_changes_between_runs(data)
         else:
             secret_id_prefix = "f-"
             secret_id_bytes = _securely_hash_bytes_changes_between_runs(
-                data.read_bytes()
+                str(data.resolve()).encode("utf-8")
             )
 
         self.secret_id = secret_id_prefix + secret_id_bytes.hex()

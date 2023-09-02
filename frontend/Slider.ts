@@ -31,7 +31,7 @@ export class SliderWidget extends WidgetBase {
         </div>
     `;
 
-        // Initialize the slider
+        // Initialize the material design component
         this.mdcSlider = new MDCSlider(element);
 
         // Subscribe to changes
@@ -63,5 +63,9 @@ export class SliderWidget extends WidgetBase {
         if (deltaState.is_sensitive !== undefined) {
             this.mdcSlider.setDisabled(!deltaState.is_sensitive);
         }
+
+        requestAnimationFrame(() => {
+            this.mdcSlider.layout();
+        });
     }
 }
