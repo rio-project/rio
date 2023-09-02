@@ -27,7 +27,6 @@ __pycache__
 # JavaScript
 /node_modules
 package-lock.json
-package.json
 
 # Unknown
 /.cache
