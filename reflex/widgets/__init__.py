@@ -13,6 +13,7 @@ from .mouse_event_listener import *
 from .notification_bar import *
 from .number_input import *
 from .plot import *
+from .progress_bar import *
 from .progress_circle import *
 from .rectangle import *
 from .row import *

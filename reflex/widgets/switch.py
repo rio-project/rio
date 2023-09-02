@@ -25,19 +25,8 @@ class SwitchChangeEvent:
 class Switch(widget_base.HtmlWidget):
     is_on: bool = False
     _: KW_ONLY
+    is_sensitive: bool = True
     on_change: rx.EventHandler[SwitchChangeEvent] = None
-
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
-        thm = self.session.attachments[rx.Theme]
-        knob_color_on = thm.accent_color
-        background_color_on = thm.accent_color.brighter(0.3).desaturated(0.4)
-
-        return {
-            "knobColorOn": knob_color_on.rgba,
-            "knobColorOff": knob_color_on.darker(0.3).desaturated(1.0).rgba,
-            "backgroundColorOn": background_color_on.rgba,
-            "backgroundColorOff": background_color_on.darker(0.2).desaturated(1.0).rgba,
-        }
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event

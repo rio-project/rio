@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import copy
-import logging
 import functools
 import io
+import logging
 import secrets
 import weakref
 from datetime import timedelta
