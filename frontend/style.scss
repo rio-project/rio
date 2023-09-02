@@ -219,11 +219,13 @@ body {
 .reflex-progress-circle {
     width: 0;
     height: 0;
+    stroke: var(--reflex-local-accent-color);
 }
 
 .reflex-progress-circle circle {
     fill: none;
     stroke-width: 3.5;
+    color: var(--reflex-local-accent-color);
 }
 
 .spinning svg {
@@ -328,8 +330,10 @@ body {
 
 // Button
 .reflex-button {
-    transition: background-color 0.2 ease-in-out, color 0.2 ease-in-out,
-        border-color 0.2 ease-in-out;
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out,
+        border-color 0.1s ease-in-out;
+
+    cursor: pointer;
 
     @include ripple.surface;
     @include ripple.radius-bounded;
@@ -337,23 +341,23 @@ body {
 }
 
 .reflex-buttonstyle-major {
-    background: var(--local-accent-color);
+    background: var(--reflex-local-accent-color);
     color: var(--local-text-color);
 }
 
 .reflex-buttonstyle-major:hover {
-    background: var(--local-accent-color);
+    background: var(--reflex-local-accent-color);
     color: var(--local-text-color);
 }
 
 .reflex-buttonstyle-minor {
-    color: var(--local-accent-color);
-    outline: 0.15em solid var(--local-accent-color);
+    color: var(--reflex-local-accent-color);
+    outline: 0.15em solid var(--reflex-local-accent-color);
 }
 
 .reflex-buttonstyle-minor:hover {
     color: var(--local-text-color);
-    background: var(--local-accent-color);
+    background: var(--reflex-local-accent-color);
 }
 
 .reflex-shape-rounded {

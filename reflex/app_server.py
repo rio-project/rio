@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import logging
 import functools
 import io
-import json
 import secrets
 import weakref
 from datetime import timedelta
@@ -101,7 +101,7 @@ class AppServer(fastapi.FastAPI):
         # self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
         self.add_api_route("/reflex/favicon.ico", self._serve_favicon, methods=["GET"])
         self.add_api_route(
-            "/reflex/asset/{asset_id}", self._serve_asset, methods=["GET"]
+            "/reflex/asset/{asset_id:path}", self._serve_asset, methods=["GET"]
         )
         self.add_api_route(
             "/reflex/upload/{upload_token}", self._serve_file_upload, methods=["PUT"]
@@ -305,16 +305,28 @@ class AppServer(fastapi.FastAPI):
 
         # Well known asset?
         if not asset_id.startswith("temp-"):
-            # TODO: Is this safe? Would this allow the client to break out
-            # from the directory using names such as `../`?
+            # Construct the path to the target file
             asset_file_path = common.HOSTED_ASSETS_DIR / asset_id
+            asset_file_path = asset_file_path.resolve()
 
-            # TODO: Can this check be avoided?
+            # Make sure the path is inside the hosted assets directory
+            #
+            # TODO: Is this safe? Would this allow the client to break out from
+            # the directory using tricks such as "../", links, etc?
+            if common.HOSTED_ASSETS_DIR not in asset_file_path.parents:
+                logging.warning(
+                    f'Client requested asset "{asset_id}" which is not located inside the hosted assets directory. Somebody might be trying to break out of the assets directory!'
+                )
+                return fastapi.responses.Response(status_code=404)
+
+            # TODO: Can this check be avoided? `FileResponse` may already be
+            # doing it internally anyway.
             if asset_file_path.exists():
                 return fastapi.responses.FileResponse(
                     common.HOSTED_ASSETS_DIR / asset_id
                 )
 
+            # No such file
             return fastapi.responses.Response(status_code=404)
 
         # Get the asset's Python instance. The asset's id acts as a secret, so

@@ -57,5 +57,12 @@ export class ButtonWidget extends WidgetBase {
             let className = 'reflex-shape-' + deltaState.shape;
             element.classList.add(className);
         }
+
+        // Switch the style based on sensitivity
+        if (deltaState.is_sensitive === true) {
+            element.classList.remove('reflex-switcheroo-disabled');
+        } else if (deltaState.is_sensitive === false) {
+            element.classList.add('reflex-switcheroo-disabled');
+        }
     }
 }
