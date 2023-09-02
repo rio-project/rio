@@ -83,7 +83,7 @@ class Icon(widget_base.HtmlWidget):
         # Determine the fill
         if self.fill is None:
             thm = self.session.attachments[rx.Theme]
-            fill = thm.text_on_primary_color_style.font_color
+            fill = thm.text_on_primary_style.font_color
         else:
             fill = self.fill
 

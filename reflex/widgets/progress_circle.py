@@ -18,15 +18,11 @@ __all__ = [
 class ProgressCircle(widget_base.HtmlWidget):
     _: KW_ONLY
     progress: Optional[float] = None
-    color: Optional[rx.Color] = None
-    background_color: Optional[rx.Color] = None
 
     def __init__(
         self,
         *,
         progress: Optional[float] = None,
-        color: Optional[rx.Color] = None,
-        background_color: Optional[rx.Color] = None,
         size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,
@@ -55,23 +51,6 @@ class ProgressCircle(widget_base.HtmlWidget):
         )
 
         self.progress = progress
-        self.color = color
-        self.background_color = background_color
-
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
-        thm = self.session.attachments[rx.Theme]
-
-        color = thm.accent_color if self.color is None else self.color
-        background_color = (
-            rx.Color.TRANSPARENT
-            if self.background_color is None
-            else self.background_color
-        )
-
-        return {
-            "color": color.rgba,
-            "background_color": background_color.rgba,
-        }
 
 
 ProgressCircle._unique_id = "ProgressCircle-builtin"

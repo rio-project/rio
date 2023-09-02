@@ -1,4 +1,5 @@
 import { AlignWidget } from './align';
+import { ButtonWidget } from './button';
 import { Color, Fill } from './models';
 import { ColumnWidget } from './column';
 import { DropdownWidget } from './dropdown';
@@ -12,6 +13,7 @@ import { PlotWidget } from './plot';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
 import { RowWidget } from './row';
+import { SliderWidget } from './Slider';
 import { StackWidget } from './stack';
 import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
@@ -143,6 +145,7 @@ export function getParentWidgetElementExcludingInjected(
 
 const widgetClasses = {
     'Align-builtin': AlignWidget,
+    'Button-builtin': ButtonWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Icon-builtin': IconWidget,
@@ -154,6 +157,7 @@ const widgetClasses = {
     'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
     'Row-builtin': RowWidget,
+    'Slider-builtin': SliderWidget,
     'Stack-builtin': StackWidget,
     'Switch-builtin': SwitchWidget,
     'Text-builtin': TextWidget,

@@ -6,7 +6,11 @@ import plotly.express as px
 # import bootstrap_icons
 import reflex as rx
 
-theme = rx.Theme.dark()
+theme = rx.Theme.light(
+    primary_color=rx.Color.GREEN,
+    accent_color=rx.Color.YELLOW,
+    neutral_color=rx.Color.from_grey(0.2),
+)
 
 CARD_STYLE = rx.BoxStyle(
     fill=theme.neutral_color,
@@ -91,7 +95,7 @@ class Sidebar(rx.Widget):
                     margin_x=1.0,
                     margin_top=4.0,
                 ),
-                rx.MajorButton(
+                rx.Button(
                     "Button",
                     # icon="bootstrap/zoom-out",
                     margin_x=1.0,
@@ -119,6 +123,14 @@ class Sidebar(rx.Widget):
                 #         # / "test.png"
                 #     ),
                 # ),
+                rx.Slider(value=0.1),
+                rx.Button(
+                    "Foo",
+                    on_press=lambda _: print("Button Pressed"),
+                    # shape="rectangular",
+                    # is_major=False,
+                    is_loading=True,
+                ),
                 align_y=0,
             ),
             margin=1.0,

@@ -11,6 +11,8 @@ __all__ = [
     "Theme",
 ]
 
+# TODO: Consider really noticeable, memorable primary color: #e80265
+
 
 @dataclass(frozen=True)
 class Theme:
@@ -22,6 +24,7 @@ class Theme:
 
     # Neutral colors are often used as background, for inactive and unimportant
     # elements
+    background_color: rx.Color
     neutral_color: rx.Color
     neutral_contrast_color: rx.Color
     neutral_active_color: rx.Color
@@ -36,21 +39,22 @@ class Theme:
     corner_radius: float
     base_spacing: float
 
-    # Animation
-    animation_speed: float
-
     # Text styles
-    heading_on_primary_color_style: rx.TextStyle
-    subheading_on_primary_color_style: rx.TextStyle
-    text_on_primary_color_style: rx.TextStyle
+    heading_on_primary_style: rx.TextStyle
+    subheading_on_primary_style: rx.TextStyle
+    text_on_primary_style: rx.TextStyle
 
-    heading_on_accent_color_style: rx.TextStyle
-    subheading_on_accent_color_style: rx.TextStyle
-    text_on_accent_color_style: rx.TextStyle
+    heading_on_accent_style: rx.TextStyle
+    subheading_on_accent_style: rx.TextStyle
+    text_on_accent_style: rx.TextStyle
 
-    heading_on_neutral_color_style: rx.TextStyle
-    subheading_on_neutral_color_style: rx.TextStyle
-    text_on_neutral_color_style: rx.TextStyle
+    heading_on_neutral_style: rx.TextStyle
+    subheading_on_neutral_style: rx.TextStyle
+    text_on_neutral_style: rx.TextStyle
+
+    @staticmethod
+    def default() -> "Theme":
+        return Theme.light()
 
     @staticmethod
     def light(
@@ -86,6 +90,7 @@ class Theme:
             primary_color=primary_color,
             accent_color=accent_color,
             # Neutral colors
+            background_color=neutral_color.darker(0.1),
             neutral_color=neutral_color,
             neutral_contrast_color=neutral_color.darker(0.03).blend(
                 primary_color, 0.02
@@ -99,38 +104,30 @@ class Theme:
             outline_width=0.1,
             base_spacing=0.5,
             corner_radius=0.45,
-            # Animation
-            animation_speed=1.0,
             # Text styles (On primary)
-            heading_on_primary_color_style=heading_style.replace(
+            heading_on_primary_style=heading_style.replace(
                 font_color=font_color_on_primary
             ),
-            subheading_on_primary_color_style=subheading_style.replace(
+            subheading_on_primary_style=subheading_style.replace(
                 font_color=font_color_on_primary
             ),
-            text_on_primary_color_style=text_style.replace(
-                font_color=font_color_on_primary
-            ),
+            text_on_primary_style=text_style.replace(font_color=font_color_on_primary),
             # Text styles (On accent)
-            heading_on_accent_color_style=heading_style.replace(
+            heading_on_accent_style=heading_style.replace(
                 font_color=font_color_on_accent
             ),
-            subheading_on_accent_color_style=subheading_style.replace(
+            subheading_on_accent_style=subheading_style.replace(
                 font_color=font_color_on_accent
             ),
-            text_on_accent_color_style=text_style.replace(
-                font_color=font_color_on_accent
-            ),
+            text_on_accent_style=text_style.replace(font_color=font_color_on_accent),
             # Text styles (On neutral)
-            heading_on_neutral_color_style=heading_style.replace(
+            heading_on_neutral_style=heading_style.replace(
                 font_color=font_color_on_neutral
             ),
-            subheading_on_neutral_color_style=subheading_style.replace(
+            subheading_on_neutral_style=subheading_style.replace(
                 font_color=font_color_on_neutral
             ),
-            text_on_neutral_color_style=text_style.replace(
-                font_color=font_color_on_neutral
-            ),
+            text_on_neutral_style=text_style.replace(font_color=font_color_on_neutral),
         )
 
     @staticmethod
@@ -167,6 +164,7 @@ class Theme:
             primary_color=primary_color,
             accent_color=accent_color,
             # Neutral colors
+            background_color=neutral_color.darker(0.1),
             neutral_color=neutral_color,
             neutral_contrast_color=neutral_color.brighter(0.05),
             neutral_active_color=neutral_color.blend(primary_color, 0.02),
@@ -178,36 +176,28 @@ class Theme:
             outline_width=0.1,
             base_spacing=0.5,
             corner_radius=0.45,
-            # Animation
-            animation_speed=1.0,
             # Text styles (On primary)
-            heading_on_primary_color_style=heading_style.replace(
+            heading_on_primary_style=heading_style.replace(
                 font_color=font_color_on_primary
             ),
-            subheading_on_primary_color_style=subheading_style.replace(
+            subheading_on_primary_style=subheading_style.replace(
                 font_color=font_color_on_primary
             ),
-            text_on_primary_color_style=text_style.replace(
-                font_color=font_color_on_primary
-            ),
+            text_on_primary_style=text_style.replace(font_color=font_color_on_primary),
             # Text styles (On accent)
-            heading_on_accent_color_style=heading_style.replace(
+            heading_on_accent_style=heading_style.replace(
                 font_color=font_color_on_accent
             ),
-            subheading_on_accent_color_style=subheading_style.replace(
+            subheading_on_accent_style=subheading_style.replace(
                 font_color=font_color_on_accent
             ),
-            text_on_accent_color_style=text_style.replace(
-                font_color=font_color_on_accent
-            ),
+            text_on_accent_style=text_style.replace(font_color=font_color_on_accent),
             # Text styles (On neutral)
-            heading_on_neutral_color_style=heading_style.replace(
+            heading_on_neutral_style=heading_style.replace(
                 font_color=font_color_on_neutral
             ),
-            subheading_on_neutral_color_style=subheading_style.replace(
+            subheading_on_neutral_style=subheading_style.replace(
                 font_color=font_color_on_neutral
             ),
-            text_on_neutral_color_style=text_style.replace(
-                font_color=font_color_on_neutral
-            ),
+            text_on_neutral_style=text_style.replace(font_color=font_color_on_neutral),
         )

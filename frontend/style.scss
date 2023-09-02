@@ -1,17 +1,68 @@
+@use '@material/slider/styles';
+@use '@material/ripple';
+
 :root {
-    --color-dim: #dddddd;
-    --color-light: #eeeeee;
-    --color-font: #000000;
-    --color-accent: #e80265;
-    --color-placeholder: #666666;
+    // Theming variables. These are injected by the Python server before serving
+    // the page.
+    --reflex-global-primary-color: var(--TEMPLATE_primary_color);
+    --reflex-global-accent-color: var(--TEMPLATE_accent_color);
 
-    --corner-radius: 0.4rem;
+    --reflex-background-color: var(--TEMPLATE_background_color);
+    --reflex-neutral-color: var(--TEMPLATE_neutral_color);
+    --reflex-neutral-contrast-color: var(--TEMPLATE_neutral_contrast_color);
 
-    --transition-slow: 0.6s;
-    --transition-med: 0.2s;
-    --transition-fast: 0.1s;
+    --reflex-global-heading-on-neutral-color: var(
+        --TEMPLATE_heading_on_neutral_color
+    );
+    --reflex-global-subheading-on-neutral-color: var(
+        --TEMPLATE_subheading_on_neutral_color
+    );
+    --reflex-global-text-on-neutral-color: var(
+        --TEMPLATE_text_on_neutral_color
+    );
+
+    --reflex-corner-radius: var(--TEMPLATE_corner_radius);
+
+    // Expose the theme colors to the material widgets
+    --mdc-theme-primary: var(--reflex-global-primary-color);
+    --mdc-theme-secondary: var(--reflex-global-accent-color);
+    --mdc-theme-background: var(--reflex-background-color);
+
+    --mdc-theme-on-primary: var(--reflex-global-text-on-neutral-color);
+    --mdc-theme-on-secondary: var(--reflex-global-text-on-neutral-color);
+    --mdc-theme-on-surface: var(--reflex-global-text-on-neutral-color);
 }
 
+// Theme Switcheroos
+.reflex-switcheroo-primary {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-global-accent-color);
+
+    // Text styles
+    --reflex-local-text-on-neutral-color: var(
+        --reflex-global-text-on-neutral-color
+    );
+}
+
+.reflex-switcheroo-neutral {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-global-primary-color);
+
+    // Text styles
+    --reflex-local-text-on-neutral-color: var(
+        --reflex-global-text-on-neutral-color
+    );
+}
+
+.reflex-switcheroo-disabled {
+    // Theme colors
+    --reflex-local-accent-color: #777777;
+
+    // Text styles
+    --reflex-local-text-on-neutral-color: #aaaaaa;
+}
+
+// General
 .reflex-single-container > * {
     width: 100%;
     height: 100%;
@@ -22,44 +73,51 @@ body {
     height: 100vh;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Roboto, sans-serif;
     font-size: 16px;
+    background: var(--reflex-background-color);
 }
 
 .reflex-widget {
     box-sizing: border-box;
 }
 
+// Align
 .reflex-align > * {
     position: relative;
 }
 
+// Margin
 .reflex-margin > * {
     position: relative;
 }
 
+// Column
 .reflex-column {
     display: flex;
     flex-direction: column;
     align-items: stretch;
 }
 
+// Row
 .reflex-row {
     display: flex;
     flex-direction: row;
     align-items: stretch;
 }
 
+// Text
 .reflex-text {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+// Rectangle
 .reflex-rectangle {
     border-style: solid;
 
-    transition-timing-function: ease; /* The transition time is set via JS */
+    transition-timing-function: ease; // The transition time is set via JS
 
     /*
     The following attributes are controlled via variables, to allow JavaScript
@@ -90,6 +148,7 @@ body {
         var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
+// Stack
 .reflex-stack > * {
     position: absolute;
 
@@ -99,52 +158,51 @@ body {
     bottom: 0;
 }
 
-/* Text Input */
-
+// Text Input
 .reflex-text-input {
     min-height: 1.2rem;
 
-    background-color: var(--color-dim);
+    background-color: var(--reflex-neutral-contrast-color);
     color: black;
-    caret-color: var(--color-accent);
+    caret-color: var(--reflex-local-accent-color);
 
-    border-radius: var(--corner-radius);
+    border-radius: var(--reflex-global-corner-radius);
     border: 1.5px solid transparent;
 
     padding: 0.3rem 0.5rem;
     text-align: center;
     outline: none;
 
-    transition: background-color var(--transition-slow) ease-in-out;
-    -moz-transition: background-color var(--transition-slow) ease-in-out;
+    transition: background-color 0.5 ease-in-out;
+    -moz-transition: background-color 0.5 ease-in-out;
 
-    transition: border var(--transition-fast) ease-in-out;
-    -moz-transition: border var(--transition-fast) ease-in-out;
+    transition: border 0.1 ease-in-out;
+    -moz-transition: border 0.1 ease-in-out;
 }
 
 .reflex-text-input:hover {
-    background-color: var(--color-light);
-    border: 1.5px solid var(--color-accent);
+    background-color: var(--reflex-neutral-color);
+    border: 1.5px solid var(--reflex-local-accent-color);
 }
 
 .reflex-text-input:focus {
-    background-color: var(--color-light);
-    border: 1.5px solid var(--color-accent);
+    background-color: var(--reflex-neutral-color);
+    border: 1.5px solid var(--reflex-local-accent-color);
 }
 
 ::placeholder {
-    color: var(--color-placeholder);
+    color: #777777;
 }
 
-/* Dropdown */
+// Dropdown
 .reflex-dropdown {
     min-height: 2rem;
 
-    background-color: var(--color-dim);
+    background-color: var(--reflex-neutral-contrast-color);
     color: black;
-    caret-color: var(--color-accent);
+    caret-color: var(--reflex-local-accent-color);
 
-    border-radius: var(--corner-radius);
+    border-radius: var(--reflex-global-corner-radius);
     border: 1.5px solid transparent;
 
     padding: 0.3rem 0.5rem;
@@ -153,19 +211,21 @@ body {
 }
 
 .reflex-dropdown:hover {
-    background-color: var(--color-light);
-    border: 1.5px solid var(--color-accent);
+    background-color: var(--reflex-neutral-color);
+    border: 1.5px solid var(--reflex-local-accent-color);
 }
 
-/* Loading Circle */
+// Progress Circle
 .reflex-progress-circle {
     width: 0;
     height: 0;
+    stroke: var(--reflex-local-accent-color);
 }
 
 .reflex-progress-circle circle {
     fill: none;
     stroke-width: 3.5;
+    color: var(--reflex-local-accent-color);
 }
 
 .spinning svg {
@@ -214,6 +274,7 @@ body {
     }
 }
 
+// Switch
 .reflex-switch .container {
     position: relative;
     width: 3.182em;
@@ -265,4 +326,48 @@ body {
 .reflex-switch.is-on input + .knob {
     left: 1.806em;
     background-color: var(--switch-knob-color-on);
+}
+
+// Button
+.reflex-button {
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out,
+        border-color 0.1s ease-in-out;
+
+    cursor: pointer;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.reflex-buttonstyle-major {
+    background: var(--reflex-local-accent-color);
+    color: var(--local-text-color);
+}
+
+.reflex-buttonstyle-major:hover {
+    background: var(--reflex-local-accent-color);
+    color: var(--local-text-color);
+}
+
+.reflex-buttonstyle-minor {
+    color: var(--reflex-local-accent-color);
+    outline: 0.15em solid var(--reflex-local-accent-color);
+}
+
+.reflex-buttonstyle-minor:hover {
+    color: var(--local-text-color);
+    background: var(--reflex-local-accent-color);
+}
+
+.reflex-shape-rounded {
+    border-radius: 9999px;
+}
+
+.reflex-shape-rectangular {
+    border-radius: var(--reflex-global-corner-radius);
+}
+
+.reflex-shape-circle {
+    border-radius: 50%;
 }

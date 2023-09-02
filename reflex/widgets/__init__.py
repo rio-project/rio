@@ -16,6 +16,7 @@ from .plot import *
 from .progress_circle import *
 from .rectangle import *
 from .row import *
+from .slider import *
 from .stack import *
 from .switch import *
 from .text import *
