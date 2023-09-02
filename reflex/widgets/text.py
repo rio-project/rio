@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-from uniserde import  JsonDoc
+from uniserde import JsonDoc
 
 import reflex as rx
 

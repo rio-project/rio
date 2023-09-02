@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-from typing import *  # type: ignore
-
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 from typing import Optional
@@ -10,11 +7,6 @@ from typing import Optional
 import reflex as rx
 
 from . import progress_circle, text, widget_base
-
-
-import reflex as rx
-
-from . import widget_base
 
 __all__ = [
     "Button",

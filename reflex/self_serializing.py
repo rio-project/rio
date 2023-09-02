@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import *  # type: ignore
 
 from uniserde import Jsonable
-
-from typing import *  # type: ignore
 
 # Only import `app_server` if type checking. This is to avoid a circular import.
 if TYPE_CHECKING:

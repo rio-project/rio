@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-
 from . import widget_base
 
 __all__ = [
