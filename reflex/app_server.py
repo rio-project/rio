@@ -155,7 +155,61 @@ class AppServer(fastapi.FastAPI):
         js = read_frontend_template("app.js")
         css = read_frontend_template("style.css")
 
-        # Fill in all placeholders
+        # Find the theme
+        #
+        # TODO: This is imperfect, as it doesn't allow changing the theme
+        # dynamically, or even in the `on_session_start` event.
+        for thm in self.default_attachments:
+            if isinstance(thm, rx.Theme):
+                break
+        else:
+            thm = rx.Theme.default()
+
+        # Expose the theme colors via CSS
+        css_replacements: Dict[str, str] = {
+            "corner_radius": f"{thm.corner_radius}em",
+        }
+
+        color_names = (
+            "primary_color",
+            "accent_color",
+            "background_color",
+            "neutral_color",
+            "neutral_contrast_color",
+            "neutral_active_color",
+            "success_color",
+            "warning_color",
+            "danger_color",
+        )
+
+        for color_name in color_names:
+            color = getattr(thm, color_name)
+            assert isinstance(color, rx.Color), color
+            css_replacements[color_name] = f"#{color.hex}"
+
+        style_names = (
+            "heading_on_primary",
+            "subheading_on_primary",
+            "text_on_primary",
+            "heading_on_accent",
+            "subheading_on_accent",
+            "text_on_accent",
+            "heading_on_neutral",
+            "subheading_on_neutral",
+            "text_on_neutral",
+        )
+
+        for style_name in style_names:
+            style = getattr(thm, f"{style_name}_style")
+            assert isinstance(style, rx.TextStyle), style
+
+            css_replacements[f"{style_name}_color"] = f"#{style.font_color.hex}"
+
+        for rep_name, rep_value in css_replacements.items():
+            rep_name = f"var(--TEMPLATE_{rep_name})"
+            css = css.replace(rep_name, rep_value)
+
+        # Fill in the JavaScript placeholders
         js = js.replace("{session_token}", session_token)
         js = js.replace(
             '"{child_attribute_names}"',
@@ -166,6 +220,7 @@ class AppServer(fastapi.FastAPI):
             str(self.app.ping_pong_interval.total_seconds()),
         )
 
+        # Merge everything into one HTML
         html = html.replace("{title}", self.app.name)
         html = html.replace("/*{style}*/", css)
         html = html.replace("/*{script}*/", js)

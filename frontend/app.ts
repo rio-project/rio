@@ -1,21 +1,23 @@
-import { TextWidget } from './text';
-import { RowWidget } from './row';
+import { AlignWidget } from './align';
+import { ButtonWidget } from './button';
+import { Color, Fill } from './models';
 import { ColumnWidget } from './column';
 import { DropdownWidget } from './dropdown';
-import { RectangleWidget } from './rectangle';
-import { StackWidget } from './stack';
-import { Color, Fill } from './models';
-import { MouseEventListenerWidget } from './mouseEventListener';
-import { TextInputWidget } from './textInput';
 import { IconWidget } from './Icon';
-import { PlaceholderWidget } from './placeholder';
-import { SwitchWidget } from './switch';
-import { WidgetBase, WidgetState } from './widgetBase';
-import { ProgressCircleWidget } from './progressCircle';
-import { PlotWidget } from './plot';
-import { AlignWidget } from './align';
 import { MarginWidget } from './margin';
 import { MediaPlayerWidget } from './mediaPlayer';
+import { MouseEventListenerWidget } from './mouseEventListener';
+import { PlaceholderWidget } from './placeholder';
+import { PlotWidget } from './plot';
+import { ProgressCircleWidget } from './progressCircle';
+import { RectangleWidget } from './rectangle';
+import { RowWidget } from './row';
+import { SliderWidget } from './Slider';
+import { StackWidget } from './stack';
+import { SwitchWidget } from './switch';
+import { TextInputWidget } from './textInput';
+import { TextWidget } from './text';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 const sessionToken = '{session_token}';
 
@@ -142,6 +144,7 @@ export function getParentWidgetElementExcludingInjected(
 
 const widgetClasses = {
     'Align-builtin': AlignWidget,
+    'Button-builtin': ButtonWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Icon-builtin': IconWidget,
@@ -152,6 +155,7 @@ const widgetClasses = {
     'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
     'Row-builtin': RowWidget,
+    'Slider-builtin': SliderWidget,
     'Stack-builtin': StackWidget,
     'Switch-builtin': SwitchWidget,
     'Text-builtin': TextWidget,
