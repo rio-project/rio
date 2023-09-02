@@ -18,7 +18,7 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { ProgressBarWidget } from './ProgressBar';
+import { ProgressBarWidget } from './progressBar';
 
 const sessionToken = '{session_token}';
 

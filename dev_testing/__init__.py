@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import *  # type: ignore
 
 import plotly.express as px
@@ -70,10 +69,22 @@ class Sidebar(rx.Widget):
                     margin_top=0.6,
                 ),
                 rx.TextInput(
-                    placeholder="Search...",
+                    placeholder="Plain",
                     text=Sidebar.search_text,
+                    prefix_text="prefix",
                     margin_x=1.0,
                     margin_top=4.0,
+                    on_change=lambda evt: print("plain-change:", evt.text),
+                    is_sensitive=False,
+                ),
+                rx.TextInput(
+                    placeholder="Secret",
+                    text=Sidebar.search_text,
+                    secret=True,
+                    suffix_text="suffix",
+                    margin_x=1.0,
+                    margin_top=4.0,
+                    on_confirm=lambda evt: print("secret-confirm:", evt.text),
                 ),
                 rx.Button(
                     "Button",
@@ -90,17 +101,17 @@ class Sidebar(rx.Widget):
                 # rx.Icon(
                 #     # "reflex/circle",
                 #     "bootstrap/zoom-out",
-                #     # fill=rx.Color.RED,
+                #     fill=rx.Color.MAGENTA,
                 #     # fill=rx.LinearGradientFill(
                 #     #     (rx.Color.RED, 0),
                 #     #     (rx.Color.BLUE, 1),
                 #     #     angle_degrees=20,
                 #     # ),
-                #     fill=rx.ImageFill(
-                #         "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.startupsos.com%2Fwp-content%2Fuploads%2F2015%2F07%2Ftest.jpg&f=1&nofb=1&ipt=81f5c2bb33cee7310da4b016f5b4ec00afacfc2155ba2e929d873be00fdc15bf&ipo=images"
-                #         # Path(__file__).parent
-                #         # / "test.png"
-                #     ),
+                #     # fill=rx.ImageFill(
+                #     #     "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.startupsos.com%2Fwp-content%2Fuploads%2F2015%2F07%2Ftest.jpg&f=1&nofb=1&ipt=81f5c2bb33cee7310da4b016f5b4ec00afacfc2155ba2e929d873be00fdc15bf&ipo=images"
+                #     #     # Path(__file__).parent
+                #     #     # / "test.png"
+                #     # ),
                 # ),
                 rx.Slider(value=0.1),
                 rx.Button(

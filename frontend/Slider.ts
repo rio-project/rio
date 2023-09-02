@@ -19,7 +19,7 @@ export class SliderWidget extends WidgetBase {
         element.classList.add('reflex-slider');
 
         element.innerHTML = `
-        <input class="mdc-slider__input" type="range" min="0" max="1000" value="250" name="volume">
+        <input class="mdc-slider__input" type="range" min="0" max="1000" value="250">
         <div class="mdc-slider__track">
             <div class="mdc-slider__track--inactive"></div>
             <div class="mdc-slider__track--active">
@@ -50,6 +50,7 @@ export class SliderWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLElement, deltaState: SliderState): void {
+        // Convert between the widget's units and the backend's.
         let min =
             deltaState.min === undefined ? this.state['min'] : deltaState.min;
 
@@ -64,6 +65,12 @@ export class SliderWidget extends WidgetBase {
             this.mdcSlider.setDisabled(!deltaState.is_sensitive);
         }
 
+        // The slider stores the coordinates of its rectangle. Since reflex
+        // likes to resize and move around widgets, the rectangle must be
+        // updated appropriately.
+        //
+        // Really, this should be done when the widget is resized or moved, but
+        // there is no hook for that. Update seems to work fine.
         requestAnimationFrame(() => {
             this.mdcSlider.layout();
         });

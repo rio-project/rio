@@ -1,8 +1,14 @@
-@use '@material/slider/styles';
+@use '@material/circular-progress';
+@use '@material/floating-label/mdc-floating-label';
+@use '@material/line-ripple/mdc-line-ripple';
+@use '@material/linear-progress';
+@use '@material/notched-outline/mdc-notched-outline';
 @use '@material/ripple';
-@use "@material/linear-progress";
+@use '@material/slider/styles';
+@use '@material/textfield';
 
 @include linear-progress.core-styles;
+@include textfield.core-styles;
 
 :root {
     // Theming variables. These are injected by the Python server before serving
