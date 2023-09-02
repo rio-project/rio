@@ -121,8 +121,7 @@ class NumberInput(widget_base.Widget):
     def build(self) -> rx.Widget:
         # Format the number
         value_str = f"{self.value:.{self.decimals}f}"
-        value_str = value_str.replace(".", self.decimal_separator)
-        int_str, frac_str = value_str.split(self.decimal_separator)
+        int_str, frac_str = value_str.split(".")
 
         # Add thousands separators
         groups = []

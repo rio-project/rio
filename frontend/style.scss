@@ -4,7 +4,8 @@
 @use '@material/linear-progress';
 @use '@material/notched-outline/mdc-notched-outline';
 @use '@material/ripple';
-@use '@material/slider/styles';
+@use '@material/slider/styles' as sliderStyles;
+@use '@material/switch/styles' as switchStyles;
 @use '@material/textfield';
 
 @include linear-progress.core-styles;
@@ -167,42 +168,6 @@ body {
     bottom: 0;
 }
 
-// Text Input
-.reflex-text-input {
-    min-height: 1.2rem;
-
-    background-color: var(--reflex-neutral-contrast-color);
-    color: black;
-    caret-color: var(--reflex-local-accent-color);
-
-    border-radius: var(--reflex-global-corner-radius);
-    border: 1.5px solid transparent;
-
-    padding: 0.3rem 0.5rem;
-    text-align: center;
-    outline: none;
-
-    transition: background-color 0.5 ease-in-out;
-    -moz-transition: background-color 0.5 ease-in-out;
-
-    transition: border 0.1 ease-in-out;
-    -moz-transition: border 0.1 ease-in-out;
-}
-
-.reflex-text-input:hover {
-    background-color: var(--reflex-neutral-color);
-    border: 1.5px solid var(--reflex-local-accent-color);
-}
-
-.reflex-text-input:focus {
-    background-color: var(--reflex-neutral-color);
-    border: 1.5px solid var(--reflex-local-accent-color);
-}
-
-::placeholder {
-    color: #777777;
-}
-
 // Dropdown
 .reflex-dropdown {
     min-height: 2rem;
@@ -281,60 +246,6 @@ body {
     100% {
         stroke-dashoffset: -125px;
     }
-}
-
-// Switch
-.reflex-switch .container {
-    position: relative;
-    width: 3.182em;
-    height: 1.548em;
-    margin: auto;
-    border-radius: 4.3em;
-    background-color: var(--switch-background-color-off);
-    transition: 0.3s ease all;
-    z-index: 1;
-}
-
-.reflex-switch.is-on .container {
-    background-color: var(--switch-background-color-on);
-}
-
-.reflex-switch input {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 3;
-}
-
-.reflex-switch .knob {
-    z-index: 2;
-    position: absolute;
-    top: 0.172em;
-    left: 0.172em;
-    width: 0.86em;
-    height: 0.43em;
-    padding: 0.387em 0.172em;
-    background-color: var(--switch-knob-color-off);
-    border-radius: 50%;
-    transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
-}
-
-.reflex-switch input:active + .knob {
-    width: 1.978em;
-    border-radius: 4.3em;
-}
-
-.reflex-switch.is-on input:active + .knob {
-    margin-left: -1.118em;
-}
-
-.reflex-switch.is-on input + .knob {
-    left: 1.806em;
-    background-color: var(--switch-knob-color-on);
 }
 
 // Button

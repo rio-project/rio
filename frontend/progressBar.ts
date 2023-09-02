@@ -34,22 +34,17 @@ export class ProgressBarWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLElement, deltaState: ProgressBarState): void {
-        console.log(`WIDGET ${this.elementId} ${JSON.stringify(deltaState)}`);
-
         // No progress specified
         if (deltaState.progress === undefined) {
-            console.log('undefined');
         }
 
         // Indeterminate progress
         else if (deltaState.progress === null) {
-            console.log('indeterminate');
             this.mdcProgress.determinate = false;
         }
 
         // Known progress
         else {
-            console.log('determinate');
             this.mdcProgress.determinate = true;
             this.mdcProgress.progress = deltaState.progress;
         }

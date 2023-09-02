@@ -123,6 +123,19 @@ class Sidebar(rx.Widget):
                 ),
                 rx.ProgressBar(0.4),
                 rx.ProgressBar(None),
+                rx.Switch(
+                    on_change=lambda _: print("Switch 1 Changed"),
+                ),
+                rx.Switch(
+                    is_sensitive=False,
+                    on_change=lambda _: print("Switch 2 Changed"),
+                ),
+                rx.NumberInput(
+                    3.0,
+                    "Number",
+                    round_to_integer=True,
+                    decimals=4,
+                ),
                 spacing=1.0,
                 align_y=0,
             ),

@@ -782,6 +782,8 @@ export function callRemoteMethodDiscardResponse(
 
 function displayConnectionLostPopup() {
     const popup = document.createElement('div');
+    popup.classList.add('reflex-text');
+
     popup.textContent = 'Connection lost. Please refresh the page.';
 
     popup.style.position = 'fixed';
@@ -791,7 +793,6 @@ function displayConnectionLostPopup() {
     popup.style.width = 'unset';
     popup.style.height = 'unset';
     popup.style.backgroundColor = '#ffffff';
-    popup.style.color = '#000000';
     popup.style.fontWeight = 'bold';
     popup.style.padding = '1.5em';
     popup.style.borderRadius = '1em';

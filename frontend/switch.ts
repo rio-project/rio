@@ -1,84 +1,59 @@
-import { colorToCss } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { MDCSwitch } from '@material/switch';
 
 export type SwitchState = WidgetState & {
     _type_: 'switch';
     is_on?: boolean;
-    knobColorOn?: [number, number, number, number];
-    knobColorOff?: [number, number, number, number];
-    backgroundColorOn?: [number, number, number, number];
-    backgroundColorOff?: [number, number, number, number];
+    is_sensitive?: boolean;
 };
 
 export class SwitchWidget extends WidgetBase {
+    private mdcSwitch: MDCSwitch;
+
     createElement(): HTMLElement {
-        let element = document.createElement('div');
-        element.classList.add('reflex-switch');
+        // Create the element
+        let element = document.createElement('button');
+        element.classList.add('mdc-switch');
+        element.classList.add('mdc-switch--unselected');
+        element.setAttribute('type', 'button');
+        element.setAttribute('role', 'switch');
+        element.setAttribute('aria-checked', 'false');
 
-        let containerElement = document.createElement('div');
-        containerElement.classList.add('container');
-        element.appendChild(containerElement);
+        element.innerHTML = `
+<div class="mdc-switch__track"></div>
+<div class="mdc-switch__handle-track">
+    <div class="mdc-switch__handle">
+        <div class="mdc-switch__shadow">
+            <div class="mdc-elevation-overlay"></div>
+        </div>
+        <div class="mdc-switch__ripple"></div>
+    </div>
+</div>
+`;
+        // Initialize the material design component
+        this.mdcSwitch = new MDCSwitch(element);
 
-        let checkboxElement = document.createElement('input');
-        checkboxElement.type = 'checkbox';
-        containerElement.appendChild(checkboxElement);
-
-        let knobElement = document.createElement('div');
-        knobElement.classList.add('knob');
-        containerElement.appendChild(knobElement);
-
-        checkboxElement.addEventListener('change', () => {
+        // Detect value changes and send them to the backend
+        element.addEventListener('click', () => {
             this.setStateAndNotifyBackend({
-                is_on: checkboxElement.checked,
+                is_on: this.mdcSwitch.selected,
             });
         });
+
+        // this.setStateAndNotifyBackend({
+        //     is_on: this.mdcSwitch.selected,
+        // });
 
         return element;
     }
 
     updateElement(element: HTMLElement, deltaState: SwitchState): void {
         if (deltaState.is_on !== undefined) {
-            if (deltaState.is_on) {
-                element.classList.add('is-on');
-            } else {
-                element.classList.remove('is-on');
-            }
-
-            // Assign the new value to the checkbox element, but only if it
-            // differs from the current value, to avoid immediately triggering
-            // the event again.
-            let checkboxElement = element.querySelector('input');
-            if (checkboxElement?.checked !== deltaState.is_on) {
-                checkboxElement!.checked = deltaState.is_on;
-            }
+            this.mdcSwitch.selected = deltaState.is_on;
         }
 
-        if (deltaState.knobColorOff !== undefined) {
-            element.style.setProperty(
-                '--switch-knob-color-off',
-                colorToCss(deltaState.knobColorOff)
-            );
-        }
-
-        if (deltaState.knobColorOn !== undefined) {
-            element.style.setProperty(
-                '--switch-knob-color-on',
-                colorToCss(deltaState.knobColorOn)
-            );
-        }
-
-        if (deltaState.backgroundColorOff !== undefined) {
-            element.style.setProperty(
-                '--switch-background-color-off',
-                colorToCss(deltaState.backgroundColorOff)
-            );
-        }
-
-        if (deltaState.backgroundColorOn !== undefined) {
-            element.style.setProperty(
-                '--switch-background-color-on',
-                colorToCss(deltaState.backgroundColorOn)
-            );
+        if (deltaState.is_sensitive !== undefined) {
+            this.mdcSwitch.disabled = !deltaState.is_sensitive;
         }
     }
 }
