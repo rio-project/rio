@@ -6,7 +6,9 @@ from .container import *
 from .dropdown import *
 from .icon import *
 from .image import *
+from .key_event_listener import *
 from .markdown_view import *
+from .media_player import *
 from .mouse_event_listener import *
 from .notification_bar import *
 from .number_input import *

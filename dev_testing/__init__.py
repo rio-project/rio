@@ -50,6 +50,22 @@ class ShowcaseCard(rx.Widget):
         )
 
 
+class KeyEventTester(rx.Widget):
+    event: rx.KeyDownEvent = rx.KeyDownEvent('Unknown', 'Unknown', '', frozenset())
+
+    def on_key_down(self, event: rx.KeyDownEvent) -> None:
+        self.event = event
+
+    def build(self) -> rx.Widget:
+        return rx.KeyEventListener(
+            rx.Text(f'''Hardware key: {self.event.hardware_key}
+Software key: {self.event.software_key}
+Input text: {self.event.input_text}
+Modifiers: {self.event.modifiers}'''),
+            on_key_down=self.on_key_down,
+        )
+
+
 class Sidebar(rx.Widget):
     search_text: str = ""
 
@@ -87,6 +103,7 @@ class Sidebar(rx.Widget):
                     progress=None,
                     margin_top=1.0,
                 ),
+                KeyEventTester(),
                 # rx.Icon(
                 #     # "reflex/circle",
                 #     "bootstrap/zoom-out",

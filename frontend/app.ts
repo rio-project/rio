@@ -1,21 +1,22 @@
-import { TextWidget } from './text';
-import { RowWidget } from './row';
+import { AlignWidget } from './align';
+import { Color, Fill } from './models';
 import { ColumnWidget } from './column';
 import { DropdownWidget } from './dropdown';
-import { RectangleWidget } from './rectangle';
-import { StackWidget } from './stack';
-import { Color, Fill } from './models';
-import { MouseEventListenerWidget } from './mouseEventListener';
-import { TextInputWidget } from './textInput';
 import { IconWidget } from './Icon';
-import { PlaceholderWidget } from './placeholder';
-import { SwitchWidget } from './switch';
-import { WidgetBase, WidgetState } from './widgetBase';
-import { ProgressCircleWidget } from './progressCircle';
-import { PlotWidget } from './plot';
-import { AlignWidget } from './align';
+import { KeyEventListenerWidget } from './keyEventListener';
 import { MarginWidget } from './margin';
 import { MediaPlayerWidget } from './mediaPlayer';
+import { MouseEventListenerWidget } from './mouseEventListener';
+import { PlaceholderWidget } from './placeholder';
+import { PlotWidget } from './plot';
+import { ProgressCircleWidget } from './progressCircle';
+import { RectangleWidget } from './rectangle';
+import { RowWidget } from './row';
+import { StackWidget } from './stack';
+import { SwitchWidget } from './switch';
+import { TextInputWidget } from './textInput';
+import { TextWidget } from './text';
+import { WidgetBase, WidgetState } from './widgetBase';
 
 const sessionToken = '{session_token}';
 
@@ -145,6 +146,7 @@ const widgetClasses = {
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Icon-builtin': IconWidget,
+    'KeyEventListener-builtin': KeyEventListenerWidget,
     'Margin-builtin': MarginWidget,
     'MediaPlayer-builtin': MediaPlayerWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
@@ -182,7 +184,9 @@ async function processMessage(message: any) {
     }
     // Allow the server to run JavaScript
     else if (message.method == 'evaluateJavaScript') {
-        response = await eval(message.params.javaScriptSource);
+        // Avoid using `eval` so that parceljs can minify the code
+        const func = new Function(message.params.javaScriptSource);
+        response = await func();
     }
     // Upload a file to the server
     else if (message.method == 'requestFileUpload') {
