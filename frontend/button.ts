@@ -1,5 +1,6 @@
 import { replaceOnlyChild } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { MDCRipple } from '@material/ripple';
 
 export type ButtonState = WidgetState & {
     _type_: 'Button-builtin';
@@ -10,13 +11,17 @@ export type ButtonState = WidgetState & {
 };
 
 export class ButtonWidget extends WidgetBase {
+    private mdcRipple: MDCRipple;
+
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('reflex-button');
         element.classList.add('reflex-single-container');
         element.classList.add('mdc-ripple-surface');
-        element.classList.add('mdc-ripple-surface--primary');
+
+        // Add a material ripple effect
+        this.mdcRipple = new MDCRipple(element);
 
         // Detect button presses
         element.onmouseup = (e) => {
@@ -30,6 +35,10 @@ export class ButtonWidget extends WidgetBase {
                 type: 'press',
             });
         };
+
+        requestAnimationFrame(() => {
+            this.mdcRipple.layout();
+        });
 
         return element;
     }
@@ -64,5 +73,15 @@ export class ButtonWidget extends WidgetBase {
         } else if (deltaState.is_sensitive === false) {
             element.classList.add('reflex-switcheroo-disabled');
         }
+
+        // The slider stores the coordinates of its rectangle. Since reflex
+        // likes to resize and move around widgets, the rectangle must be
+        // updated appropriately.
+        //
+        // Really, this should be done when the widget is resized or moved, but
+        // there is no hook for that. Update seems to work fine.
+        requestAnimationFrame(() => {
+            this.mdcRipple.layout();
+        });
     }
 }

@@ -253,9 +253,11 @@ body {
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
 
-    @include ripple.surface;
-    @include ripple.radius-bounded;
-    @include ripple.states;
+    // @include ripple.surface;
+    // @include ripple.radius-bounded;
+    // @include ripple.states;
+
+    // overflow: hidden;
 }
 
 .reflex-buttonstyle-major {
