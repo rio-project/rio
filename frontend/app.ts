@@ -405,6 +405,10 @@ function updateWidgetStates(
     // into actual widgets, amongst other things.
     rootWidgetId = preprocessMessage(message, rootWidgetId);
 
+    // Modifying the DOM makes the keyboard focus get lost. Remember which
+    // element had focus, so we can restore it later.
+    let focusedElement = document.activeElement;
+
     // Create a HTML element to hold all latent widgets, so they aren't
     // garbage collected while updating the DOM.
     let latentWidgets = document.createElement('div');
@@ -502,6 +506,11 @@ function updateWidgetStates(
         let rootElement = getElementByWidgetId(rootWidgetId);
         document.body.innerHTML = '';
         document.body.appendChild(rootElement!);
+    }
+
+    // Restore the keyboard focus
+    if (focusedElement instanceof HTMLElement) {
+        focusedElement.focus();
     }
 
     // Remove the latent widgets

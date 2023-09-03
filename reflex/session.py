@@ -83,6 +83,9 @@ class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
         self._attachments = {}
+    
+    def __contains__(self, typ: type) -> bool:
+        return typ in self._attachments
 
     def __getitem__(self, typ: Type[T]) -> T:
         """
@@ -187,6 +190,7 @@ class Session(unicall.Unicall):
 
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
+        # Note: These are initialized by the AppServer.
         self.attachments = SessionAttachments(self)
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
