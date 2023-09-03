@@ -152,8 +152,6 @@ class AppServer(fastapi.FastAPI):
 
         # Load the templates
         html = read_frontend_template("index.html")
-        js = read_frontend_template("app.js")
-        css = read_frontend_template("style.css")
 
         # Find the theme
         #
@@ -207,23 +205,21 @@ class AppServer(fastapi.FastAPI):
 
         for rep_name, rep_value in css_replacements.items():
             rep_name = f"var(--TEMPLATE_{rep_name})"
-            css = css.replace(rep_name, rep_value)
+            html = html.replace(rep_name, rep_value)
 
         # Fill in the JavaScript placeholders
-        js = js.replace("{session_token}", session_token)
-        js = js.replace(
+        html = html.replace("{session_token}", session_token)
+        html = html.replace(
             '"{child_attribute_names}"',
             widget_metadata.CHILD_ATTRIBUTE_NAMES_JSON,
         )
-        js = js.replace(
+        html = html.replace(
             '"{ping_pong_interval}"',
             str(self.app.ping_pong_interval.total_seconds()),
         )
 
         # Merge everything into one HTML
         html = html.replace("{title}", self.app.name)
-        html = html.replace("/*{style}*/", css)
-        html = html.replace("/*{script}*/", js)
 
         # Respond
         return fastapi.responses.HTMLResponse(html)

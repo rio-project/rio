@@ -1,5 +1,10 @@
 {
+  "private": true,
   "browserslist": "> 0.5%, last 2 versions, not dead",
+  "scripts": {
+    "build": "vite build frontend/ --outDir ../reflex/generated/ --config vite.config.ts --emptyOutDir",
+    "demo": "npm run-script build && python -m uvicorn dev_testing:app --reload"
+  },
   "dependencies": {
     "@material/animation": "^14.0.0",
     "@material/base": "^14.0.0",
@@ -10,13 +15,8 @@
     "@material/rtl": "^14.0.0",
     "@material/theme": "^14.0.0",
     "@material/typography": "^14.0.0",
-    "@parcel/transformer-sass": "^2.9.3",
-    "cssnano": "^6.0.1",
     "material-components-web": "^14.0.0",
-    "parcel": "^2.9.3",
-    "postcss": "^8.4.29",
-    "sass": "^1.66.1",
-    "tslib": "^2.1.0",
-    "typescript": "^5.2.2"
+    "vite": "^4.4.9",
+    "vite-plugin-singlefile": "^0.13.5"
   }
 }
