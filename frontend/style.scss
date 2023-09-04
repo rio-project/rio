@@ -84,7 +84,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: Roboto, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     background: var(--reflex-background-color);
 }
 
@@ -166,6 +166,60 @@ body {
     top: 0;
     right: 0;
     bottom: 0;
+}
+
+// Switch
+.reflex-switch .container {
+    position: relative;
+    width: 3.182em;
+    height: 1.548em;
+    margin: auto;
+    border-radius: 4.3em;
+    background-color: black;
+    transition: 0.3s ease all;
+    z-index: 1;
+}
+
+.reflex-switch.is-on .container {
+    background-color: blue;
+}
+
+.reflex-switch input {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.reflex-switch .knob {
+    z-index: 2;
+    position: absolute;
+    top: 0.172em;
+    left: 0.172em;
+    width: 0.86em;
+    height: 0.43em;
+    padding: 0.387em 0.172em;
+    background-color: grey;
+    border-radius: 50%;
+    transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+}
+
+.reflex-switch input:active + .knob {
+    width: 1.978em;
+    border-radius: 4.3em;
+}
+
+.reflex-switch.is-on input:active + .knob {
+    margin-left: -1.118em;
+}
+
+.reflex-switch.is-on input + .knob {
+    left: 1.806em;
+    background-color: darkblue;
 }
 
 // Dropdown
