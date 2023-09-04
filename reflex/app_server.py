@@ -161,7 +161,7 @@ class AppServer(fastapi.FastAPI):
             if isinstance(thm, rx.Theme):
                 break
         else:
-            thm = rx.Theme.default()
+            thm = rx.Theme()
 
         # Expose the theme colors via CSS
         css_replacements: Dict[str, str] = {
@@ -171,6 +171,10 @@ class AppServer(fastapi.FastAPI):
         color_names = (
             "primary_color",
             "accent_color",
+            "disabled_color",
+            "primary_color_variant",
+            "accent_color_variant",
+            "disabled_color_variant",
             "background_color",
             "neutral_color",
             "neutral_contrast_color",
@@ -178,6 +182,9 @@ class AppServer(fastapi.FastAPI):
             "success_color",
             "warning_color",
             "danger_color",
+            "success_color_variant",
+            "warning_color_variant",
+            "danger_color_variant",
         )
 
         for color_name in color_names:
@@ -526,7 +533,7 @@ class AppServer(fastapi.FastAPI):
                 continue
 
             sess.attachments.add(copy.deepcopy(attachment))
-        
+
         if rx.Theme not in sess.attachments:
             sess.attachments.add(rx.Theme.dark())
 

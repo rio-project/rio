@@ -3,7 +3,7 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "build": "vite build frontend/ --outDir ../reflex/generated/ --config vite.config.ts --emptyOutDir",
-    "demo": "npm run-script build && python3 -m uvicorn dev_testing:app --reload"
+    "demo": "npm run-script build && python3 -m uvicorn dev_testing:app --host 0.0.0.0 --port 8001 --reload"
   },
   "dependencies": {
     "@material/animation": "^14.0.0",
