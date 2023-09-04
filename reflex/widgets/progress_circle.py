@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
+import reflex as rx
+
 from . import widget_base
 
 __all__ = [
@@ -12,12 +14,14 @@ __all__ = [
 
 class ProgressCircle(widget_base.HtmlWidget):
     _: KW_ONLY
-    progress: Optional[float] = None
+    progress: Optional[float]
+    color: rx.ColorSpec
 
     def __init__(
         self,
         *,
         progress: Optional[float] = None,
+        color: rx.ColorSpec = "primary",
         size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,
@@ -46,6 +50,7 @@ class ProgressCircle(widget_base.HtmlWidget):
         )
 
         self.progress = progress
+        self.color = color
 
 
 ProgressCircle._unique_id = "ProgressCircle-builtin"

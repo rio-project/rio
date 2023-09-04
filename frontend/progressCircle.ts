@@ -1,9 +1,11 @@
 import { colorToCss } from './app';
+import { applyColorSpec } from './design_application';
+import { ColorSpec } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type ProgressCircleState = WidgetState & {
     _type_: 'progressCircle';
-    color?: [number, number, number, number];
+    color: ColorSpec;
     background_color?: [number, number, number, number];
     progress?: number | null;
 };
@@ -23,7 +25,7 @@ export class ProgressCircleWidget extends WidgetBase {
 
     updateElement(element: HTMLElement, deltaState: ProgressCircleState): void {
         if (deltaState.color !== undefined) {
-            element.style.stroke = colorToCss(deltaState.color);
+            applyColorSpec(element, deltaState.color);
         }
 
         if (deltaState.background_color !== undefined) {

@@ -26,6 +26,7 @@ from . import (
     errors,
     fills,
     self_serializing,
+    theme,
     user_settings_module,
     widgets,
 )
@@ -83,7 +84,7 @@ class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
         self._attachments = {}
-    
+
     def __contains__(self, typ: type) -> bool:
         return typ in self._attachments
 
@@ -497,6 +498,11 @@ class Session(unicall.Unicall):
         # Self-Serializing
         if isinstance(value, self_serializing.SelfSerializing):
             return value._serialize(self._app_server)
+
+        # ColorSpec
+        if origin is Union and set(args) == color._color_spec_args:
+            thm = self.attachments[theme.Theme]
+            return thm._serialize_colorspec(value)
 
         # Optional
         if origin is Union and len(args) == 2 and type(None) in args:

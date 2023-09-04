@@ -4,6 +4,7 @@ import { WidgetBase, WidgetState } from './widgetBase';
 export type SwitchState = WidgetState & {
     _type_: 'switch';
     is_on?: boolean;
+    is_sensitive?: boolean;
 };
 
 export class SwitchWidget extends WidgetBase {
@@ -48,6 +49,19 @@ export class SwitchWidget extends WidgetBase {
                 checkboxElement!.checked = deltaState.is_on;
             }
         }
+
+        if (deltaState.is_sensitive === true) {
+            element.classList.remove('reflex-switcheroo-disabled');
+            let checkbox = element.querySelector('input');
+            checkbox!.disabled = false;
+        } else if (deltaState.is_sensitive === false) {
+            element.classList.add('reflex-switcheroo-disabled');
+            let checkbox = element.querySelector('input');
+            checkbox!.disabled = true;
+        }
+
+        // TODO: The off state and the insensitive state currently look
+        // identical. Make them look different. The switch animation also kinda
+        // reacts to user input even if not sensitive.
     }
 }
-

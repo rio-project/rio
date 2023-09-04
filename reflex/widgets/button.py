@@ -4,7 +4,10 @@ from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 from typing import Optional
 
+from uniserde import JsonDoc
+
 import reflex as rx
+from reflex import app_server
 
 from . import progress_circle, text, widget_base
 
@@ -24,11 +27,11 @@ class Button(widget_base.Widget):
     on_press: rx.EventHandler[ButtonPressEvent] = None
     icon: Optional[str] = None
     child: Optional[rx.Widget] = None
-    shape: Literal["rounded", "rectangular", "circle"] = "rounded"
-    is_major: bool = False
+    shape: Literal["pill", "rounded", "rectangle", "circle"] = "pill"
+    style: Literal["major", "minor"] = "major"
+    color: rx.ColorSpec = "primary"
     is_sensitive: bool = True
     is_loading: bool = False
-    color: Optional[rx.Color] = None
 
     def build(self) -> rx.Widget:
         # Prepare the child
@@ -75,7 +78,8 @@ class Button(widget_base.Widget):
             on_press=self.on_press,
             child=child,
             shape=self.shape,
-            is_major=self.is_major,
+            style=self.style,
+            color=self.color,
             is_sensitive=self.is_sensitive and not self.is_loading,
         )
 
@@ -84,8 +88,9 @@ class _ButtonInternal(widget_base.HtmlWidget):
     _: KW_ONLY
     on_press: rx.EventHandler[ButtonPressEvent]
     child: rx.Widget
-    shape: Literal["rounded", "rectangular", "circle"]
-    is_major: bool
+    shape: Literal["pill", "rounded", "rectangle", "circle"]
+    style: Literal["major", "minor"]
+    color: rx.ColorSpec
     is_sensitive: bool
 
     async def _on_message(self, msg: Any) -> None:

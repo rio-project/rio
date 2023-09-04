@@ -11,52 +11,9 @@
 @include linear-progress.core-styles;
 @include textfield.core-styles;
 
-:root {
-    // Theming variables. These are injected by the Python server before serving
-    // the page.
-    --reflex-global-primary-color: var(--TEMPLATE_primary_color);
-    --reflex-global-accent-color: var(--TEMPLATE_accent_color);
-    --reflex-disabled-color: var(--TEMPLATE_disabled_color);
-
-    --reflex-global-primary-color-variant: var(--TEMPLATE_primary_color_variant);
-    --reflex-global-accent-color-variant: var(--TEMPLATE_accent_color_variant);
-    --reflex-disabled-color-variant: var(
-        --TEMPLATE_disabled_color_variant
-    );
-
-    --reflex-background-color: var(--TEMPLATE_background_color);
-    --reflex-neutral-color: var(--TEMPLATE_neutral_color);
-    --reflex-neutral-contrast-color: var(--TEMPLATE_neutral_contrast_color);
-
-    --reflex-success-color: var(--TEMPLATE_success_color);
-    --reflex-warning-color: var(--TEMPLATE_warning_color);
-    --reflex-error-color: var(--TEMPLATE_error_color);
-
-    --reflex-success-color-variant: var(--TEMPLATE_success_color_variant);
-    --reflex-warning-color-variant: var(--TEMPLATE_warning_color_variant);
-    --reflex-error-color-variant: var(--TEMPLATE_error_color_variant);
-
-    --reflex-global-heading-on-neutral-color: var(
-        --TEMPLATE_heading_on_neutral_color
-    );
-    --reflex-global-subheading-on-neutral-color: var(
-        --TEMPLATE_subheading_on_neutral_color
-    );
-    --reflex-global-text-on-neutral-color: var(
-        --TEMPLATE_text_on_neutral_color
-    );
-
-    --reflex-corner-radius: var(--TEMPLATE_corner_radius);
-
-    // Expose the theme colors to the material widgets
-    --mdc-theme-primary: var(--reflex-global-primary-color);
-    --mdc-theme-secondary: var(--reflex-global-accent-color);
-    --mdc-theme-background: var(--reflex-background-color);
-
-    --mdc-theme-on-primary: var(--reflex-global-text-on-neutral-color);
-    --mdc-theme-on-secondary: var(--reflex-global-text-on-neutral-color);
-    --mdc-theme-on-surface: var(--reflex-global-text-on-neutral-color);
-}
+// Not visible here:
+//
+// JavaScript sets global theming variables, of the form `--reflex-global-...`.
 
 // Theme Switcheroos
 .reflex-switcheroo-primary {
@@ -67,27 +24,115 @@
     );
 
     // Text styles
-    --reflex-local-text-color: var(
-        --reflex-global-text-on-neutral-color
-    );
+    --reflex-local-text-color: var(--reflex-global-text-on-accent-color);
+
+    // Material Design Web
+    // TODO
 }
 
-.reflex-switcheroo-neutral {
+.reflex-switcheroo-accent {
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-primary-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-global-primary-color-variant
+    );
 
     // Text styles
-    --reflex-local-text-color: var(
-        --reflex-global-text-on-neutral-color
+    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.reflex-switcheroo-success {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-global-success-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-global-success-color-variant
     );
+
+    // Text styles
+    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.reflex-switcheroo-warning {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-global-warning-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-global-warning-color-variant
+    );
+
+    // Text styles
+    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.reflex-switcheroo-danger {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-global-danger-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-global-danger-color-variant
+    );
+
+    // Text styles
+    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.reflex-switcheroo-surface {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-global-accent-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-global-accent-color-variant
+    );
+
+    // Text styles
+    --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
+
+    // Material Design Web
+    --mdc-theme-primary: var(--reflex-global-accent-color);
+    --mdc-theme-secondary: var(--reflex-global-accent-color-variant);
+    --mdc-theme-surface: var(--reflex-global-surface-color);
+    --mdc-theme-background: var(--reflex-global-background-color);
+
+    --mdc-theme-on-primary: var(--reflex-global-text-on-surface-color);
+    --mdc-theme-on-secondary: var(--reflex-global-text-on-surface-color);
+    --mdc-theme-on-surface: var(--reflex-global-text-on-surface-color);
 }
 
 .reflex-switcheroo-disabled {
     // Theme colors
-    --reflex-local-accent-color: #777777;
+    --reflex-local-accent-color: var(--reflex-global-disabled-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-global-disabled-color-variant
+    );
 
     // Text styles
-    --reflex-local-text-color: #aaaaaa;
+    --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.reflex-switcheroo-custom {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-local-custom-color);
+    --reflex-local-accent-color-variant: var(
+        --reflex-local-custom-color-variant
+    );
+
+    // Text styles
+    --reflex-local-text-color: var(--reflex-local-custom-text-color);
+
+    // Material Design Web
+    // TODO
 }
 
 // General
@@ -193,13 +238,13 @@ body {
     height: 1.548em;
     margin: auto;
     border-radius: 4.3em;
-    background-color: var(--reflex-disabled-color-variant);
+    background-color: var(--reflex-global-disabled-color-variant);
     transition: 0.3s ease all;
     z-index: 1;
 }
 
 .reflex-switch.is-on .container {
-    background-color: var(--reflex-disabled-color);
+    background-color: var(--reflex-local-accent-color-variant);
 }
 
 .reflex-switch input {
@@ -221,7 +266,7 @@ body {
     width: 0.86em;
     height: 0.43em;
     padding: 0.387em 0.172em;
-    background-color: var(--reflex-local-accent-color-variant);
+    background-color: var(--reflex-global-disabled-color);
     border-radius: 50%;
     transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
 }
@@ -244,7 +289,7 @@ body {
 .reflex-dropdown {
     min-height: 2rem;
 
-    background-color: var(--reflex-neutral-contrast-color);
+    background-color: var(--reflex-surface-contrast-color);
     color: black;
     caret-color: var(--reflex-local-accent-color);
 
@@ -257,7 +302,7 @@ body {
 }
 
 .reflex-dropdown:hover {
-    background-color: var(--reflex-neutral-color);
+    background-color: var(--reflex-surface-color);
     border: 1.5px solid var(--reflex-local-accent-color);
 }
 
@@ -324,42 +369,36 @@ body {
 .reflex-button {
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
-
-    // @include ripple.surface;
-    // @include ripple.radius-bounded;
-    // @include ripple.states;
-
-    // overflow: hidden;
 }
 
 .reflex-buttonstyle-major {
     background: var(--reflex-local-accent-color);
-    color: var(--local-text-color);
 }
 
 .reflex-buttonstyle-major:hover:not(.reflex-switcheroo-disabled) {
     background: var(--reflex-local-accent-color);
-    color: var(--local-text-color);
     cursor: pointer;
 }
 
 .reflex-buttonstyle-minor {
-    color: var(--reflex-local-accent-color);
     outline: 0.15em solid var(--reflex-local-accent-color);
 }
 
 .reflex-buttonstyle-minor:hover:not(.reflex-switcheroo-disabled) {
-    color: var(--local-text-color);
     background: var(--reflex-local-accent-color);
     cursor: pointer;
 }
 
-.reflex-shape-rounded {
-    border-radius: 9999px;
+.reflex-shape-pill {
+    border-radius: 99999px;
 }
 
-.reflex-shape-rectangular {
+.reflex-shape-rounded {
     border-radius: var(--reflex-global-corner-radius);
+}
+
+.reflex-shape-rectangle {
+    border-radius: 0; // Not necessary, just for consistency
 }
 
 .reflex-shape-circle {

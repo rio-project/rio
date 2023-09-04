@@ -1,5 +1,19 @@
 export type Color = [number, number, number, number];
 
+export type ColorSpec =
+    | 'primary'
+    | 'accent'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'disabled'
+    | 'disabled'
+    | {
+          color: Color;
+          colorVariant: Color;
+          textColor: Color;
+      };
+
 export type Fill =
     | {
           type: 'solid';

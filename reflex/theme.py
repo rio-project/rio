@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
+from uniserde import Jsonable
+
 import reflex as rx
 
 from . import color
@@ -17,8 +19,8 @@ __all__ = [
 def _make_variant_color(base: rx.Color) -> rx.Color:
     return rx.Color.from_hsv(
         base.hue,
-        base.saturation * 0.8,
-        base.value,
+        base.saturation * 0.5,
+        min(base.value * 1.5, 1),
     )
 
 
@@ -34,12 +36,12 @@ class Theme:
     accent_color_variant: rx.Color
     disabled_color_variant: rx.Color
 
-    # Neutral colors are often used for backgrounds. Most widgets are placed on
-    # top of the neutral color.
+    # surface colors are often used for backgrounds. Most widgets are placed on
+    # top of the surface color.
     background_color: rx.Color
-    neutral_color: rx.Color
-    neutral_contrast_color: rx.Color
-    neutral_active_color: rx.Color
+    surface_color: rx.Color
+    surface_contrast_color: rx.Color
+    surface_active_color: rx.Color
 
     # Semantic colors express a meaning, such as positive or negative outcomes
     success_color: rx.Color
@@ -64,9 +66,9 @@ class Theme:
     subheading_on_accent_style: rx.TextStyle
     text_on_accent_style: rx.TextStyle
 
-    heading_on_neutral_style: rx.TextStyle
-    subheading_on_neutral_style: rx.TextStyle
-    text_on_neutral_style: rx.TextStyle
+    heading_on_surface_style: rx.TextStyle
+    subheading_on_surface_style: rx.TextStyle
+    text_on_surface_style: rx.TextStyle
 
     def __init__(
         self,
@@ -77,10 +79,11 @@ class Theme:
     ) -> None:
         # Impute defaults
         if primary_color is None:
+            # Consider "ee3f59"
             primary_color = rx.Color.from_hex("c202ee")
 
         if accent_color is None:
-            accent_color = rx.Color.from_hex("ee3f59")
+            accent_color = rx.Color.from_hex("329afc")
 
         # Main theme colors
         self.primary_color = primary_color
@@ -96,14 +99,14 @@ class Theme:
         # dark
         if light:
             self.background_color = rx.Color.from_grey(1.0)
-            self.neutral_color = rx.Color.from_grey(0.98).blend(primary_color, 0.02)
-            self.neutral_contrast_color = self.neutral_color.darker(0.02)
-            self.neutral_active_color = self.neutral_color.blend(primary_color, 0.05)
+            self.surface_color = rx.Color.from_grey(0.98).blend(primary_color, 0.02)
+            self.surface_contrast_color = self.surface_color.darker(0.02)
+            self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
         else:
-            background_color = rx.Color.from_grey(0.12)
-            neutral_color = rx.Color.from_grey(0.19).blend(primary_color, 0.02)
-            neutral_contrast_color = neutral_color.darker(0.06)
-            neutral_active_color = neutral_color.blend(primary_color, 0.05)
+            self.background_color = rx.Color.from_grey(0.12)
+            self.surface_color = rx.Color.from_grey(0.19).blend(primary_color, 0.02)
+            self.surface_contrast_color = self.surface_color.darker(0.06)
+            self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
 
         # Semantic colors
         self.success_color = rx.Color.from_hex("66bb6a")
@@ -130,7 +133,7 @@ class Theme:
 
         font_color_on_primary = primary_color.contrasting(0.8)
         font_color_on_accent = accent_color.contrasting(0.8)
-        font_color_on_neutral = self.neutral_color.contrasting(0.8)
+        font_color_on_surface = self.surface_color.contrasting(0.8)
 
         # Fill in the text styles
         self.heading_on_primary_style = heading_style.replace(
@@ -151,12 +154,24 @@ class Theme:
         )
         self.text_on_accent_style = text_style.replace(font_color=font_color_on_accent)
 
-        self.heading_on_neutral_style = heading_style.replace(
-            font_color=font_color_on_neutral
+        self.heading_on_surface_style = heading_style.replace(
+            font_color=font_color_on_surface
         )
-        self.subheading_on_neutral_style = subheading_style.replace(
-            font_color=font_color_on_neutral
+        self.subheading_on_surface_style = subheading_style.replace(
+            font_color=font_color_on_surface
         )
-        self.text_on_neutral_style = text_style.replace(
-            font_color=font_color_on_neutral
+        self.text_on_surface_style = text_style.replace(
+            font_color=font_color_on_surface
         )
+
+    def _serialize_colorspec(self, color: color.ColorSpec) -> Jsonable:
+        # If the color is a string, just pass it through
+        if isinstance(color, str):
+            return color
+
+        # If it is a custom color, return it, along with related ones
+        return {
+            "color": color.rgba,
+            "colorVariant": _make_variant_color(color).rgba,
+            "textColor": color.contrasting(0.8).rgba,
+        }

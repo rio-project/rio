@@ -1,12 +1,15 @@
 import { replaceOnlyChild } from './app';
+import { applyColorSpec } from './design_application';
+import { ColorSpec } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { MDCRipple } from '@material/ripple';
 
 export type ButtonState = WidgetState & {
     _type_: 'Button-builtin';
-    shape: 'rounded' | 'rectangular' | 'circle';
+    shape: 'pill' | 'rounded' | 'rectangle' | 'circle';
+    style: 'major' | 'minor';
+    color: ColorSpec;
     child?: number | string;
-    is_major: boolean;
     is_sensitive: boolean;
 };
 
@@ -46,20 +49,12 @@ export class ButtonWidget extends WidgetBase {
     updateElement(element: HTMLElement, deltaState: ButtonState): void {
         replaceOnlyChild(element, deltaState.child);
 
-        // Set the style
-        if (deltaState.is_major == true) {
-            element.classList.add('reflex-buttonstyle-major');
-            element.classList.remove('reflex-buttonstyle-minor');
-        } else if (deltaState.is_major == false) {
-            element.classList.add('reflex-buttonstyle-minor');
-            element.classList.remove('reflex-buttonstyle-major');
-        }
-
         // Set the shape
         if (deltaState.shape !== undefined) {
             element.classList.remove(
+                'reflex-shape-pill',
                 'reflex-shape-rounded',
-                'reflex-shape-rectangular',
+                'reflex-shape-rectangle',
                 'reflex-shape-circle'
             );
 
@@ -67,11 +62,27 @@ export class ButtonWidget extends WidgetBase {
             element.classList.add(className);
         }
 
-        // Switch the style based on sensitivity
-        if (deltaState.is_sensitive === true) {
-            element.classList.remove('reflex-switcheroo-disabled');
-        } else if (deltaState.is_sensitive === false) {
-            element.classList.add('reflex-switcheroo-disabled');
+        // Set the style
+        if (deltaState.style !== undefined) {
+            element.classList.remove(
+                'reflex-buttonstyle-major',
+                'reflex-buttonstyle-minor'
+            );
+
+            let className = 'reflex-buttonstyle-' + deltaState.style;
+            element.classList.add(className);
+        }
+
+        // Apply the color
+        let is_sensitive: boolean =
+            deltaState.is_sensitive || this.state['is_sensitive'];
+
+        let color = is_sensitive ? deltaState.color : 'disabled';
+
+        console.log('BUTTON', is_sensitive, deltaState.is_sensitive, color);
+
+        if (color !== undefined) {
+            applyColorSpec(element, color);
         }
 
         // The slider stores the coordinates of its rectangle. Since reflex

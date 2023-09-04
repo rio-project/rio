@@ -44,7 +44,7 @@ class Plot(widget_base.HtmlWidget):
         if self.style is None:
             thm = self.session.attachments[rx.Theme]
             box_style = rx.BoxStyle(
-                fill=thm.neutral_contrast_color,
+                fill=thm.surface_contrast_color,
                 corner_radius=thm.corner_radius,
             )
         else:

@@ -8,13 +8,13 @@ import reflex as rx
 theme = rx.Theme()
 
 CARD_STYLE = rx.BoxStyle(
-    fill=theme.neutral_color,
+    fill=theme.surface_color,
     corner_radius=theme.corner_radius,
     # shadow_color=theme.active_color.replace(opacity=0.1),
 )
 
 CARD_STYLE_HOVER = CARD_STYLE.replace(
-    fill=theme.neutral_active_color,
+    fill=theme.surface_active_color,
     # shadow_radius=2.5,
 )
 
@@ -105,16 +105,17 @@ class Sidebar(rx.Widget):
                     on_confirm=lambda evt: print("secret-confirm:", evt.text),
                 ),
                 rx.Button(
-                    "Button",
+                    "Login?",
                     # icon="bootstrap/zoom-out",
+                    style="minor",
                     margin_x=1.0,
                     margin_top=1.0,
                     is_sensitive=bool(self.search_text),
-                    color=rx.Color.BLACK if bool(self.search_text) else rx.Color.RED,
                 ),
                 rx.ProgressCircle(
                     progress=None,
                     margin_top=1.0,
+                    color="success",
                 ),
                 KeyEventTester(),
                 # rx.Icon(
@@ -136,9 +137,27 @@ class Sidebar(rx.Widget):
                 rx.Button(
                     "Foo",
                     on_press=lambda _: print("Button Pressed"),
-                    # shape="rectangular",
-                    is_major=True,
+                    shape="pill",
+                    style="major",
                     # is_loading=True,
+                ),
+                rx.Button(
+                    "Bar",
+                    shape="rounded",
+                    color="danger",
+                ),
+                rx.Button(
+                    "Baz",
+                    shape="rectangle",
+                    color="warning",
+                ),
+                rx.Button(
+                    "Spam",
+                    shape="circle",
+                    color=rx.Color.CYAN,
+                    width=8,
+                    height=8,
+                    align_x=0.5,
                 ),
                 rx.ProgressBar(0.4),
                 rx.ProgressBar(None),
@@ -201,7 +220,7 @@ class WidgetShowcase(rx.Widget):
                     width="grow",
                 ),
             ),
-            style=rx.BoxStyle(fill=theme.neutral_color),
+            style=rx.BoxStyle(fill=theme.surface_color),
         )
 
 
@@ -225,12 +244,13 @@ rx_app = rx.App(
 
 if __name__ == "__main__":
     rx_app.run_as_web_server(
-        external_url=f"http://localhost:8000",
+        port=8001,
+        external_url=f"http://localhost:8001",
         quiet=False,
         _validator_factory=validator_factory,
     )
 else:
     app = rx_app.as_fastapi(
-        external_url=f"http://localhost:8000",
+        external_url=f"http://localhost:8001",
         _validator_factory=validator_factory,
     )
