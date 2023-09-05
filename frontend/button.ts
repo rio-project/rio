@@ -1,6 +1,6 @@
 import { replaceOnlyChild } from './app';
-import { applyColorSpec } from './design_application';
-import { ColorSpec } from './models';
+import { applyColorSet } from './design_application';
+import { ColorSet } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { MDCRipple } from '@material/ripple';
 
@@ -8,7 +8,7 @@ export type ButtonState = WidgetState & {
     _type_: 'Button-builtin';
     shape: 'pill' | 'rounded' | 'rectangle' | 'circle';
     style: 'major' | 'minor';
-    color: ColorSpec;
+    color: ColorSet;
     child?: number | string;
     is_sensitive: boolean;
 };
@@ -80,7 +80,7 @@ export class ButtonWidget extends WidgetBase {
         let color = is_sensitive ? deltaState.color : 'disabled';
 
         if (color !== undefined) {
-            applyColorSpec(element, color);
+            applyColorSet(element, color);
         }
 
         // The slider stores the coordinates of its rectangle. Since reflex

@@ -10,7 +10,7 @@ import reflex as rx
 
 __all__ = [
     "Color",
-    "ColorSpec",
+    "ColorSet",
 ]
 
 
@@ -157,6 +157,23 @@ class Color:
     @property
     def value(self) -> float:
         return self.hsv[2]
+
+    @property
+    def perceived_brightness(self) -> float:
+        """
+        Calculate how bright a human would perceive this color to be. 0 is
+        full black, 1 is full white.
+        """
+
+        # Account for the nonlinearity of human vision / gamma / sRGB
+        red_linear = self.red**2.2
+        green_linear = self.green**2.2
+        blue_linear = self.blue**2.2
+
+        # Calculate the perceived brightness
+        brightness = 0.299 * red_linear + 0.587 * green_linear + 0.114 * blue_linear
+
+        return brightness
 
     @property
     def hex(self) -> str:
@@ -356,7 +373,7 @@ Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)
 
 
 # Like color, but also allows referencing theme colors
-ColorSpec: TypeAlias = Union[
+ColorSet: TypeAlias = Union[
     Literal[
         "primary",
         "accent",
@@ -369,5 +386,5 @@ ColorSpec: TypeAlias = Union[
 
 
 # Cache so the session can quickly determine whether a type annotation is
-# `ColorSpec`
-_color_spec_args = set(get_args(ColorSpec))
+# `ColorSet`
+_color_spec_args = set(get_args(ColorSet))

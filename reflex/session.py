@@ -499,10 +499,10 @@ class Session(unicall.Unicall):
         if isinstance(value, self_serializing.SelfSerializing):
             return value._serialize(self._app_server)
 
-        # ColorSpec
+        # ColorSet
         if origin is Union and set(args) == color._color_spec_args:
             thm = self.attachments[theme.Theme]
-            return thm._serialize_colorspec(value)
+            return thm._serialize_colorset(value)
 
         # Optional
         if origin is Union and len(args) == 2 and type(None) in args:

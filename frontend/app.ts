@@ -853,7 +853,7 @@ function displayConnectionLostPopup() {
     popup.style.backgroundColor = '#ffffff';
     popup.style.fontWeight = 'bold';
     popup.style.padding = '1.5em';
-    popup.style.borderRadius = '1em';
+    popup.style.borderRadius = '99999px';
 
     document.body.appendChild(popup);
 }

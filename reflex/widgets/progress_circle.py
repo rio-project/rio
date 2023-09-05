@@ -15,13 +15,13 @@ __all__ = [
 class ProgressCircle(widget_base.HtmlWidget):
     _: KW_ONLY
     progress: Optional[float]
-    color: rx.ColorSpec
+    color: rx.ColorSet
 
     def __init__(
         self,
         *,
         progress: Optional[float] = None,
-        color: rx.ColorSpec = "primary",
+        color: rx.ColorSet = "primary",
         size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,

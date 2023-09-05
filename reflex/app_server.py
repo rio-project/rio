@@ -68,7 +68,7 @@ def _build_set_theme_variables_message(thm: rx.Theme):
         "disabled_color_variant",
         "background_color",
         "surface_color",
-        "surface_contrast_color",
+        "surface_color_variant",
         "surface_active_color",
         "success_color",
         "warning_color",

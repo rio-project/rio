@@ -29,7 +29,7 @@ class Button(widget_base.Widget):
     child: Optional[rx.Widget] = None
     shape: Literal["pill", "rounded", "rectangle", "circle"] = "pill"
     style: Literal["major", "minor"] = "major"
-    color: rx.ColorSpec = "primary"
+    color: rx.ColorSet = "primary"
     is_sensitive: bool = True
     is_loading: bool = False
 
@@ -40,6 +40,7 @@ class Button(widget_base.Widget):
                 size=1.5,
                 align_x=0.5,
                 margin=0.3,
+                color='accent',
             )
         else:
             children = []
@@ -90,7 +91,7 @@ class _ButtonInternal(widget_base.HtmlWidget):
     child: rx.Widget
     shape: Literal["pill", "rounded", "rectangle", "circle"]
     style: Literal["major", "minor"]
-    color: rx.ColorSpec
+    color: rx.ColorSet
     is_sensitive: bool
 
     async def _on_message(self, msg: Any) -> None:

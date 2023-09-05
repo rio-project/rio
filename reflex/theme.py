@@ -40,7 +40,7 @@ class Theme:
     # top of the surface color.
     background_color: rx.Color
     surface_color: rx.Color
-    surface_contrast_color: rx.Color
+    surface_color_variant: rx.Color
     surface_active_color: rx.Color
 
     # Semantic colors express a meaning, such as positive or negative outcomes
@@ -58,6 +58,9 @@ class Theme:
     base_spacing: float
 
     # Text styles
+    text_color_on_light: rx.Color
+    text_color_on_dark: rx.Color
+
     heading_on_primary_style: rx.TextStyle
     subheading_on_primary_style: rx.TextStyle
     text_on_primary_style: rx.TextStyle
@@ -94,7 +97,7 @@ class Theme:
         # Main theme colors
         self.primary_color = primary_color
         self.accent_color = accent_color
-        self.disabled_color = rx.Color.from_grey(0.5)
+        self.disabled_color = rx.Color.from_grey(0.6)
 
         # Create variants for them
         self.primary_color_variant = _make_variant_color(primary_color)
@@ -106,12 +109,12 @@ class Theme:
         if light:
             self.background_color = rx.Color.from_grey(1.0)
             self.surface_color = rx.Color.from_grey(0.98).blend(primary_color, 0.02)
-            self.surface_contrast_color = self.surface_color.darker(0.02)
+            self.surface_color_variant = self.surface_color.darker(0.02)
             self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
         else:
             self.background_color = rx.Color.from_grey(0.12)
             self.surface_color = rx.Color.from_grey(0.19).blend(primary_color, 0.02)
-            self.surface_contrast_color = self.surface_color.darker(0.06)
+            self.surface_color_variant = self.surface_color.darker(0.06)
             self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
 
         # Semantic colors
@@ -140,6 +143,10 @@ class Theme:
         self.corner_radius = corner_radius
         self.base_spacing = base_spacing
 
+        # Text styles
+        self.text_color_on_light = rx.Color.from_grey(0.1)
+        self.text_color_on_dark = rx.Color.from_grey(0.9)
+
         # Prepare values which are referenced later
         heading_style = rx.TextStyle(
             font_color=rx.Color.MAGENTA,  # Placeholder, replaced later
@@ -148,9 +155,9 @@ class Theme:
         subheading_style = heading_style.replace(font_size=1.5)
         text_style = heading_style.replace(font_size=1.25)
 
-        font_color_on_primary = primary_color.contrasting(0.8)
-        font_color_on_accent = accent_color.contrasting(0.8)
-        font_color_on_surface = self.surface_color.contrasting(0.8)
+        font_color_on_primary = self.text_color_for(self.primary_color)
+        font_color_on_accent = self.text_color_for(self.accent_color)
+        font_color_on_surface = self.text_color_for(self.surface_color)
 
         # Fill in the text styles
         self.heading_on_primary_style = heading_style.replace(
@@ -181,7 +188,17 @@ class Theme:
             font_color=font_color_on_surface
         )
 
-    def _serialize_colorspec(self, color: color.ColorSpec) -> Jsonable:
+    def text_color_for(self, color: rx.Color) -> rx.Color:
+        """
+        Given the color of a background, return which color should be used for
+        text on top of it.
+        """
+        if color.perceived_brightness > 0.5:
+            return self.text_color_on_light
+        else:
+            return self.text_color_on_dark
+
+    def _serialize_colorset(self, color: color.ColorSet) -> Jsonable:
         # If the color is a string, just pass it through
         if isinstance(color, str):
             return color
@@ -190,5 +207,5 @@ class Theme:
         return {
             "color": color.rgba,
             "colorVariant": _make_variant_color(color).rgba,
-            "textColor": color.contrasting(0.8).rgba,
+            "textColor": self.text_color_for(color).rgba,
         }

@@ -5,7 +5,7 @@ import { WidgetBase, WidgetState } from './widgetBase';
 export type TextState = WidgetState & {
     text?: string;
     multiline?: boolean;
-    style?: TextStyle;
+    style?: TextStyle | null;
 };
 
 export class TextWidget extends WidgetBase {
@@ -31,7 +31,24 @@ export class TextWidget extends WidgetBase {
                 : 'nowrap';
         }
 
-        if (deltaState.style !== undefined) {
+        // Text style: No change
+        if (deltaState.style === undefined) {
+        }
+        // Default style for this environment
+        else if (deltaState.style === null) {
+            // Remove properties that can't be inherited (as of yet)
+            textElement.style.removeProperty('font-family');
+            textElement.style.removeProperty('font-size');
+            textElement.style.removeProperty('font-style');
+            textElement.style.removeProperty('font-weight');
+            textElement.style.removeProperty('text-decoration');
+            textElement.style.removeProperty('text-transform');
+
+            // Set the others from variables
+            textElement.style.color = 'var(--reflex-local-text-color)';
+        }
+        // Explicit style
+        else {
             const style = deltaState.style;
             textElement.style.fontFamily = style.fontName;
             textElement.style.color = colorToCss(style.fontColor);

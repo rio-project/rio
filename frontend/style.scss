@@ -147,7 +147,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: Roboto, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     background: var(--reflex-background-color);
 }
 
@@ -302,16 +302,16 @@ body {
 
 // Dropdown
 .reflex-dropdown {
-    min-height: 2rem;
+    min-height: 2em;
 
-    background-color: var(--reflex-global-surface-contrast-color);
+    background-color: var(--reflex-global-surface-color-variant);
     color: var(--reflex-local-text-color);
     caret-color: var(--reflex-local-accent-color);
 
     border-radius: var(--reflex-global-corner-radius);
     border: 1.5px solid transparent;
 
-    padding: 0.3rem 0.5rem;
+    padding: 0.3em 0.5em;
     text-align: center;
     outline: none;
 }
@@ -386,9 +386,14 @@ body {
         color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
 
-    // Ripple
-    overflow: hidden;
+    overflow: hidden; // Needed for the ripple effect
+}
 
+.reflex-button > * {
+    min-height: 2.2rem;
+}
+
+.reflex-button:not(.reflex-switcheroo-disabled) {
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
@@ -396,6 +401,7 @@ body {
 
 .reflex-buttonstyle-major {
     background: var(--reflex-local-accent-color);
+    font-weight: bold;
 }
 
 .reflex-buttonstyle-major:hover:not(.reflex-switcheroo-disabled) {
@@ -405,10 +411,12 @@ body {
 
 .reflex-buttonstyle-minor {
     outline: 0.15em solid var(--reflex-local-accent-color);
+    --reflex-local-text-color: var(--reflex-local-accent-color);
 }
 
 .reflex-buttonstyle-minor:hover:not(.reflex-switcheroo-disabled) {
     background: var(--reflex-local-accent-color);
+    --reflex-local-text-color: var(--reflex-local-text-color);
     cursor: pointer;
 }
 

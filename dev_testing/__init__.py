@@ -133,7 +133,7 @@ class Sidebar(rx.Widget):
                     on_press=lambda _: print("Button Pressed"),
                     shape="pill",
                     style="major",
-                    # is_loading=True,
+                    is_loading=True,
                 ),
                 rx.Button(
                     "Bar",
@@ -168,7 +168,6 @@ class Sidebar(rx.Widget):
                     round_to_integer=True,
                     decimals=4,
                 ),
-                rx.Text("❤"),
                 rx.Rectangle(
                     style=rx.BoxStyle(fill=rx.Color.YELLOW),
                     ripple=True,

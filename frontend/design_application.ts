@@ -1,6 +1,6 @@
-import { Color, ColorSpec, Fill } from './models';
+import { Color, ColorSet, Fill } from './models';
 
-export function applyColorSpec(element: HTMLElement, color: ColorSpec): void {
+export function applyColorSet(element: HTMLElement, color: ColorSet): void {
     let switcheroo;
 
     // Is this a color instance?
