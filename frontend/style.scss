@@ -294,8 +294,8 @@ body {
 .reflex-dropdown {
     min-height: 2rem;
 
-    background-color: var(--reflex-surface-contrast-color);
-    color: black;
+    background-color: var(--reflex-global-surface-contrast-color);
+    color: var(--reflex-local-text-color);
     caret-color: var(--reflex-local-accent-color);
 
     border-radius: var(--reflex-global-corner-radius);
@@ -307,7 +307,6 @@ body {
 }
 
 .reflex-dropdown:hover {
-    background-color: var(--reflex-surface-color);
     border: 1.5px solid var(--reflex-local-accent-color);
 }
 
