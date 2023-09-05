@@ -3,6 +3,7 @@ import { ButtonWidget } from './button';
 import { Color, Fill } from './models';
 import { ColumnWidget } from './column';
 import { DropdownWidget } from './dropdown';
+import { GridWidget } from './grid';
 import { IconWidget } from './Icon';
 import { KeyEventListenerWidget } from './keyEventListener';
 import { MarginWidget } from './margin';
@@ -10,8 +11,10 @@ import { MediaPlayerWidget } from './mediaPlayer';
 import { MouseEventListenerWidget } from './mouseEventListener';
 import { PlaceholderWidget } from './placeholder';
 import { PlotWidget } from './plot';
+import { ProgressBarWidget } from './progressBar';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
+import { RevealerWidget } from './revealer';
 import { RowWidget } from './row';
 import { SliderWidget } from './Slider';
 import { StackWidget } from './stack';
@@ -19,8 +22,6 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { ProgressBarWidget } from './progressBar';
-import { GridWidget } from './grid';
 
 const sessionToken = '{session_token}';
 
@@ -163,6 +164,7 @@ const widgetClasses = {
     'ProgressBar-builtin': ProgressBarWidget,
     'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
+    'Revealer-builtin': RevealerWidget,
     'Row-builtin': RowWidget,
     'Slider-builtin': SliderWidget,
     'Stack-builtin': StackWidget,

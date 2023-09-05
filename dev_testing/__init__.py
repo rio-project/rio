@@ -67,6 +67,7 @@ Held keys: {self.event.held_keys}'''),
 
 class Sidebar(rx.Widget):
     search_text: str = ""
+    expanded: bool = False
 
     def build(self) -> rx.Widget:
         return Card(
@@ -167,6 +168,15 @@ class Sidebar(rx.Widget):
                     "Number",
                     round_to_integer=True,
                     decimals=4,
+                ),
+                rx.Revealer(
+                    "Revealer",
+                    rx.Text("Hello World"),
+                    on_change=lambda evt: print("Revealer Changed:", evt.is_expanded),
+                    is_expanded=Sidebar.expanded,
+                ),
+                rx.Switch(
+                    is_on=Sidebar.expanded,
                 ),
                 rx.Rectangle(
                     style=rx.BoxStyle(fill=rx.Color.YELLOW),

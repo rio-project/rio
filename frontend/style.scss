@@ -420,6 +420,7 @@ body {
     cursor: pointer;
 }
 
+// Shapes
 .reflex-shape-pill {
     border-radius: 99999px;
 }
@@ -434,4 +435,43 @@ body {
 
 .reflex-shape-circle {
     border-radius: 50%;
+}
+
+// Revealer
+.reflex-revealer {
+    background: orange;
+    border-radius: 1em;
+    padding: 0.5em;
+}
+
+.expanded,
+.reflex-revealer:hover {
+    background-color: yellow;
+}
+
+.reflex-revealer-header {
+    cursor: pointer;
+    padding: 0.7em;
+    width: 100%;
+    text-align: left;
+}
+
+.reflex-revealer-content-outer {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.1s ease-in-out;
+    background-color: #f1f1f1;
+}
+
+.reflex-revealer-content-inner {
+    transform: translateY(0px);
+    opacity: 1;
+    padding: 1em;
+    transition: transform 0.2s ease;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.reflex-revealer-content-inner:hover {
+    opacity: 0;
 }

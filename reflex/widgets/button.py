@@ -40,7 +40,7 @@ class Button(widget_base.Widget):
                 size=1.5,
                 align_x=0.5,
                 margin=0.3,
-                color='accent',
+                color="accent",
             )
         else:
             children = []
@@ -60,6 +60,7 @@ class Button(widget_base.Widget):
                 children.append(
                     rx.Text(
                         stripped_text,
+                        height=1.5,
                         width="grow",
                     )
                 )

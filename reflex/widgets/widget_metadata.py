@@ -17,7 +17,7 @@ CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "ProgressBar-builtin": set(),
     "ProgressCircle-builtin": set(),
     "Rectangle-builtin": {"child"},
-    "Revealer-builtin": set(),
+    "Revealer-builtin": {"child"},
     "Row-builtin": {"children"},
     "Slider-builtin": set(),
     "Stack-builtin": {"children"},

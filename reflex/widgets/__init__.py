@@ -10,6 +10,7 @@ from .image import *
 from .key_event_listener import *
 from .markdown_view import *
 from .media_player import *
+from .revealer import *
 from .custom_button import *
 from .mouse_event_listener import *
 from .notification_bar import *
