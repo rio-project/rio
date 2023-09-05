@@ -29,7 +29,7 @@ class Text(widget_base.HtmlWidget):
         # Otherwise fetch and serialize the style from the theme
         thm = self.session.attachments[rx.Theme]
         return {
-            "style": thm.text_on_neutral_style._serialize(server),
+            "style": thm.text_on_surface_style._serialize(server),
         }
 
 

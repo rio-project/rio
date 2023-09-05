@@ -6,6 +6,7 @@ import {
 } from './app';
 import { BoxStyle } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { MDCRipple } from '@material/ripple';
 
 export type RectangleState = WidgetState & {
     _type_: 'Rectangle-builtin';
@@ -14,6 +15,7 @@ export type RectangleState = WidgetState & {
     hover_style?: BoxStyle | null;
     transition_time?: number;
     cursor?: string;
+    ripple?: boolean;
 };
 
 function setBoxStyleVariables(
@@ -72,6 +74,10 @@ function setBoxStyleVariables(
 }
 
 export class RectangleWidget extends WidgetBase {
+    // If this rectangle has a ripple effect, this is the ripple instance.
+    // `null` otherwise.
+    private mdcRipple: MDCRipple | null = null;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-rectangle');
@@ -106,6 +112,35 @@ export class RectangleWidget extends WidgetBase {
             } else {
                 element.style.cursor = deltaState.cursor;
             }
+        }
+
+        if (deltaState.ripple === true) {
+            if (this.mdcRipple === null) {
+                this.mdcRipple = new MDCRipple(element);
+
+                element.classList.add('mdc-ripple-surface');
+            }
+        } else if (deltaState.ripple === false) {
+            if (this.mdcRipple !== null) {
+                this.mdcRipple.destroy();
+                this.mdcRipple = null;
+
+                element.classList.remove('mdc-ripple-surface');
+            }
+        }
+
+        // The ripple effect stores the coordinates of its rectangle. Since
+        // reflex likes to resize and move around widgets, the rectangle must be
+        // updated appropriately.
+        //
+        // Really, this should be done when the widget is resized or moved, but
+        // there is no hook for that. Update seems to work fine.
+        if (this.mdcRipple !== null) {
+            requestAnimationFrame(() => {
+                if (this.mdcRipple !== null) {
+                    this.mdcRipple.layout();
+                }
+            });
         }
     }
 

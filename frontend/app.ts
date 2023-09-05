@@ -31,6 +31,9 @@ const pingPongIntervalSeconds: number = '{ping_pong_interval}';
 const CHILD_ATTRIBUTE_NAMES: { [id: string]: string[] } =
     '{child_attribute_names}';
 
+// @ts-ignore
+const INITIAL_MESSAGES: Array<object> = '{initial_messages}';
+
 let socket: WebSocket | null = null;
 export var pixelsPerEm = 16;
 
@@ -190,17 +193,20 @@ async function processMessage(message: any) {
         );
         response = null;
     }
+
     // Allow the server to run JavaScript
     else if (message.method == 'evaluateJavaScript') {
         // Avoid using `eval` so that parceljs can minify the code
         const func = new Function(message.params.javaScriptSource);
         response = await func();
     }
+
     // Upload a file to the server
     else if (message.method == 'requestFileUpload') {
         await requestFileUpload(message.params);
         response = null;
     }
+
     // Persistently store user settings
     else if (message.method == 'setUserSettings') {
         for (let key in message.params.deltaSettings) {
@@ -211,17 +217,31 @@ async function processMessage(message: any) {
         }
         response = null;
     }
+
+    // Set theme variables
+    else if (message.method == 'setThemeVariables') {
+        for (let key in message.params.variables) {
+            document.documentElement.style.setProperty(
+                key,
+                message.params.variables[key]
+            );
+        }
+        response = null;
+    }
+
     // Invalid method
     else {
         throw `Encountered unknown RPC method: ${message.method}`;
     }
 
-    // Respond to the message
-    await sendMessageOverWebsocket({
-        jsonrpc: '2.0',
-        id: message.id,
-        result: response,
-    });
+    // If this is a request, send the response
+    if (message.id !== undefined) {
+        await sendMessageOverWebsocket({
+            jsonrpc: '2.0',
+            id: message.id,
+            result: response,
+        });
+    }
 }
 
 function getCurrentWidgetState(
@@ -726,6 +746,12 @@ function main() {
             id: `ping-${Date.now()}`,
         });
     }, pingPongIntervalSeconds * 1000);
+
+    // Process all initial messages
+    for (let message of INITIAL_MESSAGES) {
+        console.log('Processing initial message: ', message);
+        processMessage(message);
+    }
 }
 
 function onOpen() {

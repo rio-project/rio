@@ -4,6 +4,7 @@ import asyncio
 import copy
 import functools
 import io
+import json
 import logging
 import secrets
 import weakref
@@ -42,6 +43,74 @@ def read_frontend_template(template_name: str) -> str:
 
 class InitialClientMessage(uniserde.Serde):
     user_settings: Dict[str, Any]
+
+
+def _build_set_theme_variables_message(thm: rx.Theme):
+    """
+    Build a message which, when sent to the client, sets the root element's CSS
+    theme variables.
+
+    The result is a valid JSON-RPC message, without an ID set (so don't expect a
+    response).
+    """
+
+    # Build the set of all variables
+    variables: Dict[str, str] = {
+        "--reflex-global-corner-radius": f"{thm.corner_radius}em",
+    }
+
+    color_names = (
+        "primary_color",
+        "accent_color",
+        "disabled_color",
+        "primary_color_variant",
+        "accent_color_variant",
+        "disabled_color_variant",
+        "background_color",
+        "surface_color",
+        "surface_contrast_color",
+        "surface_active_color",
+        "success_color",
+        "warning_color",
+        "danger_color",
+        "success_color_variant",
+        "warning_color_variant",
+        "danger_color_variant",
+    )
+
+    for py_color_name in color_names:
+        css_color_name = f'--reflex-global-{py_color_name.replace("_", "-")}'
+        color = getattr(thm, py_color_name)
+        assert isinstance(color, rx.Color), color
+        variables[css_color_name] = f"#{color.hex}"
+
+    style_names = (
+        "heading_on_primary",
+        "subheading_on_primary",
+        "text_on_primary",
+        "heading_on_accent",
+        "subheading_on_accent",
+        "text_on_accent",
+        "heading_on_surface",
+        "subheading_on_surface",
+        "text_on_surface",
+    )
+
+    for style_name in style_names:
+        style = getattr(thm, f"{style_name}_style")
+        assert isinstance(style, rx.TextStyle), style
+
+        css_prefix = f"--reflex-global-{style_name.replace('_', '-')}"
+        variables[f"{css_prefix}-color"] = f"#{style.font_color.hex}"
+
+    # Wrap in JSON-RPC
+    return {
+        "jsonrpc": "2.0",
+        "method": "setThemeVariables",
+        "params": {
+            "variables": variables,
+        },
+    }
 
 
 class AppServer(fastapi.FastAPI):
@@ -161,58 +230,29 @@ class AppServer(fastapi.FastAPI):
             if isinstance(thm, rx.Theme):
                 break
         else:
-            thm = rx.Theme.default()
+            thm = rx.Theme()
 
-        # Expose the theme colors via CSS
-        css_replacements: Dict[str, str] = {
-            "corner_radius": f"{thm.corner_radius}em",
-        }
+        # Create a list of initial messages for the client to process
+        initial_messages = [
+            _build_set_theme_variables_message(thm),
+        ]
 
-        color_names = (
-            "primary_color",
-            "accent_color",
-            "background_color",
-            "neutral_color",
-            "neutral_contrast_color",
-            "neutral_active_color",
-            "success_color",
-            "warning_color",
-            "danger_color",
+        # Fill in any placeholders
+        html = html.replace(
+            "{session_token}",
+            session_token,
         )
 
-        for color_name in color_names:
-            color = getattr(thm, color_name)
-            assert isinstance(color, rx.Color), color
-            css_replacements[color_name] = f"#{color.hex}"
-
-        style_names = (
-            "heading_on_primary",
-            "subheading_on_primary",
-            "text_on_primary",
-            "heading_on_accent",
-            "subheading_on_accent",
-            "text_on_accent",
-            "heading_on_neutral",
-            "subheading_on_neutral",
-            "text_on_neutral",
-        )
-
-        for style_name in style_names:
-            style = getattr(thm, f"{style_name}_style")
-            assert isinstance(style, rx.TextStyle), style
-
-            css_replacements[f"{style_name}_color"] = f"#{style.font_color.hex}"
-
-        for rep_name, rep_value in css_replacements.items():
-            rep_name = f"var(--TEMPLATE_{rep_name})"
-            html = html.replace(rep_name, rep_value)
-
-        # Fill in the JavaScript placeholders
-        html = html.replace("{session_token}", session_token)
         html = html.replace(
             '"{child_attribute_names}"',
             widget_metadata.CHILD_ATTRIBUTE_NAMES_JSON,
         )
+
+        html = html.replace(
+            '"{initial_messages}"',
+            json.dumps(initial_messages),
+        )
+
         html = html.replace(
             '"{ping_pong_interval}"',
             str(self.app.ping_pong_interval.total_seconds()),
@@ -526,7 +566,7 @@ class AppServer(fastapi.FastAPI):
                 continue
 
             sess.attachments.add(copy.deepcopy(attachment))
-        
+
         if rx.Theme not in sess.attachments:
             sess.attachments.add(rx.Theme.dark())
 

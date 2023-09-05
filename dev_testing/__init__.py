@@ -5,16 +5,16 @@ import plotly.express as px
 # import bootstrap_icons
 import reflex as rx
 
-theme = rx.Theme.light()
+theme = rx.Theme()
 
 CARD_STYLE = rx.BoxStyle(
-    fill=theme.neutral_color,
+    fill=theme.surface_color,
     corner_radius=theme.corner_radius,
     # shadow_color=theme.active_color.replace(opacity=0.1),
 )
 
 CARD_STYLE_HOVER = CARD_STYLE.replace(
-    fill=theme.neutral_active_color,
+    fill=theme.surface_active_color,
     # shadow_radius=2.5,
 )
 
@@ -131,9 +131,27 @@ class Sidebar(rx.Widget):
                 rx.Button(
                     "Foo",
                     on_press=lambda _: print("Button Pressed"),
-                    # shape="rectangular",
-                    # is_major=False,
-                    is_loading=True,
+                    shape="pill",
+                    style="major",
+                    # is_loading=True,
+                ),
+                rx.Button(
+                    "Bar",
+                    shape="rounded",
+                    color="danger",
+                ),
+                rx.Button(
+                    "Baz",
+                    shape="rectangle",
+                    color="warning",
+                ),
+                rx.Button(
+                    "Spam",
+                    shape="circle",
+                    color=rx.Color.CYAN,
+                    width=8,
+                    height=8,
+                    align_x=0.5,
                 ),
                 rx.ProgressBar(0.4),
                 rx.ProgressBar(None),
@@ -149,6 +167,13 @@ class Sidebar(rx.Widget):
                     "Number",
                     round_to_integer=True,
                     decimals=4,
+                ),
+                rx.Text("❤"),
+                rx.Rectangle(
+                    style=rx.BoxStyle(fill=rx.Color.YELLOW),
+                    ripple=True,
+                    width=10,
+                    height=10,
                 ),
                 spacing=1.0,
                 align_y=0,
@@ -189,7 +214,7 @@ class WidgetShowcase(rx.Widget):
                     width="grow",
                 ),
             ),
-            style=rx.BoxStyle(fill=theme.neutral_color),
+            style=rx.BoxStyle(fill=theme.surface_color),
         )
 
 
@@ -213,12 +238,13 @@ rx_app = rx.App(
 
 if __name__ == "__main__":
     rx_app.run_as_web_server(
-        external_url=f"http://localhost:8000",
+        port=8001,
+        external_url="http://localhost:8001",
         quiet=False,
         _validator_factory=validator_factory,
     )
 else:
     app = rx_app.as_fastapi(
-        external_url=f"http://localhost:8000",
+        external_url="http://localhost:8001",
         _validator_factory=validator_factory,
     )

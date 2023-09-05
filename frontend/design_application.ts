@@ -1,6 +1,46 @@
-import { Color, Fill } from './models';
+import { Color, ColorSpec, Fill } from './models';
 
-export function colorToHex(color: Color): string {
+export function applyColorSpec(element: HTMLElement, color: ColorSpec): void {
+    let switcheroo;
+
+    // Is this a color instance?
+    if (typeof color !== 'string') {
+        // Expose the color as CSS variables
+        element.style.setProperty(
+            '--reflex-local-custom-color',
+            colorToCss(color.color)
+        );
+        element.style.setProperty(
+            '--reflex-local-custom-color-variant',
+            colorToCss(color.colorVariant)
+        );
+        element.style.setProperty(
+            '--reflex-local-custom-color-variant',
+            colorToCss(color.textColor)
+        );
+
+        // Select the custom switcheroo
+        switcheroo = 'custom';
+    } else {
+        switcheroo = color;
+    }
+
+    // Remove all switcheroos
+    element.classList.remove(
+        'reflex-switcheroo-primary',
+        'reflex-switcheroo-accent',
+        'reflex-switcheroo-success',
+        'reflex-switcheroo-warning',
+        'reflex-switcheroo-danger',
+        'reflex-switcheroo-custom',
+        'reflex-switcheroo-disabled'
+    );
+
+    // Add the new switcheroo
+    element.classList.add(`reflex-switcheroo-${switcheroo}`);
+}
+
+export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
 
     const red = Math.round(r * 255)
@@ -19,7 +59,7 @@ export function colorToHex(color: Color): string {
         .toString(16)
         .padStart(2, '0');
 
-    return `${red}${green}${blue}${alpha}`;
+    return `#${red}${green}${blue}${alpha}`;
 }
 
 export function applyFillToSVG(

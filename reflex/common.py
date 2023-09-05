@@ -1,4 +1,3 @@
-import enum
 import hashlib
 import inspect
 import secrets
@@ -7,8 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import fastapi
-import uniserde
 from typing_extensions import Annotated
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)

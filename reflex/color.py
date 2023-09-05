@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import colorsys
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import *  # type: ignore
+
+from typing_extensions import TypeAlias
+from uniserde import Jsonable
+
+import reflex as rx
 
 __all__ = [
     "Color",
+    "ColorSpec",
 ]
 
 
@@ -347,3 +353,21 @@ Color.YELLOW = Color.from_rgb(1.0, 1.0, 0.0)
 Color.PURPLE = Color.from_rgb(0.5, 0.0, 0.5)
 
 Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)
+
+
+# Like color, but also allows referencing theme colors
+ColorSpec: TypeAlias = Union[
+    Literal[
+        "primary",
+        "accent",
+        "success",
+        "warning",
+        "danger",
+    ],
+    Color,
+]
+
+
+# Cache so the session can quickly determine whether a type annotation is
+# `ColorSpec`
+_color_spec_args = set(get_args(ColorSpec))
