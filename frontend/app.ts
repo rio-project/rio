@@ -184,6 +184,7 @@ async function processMessage(message: any) {
 
     // Delegate to the appropriate handler
     let response;
+    let responseIsError = false;
 
     // New widgets received
     if (message.method == 'updateWidgetStates') {
@@ -197,8 +198,17 @@ async function processMessage(message: any) {
     // Allow the server to run JavaScript
     else if (message.method == 'evaluateJavaScript') {
         // Avoid using `eval` so that parceljs can minify the code
-        const func = new Function(message.params.javaScriptSource);
-        response = await func();
+        try {
+            const func = new Function(message.params.javaScriptSource);
+            response = await func();
+
+            if (response === undefined) {
+                response = null;
+            }
+        } catch (e) {
+            response = e.toString();
+            responseIsError = true;
+        }
     }
 
     // Upload a file to the server
@@ -236,11 +246,18 @@ async function processMessage(message: any) {
 
     // If this is a request, send the response
     if (message.id !== undefined) {
-        await sendMessageOverWebsocket({
+        let rpcResponse = {
             jsonrpc: '2.0',
             id: message.id,
-            result: response,
-        });
+        };
+
+        if (responseIsError) {
+            rpcResponse['error'] = response;
+        } else {
+            rpcResponse['result'] = response;
+        }
+
+        await sendMessageOverWebsocket(rpcResponse);
     }
 }
 

@@ -79,8 +79,6 @@ export class ButtonWidget extends WidgetBase {
 
         let color = is_sensitive ? deltaState.color : 'disabled';
 
-        console.log('BUTTON', is_sensitive, deltaState.is_sensitive, color);
-
         if (color !== undefined) {
             applyColorSpec(element, color);
         }
