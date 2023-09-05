@@ -119,6 +119,7 @@ export class RectangleWidget extends WidgetBase {
                 this.mdcRipple = new MDCRipple(element);
 
                 element.classList.add('mdc-ripple-surface');
+                element.classList.add('reflex-rectangle-ripple');
             }
         } else if (deltaState.ripple === false) {
             if (this.mdcRipple !== null) {
@@ -126,6 +127,7 @@ export class RectangleWidget extends WidgetBase {
                 this.mdcRipple = null;
 
                 element.classList.remove('mdc-ripple-surface');
+                element.classList.remove('reflex-rectangle-ripple');
             }
         }
 

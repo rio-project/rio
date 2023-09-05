@@ -69,28 +69,6 @@ class Sidebar(rx.Widget):
     search_text: str = ""
 
     def build(self) -> rx.Widget:
-        nav_button_style = rx.BoxStyle(
-            fill=rx.Color.BLACK,
-            corner_radius=0,
-        )
-
-        nav_button_style_hover = nav_button_style.replace(
-            fill=rx.Color.WHITE,
-        )
-
-        nav_button_style_click = nav_button_style.replace(
-            fill=rx.Color.BLUE,
-        )
-
-        nav_button_text_style = rx.TextStyle(
-            font_color=rx.Color.WHITE,
-            font_weight="bold",
-        )
-
-        nav_button_text_style_hover = nav_button_text_style.replace(
-            font_color=rx.Color.BLACK,
-        )
-
         return Card(
             child=rx.Column(
                 rx.Text(
@@ -174,19 +152,6 @@ class Sidebar(rx.Widget):
                     width=8,
                     height=8,
                     align_x=0.5,
-                ),
-                rx.CustomButton(
-                    text="NavButton",
-                    width=9,
-                    style_default=nav_button_style,
-                    style_hover=nav_button_style_hover,
-                    style_press=nav_button_style_click,
-                    style_insensitive=nav_button_style_hover,  # Never used
-                    text_style_default=nav_button_text_style,
-                    text_style_hover=nav_button_text_style_hover,
-                    text_style_press=nav_button_text_style_hover,
-                    text_style_insensitive=nav_button_text_style,  # Never used
-                    transition_speed=0.1,
                 ),
                 rx.ProgressBar(0.4),
                 rx.ProgressBar(None),

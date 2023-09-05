@@ -213,6 +213,14 @@ body {
         var(--rectangle-shadow-color);
 }
 
+.reflex-rectangle-ripple {
+    overflow: hidden;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
 .reflex-rectangle-hover:hover {
     background: var(--rectangle-background-hover);
     border-color: var(--rectangle-stroke-color-hover);
@@ -273,7 +281,9 @@ body {
     padding: 0.387em 0.172em;
     background-color: var(--reflex-global-disabled-color);
     border-radius: 50%;
-    transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+    transition:
+        0.3s ease all,
+        left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
 }
 
 .reflex-switch input:active + .knob {
@@ -371,8 +381,17 @@ body {
 
 // Button
 .reflex-button {
-    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out,
+    transition:
+        background-color 0.1s ease-in-out,
+        color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
+
+    // Ripple
+    overflow: hidden;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
 }
 
 .reflex-buttonstyle-major {

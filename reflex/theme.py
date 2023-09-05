@@ -75,6 +75,12 @@ class Theme:
         *,
         primary_color: Optional[rx.Color] = None,
         accent_color: Optional[rx.Color] = None,
+        success_color: Optional[rx.Color] = None,
+        warning_color: Optional[rx.Color] = None,
+        danger_color: Optional[rx.Color] = None,
+        outline_width: float = 0.1,
+        corner_radius: float = 0.6,
+        base_spacing: float = 0.5,
         light: bool = True,
     ) -> None:
         # Impute defaults
@@ -109,9 +115,20 @@ class Theme:
             self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
 
         # Semantic colors
-        self.success_color = rx.Color.from_hex("66bb6a")
-        self.warning_color = rx.Color.from_hex("f57c00")
-        self.danger_color = rx.Color.from_hex("93000a")
+        if success_color is None:
+            self.success_color = rx.Color.from_hex("66bb6a")
+        else:
+            self.success_color = success_color
+
+        if warning_color is None:
+            self.warning_color = rx.Color.from_hex("f57c00")
+        else:
+            self.warning_color = warning_color
+
+        if danger_color is None:
+            self.danger_color = rx.Color.from_hex("93000a")
+        else:
+            self.danger_color = danger_color
 
         # Create variants for them
         self.success_color_variant = _make_variant_color(self.success_color)
@@ -119,9 +136,9 @@ class Theme:
         self.danger_color_variant = _make_variant_color(self.danger_color)
 
         # Other
-        self.outline_width = 0.1
-        self.corner_radius = 0.6
-        self.base_spacing = 0.5
+        self.outline_width = outline_width
+        self.corner_radius = corner_radius
+        self.base_spacing = base_spacing
 
         # Prepare values which are referenced later
         heading_style = rx.TextStyle(
