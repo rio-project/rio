@@ -120,7 +120,7 @@ class Theme:
 
         # Other
         self.outline_width = 0.1
-        self.corner_radius = 0.45
+        self.corner_radius = 0.6
         self.base_spacing = 0.5
 
         # Prepare values which are referenced later
