@@ -216,7 +216,7 @@ const HARDWARE_KEY_MAP = {
     'Clear': 'clear',
     'BrightnessUp': 'brightness-up',
     'BrightnessDown': 'brightness-down',
-};
+} as const;
 
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
 const SOFTWARE_KEY_MAP = {
@@ -585,7 +585,7 @@ const SOFTWARE_KEY_MAP = {
     'Divide': 'slash',
     'Subtract': 'minus',
     'Separator': 'separator',
-};
+} as const;
 
 const SPECIAL_INPUTS = {
     'plus': '+',
@@ -608,43 +608,59 @@ const SPECIAL_INPUTS = {
 
     'bracket-left': '[',
     'bracket-right': ']',
+} as const;
+
+
+type ValueOf<T> = T[keyof T];
+
+type HardwareKey = ValueOf<typeof HARDWARE_KEY_MAP>;
+type SoftwareKey = ValueOf<typeof SOFTWARE_KEY_MAP>;
+
+type Key = {
+    hardwareKey: HardwareKey;
+    softwareKey: SoftwareKey;
+    text: string;
 }
 
 
-function encodeEvent(event: KeyboardEvent): object {
-    let hardwareKey: string;
+function encodeKey(event: KeyboardEvent): Key {
+    let hardwareKey: HardwareKey;
     if (event.code in HARDWARE_KEY_MAP){
         hardwareKey = HARDWARE_KEY_MAP[event.code];
     } else {
         console.warn(`Unknown hardware key code: ${event.code}`)
-        hardwareKey = 'Unknown';
+        hardwareKey = 'unknown';
     }
 
-    let softwareKey: string;
+    let softwareKey: SoftwareKey;
     if (event.key in SOFTWARE_KEY_MAP){
         softwareKey = SOFTWARE_KEY_MAP[event.key];
     } else if (event.key.length === 1){
         softwareKey = event.key;
     } else {
         console.warn(`Unknown software key: ${event.key}`)
-        softwareKey = 'Unknown';
+        softwareKey = 'unknown';
     }
 
-    let input: string;
+    let text: string;
     if (event.key.length === 1){
-        input = event.key;
+        text = event.key;
     } else {
-        input = SPECIAL_INPUTS[softwareKey] ?? '';
+        text = SPECIAL_INPUTS[softwareKey] ?? '';
     }
 
     return {
         hardwareKey: hardwareKey,
         softwareKey: softwareKey,
-        input: input,
-        altPressed: event.altKey,
-        ctrlPressed: event.ctrlKey,
-        metaPressed: event.metaKey,
-        shiftPressed: event.shiftKey,
+        text: text,
+    };
+}
+
+
+function encodeEvent(event: KeyboardEvent): object {
+    return {
+        key: encodeKey(event),
+        held_keys: [],  // FIXME: Keep track of currently pressed keys
     };
 }
 

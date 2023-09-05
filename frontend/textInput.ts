@@ -7,8 +7,9 @@ export type TextInputState = WidgetState & {
     placeholder?: string;
     prefix_text?: string;
     suffix_text?: string;
-    secret?: boolean;
+    is_secret?: boolean;
     is_sensitive?: boolean;
+    input_is_valid?: boolean;
 };
 
 export class TextInputWidget extends WidgetBase {
@@ -21,12 +22,12 @@ export class TextInputWidget extends WidgetBase {
         element.classList.add('mdc-text-field--filled');
 
         element.innerHTML = `
-  <span class="mdc-text-field__ripple"></span>
-  <span class="mdc-floating-label"></span>
-  <span class="mdc-text-field__affix mdc-text-field__affix--prefix"></span>
-  <input class="mdc-text-field__input" type="text">
-  <span class="mdc-text-field__affix mdc-text-field__affix--suffix"></span>
-  <span class="mdc-line-ripple"></span>
+<span class="mdc-text-field__ripple"></span>
+<span class="mdc-floating-label"></span>
+<span class="mdc-text-field__affix mdc-text-field__affix--prefix"></span>
+<input class="mdc-text-field__input" type="text">
+<span class="mdc-text-field__affix mdc-text-field__affix--suffix"></span>
+<span class="mdc-line-ripple"></span>
 `;
 
         // Initialize the material design component
@@ -77,13 +78,17 @@ export class TextInputWidget extends WidgetBase {
             this.mdcTextField.suffixText = deltaState.suffix_text;
         }
 
-        if (deltaState.secret !== undefined) {
+        if (deltaState.is_secret !== undefined) {
             let input = element.querySelector('input') as HTMLInputElement;
-            input.type = deltaState.secret ? 'password' : 'text';
+            input.type = deltaState.is_secret ? 'password' : 'text';
         }
 
         if (deltaState.is_sensitive !== undefined) {
             this.mdcTextField.disabled = !deltaState.is_sensitive;
+        }
+
+        if (deltaState.input_is_valid !== undefined) {
+            this.mdcTextField.valid = deltaState.input_is_valid;
         }
     }
 }

@@ -50,17 +50,17 @@ class ShowcaseCard(rx.Widget):
 
 
 class KeyEventTester(rx.Widget):
-    event: rx.KeyDownEvent = rx.KeyDownEvent('Unknown', 'Unknown', '', frozenset())
+    event: rx.KeyDownEvent = rx.KeyDownEvent(rx.Key('unknown', 'unknown', ''), frozenset())
 
     def on_key_down(self, event: rx.KeyDownEvent) -> None:
         self.event = event
 
     def build(self) -> rx.Widget:
         return rx.KeyEventListener(
-            rx.Text(f'''Hardware key: {self.event.hardware_key}
-Software key: {self.event.software_key}
-Input text: {self.event.input_text}
-Modifiers: {self.event.modifiers}'''),
+            rx.Text(f'''Hardware key: {self.event.key.hardware_key}
+Software key: {self.event.key.software_key}
+Input text: {self.event.key.text}
+Held keys: {self.event.held_keys}'''),
             on_key_down=self.on_key_down,
         )
 
@@ -84,36 +84,33 @@ class Sidebar(rx.Widget):
                     style=rx.TextStyle(font_color=theme.primary_color),
                     margin_top=0.6,
                 ),
-                rx.TextInput(
-                    placeholder="Plain",
-                    text=Sidebar.search_text,
-                    prefix_text="prefix",
-                    margin_x=1.0,
-                    margin_top=4.0,
-                    on_change=lambda evt: print("plain-change:", evt.text),
-                    is_sensitive=False,
-                ),
-                rx.TextInput(
-                    placeholder="Secret",
-                    text=Sidebar.search_text,
-                    secret=True,
-                    suffix_text="suffix",
-                    margin_x=1.0,
-                    margin_top=4.0,
-                    on_confirm=lambda evt: print("secret-confirm:", evt.text),
-                ),
-                rx.Button(
-                    "Button",
-                    # icon="bootstrap/zoom-out",
-                    margin_x=1.0,
-                    margin_top=1.0,
-                    is_sensitive=bool(self.search_text),
-                    color=rx.Color.BLACK if bool(self.search_text) else rx.Color.RED,
-                ),
-                rx.ProgressCircle(
-                    progress=None,
-                    margin_top=1.0,
-                ),
+                rx.Grid(
+                [
+                    rx.TextInput(
+                        placeholder="Plain",
+                        text=Sidebar.search_text,
+                        prefix_text="prefix",
+                        on_change=lambda evt: print("plain-change:", evt.text),
+                        is_sensitive=False,
+                    ),
+                    rx.TextInput(
+                        placeholder="Secret",
+                        text=Sidebar.search_text,
+                        is_secret=True,
+                        suffix_text="suffix",
+                        on_confirm=lambda evt: print("secret-confirm:", evt.text),
+                    ),
+                ], [
+                    rx.Button(
+                        "Button",
+                        # icon="bootstrap/zoom-out",
+                        is_sensitive=bool(self.search_text),
+                        color=rx.Color.BLACK if bool(self.search_text) else rx.Color.RED,
+                    ),
+                    rx.ProgressCircle(
+                        progress=None,
+                    ),
+                ]),
                 KeyEventTester(),
                 # rx.Icon(
                 #     # "reflex/circle",

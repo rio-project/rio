@@ -20,6 +20,7 @@ import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { ProgressBarWidget } from './progressBar';
+import { GridWidget } from './grid';
 
 const sessionToken = '{session_token}';
 
@@ -149,6 +150,7 @@ const widgetClasses = {
     'Button-builtin': ButtonWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
+    'Grid-builtin': GridWidget,
     'Icon-builtin': IconWidget,
     'KeyEventListener-builtin': KeyEventListenerWidget,
     'Margin-builtin': MarginWidget,
@@ -321,7 +323,7 @@ function replaceChildrenWithLayoutWidgets(
                     message
                 );
             });
-        } else if (propertyValue !== null) {
+        } else if (propertyValue !== null && propertyValue !== undefined) {
             let childId = cleanId(propertyValue.toString());
             deltaState[propertyName] = createLayoutWidgetStates(
                 childId,

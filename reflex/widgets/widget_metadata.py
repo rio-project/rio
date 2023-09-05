@@ -7,6 +7,7 @@ CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "Button-builtin": {"child"},
     "Column-builtin": {"children"},
     "Dropdown-builtin": set(),
+    "Grid-builtin": {'_children'},
     "Icon-builtin": set(),
     "KeyEventListener-builtin": {"child"},
     "MediaPlayer-builtin": set(),

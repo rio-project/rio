@@ -28,10 +28,12 @@ class TextInput(widget_base.HtmlWidget):
     text: str = ""
     placeholder: str = ""
     _: KW_ONLY
+    label: Optional[str] = None
     prefix_text: str = ""
     suffix_text: str = ""
-    secret: bool = False
+    is_secret: bool = False
     is_sensitive: bool = True
+    input_is_valid: bool = True
     on_change: widget_base.EventHandler[TextInputChangeEvent] = None
     on_confirm: widget_base.EventHandler[TextInputConfirmEvent] = None
 
