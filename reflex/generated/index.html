@@ -2843,6 +2843,7 @@ class RectangleWidget extends WidgetBase {
   }
 }
 function expandRevealer(elem) {
+  let header = elem.firstElementChild;
   let contentOuter = elem.querySelector(
     ".reflex-revealer-content-outer"
   );
@@ -2850,11 +2851,16 @@ function expandRevealer(elem) {
   if (elem.classList.contains("expanded")) {
     return;
   }
-  let contentHeight = contentInner.scrollHeight;
   elem.classList.add("expanded");
-  contentOuter.style.maxHeight = contentHeight + "px";
   contentInner.style.transform = `translateY(0)`;
   contentInner.style.opacity = "1";
+  requestAnimationFrame(() => {
+    let contentHeight = contentInner.scrollHeight;
+    let selfHeight = elem.scrollHeight;
+    let headerHeight = header.scrollHeight;
+    let targetHeight = Math.max(contentHeight, selfHeight - headerHeight);
+    contentOuter.style.maxHeight = `${targetHeight}px`;
+  });
 }
 function collapseRevealer(elem) {
   elem.firstElementChild;
@@ -2893,6 +2899,11 @@ class RevealerWidget extends WidgetBase {
       this.setStateAndNotifyBackend({
         is_expanded: !is_expanded
       });
+      if (is_expanded) {
+        collapseRevealer(element);
+      } else {
+        expandRevealer(element);
+      }
     };
     return element;
   }
@@ -10524,7 +10535,6 @@ body {
   margin: 0;
   padding: 0;
   font-family: Roboto, sans-serif;
-  font-size: 13px;
   background: var(--reflex-background-color);
 }
 

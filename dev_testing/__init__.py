@@ -148,7 +148,9 @@ class Sidebar(rx.Widget):
                 rx.Button(
                     "Bar",
                     shape="rounded",
+                    style="minor",
                     color="danger",
+                    # is_sensitive=False,
                 ),
                 rx.Button(
                     "Baz",
@@ -159,8 +161,8 @@ class Sidebar(rx.Widget):
                     "Spam",
                     shape="circle",
                     color=rx.Color.CYAN,
-                    width=8,
-                    height=8,
+                    width=20,
+                    height=20,
                     align_x=0.5,
                 ),
                 rx.ProgressBar(0.4),

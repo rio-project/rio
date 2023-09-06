@@ -9,6 +9,7 @@ export type RevealerState = WidgetState & {
 };
 
 function expandRevealer(elem: HTMLElement): void {
+    let header = elem.firstElementChild as HTMLElement;
     let contentOuter = elem.querySelector(
         '.reflex-revealer-content-outer'
     ) as HTMLElement;
@@ -20,12 +21,21 @@ function expandRevealer(elem: HTMLElement): void {
     }
 
     // Update the CSS to trigger the expand animation
-    let contentHeight = contentInner.scrollHeight;
-
     elem.classList.add('expanded');
-    contentOuter.style.maxHeight = contentHeight + 'px';
     contentInner.style.transform = `translateY(0)`;
     contentInner.style.opacity = '1';
+
+    // The widgets may currently be in flux due to a pending re-layout. If that
+    // is the case, reading the `scrollHeight` would lead to an incorrect value.
+    // Wait for the resize to finish before fetching it.
+    requestAnimationFrame(() => {
+        let contentHeight = contentInner.scrollHeight;
+        let selfHeight = elem.scrollHeight;
+        let headerHeight = header.scrollHeight;
+        let targetHeight = Math.max(contentHeight, selfHeight - headerHeight);
+
+        contentOuter.style.maxHeight = `${targetHeight}px`;
+    });
 }
 
 function collapseRevealer(elem: HTMLElement): void {
@@ -79,11 +89,11 @@ export class RevealerWidget extends WidgetBase {
             });
 
             // Update the UI
-            // if (is_expanded) {
-            //     collapseRevealer(element);
-            // } else {
-            //     expandRevealer(element);
-            // }
+            if (is_expanded) {
+                collapseRevealer(element);
+            } else {
+                expandRevealer(element);
+            }
         };
 
         return element;
