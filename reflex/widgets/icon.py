@@ -1,27 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
+from pathlib import Path
 from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server
+from .. import app_server, icon_registry
 from . import widget_base
 
 __all__ = [
     "Icon",
 ]
-
-
-# Icon set -> Icon
-# Each Icon is a tuple
-# - width
-# - height
-# - path. This is stored as the value which must be assigned to the SVG's `d`
-#   attribute.
-_ICONS: Dict[str, Dict[str, Tuple[float, float, str]]] = {}
 
 
 class Icon(widget_base.HtmlWidget):
@@ -31,68 +23,43 @@ class Icon(widget_base.HtmlWidget):
     fill: Optional[rx.FillLike] = None
 
     @staticmethod
-    def add_icon_set(
+    def _get_registry() -> icon_registry.IconRegistry:
+        return icon_registry.IconRegistry.get_singleton()
+
+    @staticmethod
+    def register_icon_set(
         set_name: str,
-        icon_set: Dict[str, Tuple[float, float, str]],
+        icon_set_zip_path: Path,
     ) -> None:
         """
         Add an icon set to the global registry. This allows the icons to be
-        accessed as `set_name/icon_name`.
+        accessed as `set_name/icon_name` or `set_name/icon_name/variant`.
 
         There must not already be a set with the given name.
 
-        The icon set is a dictionary mapping icon names to tuples of the form
+        The icon set is a zip containing SVG files. The SVG files must have a
+        `viewBox` attribute, but no height or width. They will be colored by the
+        `fill` property of the `Icon` widget.
 
-        - width
-        - height
-        - path
-
-        The path is the value which must be assigned to the SVG's `d` attribute
-        to draw the icon.
+        Files located in the root of the archive can be accessed as
+        `set_name/icon_name`. Files located in a subdirectory can be accessed as
+        `set_name/icon_name/variant`.
         """
-        if set_name in _ICONS:
-            raise ValueError(f"There is already a set named `{set_name}`")
+        registry = Icon._get_registry()
 
-        _ICONS[set_name] = icon_set
+        if set_name in registry.icon_set_archives:
+            raise ValueError(f"There is already an icon set named `{set_name}`")
 
-    @property
-    def _icon_set_and_name(self) -> Tuple[str, str]:
-        pos = self.icon.find("/")
-
-        if pos == -1:
-            return "reflex", self.icon
-
-        return self.icon[:pos], self.icon[pos + 1 :]
+        registry.icon_set_archives[set_name] = icon_set_zip_path
 
     def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
-        # Find the icon path
-        set_name, icon_name = self._icon_set_and_name
-
-        try:
-            icon_set = _ICONS[set_name]
-        except KeyError:
-            raise ValueError(f"There is no icon set named `{set_name}`")
-
-        try:
-            width, height, icon_path = icon_set[icon_name]
-        except KeyError:
-            raise ValueError(
-                f"There is no icon named `{icon_name}` in set `{set_name}`"
-            )
-
-        # Determine the fill
-        if self.fill is None:
-            thm = self.session.attachments[rx.Theme]
-            fill = thm.text_on_primary_style.font_color
-        else:
-            fill = self.fill
+        # Get the icon's SVG
+        registry = Icon._get_registry()
+        svg_source = registry.get_icon_svg(self.icon)
 
         # Serialize
         return {
-            "width": width,
-            "height": height,
-            "path": icon_path,
-            "fill": rx.Fill._try_from(fill)._serialize(server),
+            "svgSource": svg_source,
         }
 
 

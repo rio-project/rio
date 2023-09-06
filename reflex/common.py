@@ -1,5 +1,6 @@
 import hashlib
 import inspect
+import os
 import secrets
 import traceback
 from dataclasses import dataclass
@@ -10,11 +11,23 @@ from typing_extensions import Annotated
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
-
+# Expose common paths on the filesystem
 PACKAGE_ROOT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT_DIR = PACKAGE_ROOT_DIR.parent
+
 GENERATED_DIR = PACKAGE_ROOT_DIR / "generated"
-HOSTED_ASSETS_DIR = PACKAGE_ROOT_DIR / "hosted-assets"
+
+REFLEX_ASSETS_DIR = PACKAGE_ROOT_DIR / "assets"
+HOSTED_ASSETS_DIR = REFLEX_ASSETS_DIR / "hosted"
+
+if os.name == "nt":
+    USER_CACHE_DIR = Path.home() / "AppData" / "Local" / "Cache"
+    USER_CONFIG_DIR = Path.home() / "AppData" / "Roaming"
+else:
+    USER_CACHE_DIR = Path.home() / ".cache"
+    USER_CONFIG_DIR = Path.home() / ".config"
+
+REFLEX_CACHE_DIR = USER_CACHE_DIR / "reflex"
 
 
 _READONLY = object()
