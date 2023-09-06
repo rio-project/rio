@@ -8,7 +8,7 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server, icon_registry
+from .. import app_server, color, fills, icon_registry
 from . import widget_base
 
 __all__ = [
@@ -19,8 +19,7 @@ __all__ = [
 class Icon(widget_base.HtmlWidget):
     icon: str
     _: KW_ONLY
-    fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit"
-    fill: Optional[rx.FillLike] = None
+    fill: Union[rx.FillLike, color.ColorSet] = "default"
 
     @staticmethod
     def _get_registry() -> icon_registry.IconRegistry:
@@ -57,9 +56,20 @@ class Icon(widget_base.HtmlWidget):
         registry = Icon._get_registry()
         svg_source = registry.get_icon_svg(self.icon)
 
+        # Serialize the fill. This isn't automatically handled because it's a
+        # Union.
+        if isinstance(self.fill, fills.Fill):
+            fill = self.fill._serialize(server)
+        elif isinstance(self.fill, color.Color):
+            fill = self.fill.rgba
+        else:
+            assert isinstance(self.fill, str), f"Unsupported fill type: {self.fill}"
+            fill = self.fill
+
         # Serialize
         return {
             "svgSource": svg_source,
+            "fill": fill,
         }
 
 

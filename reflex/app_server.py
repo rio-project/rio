@@ -568,7 +568,7 @@ class AppServer(fastapi.FastAPI):
             sess.attachments.add(copy.deepcopy(attachment))
 
         if rx.Theme not in sess.attachments:
-            sess.attachments.add(rx.Theme.dark())
+            sess.attachments.add(rx.Theme())
 
         # Optionally create a validator
         validator_instance = (

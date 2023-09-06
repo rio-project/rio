@@ -55,14 +55,18 @@ class IconRegistry:
         if len(sections) == 1:
             return "material", icon_name, None
 
-        # Too long
-        if len(sections) > 3:
-            raise AssetError(
-                f"Invalid icon name `{icon_name}`. Icons names must be of the form `set/icon/variant`"
-            )
+        # Implicit variant
+        if len(sections) == 2:
+            return sections[0], sections[1], None
 
-        # Just right
-        return tuple(sections)
+        # Everything explicit
+        if len(sections) == 3:
+            return sections[0], sections[1], sections[2]
+
+        # Too long
+        raise AssetError(
+            f"Invalid icon name `{icon_name}`. Icons names must be of the form `set/icon/variant`"
+        )
 
     @staticmethod
     def normalize_icon_name(icon_name: str) -> str:
@@ -90,7 +94,7 @@ class IconRegistry:
         # Prepare some paths
         icon_set, icon_name, variant = IconRegistry.parse_icon_name(icon_name)
 
-        icon_set_dir = self.cache_dir / "extracted-icon-sets" / icon_set
+        icon_set_dir = self.cache_dir / icon_set
 
         if variant is None:
             svg_path = icon_set_dir / f"{icon_name}.svg"
@@ -147,7 +151,7 @@ class IconRegistry:
             # descriptive error message
             icon_set, icon_name, variant = IconRegistry.parse_icon_name(icon_name)
 
-            icon_set_path = self.cache_dir / "extracted-icon-sets" / icon_set
+            icon_set_path = self.cache_dir / icon_set
 
             if not icon_set_path.exists():
                 raise AssetError(

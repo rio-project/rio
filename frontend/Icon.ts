@@ -1,44 +1,23 @@
-import { Fill } from './models';
+import { ColorSet, Fill } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { applyFillToSVG } from './design_application';
 
 export type IconState = WidgetState & {
-    width: number;
-    height: number;
-    path: string;
-    fill: Fill;
+    svgSource: string;
+    fill: Fill | ColorSet;
 };
 
 function createSVGPath(
     div: HTMLElement,
-    width: number,
-    height: number,
-    path: string,
-    fill: Fill
+    svgSource: string,
+    fill: Fill | ColorSet
 ) {
     // Create an SVG element
-    const svgRoot = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'svg'
-    );
-    svgRoot.setAttribute('viewBox', `0 0 ${width} ${height}`);
-
-    // Create an SVG path
-    const svgPath = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'path'
-    );
-
-    svgPath.setAttribute('d', path);
+    div.innerHTML = svgSource;
+    let svgRoot = div.firstChild as    SVGSVGElement;
 
     // Apply the style
-    applyFillToSVG(svgRoot, svgPath, fill);
-
-    // Append the path to the SVG
-    svgRoot.appendChild(svgPath);
-
-    // Append the SVG to the provided div element
-    div.appendChild(svgRoot);
+    applyFillToSVG(svgRoot, fill);
 }
 
 export class IconWidget extends WidgetBase {
@@ -55,9 +34,7 @@ export class IconWidget extends WidgetBase {
         // Add the SVG
         createSVGPath(
             element,
-            deltaState.width,
-            deltaState.height,
-            deltaState.path,
+            deltaState.svgSource,
             deltaState.fill
         );
     }

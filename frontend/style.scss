@@ -86,7 +86,19 @@
     // TODO
 }
 
-.reflex-switcheroo-surface {
+.reflex-switcheroo-text {
+    // Theme colors
+    --reflex-local-accent-color: var(--reflex-local-text-color);
+    --reflex-local-accent-color-variant: var(--reflex-local-text-color);
+
+    // Text styles
+    --reflex-local-text-color: var(--reflex-local-text-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.reflex-switcheroo-default {
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-accent-color);
     --reflex-local-accent-color-variant: var(
@@ -438,40 +450,21 @@ body {
 }
 
 // Revealer
-.reflex-revealer {
-    background: orange;
-    border-radius: 1em;
-    padding: 0.5em;
-}
-
-.expanded,
-.reflex-revealer:hover {
-    background-color: yellow;
-}
-
 .reflex-revealer-header {
     cursor: pointer;
-    padding: 0.7em;
+    padding: 0.8em;
     width: 100%;
     text-align: left;
 }
 
 .reflex-revealer-content-outer {
-    padding: 0 18px;
-    max-height: 0;
     overflow: hidden;
-    transition: max-height 0.1s ease-in-out;
-    background-color: #f1f1f1;
+    transition: max-height 0.15s ease-in-out;
 }
 
 .reflex-revealer-content-inner {
-    transform: translateY(0px);
-    opacity: 1;
-    padding: 1em;
-    transition: transform 0.2s ease;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.reflex-revealer-content-inner:hover {
-    opacity: 0;
+    padding: 0.8em;
+    transition:
+        opacity 0.3s ease-in-out,
+        transform 0.3s ease;
 }

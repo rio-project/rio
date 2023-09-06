@@ -33,7 +33,9 @@ export function applyColorSet(element: HTMLElement, color: ColorSet): void {
         'reflex-switcheroo-warning',
         'reflex-switcheroo-danger',
         'reflex-switcheroo-custom',
-        'reflex-switcheroo-disabled'
+        'reflex-switcheroo-disabled',
+        'reflex-switcheroo-text',
+        'reflex-switcheroo-default',
     );
 
     // Add the new switcheroo
@@ -64,26 +66,25 @@ export function colorToCss(color: Color): string {
 
 export function applyFillToSVG(
     svgRoot: SVGSVGElement,
-    svgPath: SVGPathElement,
     fill: Fill
 ): void {
     switch (fill.type) {
-        case 'solid':
-            applySolidFill(svgPath, fill.color);
-            break;
+        // case 'solid':
+        //     applySolidFill(svgPath, fill.color);
+        //     break;
 
-        case 'linearGradient':
-            applyLinearGradientFill(
-                svgRoot,
-                svgPath,
-                fill.angleDegrees,
-                fill.stops
-            );
-            break;
+        // case 'linearGradient':
+        //     applyLinearGradientFill(
+        //         svgRoot,
+        //         svgPath,
+        //         fill.angleDegrees,
+        //         fill.stops
+        //     );
+        //     break;
 
-        case 'image':
-            applyImageFill(svgRoot, svgPath, fill.imageUrl, fill.fillMode);
-            break;
+        // case 'image':
+        //     applyImageFill(svgRoot, svgPath, fill.imageUrl, fill.fillMode);
+        //     break;
     }
 }
 

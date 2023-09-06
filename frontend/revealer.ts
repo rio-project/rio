@@ -20,7 +20,7 @@ function expandRevealer(elem: HTMLElement): void {
     }
 
     // Update the CSS to trigger the expand animation
-    let contentHeight = contentOuter.scrollHeight;
+    let contentHeight = contentInner.scrollHeight;
 
     elem.classList.add('expanded');
     contentOuter.style.maxHeight = contentHeight + 'px';
@@ -41,10 +41,10 @@ function collapseRevealer(elem: HTMLElement): void {
     }
 
     // Update the CSS to trigger the collapse animation
-    let contentHeight = contentOuter.scrollHeight;
+    let contentHeight = contentInner.scrollHeight;
 
     elem.classList.remove('expanded');
-    contentOuter.style.maxHeight = null;
+    contentOuter.style.maxHeight = '0';
     contentInner.style.transform = `translateY(-${contentHeight}px)`;
     contentInner.style.opacity = '0';
 }
@@ -53,6 +53,7 @@ export class RevealerWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
+        element.classList.add('expanded');
         element.classList.add('reflex-revealer');
 
         let label = document.createElement('div');

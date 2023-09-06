@@ -7,6 +7,8 @@ export type ColorSet =
     | 'warning'
     | 'danger'
     | 'disabled'
+    | 'text'
+    | 'default'
     | {
           color: Color;
           colorVariant: Color;

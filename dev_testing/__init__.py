@@ -2,8 +2,8 @@ from typing import *  # type: ignore
 
 import plotly.express as px
 
-# import bootstrap_icons
 import reflex as rx
+import reflex.icon_registry
 
 theme = rx.Theme()
 
@@ -50,17 +50,21 @@ class ShowcaseCard(rx.Widget):
 
 
 class KeyEventTester(rx.Widget):
-    event: rx.KeyDownEvent = rx.KeyDownEvent(rx.Key('unknown', 'unknown', ''), frozenset())
+    event: rx.KeyDownEvent = rx.KeyDownEvent(
+        rx.Key("unknown", "unknown", ""), frozenset()
+    )
 
     def on_key_down(self, event: rx.KeyDownEvent) -> None:
         self.event = event
 
     def build(self) -> rx.Widget:
         return rx.KeyEventListener(
-            rx.Text(f'''Hardware key: {self.event.key.hardware_key}
+            rx.Text(
+                f"""Hardware key: {self.event.key.hardware_key}
 Software key: {self.event.key.software_key}
 Input text: {self.event.key.text}
-Held keys: {self.event.held_keys}'''),
+Held keys: {self.event.held_keys}"""
+            ),
             on_key_down=self.on_key_down,
         )
 
@@ -86,48 +90,53 @@ class Sidebar(rx.Widget):
                     margin_top=0.6,
                 ),
                 rx.Grid(
-                [
-                    rx.TextInput(
-                        placeholder="Plain",
-                        text=Sidebar.search_text,
-                        prefix_text="prefix",
-                        on_change=lambda evt: print("plain-change:", evt.text),
-                        is_sensitive=False,
-                    ),
-                    rx.TextInput(
-                        placeholder="Secret",
-                        text=Sidebar.search_text,
-                        is_secret=True,
-                        suffix_text="suffix",
-                        on_confirm=lambda evt: print("secret-confirm:", evt.text),
-                    ),
-                ], [
-                    rx.Button(
-                        "Button",
-                        # icon="bootstrap/zoom-out",
-                        is_sensitive=bool(self.search_text),
-                        color=rx.Color.BLACK if bool(self.search_text) else rx.Color.RED,
-                    ),
-                    rx.ProgressCircle(
-                        progress=None,
-                    ),
-                ]),
+                    [
+                        rx.TextInput(
+                            placeholder="Plain",
+                            text=Sidebar.search_text,
+                            prefix_text="prefix",
+                            on_change=lambda evt: print("plain-change:", evt.text),
+                            is_sensitive=False,
+                        ),
+                        rx.TextInput(
+                            placeholder="Secret",
+                            text=Sidebar.search_text,
+                            is_secret=True,
+                            suffix_text="suffix",
+                            on_confirm=lambda evt: print("secret-confirm:", evt.text),
+                        ),
+                    ],
+                    [
+                        rx.Button(
+                            "Button",
+                            # icon="bootstrap/zoom-out",
+                            is_sensitive=bool(self.search_text),
+                            color=rx.Color.BLACK
+                            if bool(self.search_text)
+                            else rx.Color.RED,
+                        ),
+                        rx.ProgressCircle(
+                            progress=None,
+                        ),
+                    ],
+                ),
                 KeyEventTester(),
-                # rx.Icon(
-                #     # "reflex/circle",
-                #     "bootstrap/zoom-out",
-                #     fill=rx.Color.MAGENTA,
-                #     # fill=rx.LinearGradientFill(
-                #     #     (rx.Color.RED, 0),
-                #     #     (rx.Color.BLUE, 1),
-                #     #     angle_degrees=20,
-                #     # ),
-                #     # fill=rx.ImageFill(
-                #     #     "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.startupsos.com%2Fwp-content%2Fuploads%2F2015%2F07%2Ftest.jpg&f=1&nofb=1&ipt=81f5c2bb33cee7310da4b016f5b4ec00afacfc2155ba2e929d873be00fdc15bf&ipo=images"
-                #     #     # Path(__file__).parent
-                #     #     # / "test.png"
-                #     # ),
-                # ),
+                rx.Icon(
+                    # "reflex/circle",
+                    # "bootstrap/zoom-out",
+                    "fake-icons/archive",
+                    fill=rx.Color.MAGENTA,
+                    # fill=rx.LinearGradientFill(
+                    #     (rx.Color.RED, 0),
+                    #     (rx.Color.BLUE, 1),
+                    #     angle_degrees=20,
+                    # ),
+                    # fill=rx.ImageFill(
+                    #     "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.startupsos.com%2Fwp-content%2Fuploads%2F2015%2F07%2Ftest.jpg&f=1&nofb=1&ipt=81f5c2bb33cee7310da4b016f5b4ec00afacfc2155ba2e929d873be00fdc15bf&ipo=images"
+                    #     # Path(__file__).parent
+                    #     # / "test.png"
+                    # ),
+                ),
                 rx.Slider(value=0.1),
                 rx.Button(
                     "Foo",
