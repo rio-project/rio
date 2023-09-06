@@ -140,6 +140,7 @@ class Sidebar(rx.Widget):
                             Path(__file__).parent / "test.png",
                         ),
                     ),
+                    height=3.0,
                 ),
                 rx.Slider(value=0.1),
                 rx.Button(
@@ -151,7 +152,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.Button(
                     "Bar",
-                    icon="castle",
+                    icon="material/castle/fill",
                     shape="rounded",
                     style="minor",
                     color="danger",
