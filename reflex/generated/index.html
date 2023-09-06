@@ -2876,17 +2876,19 @@ class RevealerWidget extends WidgetBase {
     let element = document.createElement("div");
     element.classList.add("expanded");
     element.classList.add("reflex-revealer");
-    let label = document.createElement("div");
-    label.classList.add("reflex-revealer-header");
-    element.appendChild(label);
-    let contentOuter = document.createElement("div");
-    contentOuter.classList.add("reflex-revealer-content-outer");
-    element.appendChild(contentOuter);
-    let contentInner = document.createElement("div");
-    contentInner.classList.add("reflex-revealer-content-inner");
-    contentInner.classList.add("reflex-single-container");
-    contentOuter.appendChild(contentInner);
-    label.onmouseup = (e) => {
+    element.innerHTML = `
+<div class="reflex-revealer-header">
+    <div class="reflex-revealer-label"></div>
+    <div class="reflex-revealer-arrow"></div>
+</div>
+<div class="reflex-revealer-content-outer">
+    <div class="reflex-revealer-content-inner reflex-single-container"></div>
+</div>
+`;
+    let header = element.querySelector(
+      ".reflex-revealer-header"
+    );
+    header.onmouseup = (e) => {
       let is_expanded = element.classList.contains("expanded");
       this.setStateAndNotifyBackend({
         is_expanded: !is_expanded
@@ -2898,7 +2900,7 @@ class RevealerWidget extends WidgetBase {
     console.log(`Revealer updateElement`, deltaState.is_expanded);
     if (deltaState.label !== void 0) {
       let label = element.querySelector(
-        ".reflex-revealer-header"
+        ".reflex-revealer-label"
       );
       label.innerText = deltaState.label;
     }
@@ -10930,21 +10932,35 @@ body {
   border-radius: 50%;
 }
 
-.reflex-revealer {
-  background: transparent;
-  transition: background-color 0.15s ease-in-out;
-}
-
-.expanded,
-.reflex-revealer:hover {
-  background: var(--reflex-local-accent-color-variant);
-}
-
 .reflex-revealer-header {
   cursor: pointer;
   padding: 0.8em;
   width: 100%;
   text-align: left;
+  display: flex;
+  flex-direction: row;
+  color: var(--reflex-local-text-color);
+}
+
+.reflex-revealer-label {
+  flex-grow: 1;
+}
+
+.reflex-revealer-arrow {
+  width: 1.3em;
+  height: 1.3em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.12 9.29 12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"/></svg>');
+  background-size: 100% 100%;
+  fill: var(--reflex-local-text-color);
+  opacity: 0.7;
+  transform: rotate(90deg);
+  transition: transform 0.3s ease-in-out;
+}
+
+.expanded .reflex-revealer-arrow {
+  transform: rotate(0deg);
 }
 
 .reflex-revealer-content-outer {

@@ -56,21 +56,21 @@ export class RevealerWidget extends WidgetBase {
         element.classList.add('expanded');
         element.classList.add('reflex-revealer');
 
-        let label = document.createElement('div');
-        label.classList.add('reflex-revealer-header');
-        element.appendChild(label);
-
-        let contentOuter = document.createElement('div');
-        contentOuter.classList.add('reflex-revealer-content-outer');
-        element.appendChild(contentOuter);
-
-        let contentInner = document.createElement('div');
-        contentInner.classList.add('reflex-revealer-content-inner');
-        contentInner.classList.add('reflex-single-container');
-        contentOuter.appendChild(contentInner);
+        element.innerHTML = `
+<div class="reflex-revealer-header">
+    <div class="reflex-revealer-label"></div>
+    <div class="reflex-revealer-arrow"></div>
+</div>
+<div class="reflex-revealer-content-outer">
+    <div class="reflex-revealer-content-inner reflex-single-container"></div>
+</div>
+`;
+        let header = element.querySelector(
+            '.reflex-revealer-header'
+        ) as HTMLElement;
 
         // Listen for presses
-        label.onmouseup = (e) => {
+        header.onmouseup = (e) => {
             // Notify the backend
             let is_expanded = element.classList.contains('expanded');
 
@@ -95,7 +95,7 @@ export class RevealerWidget extends WidgetBase {
         // Update the label
         if (deltaState.label !== undefined) {
             let label = element.querySelector(
-                '.reflex-revealer-header'
+                '.reflex-revealer-label'
             ) as HTMLElement;
 
             label.innerText = deltaState.label;
