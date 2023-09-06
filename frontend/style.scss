@@ -23,6 +23,12 @@
         --reflex-global-accent-color-variant
     );
 
+    // Surface
+    --reflex-local-surface-color: var(--reflex-global-primary-color);
+    --reflex-local-surface-color-variant: var(
+        --reflex-global-primary-color-variant
+    );
+
     // Text styles
     --reflex-local-text-color: var(--reflex-global-text-on-accent-color);
 
@@ -35,6 +41,12 @@
     --reflex-local-accent-color: var(--reflex-global-primary-color);
     --reflex-local-accent-color-variant: var(
         --reflex-global-primary-color-variant
+    );
+
+    // Surface
+    --reflex-local-surface-color: var(--reflex-global-accent-color);
+    --reflex-local-surface-color-variant: var(
+        --reflex-global-accent-color-variant
     );
 
     // Text styles
@@ -103,6 +115,12 @@
     --reflex-local-accent-color: var(--reflex-global-accent-color);
     --reflex-local-accent-color-variant: var(
         --reflex-global-accent-color-variant
+    );
+
+    // Surface
+    --reflex-local-surface-color: var(--reflex-global-surface-color);
+    --reflex-local-surface-color-variant: var(
+        --reflex-global-surface-color-variant
     );
 
     // Text styles
@@ -269,7 +287,7 @@ body {
 }
 
 .reflex-switch.is-on .container {
-    background-color: var(--reflex-local-accent-color-variant);
+    background-color: var(--reflex-local-accent-color);
 }
 
 .reflex-switch input {
@@ -309,14 +327,14 @@ body {
 
 .reflex-switch.is-on input + .knob {
     left: 1.806em;
-    background-color: var(--reflex-local-accent-color);
+    background-color: var(--reflex-local-surface-color);
 }
 
 // Dropdown
 .reflex-dropdown {
     min-height: 2em;
 
-    background-color: var(--reflex-global-surface-color-variant);
+    background-color: var(--reflex-local-surface-color-variant);
     color: var(--reflex-local-text-color);
     caret-color: var(--reflex-local-accent-color);
 
