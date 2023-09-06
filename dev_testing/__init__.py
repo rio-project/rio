@@ -151,6 +151,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.Button(
                     "Bar",
+                    icon="castle",
                     shape="rounded",
                     style="minor",
                     color="danger",
