@@ -14,9 +14,34 @@ function createSVGPath(
 ) {
     // Create an SVG element
     div.innerHTML = svgSource;
-    let svgRoot = div.firstChild as    SVGSVGElement;
+    let svgRoot = div.firstChild as SVGSVGElement;
 
-    // Apply the style
+    svgRoot.style.width = '100%';
+    svgRoot.style.height = '100%';
+
+    // Preprocess the style
+
+    // If the fill is a color convert it to a solid fill first.
+    if (Array.isArray(fill)) {
+        fill = {
+            type: 'solid',
+
+            // @ts-ignore
+            color: fill,
+        };
+    }
+
+    // If the fill is a string apply the appropriate theme color.
+    else if (typeof fill === 'string') {
+        console.log('TODO: Support theme colors for `Icon` widgets');
+        fill = {
+            type: 'solid',
+            color: [1, 0, 1, 1],
+        };
+    }
+
+    // Apply it
+    // @ts-ignore
     applyFillToSVG(svgRoot, fill);
 }
 
@@ -32,10 +57,6 @@ export class IconWidget extends WidgetBase {
         element.innerHTML = '';
 
         // Add the SVG
-        createSVGPath(
-            element,
-            deltaState.svgSource,
-            deltaState.fill
-        );
+        createSVGPath(element, deltaState.svgSource, deltaState.fill);
     }
 }

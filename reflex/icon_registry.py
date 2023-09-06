@@ -1,3 +1,4 @@
+import logging
 import zipfile
 from pathlib import Path
 from typing import *  # type: ignore
@@ -37,6 +38,11 @@ class IconRegistry:
         if _icon_registry is None:
             _icon_registry = IconRegistry(
                 common.REFLEX_CACHE_DIR / "extracted-icon-sets"
+            )
+
+            # Register built-in icon sets
+            _icon_registry.icon_set_archives["material"] = (
+                common.REFLEX_ASSETS_DIR / "compressed-icon-sets" / "material.zip"
             )
 
         # Use it
@@ -113,16 +119,21 @@ class IconRegistry:
         # If there is no icon set matching the name there is also nothing to do,
         # as this is an invalid / unregistered icon set
         try:
-            zip_dir = self.icon_set_archives[icon_set]
+            archive_path = self.icon_set_archives[icon_set]
         except KeyError:
             return svg_path
 
         # The cache directory doesn't exist. Extract the icon set's zip file to
         # create it
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        target_dir = self.cache_dir / icon_set
+        target_dir.mkdir(parents=True, exist_ok=True)
 
-        with zipfile.ZipFile(zip_dir, "r") as zip_file:
-            zip_file.extractall(self.cache_dir)
+        logging.debug(
+            f"Extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`"
+        )
+
+        with zipfile.ZipFile(archive_path, "r") as zip_file:
+            zip_file.extractall(target_dir)
 
         return svg_path
 
@@ -155,7 +166,7 @@ class IconRegistry:
 
             if not icon_set_path.exists():
                 raise AssetError(
-                    f"Unknown icon set `{icon_set}`. Known icon sets are: {', '.join(self.icon_set_archives.keys())}"
+                    f"Unknown icon set `{icon_set}`. Known icon sets are: `{'`, `'.join(self.icon_set_archives.keys())}`"
                 )
 
             raise AssetError(
