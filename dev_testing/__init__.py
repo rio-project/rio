@@ -50,9 +50,7 @@ class ShowcaseCard(rx.Widget):
 
 
 class KeyEventTester(rx.Widget):
-    event: rx.KeyDownEvent = rx.KeyDownEvent(
-        rx.Key("unknown", "unknown", ""), frozenset()
-    )
+    event: rx.KeyDownEvent = rx.KeyDownEvent("unknown", "unknown", "", frozenset())
 
     def on_key_down(self, event: rx.KeyDownEvent) -> None:
         self.event = event
@@ -60,10 +58,10 @@ class KeyEventTester(rx.Widget):
     def build(self) -> rx.Widget:
         return rx.KeyEventListener(
             rx.Text(
-                f"""Hardware key: {self.event.key.hardware_key}
-Software key: {self.event.key.software_key}
-Input text: {self.event.key.text}
-Held keys: {self.event.held_keys}"""
+                f"""Hardware key: {self.event.hardware_key}
+Software key: {self.event.software_key}
+Input text: {self.event.text}
+Modifiers: {self.event.modifiers}"""
             ),
             on_key_down=self.on_key_down,
         )

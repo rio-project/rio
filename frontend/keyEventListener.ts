@@ -615,11 +615,16 @@ type ValueOf<T> = T[keyof T];
 
 type HardwareKey = ValueOf<typeof HARDWARE_KEY_MAP>;
 type SoftwareKey = ValueOf<typeof SOFTWARE_KEY_MAP>;
+type ModifierKey = 'control' | 'alt' | 'shift' | 'meta';
 
 type Key = {
     hardwareKey: HardwareKey;
     softwareKey: SoftwareKey;
     text: string;
+}
+
+type EncodedEvent = Key & {
+    modifiers: ModifierKey[];
 }
 
 
@@ -636,7 +641,7 @@ function encodeKey(event: KeyboardEvent): Key {
     if (event.key in SOFTWARE_KEY_MAP){
         softwareKey = SOFTWARE_KEY_MAP[event.key];
     } else if (event.key.length === 1){
-        softwareKey = event.key;
+        softwareKey = event.key as SoftwareKey;
     } else {
         console.warn(`Unknown software key: ${event.key}`)
         softwareKey = 'unknown';
@@ -657,10 +662,28 @@ function encodeKey(event: KeyboardEvent): Key {
 }
 
 
-function encodeEvent(event: KeyboardEvent): object {
+function encodeEvent(event: KeyboardEvent): EncodedEvent {
+    let modifiers: ModifierKey[] = [];
+
+    if (event.altKey){
+        modifiers.push('alt');
+    }
+
+    if (event.ctrlKey){
+        modifiers.push('control');
+    }
+
+    if (event.shiftKey){
+        modifiers.push('shift');
+    }
+
+    if (event.metaKey){
+        modifiers.push('meta');
+    }
+
     return {
-        key: encodeKey(event),
-        held_keys: [],  // FIXME: Keep track of currently pressed keys
+        ...encodeKey(event),
+        modifiers: modifiers,
     };
 }
 

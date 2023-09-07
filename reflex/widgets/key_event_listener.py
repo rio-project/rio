@@ -10,7 +10,6 @@ from . import widget_base
 
 __all__ = [
     "KeyEventListener",
-    "Key",
     "HardwareKey",
     "SoftwareKey",
     "KeyDownEvent",
@@ -600,26 +599,24 @@ SoftwareKey = Literal[
     'separator',
 ]
 
+ModifierKey = Literal['alt', 'control', 'meta', 'shift']
+
 
 @dataclass(frozen=True)
-class Key:
+class _KeyUpDownEvent:
     hardware_key: HardwareKey
     software_key: SoftwareKey
     text: str
+    modifiers: FrozenSet[ModifierKey]
 
     @classmethod
-    def _from_json(cls, json_data: Dict[str, Any]) -> Key:
+    def _from_json(cls, json_data: Dict[str, Any]):
         return cls(
             hardware_key=json_data["hardwareKey"],
             software_key=json_data["softwareKey"],
             text=json_data["text"],
+            modifiers=frozenset(json_data["modifiers"]),
         )
-
-
-@dataclass
-class _KeyUpDownEvent:
-    key: Key
-    held_keys: FrozenSet[Key]
 
 
 class KeyDownEvent(_KeyUpDownEvent):
@@ -663,29 +660,23 @@ class KeyEventListener(widget_base.HtmlWidget):
         msg_type = msg["type"]
         assert isinstance(msg_type, str), msg_type
 
-        key = Key._from_json(msg)
-        held_keys = frozenset(
-            Key._from_json(key_json)
-            for key_json in msg["heldKeys"]
-        )
-
         # Dispatch the correct event
         if msg_type == "KeyDown":
             await self._call_event_handler(
                 self.on_key_down,
-                KeyDownEvent(key, held_keys),
+                KeyDownEvent._from_json(msg),
             )
 
         elif msg_type == "KeyUp":
             await self._call_event_handler(
                 self.on_key_up,
-                KeyUpEvent(key, held_keys),
+                KeyUpEvent._from_json(msg),
             )
         
         elif msg_type == "KeyPress":
             await self._call_event_handler(
                 self.on_key_press,
-                KeyPressEvent(key, held_keys),
+                KeyPressEvent._from_json(msg),
             )
 
         else:

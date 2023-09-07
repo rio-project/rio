@@ -2005,10 +2005,22 @@ function encodeKey(event) {
   };
 }
 function encodeEvent(event) {
+  let modifiers = [];
+  if (event.altKey) {
+    modifiers.push("alt");
+  }
+  if (event.ctrlKey) {
+    modifiers.push("control");
+  }
+  if (event.shiftKey) {
+    modifiers.push("shift");
+  }
+  if (event.metaKey) {
+    modifiers.push("meta");
+  }
   return {
-    key: encodeKey(event),
-    held_keys: []
-    // FIXME: Keep track of currently pressed keys
+    ...encodeKey(event),
+    modifiers
   };
 }
 class KeyEventListenerWidget extends WidgetBase {
