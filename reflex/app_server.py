@@ -55,10 +55,13 @@ def _build_set_theme_variables_message(thm: rx.Theme):
     """
 
     # Build the set of all variables
+
+    # Miscellaneous
     variables: Dict[str, str] = {
         "--reflex-global-corner-radius": f"{thm.corner_radius}em",
     }
 
+    # Theme Colors
     color_names = (
         "primary_color",
         "accent_color",
@@ -84,6 +87,7 @@ def _build_set_theme_variables_message(thm: rx.Theme):
         assert isinstance(color, rx.Color), color
         variables[css_color_name] = f"#{color.hex}"
 
+    # Text styles
     style_names = (
         "heading_on_primary",
         "subheading_on_primary",
@@ -102,6 +106,16 @@ def _build_set_theme_variables_message(thm: rx.Theme):
 
         css_prefix = f"--reflex-global-{style_name.replace('_', '-')}"
         variables[f"{css_prefix}-color"] = f"#{style.font_color.hex}"
+
+    # Colors derived from, but not stored in the theme
+    derived_colors = {
+        "text-on-success-color": thm.text_color_for(thm.success_color),
+        "text-on-warning-color": thm.text_color_for(thm.warning_color),
+        "text-on-danger-color": thm.text_color_for(thm.danger_color),
+    }
+
+    for css_name, color in derived_colors.items():
+        variables[f"--reflex-global-{css_name}"] = f"#{color.hex}"
 
     # Wrap in JSON-RPC
     return {
