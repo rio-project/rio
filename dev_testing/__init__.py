@@ -182,10 +182,11 @@ class Sidebar(rx.Widget):
                 ),
                 rx.NumberInput(
                     3.0,
-                    "Number",
-                    round_to_integer=True,
-                    decimals=4,
+                    placeholder="Number",
+                    prefix_text="$",
+                    decimals=2,
                 ),
+                rx.Text("I ❤️ U 🏎️"),
                 rx.Revealer(
                     "Revealer",
                     rx.Text("Hello World"),
