@@ -58,7 +58,7 @@ def _build_set_theme_variables_message(thm: rx.Theme):
 
     # Miscellaneous
     variables: Dict[str, str] = {
-        "--reflex-global-corner-radius": f"{thm.corner_radius}em",
+        "--reflex-global-corner-radius": f"{thm.corner_radius}rem",
     }
 
     # Theme Colors
