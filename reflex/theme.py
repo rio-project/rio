@@ -95,7 +95,7 @@ class Theme:
         # Main theme colors
         self.primary_color = primary_color
         self.accent_color = accent_color
-        self.disabled_color = rx.Color.from_grey(0.6)
+        self.disabled_color = rx.Color.from_grey(0.7 if light else 0.3)
 
         # Create variants for them
         self.primary_color_variant = _make_variant_color(primary_color)

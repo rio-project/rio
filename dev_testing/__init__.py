@@ -148,7 +148,7 @@ class Sidebar(rx.Widget):
                     spacing=1,
                 ),
                 rx.Row(
-                    rx.Text("Undef space around me!"),
+                    rx.Text("⇇ Undef space ⇉"),
                 ),
                 rx.Slider(value=0.1),
                 rx.Button(
@@ -228,29 +228,26 @@ class WidgetShowcase(rx.Widget):
             title="Life expectancy in Canada",
         )
 
-        return rx.Rectangle(
-            child=rx.Row(
-                Sidebar(
-                    width=30,
-                ),
-                ShowcaseCard(
-                    "Hello Worlds",
-                    "Much hello!",
-                    rx.Column(
-                        rx.Text("Hello World"),
-                        rx.Text("Hello World"),
-                        rx.Text("Hello World"),
-                        rx.Plot(
-                            figure=fig,
-                            # height=20,
-                        ),
-                    ),
-                    margin_x=4,
-                    align_y=0.2,
-                    width="grow",
-                ),
+        return rx.Row(
+            Sidebar(
+                width=30,
             ),
-            style=rx.BoxStyle(fill=theme.surface_color),
+            ShowcaseCard(
+                "Hello Worlds",
+                "Much hello!",
+                rx.Column(
+                    rx.Text("Hello World"),
+                    rx.Text("Hello World"),
+                    rx.Text("Hello World"),
+                    rx.Plot(
+                        figure=fig,
+                        # height=20,
+                    ),
+                ),
+                margin_x=4,
+                align_y=0.2,
+                width="grow",
+            ),
         )
 
 
