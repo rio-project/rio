@@ -37,9 +37,10 @@ class NumberInput(widget_base.Widget):
     """
 
     value: float = 0
-    placeholder: str = ""
     _: KW_ONLY
-    round_to_integer: bool = False
+    placeholder: str = ""
+    prefix_text: str = ""
+    suffix_text: str = ""
     minimum: Optional[float] = None
     maximum: Optional[float] = None
     thousands_separator: str = ","
@@ -58,36 +59,36 @@ class NumberInput(widget_base.Widget):
         raw_value = raw_value.strip()
         raw_value = raw_value.replace(self.thousands_separator, "")
 
-        # Allow followup code to assume there is a value
-        if not raw_value:
-            self.value = self.value  # Force the old value to stay
-            return False
+        # Try to parse the value
+        if raw_value:
+            # Check for a multiplier suffix
+            suffix = raw_value[-1].lower()
+            multiplier = 1
 
-        # Check for a multiplier suffix
-        suffix = raw_value[-1].lower()
-        multiplier = 1
+            if suffix.isalpha():
+                try:
+                    multiplier = _multiplier_suffixes[suffix]
+                except KeyError:
+                    pass
+                else:
+                    raw_value = raw_value[:-1]
 
-        if suffix.isalpha():
+            # Try to parse the number
             try:
-                multiplier = _multiplier_suffixes[suffix]
-            except KeyError:
-                pass
-            else:
-                raw_value = raw_value[:-1]
+                value = float(raw_value.replace(self.decimal_separator, "."))
+            except ValueError:
+                self.value = self.value  # Force the old value to stay
+                return False
 
-        # Try to parse the number
-        try:
-            value = float(raw_value.replace(self.decimal_separator, "."))
-        except ValueError:
-            self.value = self.value  # Force the old value to stay
-            return False
+            # Apply the multiplier
+            value *= multiplier
 
-        # Apply the multiplier
-        value *= multiplier
+        # If no value was provided choose a reasonable default
+        else:
+            value = 0
 
-        # Integer?
-        if self.round_to_integer:
-            value = round(value)
+        # Limit the number of decimals
+        value = round(value, self.decimals)
 
         # Clamp the value
         if self.minimum is not None:
@@ -133,7 +134,7 @@ class NumberInput(widget_base.Widget):
         int_str = self.thousands_separator.join(reversed(groups))
 
         # Join the strings
-        if self.round_to_integer:
+        if self.decimals == 0:
             value_str = int_str
         else:
             value_str = int_str + self.decimal_separator + frac_str
@@ -142,6 +143,8 @@ class NumberInput(widget_base.Widget):
         return rx.TextInput(
             text=value_str,
             placeholder=self.placeholder,
+            prefix_text=self.prefix_text,
+            suffix_text=self.suffix_text,
             on_change=self._on_change,
             on_confirm=self._on_confirm,
         )

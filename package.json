@@ -4,7 +4,8 @@
   "scripts": {
     "build": "vite build frontend/ --outDir ../reflex/generated/ --config vite.config.ts --emptyOutDir",
     "dev-build": "npm run-script build -- --minify false",
-    "demo": "npm run-script dev-build && python3 -m uvicorn dev_testing:app --host 0.0.0.0 --port 8001 --reload"
+    "demo-nobuild": "python3 -m uvicorn dev_testing:app --host 0.0.0.0 --port 8001 --reload",
+    "demo": "npm run-script dev-build && npm run-script demo-nobuild"
   },
   "dependencies": {
     "@material/animation": "^14.0.0",

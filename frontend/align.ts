@@ -31,7 +31,7 @@ export class AlignWidget extends WidgetBase {
             cssProperties['width'] = '100%';
             transform_x = 0;
         } else {
-            cssProperties['width'] = 'max-content';
+            cssProperties['width'] = 'min-content';
             cssProperties['left'] = `${align_x * 100}%`;
             transform_x = align_x * -100;
         }
@@ -41,7 +41,7 @@ export class AlignWidget extends WidgetBase {
             cssProperties['height'] = '100%';
             transform_y = 0;
         } else {
-            cssProperties['height'] = 'max-content';
+            cssProperties['height'] = 'min-content';
             cssProperties['top'] = `${align_y * 100}%`;
             transform_y = align_y * -100;
         }

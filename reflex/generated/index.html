@@ -139,7 +139,7 @@ class AlignWidget extends WidgetBase {
       cssProperties["width"] = "100%";
       transform_x = 0;
     } else {
-      cssProperties["width"] = "max-content";
+      cssProperties["width"] = "min-content";
       cssProperties["left"] = `${align_x * 100}%`;
       transform_x = align_x * -100;
     }
@@ -148,7 +148,7 @@ class AlignWidget extends WidgetBase {
       cssProperties["height"] = "100%";
       transform_y = 0;
     } else {
-      cssProperties["height"] = "max-content";
+      cssProperties["height"] = "min-content";
       cssProperties["top"] = `${align_y * 100}%`;
       transform_y = align_y * -100;
     }
@@ -202,7 +202,88 @@ function colorToCss$1(color) {
 }
 function applyFillToSVG(svgRoot, fill) {
   switch (fill.type) {
+    case "solid":
+      applySolidFill(svgRoot, fill.color);
+      break;
+    case "linearGradient":
+      applyLinearGradientFill(svgRoot, fill.angleDegrees, fill.stops);
+      break;
+    case "image":
+      applyImageFill(svgRoot, fill.imageUrl, fill.fillMode);
+      break;
+    default:
+      throw new Error(`Invalid fill type: ${fill}`);
   }
+}
+function applySolidFill(svgRoot, color) {
+  const [r, g, b, a] = color;
+  svgRoot.style.fill = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+}
+function applyLinearGradientFill(svgRoot, angleDegrees, stops) {
+  const gradientId = generateUniqueId();
+  const gradient = createLinearGradient(gradientId, angleDegrees, stops);
+  let defs = svgRoot.querySelector("defs");
+  if (defs === null) {
+    defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    svgRoot.appendChild(defs);
+  }
+  defs.appendChild(gradient);
+  svgRoot.style.fill = `url(#${gradientId})`;
+}
+function applyImageFill(svgRoot, imageUrl, fillMode) {
+  const patternId = generateUniqueId();
+  const pattern = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "pattern"
+  );
+  pattern.setAttribute("id", patternId);
+  pattern.setAttribute("width", "100%");
+  pattern.setAttribute("height", "100%");
+  pattern.setAttribute("preserveAspectRatio", "none");
+  const image = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "image"
+  );
+  image.setAttribute("width", "100%");
+  image.setAttribute("height", "100%");
+  image.setAttribute("href", imageUrl);
+  image.setAttribute("preserveAspectRatio", "none");
+  pattern.appendChild(image);
+  let defs = svgRoot.querySelector("defs");
+  if (defs === null) {
+    defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    svgRoot.appendChild(defs);
+  }
+  defs.appendChild(pattern);
+  svgRoot.setAttribute("fill", `url(#${patternId})`);
+}
+function generateUniqueId() {
+  return Math.random().toString(36);
+}
+function createLinearGradient(gradientId, angleDegrees, stops) {
+  const gradient = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "linearGradient"
+  );
+  gradient.setAttribute("id", gradientId);
+  gradient.setAttribute("gradientTransform", `rotate(${angleDegrees})`);
+  let ii = -1;
+  for (const [color, offset] of stops) {
+    ii += 1;
+    const [r, g, b, a] = color;
+    const stop = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "stop"
+    );
+    stop.setAttribute("offset", `${offset}`);
+    stop.setAttribute(
+      "style",
+      `stop-color: rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`
+    );
+    stop.setAttribute("id", `${gradientId}-stop-${ii}`);
+    gradient.appendChild(stop);
+  }
+  return gradient;
 }
 var supportsCssVariables_;
 function supportsCssVariables(windowObj, forceRefresh) {
@@ -1391,6 +1472,21 @@ class GridWidget extends WidgetBase {
 function createSVGPath(div, svgSource, fill) {
   div.innerHTML = svgSource;
   let svgRoot = div.firstChild;
+  svgRoot.style.width = "100%";
+  svgRoot.style.height = "100%";
+  if (Array.isArray(fill)) {
+    fill = {
+      type: "solid",
+      // @ts-ignore
+      color: fill
+    };
+  } else if (typeof fill === "string") {
+    console.log("TODO: Support theme colors for `Icon` widgets");
+    fill = {
+      type: "solid",
+      color: [1, 0, 1, 1]
+    };
+  }
   applyFillToSVG(svgRoot, fill);
 }
 class IconWidget extends WidgetBase {
@@ -1401,11 +1497,7 @@ class IconWidget extends WidgetBase {
   }
   updateElement(element, deltaState) {
     element.innerHTML = "";
-    createSVGPath(
-      element,
-      deltaState.svgSource,
-      deltaState.fill
-    );
+    createSVGPath(element, deltaState.svgSource, deltaState.fill);
   }
 }
 const HARDWARE_KEY_MAP = {
@@ -2855,6 +2947,7 @@ class RectangleWidget extends WidgetBase {
   }
 }
 function expandRevealer(elem) {
+  let header = elem.firstElementChild;
   let contentOuter = elem.querySelector(
     ".reflex-revealer-content-outer"
   );
@@ -2862,11 +2955,16 @@ function expandRevealer(elem) {
   if (elem.classList.contains("expanded")) {
     return;
   }
-  let contentHeight = contentInner.scrollHeight;
   elem.classList.add("expanded");
-  contentOuter.style.maxHeight = contentHeight + "px";
   contentInner.style.transform = `translateY(0)`;
   contentInner.style.opacity = "1";
+  requestAnimationFrame(() => {
+    let contentHeight = contentInner.scrollHeight;
+    let selfHeight = elem.scrollHeight;
+    let headerHeight = header.scrollHeight;
+    let targetHeight = Math.max(contentHeight, selfHeight - headerHeight);
+    contentOuter.style.maxHeight = `${targetHeight}px`;
+  });
 }
 function collapseRevealer(elem) {
   elem.firstElementChild;
@@ -2905,6 +3003,11 @@ class RevealerWidget extends WidgetBase {
       this.setStateAndNotifyBackend({
         is_expanded: !is_expanded
       });
+      if (is_expanded) {
+        collapseRevealer(element);
+      } else {
+        expandRevealer(element);
+      }
     };
     return element;
   }
@@ -10441,6 +10544,10 @@ main();
   --reflex-local-accent-color-variant: var(
       --reflex-global-accent-color-variant
   );
+  --reflex-local-surface-color: var(--reflex-global-primary-color);
+  --reflex-local-surface-color-variant: var(
+      --reflex-global-primary-color-variant
+  );
   --reflex-local-text-color: var(--reflex-global-text-on-accent-color);
 }
 
@@ -10448,6 +10555,10 @@ main();
   --reflex-local-accent-color: var(--reflex-global-primary-color);
   --reflex-local-accent-color-variant: var(
       --reflex-global-primary-color-variant
+  );
+  --reflex-local-surface-color: var(--reflex-global-accent-color);
+  --reflex-local-surface-color-variant: var(
+      --reflex-global-accent-color-variant
   );
   --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
 }
@@ -10487,6 +10598,10 @@ main();
   --reflex-local-accent-color-variant: var(
       --reflex-global-accent-color-variant
   );
+  --reflex-local-surface-color: var(--reflex-global-surface-color);
+  --reflex-local-surface-color-variant: var(
+      --reflex-global-surface-color-variant
+  );
   --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
   --mdc-theme-primary: var(--reflex-global-accent-color);
   --mdc-theme-secondary: var(--reflex-global-accent-color-variant);
@@ -10524,7 +10639,6 @@ body {
   margin: 0;
   padding: 0;
   font-family: Roboto, sans-serif;
-  font-size: 13px;
   background: var(--reflex-background-color);
 }
 
@@ -10695,7 +10809,7 @@ body {
 }
 
 .reflex-switch.is-on .container {
-  background-color: var(--reflex-local-accent-color-variant);
+  background-color: var(--reflex-local-accent-color);
 }
 
 .reflex-switch input {
@@ -10733,12 +10847,12 @@ body {
 
 .reflex-switch.is-on input + .knob {
   left: 1.806em;
-  background-color: var(--reflex-local-accent-color);
+  background-color: var(--reflex-local-surface-color);
 }
 
 .reflex-dropdown {
   min-height: 2em;
-  background-color: var(--reflex-global-surface-color-variant);
+  background-color: var(--reflex-local-surface-color-variant);
   color: var(--reflex-local-text-color);
   caret-color: var(--reflex-local-accent-color);
   border-radius: var(--reflex-global-corner-radius);

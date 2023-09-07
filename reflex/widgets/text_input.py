@@ -26,9 +26,8 @@ class TextInputConfirmEvent:
 
 class TextInput(widget_base.HtmlWidget):
     text: str = ""
-    placeholder: str = ""
     _: KW_ONLY
-    label: Optional[str] = None
+    placeholder: str = ""
     prefix_text: str = ""
     suffix_text: str = ""
     is_secret: bool = False

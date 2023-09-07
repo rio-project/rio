@@ -49,9 +49,8 @@ class Button(widget_base.Widget):
                 children.append(
                     rx.Icon(
                         self.icon,
-                        fill_mode="fit",
-                        height=1.0,
-                        width=1.0,
+                        height=1.1,
+                        width=1.1,
                     )
                 )
 

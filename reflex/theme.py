@@ -81,7 +81,7 @@ class Theme:
         success_color: Optional[rx.Color] = None,
         warning_color: Optional[rx.Color] = None,
         danger_color: Optional[rx.Color] = None,
-        outline_width: float = 0.1,
+        outline_width: float = 0.08,
         corner_radius: float = 0.6,
         base_spacing: float = 0.5,
         light: bool = True,

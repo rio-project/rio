@@ -35,7 +35,7 @@ export function applyColorSet(element: HTMLElement, color: ColorSet): void {
         'reflex-switcheroo-custom',
         'reflex-switcheroo-disabled',
         'reflex-switcheroo-text',
-        'reflex-switcheroo-default',
+        'reflex-switcheroo-default'
     );
 
     // Add the new switcheroo
@@ -64,38 +64,32 @@ export function colorToCss(color: Color): string {
     return `#${red}${green}${blue}${alpha}`;
 }
 
-export function applyFillToSVG(
-    svgRoot: SVGSVGElement,
-    fill: Fill
-): void {
+export function applyFillToSVG(svgRoot: SVGSVGElement, fill: Fill): void {
     switch (fill.type) {
-        // case 'solid':
-        //     applySolidFill(svgPath, fill.color);
-        //     break;
+        case 'solid':
+            applySolidFill(svgRoot, fill.color);
+            break;
 
-        // case 'linearGradient':
-        //     applyLinearGradientFill(
-        //         svgRoot,
-        //         svgPath,
-        //         fill.angleDegrees,
-        //         fill.stops
-        //     );
-        //     break;
+        case 'linearGradient':
+            applyLinearGradientFill(svgRoot, fill.angleDegrees, fill.stops);
+            break;
 
-        // case 'image':
-        //     applyImageFill(svgRoot, svgPath, fill.imageUrl, fill.fillMode);
-        //     break;
+        case 'image':
+            applyImageFill(svgRoot, fill.imageUrl, fill.fillMode);
+            break;
+
+        default:
+            throw new Error(`Invalid fill type: ${fill}`);
     }
 }
 
-function applySolidFill(svgElement: SVGPathElement, color: Color): void {
+function applySolidFill(svgRoot: SVGSVGElement, color: Color): void {
     const [r, g, b, a] = color;
-    svgElement.style.fill = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
+    svgRoot.style.fill = `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
 }
 
 function applyLinearGradientFill(
     svgRoot: SVGSVGElement,
-    svgPath: SVGPathElement,
     angleDegrees: number,
     stops: [Color, number][]
 ): void {
@@ -114,12 +108,11 @@ function applyLinearGradientFill(
     defs.appendChild(gradient);
 
     // Add the gradient to the path
-    svgPath.style.fill = `url(#${gradientId})`;
+    svgRoot.style.fill = `url(#${gradientId})`;
 }
 
 function applyImageFill(
     svgRoot: SVGSVGElement,
-    svgPath: SVGPathElement,
     imageUrl: string,
     fillMode: 'fit' | 'stretch' | 'tile' | 'zoom'
 ): void {
@@ -156,7 +149,7 @@ function applyImageFill(
     defs.appendChild(pattern);
 
     // Apply the pattern to the path
-    svgPath.setAttribute('fill', `url(#${patternId})`);
+    svgRoot.setAttribute('fill', `url(#${patternId})`);
 }
 
 function generateUniqueId(): string {
