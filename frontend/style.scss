@@ -247,6 +247,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    color: var(--reflex-local-text-color);
 }
 
 // Rectangle
@@ -539,4 +541,11 @@ body {
     transition:
         opacity 0.3s ease-in-out,
         transform 0.3s ease;
+}
+
+// Icon
+.reflex-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

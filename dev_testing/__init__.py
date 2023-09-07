@@ -144,6 +144,8 @@ class Sidebar(rx.Widget):
                         width=3.0,
                         height=3.0,
                     ),
+                    align_x=0.5,
+                    spacing=1,
                 ),
                 rx.Row(
                     rx.Text("Undef space around me!"),
@@ -166,6 +168,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.Button(
                     "Baz",
+                    icon="material/archive/fill",
                     shape="rectangle",
                     color="warning",
                 ),

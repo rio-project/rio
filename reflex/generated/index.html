@@ -1491,19 +1491,15 @@ class GridWidget extends WidgetBase {
 function createSVGPath(div, svgSource, fill) {
   div.innerHTML = svgSource;
   let svgRoot = div.firstChild;
-  svgRoot.style.width = "100%";
-  svgRoot.style.height = "100%";
+  if (typeof fill === "string") {
+    svgRoot.style.fill = "var(--reflex-local-text-color)";
+    return;
+  }
   if (Array.isArray(fill)) {
     fill = {
       type: "solid",
       // @ts-ignore
       color: fill
-    };
-  } else if (typeof fill === "string") {
-    console.log("TODO: Support theme colors for `Icon` widgets");
-    fill = {
-      type: "solid",
-      color: [1, 0, 1, 1]
     };
   }
   applyFillToSVG(svgRoot, fill);
@@ -1517,6 +1513,18 @@ class IconWidget extends WidgetBase {
   updateElement(element, deltaState) {
     element.innerHTML = "";
     createSVGPath(element, deltaState.svgSource, deltaState.fill);
+    if (deltaState._size_ !== void 0) {
+      let [width, height] = deltaState._size_;
+      let svgElement = element.firstElementChild;
+      svgElement.setAttribute(
+        "width",
+        width === null ? "100%" : `${width}rem`
+      );
+      svgElement.setAttribute(
+        "height",
+        height === null ? "100%" : `${height}rem`
+      );
+    }
   }
 }
 const HARDWARE_KEY_MAP = {
@@ -10680,6 +10688,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--reflex-local-text-color);
 }
 
 .reflex-rectangle {
@@ -11103,6 +11112,12 @@ body {
 .reflex-revealer-content-inner {
   padding: 0.8em;
   transition: opacity 0.3s ease-in-out, transform 0.3s ease;
+}
+
+.reflex-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
 </head>

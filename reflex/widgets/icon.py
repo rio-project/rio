@@ -66,6 +66,11 @@ class Icon(widget_base.HtmlWidget):
             assert isinstance(self.fill, str), f"Unsupported fill type: {self.fill}"
             fill = self.fill
 
+        # Serialize the width and height, as specified in Python. These will be
+        # used to force the actual graphic to be the correct height, while the
+        # rest is empty space.
+        width = self.width if isinstance(self.width, float) else None
+
         # Serialize
         return {
             "svgSource": svg_source,
