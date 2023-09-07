@@ -53,7 +53,6 @@ class Theme:
     danger_color_variant: rx.Color
 
     # Other
-    outline_width: float
     corner_radius: float
     base_spacing: float
 
@@ -81,7 +80,6 @@ class Theme:
         success_color: Optional[rx.Color] = None,
         warning_color: Optional[rx.Color] = None,
         danger_color: Optional[rx.Color] = None,
-        outline_width: float = 0.08,
         corner_radius: float = 0.6,
         base_spacing: float = 0.5,
         light: bool = True,
@@ -139,7 +137,6 @@ class Theme:
         self.danger_color_variant = _make_variant_color(self.danger_color)
 
         # Other
-        self.outline_width = outline_width
         self.corner_radius = corner_radius
         self.base_spacing = base_spacing
 
