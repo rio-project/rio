@@ -549,3 +549,19 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+// Error popup
+.reflex-error-popup {
+    position: fixed;
+    top: 2em;
+    left: 50%;
+    width: unset;
+    height: unset;
+    transform: translateX(-50%);
+    background: var(--reflex-global-surface-color-variant);
+    color: var(--reflex-global-danger-color);
+    font-weight: bold;
+    padding: 1.5em;
+    border-radius: 99999px;
+    box-shadow: 0 0 0.6em rgba(0, 0, 0, 0.5);
+}

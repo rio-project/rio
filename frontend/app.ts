@@ -841,21 +841,8 @@ export function callRemoteMethodDiscardResponse(
 
 function displayConnectionLostPopup() {
     const popup = document.createElement('div');
-    popup.classList.add('reflex-text');
-
     popup.textContent = 'Connection lost. Please refresh the page.';
-
-    popup.style.position = 'fixed';
-    popup.style.top = '2em';
-    popup.style.left = '50%';
-    popup.style.transform = 'translateX(-50%)';
-    popup.style.width = 'unset';
-    popup.style.height = 'unset';
-    popup.style.backgroundColor = '#ffffff';
-    popup.style.fontWeight = 'bold';
-    popup.style.padding = '1.5em';
-    popup.style.borderRadius = '99999px';
-
+    popup.classList.add('reflex-error-popup');
     document.body.appendChild(popup);
 }
 
