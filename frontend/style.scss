@@ -11,6 +11,10 @@
 @include linear-progress.core-styles;
 @include textfield.core-styles;
 
+// Used to highlight problems with the UI to the developer, such as
+// undefined space
+$reflex-developer-error-color: #ff9e03;
+
 // Not visible here:
 //
 // JavaScript sets global theming variables, of the form `--reflex-global-...`.
@@ -207,6 +211,30 @@ body {
     display: flex;
     flex-direction: row;
     align-items: stretch;
+}
+
+// Undefined Space Highlight
+@keyframes moveRight {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 1.4142135623730951em 0;
+    }
+}
+
+.reflex-undefined-space {
+    flex-grow: 1;
+
+    background-image: repeating-linear-gradient(
+        -45deg,
+        black 0,
+        black 0.5em,
+        $reflex-developer-error-color 0.5em,
+        $reflex-developer-error-color 1em
+    );
+    animation: moveRight 0.7s linear infinite;
 }
 
 // Grid

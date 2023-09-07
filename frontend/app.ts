@@ -1,7 +1,7 @@
 import { AlignWidget } from './align';
 import { ButtonWidget } from './button';
 import { Color, Fill } from './models';
-import { ColumnWidget } from './column';
+import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
 import { GridWidget } from './grid';
 import { IconWidget } from './Icon';
@@ -15,7 +15,6 @@ import { ProgressBarWidget } from './progressBar';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
 import { RevealerWidget } from './revealer';
-import { RowWidget } from './row';
 import { SliderWidget } from './Slider';
 import { StackWidget } from './stack';
 import { SwitchWidget } from './switch';

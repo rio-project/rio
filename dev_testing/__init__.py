@@ -123,6 +123,8 @@ class Sidebar(rx.Widget):
                     rx.Icon(
                         "archive",
                         fill=rx.Color.BLUE,
+                        width=3.0,
+                        height=3.0,
                     ),
                     rx.Icon(
                         "material/archive/fill",
@@ -131,14 +133,20 @@ class Sidebar(rx.Widget):
                             (rx.Color.BLUE, 1),
                             angle_degrees=20,
                         ),
+                        width=3.0,
+                        height=3.0,
                     ),
                     rx.Icon(
                         "material/castle",
                         fill=rx.ImageFill(
                             Path(__file__).parent / "test.png",
                         ),
+                        width=3.0,
+                        height=3.0,
                     ),
-                    height=3.0,
+                ),
+                rx.Row(
+                    rx.Text("Undef space around me!"),
                 ),
                 rx.Slider(value=0.1),
                 rx.Button(

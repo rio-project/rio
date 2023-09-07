@@ -1386,31 +1386,50 @@ class ButtonWidget extends WidgetBase {
     });
   }
 }
-class ColumnWidget extends WidgetBase {
+class LinearContainer extends WidgetBase {
   createElement() {
     let element = document.createElement("div");
-    element.classList.add("reflex-column");
+    this.grower1 = document.createElement("div");
+    this.grower1.classList.add("reflex-undefined-space");
+    this.grower2 = document.createElement("div");
+    this.grower2.classList.add("reflex-undefined-space");
     return element;
   }
   updateElement(element, deltaState) {
+    this.grower1.remove();
+    this.grower2.remove();
     replaceChildren(element, deltaState.children);
+    element.prepend(this.grower1);
+    element.append(this.grower2);
     if (deltaState.spacing !== void 0) {
       element.style.gap = `${deltaState.spacing}em`;
     }
   }
   updateChildLayouts() {
-    let children = [];
     let anyGrowers = false;
     for (let childId of this.state["children"]) {
       let child = getInstanceByWidgetId(childId);
-      children.push(child);
-      anyGrowers = anyGrowers || child.state["_grow_"][1];
-    }
-    for (let child of children) {
+      anyGrowers = anyGrowers || child.state["_grow_"][0];
       child.replaceLayoutCssProperties({
-        "flex-grow": !anyGrowers || child.state["_grow_"][1] ? "1" : "0"
+        "flex-grow": child.state["_grow_"][0] ? "1" : "0"
       });
     }
+    this.grower1.style.flexGrow = anyGrowers ? "0" : "1";
+    this.grower2.style.flexGrow = anyGrowers ? "0" : "1";
+  }
+}
+class ColumnWidget extends LinearContainer {
+  createElement() {
+    let element = super.createElement();
+    element.classList.add("reflex-column");
+    return element;
+  }
+}
+class RowWidget extends LinearContainer {
+  createElement() {
+    let element = super.createElement();
+    element.classList.add("reflex-row");
+    return element;
   }
 }
 class DropdownWidget extends WidgetBase {
@@ -3027,33 +3046,6 @@ class RevealerWidget extends WidgetBase {
       expandRevealer(element);
     } else if (deltaState.is_expanded === false) {
       collapseRevealer(element);
-    }
-  }
-}
-class RowWidget extends WidgetBase {
-  createElement() {
-    let element = document.createElement("div");
-    element.classList.add("reflex-row");
-    return element;
-  }
-  updateElement(element, deltaState) {
-    replaceChildren(element, deltaState.children);
-    if (deltaState.spacing !== void 0) {
-      element.style.gap = `${deltaState.spacing}em`;
-    }
-  }
-  updateChildLayouts() {
-    let children = [];
-    let anyGrowers = false;
-    for (let childId of this.state["children"]) {
-      let child = getInstanceByWidgetId(childId);
-      children.push(child);
-      anyGrowers = anyGrowers || child.state["_grow_"][0];
-    }
-    for (let child of children) {
-      child.replaceLayoutCssProperties({
-        "flex-grow": !anyGrowers || child.state["_grow_"][0] ? "1" : "0"
-      });
     }
   }
 }
@@ -10664,6 +10656,20 @@ body {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+}
+
+@keyframes moveRight {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 1.4142135624em 0;
+  }
+}
+.reflex-undefined-space {
+  flex-grow: 1;
+  background-image: repeating-linear-gradient(-45deg, black 0, black 0.5em, #ff9e03 0.5em, #ff9e03 1em);
+  animation: moveRight 0.7s linear infinite;
 }
 
 .reflex-grid {
