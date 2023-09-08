@@ -11,6 +11,8 @@ export type MarginState = WidgetState & {
 };
 
 export class MarginWidget extends WidgetBase {
+    state: Required<MarginState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-margin');

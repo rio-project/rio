@@ -30,6 +30,8 @@ function applyStyle(element: HTMLElement, style: any) {
 }
 
 export class PlotWidget extends WidgetBase {
+    state: Required<PlotState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.style.display = 'inline-block';

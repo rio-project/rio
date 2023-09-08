@@ -74,6 +74,8 @@ function setBoxStyleVariables(
 }
 
 export class RectangleWidget extends WidgetBase {
+    state: Required<RectangleState>;
+    
     // If this rectangle has a ripple effect, this is the ripple instance.
     // `null` otherwise.
     private mdcRipple: MDCRipple | null = null;

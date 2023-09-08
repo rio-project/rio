@@ -9,6 +9,8 @@ export type AlignState = WidgetState & {
 };
 
 export class AlignWidget extends WidgetBase {
+    state: Required<AlignState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-align');

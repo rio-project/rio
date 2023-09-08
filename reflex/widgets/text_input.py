@@ -32,7 +32,7 @@ class TextInput(widget_base.HtmlWidget):
     suffix_text: str = ""
     is_secret: bool = False
     is_sensitive: bool = True
-    input_is_valid: bool = True
+    is_valid: bool = True
     on_change: widget_base.EventHandler[TextInputChangeEvent] = None
     on_confirm: widget_base.EventHandler[TextInputConfirmEvent] = None
 

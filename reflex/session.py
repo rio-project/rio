@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import collections.abc
 import enum
 import inspect
 import json
@@ -491,8 +492,8 @@ class Session(unicall.Unicall):
         if inspect.isclass(type_) and issubclass(type_, enum.Enum):
             return uniserde.as_json(value, as_type=type_)
 
-        # Tuples or lists of serializable values
-        if origin is tuple or origin is list:
+        # Sequences of serializable values
+        if origin in (list, tuple, collections.abc.Collection, collections.abc.Sequence):
             return [self._serialize_and_host_value(v, args[0]) for v in value]
 
         # Self-Serializing

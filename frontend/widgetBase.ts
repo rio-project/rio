@@ -15,12 +15,12 @@ export type WidgetState = {
 /// Base class for all widgets
 export abstract class WidgetBase {
     elementId: string;
-    state: object;
+    state: Required<WidgetState>;
     layoutCssProperties: object;
 
     constructor(elementId: string, state: WidgetState) {
         this.elementId = elementId;
-        this.state = state;
+        this.state = state as Required<WidgetState>;
         this.layoutCssProperties = {};
     }
 

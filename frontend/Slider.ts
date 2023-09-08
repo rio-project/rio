@@ -10,6 +10,7 @@ export type SliderState = WidgetState & {
 };
 
 export class SliderWidget extends WidgetBase {
+    state: Required<SliderState>;
     private mdcSlider: MDCSlider;
 
     createElement(): HTMLElement {

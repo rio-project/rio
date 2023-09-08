@@ -194,11 +194,25 @@ class Sidebar(rx.Widget):
                 rx.Switch(
                     is_on=Sidebar.expanded,
                 ),
-                rx.Rectangle(
-                    style=rx.BoxStyle(fill=rx.Color.YELLOW),
-                    ripple=True,
-                    width=10,
-                    height=10,
+                rx.Stack(
+                    rx.Rectangle(
+                        style=rx.BoxStyle(fill=rx.Color.RED),
+                        ripple=True,
+                        width=7,
+                        height=7,
+                    ),
+                    rx.Rectangle(
+                        style=rx.BoxStyle(fill=rx.Color.YELLOW),
+                        ripple=True,
+                        width=5,
+                        height=10,
+                    ),
+                    rx.Rectangle(
+                        style=rx.BoxStyle(fill=rx.Color.GREEN),
+                        ripple=True,
+                        width=10,
+                        height=5,
+                    ),
                 ),
                 spacing=1.0,
                 align_y=0,

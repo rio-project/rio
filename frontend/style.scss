@@ -265,13 +265,12 @@ body {
 }
 
 // Stack
+.reflex-stack {
+    display: grid;
+}
 .reflex-stack > * {
-    position: absolute;
-
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    grid-column-start: 1;
+    grid-row-start: 1;
 }
 
 // Switch

@@ -8,6 +8,8 @@ export type RowState = WidgetState & {
 };
 
 export class RowWidget extends WidgetBase {
+    state: Required<RowState>;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-row');
@@ -26,7 +28,7 @@ export class RowWidget extends WidgetBase {
         let children: WidgetBase[] = [];
         let anyGrowers = false;
 
-        for (let childId of this.state['children']) {
+        for (let childId of this.state.children) {
             let child = getInstanceByWidgetId(childId);
             children.push(child);
             anyGrowers = anyGrowers || child.state['_grow_'][0];

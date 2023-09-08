@@ -39,7 +39,6 @@ function expandRevealer(elem: HTMLElement): void {
 }
 
 function collapseRevealer(elem: HTMLElement): void {
-    let header = elem.firstElementChild as HTMLElement;
     let contentOuter = elem.querySelector(
         '.reflex-revealer-content-outer'
     ) as HTMLElement;
@@ -60,6 +59,8 @@ function collapseRevealer(elem: HTMLElement): void {
 }
 
 export class RevealerWidget extends WidgetBase {
+    state: Required<RevealerState>;
+    
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');

@@ -14,6 +14,7 @@ export type ButtonState = WidgetState & {
 };
 
 export class ButtonWidget extends WidgetBase {
+    state: Required<ButtonState>;
     private mdcRipple: MDCRipple;
 
     createElement(): HTMLElement {

@@ -9,6 +9,8 @@ export type TextState = WidgetState & {
 };
 
 export class TextWidget extends WidgetBase {
+    state: Required<TextState>;
+    
     createElement(): HTMLElement {
         let containerElement = document.createElement('div');
         containerElement.classList.add('reflex-text');

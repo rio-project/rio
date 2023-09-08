@@ -1,4 +1,3 @@
-import { colorToCss } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type SwitchState = WidgetState & {
@@ -8,6 +7,8 @@ export type SwitchState = WidgetState & {
 };
 
 export class SwitchWidget extends WidgetBase {
+    state: Required<SwitchState>;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-switch');

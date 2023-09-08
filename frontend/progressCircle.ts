@@ -11,6 +11,8 @@ export type ProgressCircleState = WidgetState & {
 };
 
 export class ProgressCircleWidget extends WidgetBase {
+    state: Required<ProgressCircleState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.innerHTML = `

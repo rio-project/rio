@@ -9,10 +9,11 @@ export type TextInputState = WidgetState & {
     suffix_text?: string;
     is_secret?: boolean;
     is_sensitive?: boolean;
-    input_is_valid?: boolean;
+    is_valid?: boolean;
 };
 
 export class TextInputWidget extends WidgetBase {
+    state: Required<TextInputState>;
     private mdcTextField: MDCTextField;
 
     createElement(): HTMLElement {
@@ -87,8 +88,8 @@ export class TextInputWidget extends WidgetBase {
             this.mdcTextField.disabled = !deltaState.is_sensitive;
         }
 
-        if (deltaState.input_is_valid !== undefined) {
-            this.mdcTextField.valid = deltaState.input_is_valid;
+        if (deltaState.is_valid !== undefined) {
+            this.mdcTextField.valid = deltaState.is_valid;
         }
     }
 }

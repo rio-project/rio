@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+import collections.abc
+from typing import Optional, Union, Literal
 
 import reflex as rx
 
 from . import widget_base
 
-__all__ = [
-    "Column",
-]
+__all__ = ["Column"]
 
 
 class Column(widget_base.HtmlWidget):
-    children: List[widget_base.Widget]
+    children: collections.abc.Collection[widget_base.Widget]
     spacing: float
 
     def __init__(

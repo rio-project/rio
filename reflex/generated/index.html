@@ -2785,16 +2785,16 @@ class ProgressBarWidget extends WidgetBase {
     element.classList.add("mdc-linear-progress");
     element.setAttribute("role", "progressbar");
     element.innerHTML = `
-  <div class="mdc-linear-progress__buffer">
+<div class="mdc-linear-progress__buffer">
     <div class="mdc-linear-progress__buffer-bar"></div>
     <div class="mdc-linear-progress__buffer-dots"></div>
-  </div>
-  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+</div>
+<div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
     <span class="mdc-linear-progress__bar-inner"></span>
-  </div>
-  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+</div>
+<div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
     <span class="mdc-linear-progress__bar-inner"></span>
-  </div>
+</div>
         `;
     this.mdcProgress = new MDCLinearProgress(element);
     return element;
@@ -2967,7 +2967,6 @@ function expandRevealer(elem) {
   });
 }
 function collapseRevealer(elem) {
-  elem.firstElementChild;
   let contentOuter = elem.querySelector(
     ".reflex-revealer-content-outer"
   );
@@ -3045,7 +3044,7 @@ class RowWidget extends WidgetBase {
   updateChildLayouts() {
     let children = [];
     let anyGrowers = false;
-    for (let childId of this.state["children"]) {
+    for (let childId of this.state.children) {
       let child = getInstanceByWidgetId(childId);
       children.push(child);
       anyGrowers = anyGrowers || child.state["_grow_"][0];
@@ -4415,13 +4414,14 @@ class StackWidget extends WidgetBase {
     return element;
   }
   updateElement(element, deltaState) {
-    if (deltaState.children !== void 0) {
-      replaceChildren(element, deltaState.children);
-      let zIndex = 0;
-      for (let child of element.children) {
-        child.style.zIndex = `${zIndex}`;
-        zIndex += 1;
-      }
+    replaceChildren(element, deltaState.children);
+  }
+  updateChildLayouts() {
+    let zIndex = 0;
+    for (let childId of this.state.children) {
+      let child = getInstanceByWidgetId(childId);
+      child.replaceLayoutCssProperties({ zIndex: `${zIndex}` });
+      zIndex += 1;
     }
   }
 }
@@ -6842,8 +6842,8 @@ class TextInputWidget extends WidgetBase {
     if (deltaState.is_sensitive !== void 0) {
       this.mdcTextField.disabled = !deltaState.is_sensitive;
     }
-    if (deltaState.input_is_valid !== void 0) {
-      this.mdcTextField.valid = deltaState.input_is_valid;
+    if (deltaState.is_valid !== void 0) {
+      this.mdcTextField.valid = deltaState.is_valid;
     }
   }
 }
@@ -10789,12 +10789,13 @@ body {
   box-shadow: var(--rectangle-shadow-offset-x-hover) var(--rectangle-shadow-offset-y-hover) var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
+.reflex-stack {
+  display: grid;
+}
+
 .reflex-stack > * {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  grid-column-start: 1;
+  grid-row-start: 1;
 }
 
 .reflex-switch .container {

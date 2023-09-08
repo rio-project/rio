@@ -1,4 +1,4 @@
-import { replaceChildren } from './app';
+import { getInstanceByWidgetId, replaceChildren } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type StackState = WidgetState & {
@@ -7,6 +7,8 @@ export type StackState = WidgetState & {
 };
 
 export class StackWidget extends WidgetBase {
+    state: Required<StackState>;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-stack');
@@ -14,14 +16,16 @@ export class StackWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLElement, deltaState: StackState): void {
-        if (deltaState.children !== undefined) {
-            replaceChildren(element, deltaState.children);
+        replaceChildren(element, deltaState.children);
+    }
 
-            let zIndex = 0;
-            for (let child of element.children) {
-                (child as HTMLElement).style.zIndex = `${zIndex}`;
-                zIndex += 1;
-            }
+    updateChildLayouts(): void {
+        let zIndex = 0;
+        for (let childId of this.state.children) {
+            let child = getInstanceByWidgetId(childId);
+            
+            child.replaceLayoutCssProperties({zIndex: `${zIndex}`});
+            zIndex += 1;
         }
     }
 }

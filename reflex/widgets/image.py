@@ -7,9 +7,7 @@ import reflex as rx
 
 from . import widget_base
 
-__all__ = [
-    "Image",
-]
+__all__ = ["Image"]
 
 
 class Image(widget_base.Widget):
@@ -23,4 +21,4 @@ class Image(widget_base.Widget):
             fill_mode=self.fill_mode,
         )
         style = rx.BoxStyle(fill=fill)
-        return rx.Rectangle(style)
+        return rx.Rectangle(style=style)

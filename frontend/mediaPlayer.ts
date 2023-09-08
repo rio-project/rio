@@ -11,6 +11,8 @@ export type MediaPlayerState = WidgetState & {
 };
 
 export class MediaPlayerWidget extends WidgetBase {
+    state: Required<MediaPlayerState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('video');
         return element;

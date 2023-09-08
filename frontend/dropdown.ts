@@ -7,6 +7,8 @@ export type DropdownState = WidgetState & {
 };
 
 export class DropdownWidget extends WidgetBase {
+    state: Required<DropdownState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('select');
         element.classList.add('reflex-dropdown');

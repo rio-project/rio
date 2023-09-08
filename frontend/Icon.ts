@@ -46,6 +46,8 @@ function createSVGPath(
 }
 
 export class IconWidget extends WidgetBase {
+    state: Required<IconState>;
+    
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-icon');

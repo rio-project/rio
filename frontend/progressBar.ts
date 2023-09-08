@@ -6,6 +6,7 @@ export type ProgressBarState = WidgetState & {
 };
 
 export class ProgressBarWidget extends WidgetBase {
+    state: Required<ProgressBarState>;
     private mdcProgress: MDCLinearProgress;
 
     createElement(): HTMLElement {
@@ -15,16 +16,16 @@ export class ProgressBarWidget extends WidgetBase {
         element.setAttribute('role', 'progressbar');
 
         element.innerHTML = `
-  <div class="mdc-linear-progress__buffer">
+<div class="mdc-linear-progress__buffer">
     <div class="mdc-linear-progress__buffer-bar"></div>
     <div class="mdc-linear-progress__buffer-dots"></div>
-  </div>
-  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+</div>
+<div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
     <span class="mdc-linear-progress__bar-inner"></span>
-  </div>
-  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+</div>
+<div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
     <span class="mdc-linear-progress__bar-inner"></span>
-  </div>
+</div>
         `;
 
         // Initialize the material design component

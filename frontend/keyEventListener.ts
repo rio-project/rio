@@ -698,7 +698,7 @@ export type KeyEventListenerState = WidgetState & {
 
 
 export class KeyEventListenerWidget extends WidgetBase {
-    state: KeyEventListenerState;
+    state: Required<KeyEventListenerState>;
 
     createElement(): HTMLElement {
         let element = document.createElement('div');

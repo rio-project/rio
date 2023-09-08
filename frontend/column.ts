@@ -8,6 +8,8 @@ type ColumnState = WidgetState & {
 };
 
 export class ColumnWidget extends WidgetBase {
+    state: Required<ColumnState>;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-column');

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-from typing import *  # type: ignore
+import collections.abc
+from typing import Optional, Union, Literal
 
 import reflex as rx
 
@@ -13,7 +13,7 @@ __all__ = [
 
 
 class Row(widget_base.HtmlWidget):
-    children: List[rx.Widget]
+    children: collections.abc.Collection[rx.Widget]
     spacing: float = 0.0
 
     def __init__(

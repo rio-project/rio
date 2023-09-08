@@ -20,7 +20,7 @@ export type GridState = WidgetState & {
 
 
 export class GridWidget extends WidgetBase {
-    state: GridState;
+    state: Required<GridState>;
     
     createElement(): HTMLElement {
         let element = document.createElement('div');

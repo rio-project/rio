@@ -24,43 +24,6 @@ class MediaPlayer(widget_base.HtmlWidget):
     muted: bool = False
     volume: float = 1.0
 
-    @classmethod
-    def build_javascript_source(cls, sess: Session) -> str:
-        return """
-class MediaPlayer extends WidgetBase  {
-    createElement(){
-        const element = document.createElement('video');
-        return element;
-    }
-
-    updateElement(element, deltaState) {
-        if (deltaState.mediaUrl !== undefined) {
-            element.src = deltaState.mediaUrl;
-        }
-
-        if (deltaState.loop !== undefined) {
-            element.loop = deltaState.loop;
-        }
-
-        if (deltaState.autoplay !== undefined) {
-            element.autoplay = deltaState.autoplay;
-        }
-
-        if (deltaState.controls !== undefined) {
-            element.controls = deltaState.controls;
-        }
-
-        if (deltaState.muted !== undefined) {
-            element.muted = deltaState.muted;
-        }
-
-        if (deltaState.volume !== undefined) {
-            element.volume = deltaState.volume;
-        }
-    }
-}
-        """
-
     def __post_init__(self):
         if self.media_type is None:
             self.media_type, _ = mimetypes.guess_type(self.media)
@@ -73,7 +36,7 @@ class MediaPlayer extends WidgetBase  {
         else:
             self._media_asset = HostedAsset(self.media_type, self.media)
     
-    def _custom_serialize(self) -> JsonDoc:
+    def _custom_serialize(self, app_server: object) -> JsonDoc:
         if self._media_asset is None:
             media_url = cast(str, self.media)
         else:
