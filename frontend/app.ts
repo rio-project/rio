@@ -1,7 +1,7 @@
 import { AlignWidget } from './align';
 import { ButtonWidget } from './button';
 import { Color, Fill } from './models';
-import { ColumnWidget } from './column';
+import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
 import { GridWidget } from './grid';
 import { IconWidget } from './Icon';
@@ -15,7 +15,6 @@ import { ProgressBarWidget } from './progressBar';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
 import { RevealerWidget } from './revealer';
-import { RowWidget } from './row';
 import { SliderWidget } from './Slider';
 import { StackWidget } from './stack';
 import { SwitchWidget } from './switch';
@@ -842,21 +841,8 @@ export function callRemoteMethodDiscardResponse(
 
 function displayConnectionLostPopup() {
     const popup = document.createElement('div');
-    popup.classList.add('reflex-text');
-
     popup.textContent = 'Connection lost. Please refresh the page.';
-
-    popup.style.position = 'fixed';
-    popup.style.top = '2em';
-    popup.style.left = '50%';
-    popup.style.transform = 'translateX(-50%)';
-    popup.style.width = 'unset';
-    popup.style.height = 'unset';
-    popup.style.backgroundColor = '#ffffff';
-    popup.style.fontWeight = 'bold';
-    popup.style.padding = '1.5em';
-    popup.style.borderRadius = '99999px';
-
+    popup.classList.add('reflex-error-popup');
     document.body.appendChild(popup);
 }
 

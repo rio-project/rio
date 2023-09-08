@@ -16,31 +16,22 @@ function createSVGPath(
     div.innerHTML = svgSource;
     let svgRoot = div.firstChild as SVGSVGElement;
 
-    svgRoot.style.width = '100%';
-    svgRoot.style.height = '100%';
-
-    // Preprocess the style
+    // If the fill is a string apply the appropriate theme color.
+    if (typeof fill === 'string') {
+        svgRoot.style.fill = 'var(--reflex-local-text-color)';
+        return;
+    }
 
     // If the fill is a color convert it to a solid fill first.
     if (Array.isArray(fill)) {
         fill = {
             type: 'solid',
-
             // @ts-ignore
             color: fill,
         };
     }
 
-    // If the fill is a string apply the appropriate theme color.
-    else if (typeof fill === 'string') {
-        console.log('TODO: Support theme colors for `Icon` widgets');
-        fill = {
-            type: 'solid',
-            color: [1, 0, 1, 1],
-        };
-    }
-
-    // Apply it
+    // Apply the fill
     // @ts-ignore
     applyFillToSVG(svgRoot, fill);
 }
@@ -60,5 +51,26 @@ export class IconWidget extends WidgetBase {
 
         // Add the SVG
         createSVGPath(element, deltaState.svgSource, deltaState.fill);
+
+        // Size
+        //
+        // The SVG has no size on it's own. This is so it scales up, rather than
+        // staying a fixed size. However, this removes it's "size request". If a
+        // size was provided by the backend, apply that explicitly.
+        //
+        // TODO / FIXME: Shouldn't this account for the aspect ratio?
+        if (deltaState._size_ !== undefined) {
+            let [width, height] = deltaState._size_;
+            let svgElement = element.firstElementChild as SVGSVGElement;
+
+            svgElement.setAttribute(
+                'width',
+                width === null ? '100%' : `${width}rem`
+            );
+            svgElement.setAttribute(
+                'height',
+                height === null ? '100%' : `${height}rem`
+            );
+        }
     }
 }

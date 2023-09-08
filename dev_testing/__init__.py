@@ -123,6 +123,8 @@ class Sidebar(rx.Widget):
                     rx.Icon(
                         "archive",
                         fill=rx.Color.BLUE,
+                        width=3.0,
+                        height=3.0,
                     ),
                     rx.Icon(
                         "material/archive/fill",
@@ -131,14 +133,22 @@ class Sidebar(rx.Widget):
                             (rx.Color.BLUE, 1),
                             angle_degrees=20,
                         ),
+                        width=3.0,
+                        height=3.0,
                     ),
                     rx.Icon(
                         "material/castle",
                         fill=rx.ImageFill(
                             Path(__file__).parent / "test.png",
                         ),
+                        width=3.0,
+                        height=3.0,
                     ),
-                    height=3.0,
+                    align_x=0.5,
+                    spacing=1,
+                ),
+                rx.Row(
+                    rx.Text("⇇ Undef space ⇉"),
                 ),
                 rx.Slider(value=0.1),
                 rx.Button(
@@ -158,6 +168,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.Button(
                     "Baz",
+                    icon="material/archive/fill",
                     shape="rectangle",
                     color="warning",
                 ),
@@ -231,29 +242,26 @@ class WidgetShowcase(rx.Widget):
             title="Life expectancy in Canada",
         )
 
-        return rx.Rectangle(
-            child=rx.Row(
-                Sidebar(
-                    width=30,
-                ),
-                ShowcaseCard(
-                    "Hello Worlds",
-                    "Much hello!",
-                    rx.Column(
-                        rx.Text("Hello World"),
-                        rx.Text("Hello World"),
-                        rx.Text("Hello World"),
-                        rx.Plot(
-                            figure=fig,
-                            # height=20,
-                        ),
-                    ),
-                    margin_x=4,
-                    align_y=0.2,
-                    width="grow",
-                ),
+        return rx.Row(
+            Sidebar(
+                width=30,
             ),
-            style=rx.BoxStyle(fill=theme.surface_color),
+            ShowcaseCard(
+                "Hello Worlds",
+                "Much hello!",
+                rx.Column(
+                    rx.Text("Hello World"),
+                    rx.Text("Hello World"),
+                    rx.Text("Hello World"),
+                    rx.Plot(
+                        figure=fig,
+                        # height=20,
+                    ),
+                ),
+                margin_x=4,
+                align_y=0.2,
+                width="grow",
+            ),
         )
 
 

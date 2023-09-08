@@ -1386,31 +1386,50 @@ class ButtonWidget extends WidgetBase {
     });
   }
 }
-class ColumnWidget extends WidgetBase {
+class LinearContainer extends WidgetBase {
   createElement() {
     let element = document.createElement("div");
-    element.classList.add("reflex-column");
+    this.grower1 = document.createElement("div");
+    this.grower1.classList.add("reflex-undefined-space");
+    this.grower2 = document.createElement("div");
+    this.grower2.classList.add("reflex-undefined-space");
     return element;
   }
   updateElement(element, deltaState) {
+    this.grower1.remove();
+    this.grower2.remove();
     replaceChildren(element, deltaState.children);
+    element.prepend(this.grower1);
+    element.append(this.grower2);
     if (deltaState.spacing !== void 0) {
       element.style.gap = `${deltaState.spacing}em`;
     }
   }
   updateChildLayouts() {
-    let children = [];
     let anyGrowers = false;
     for (let childId of this.state["children"]) {
       let child = getInstanceByWidgetId(childId);
-      children.push(child);
-      anyGrowers = anyGrowers || child.state["_grow_"][1];
-    }
-    for (let child of children) {
+      anyGrowers = anyGrowers || child.state["_grow_"][0];
       child.replaceLayoutCssProperties({
-        "flex-grow": !anyGrowers || child.state["_grow_"][1] ? "1" : "0"
+        "flex-grow": child.state["_grow_"][0] ? "1" : "0"
       });
     }
+    this.grower1.style.flexGrow = anyGrowers ? "0" : "1";
+    this.grower2.style.flexGrow = anyGrowers ? "0" : "1";
+  }
+}
+class ColumnWidget extends LinearContainer {
+  createElement() {
+    let element = super.createElement();
+    element.classList.add("reflex-column");
+    return element;
+  }
+}
+class RowWidget extends LinearContainer {
+  createElement() {
+    let element = super.createElement();
+    element.classList.add("reflex-row");
+    return element;
   }
 }
 class DropdownWidget extends WidgetBase {
@@ -1472,19 +1491,15 @@ class GridWidget extends WidgetBase {
 function createSVGPath(div, svgSource, fill) {
   div.innerHTML = svgSource;
   let svgRoot = div.firstChild;
-  svgRoot.style.width = "100%";
-  svgRoot.style.height = "100%";
+  if (typeof fill === "string") {
+    svgRoot.style.fill = "var(--reflex-local-text-color)";
+    return;
+  }
   if (Array.isArray(fill)) {
     fill = {
       type: "solid",
       // @ts-ignore
       color: fill
-    };
-  } else if (typeof fill === "string") {
-    console.log("TODO: Support theme colors for `Icon` widgets");
-    fill = {
-      type: "solid",
-      color: [1, 0, 1, 1]
     };
   }
   applyFillToSVG(svgRoot, fill);
@@ -1498,6 +1513,18 @@ class IconWidget extends WidgetBase {
   updateElement(element, deltaState) {
     element.innerHTML = "";
     createSVGPath(element, deltaState.svgSource, deltaState.fill);
+    if (deltaState._size_ !== void 0) {
+      let [width, height] = deltaState._size_;
+      let svgElement = element.firstElementChild;
+      svgElement.setAttribute(
+        "width",
+        width === null ? "100%" : `${width}rem`
+      );
+      svgElement.setAttribute(
+        "height",
+        height === null ? "100%" : `${height}rem`
+      );
+    }
   }
 }
 const HARDWARE_KEY_MAP = {
@@ -3026,33 +3053,6 @@ class RevealerWidget extends WidgetBase {
       expandRevealer(element);
     } else if (deltaState.is_expanded === false) {
       collapseRevealer(element);
-    }
-  }
-}
-class RowWidget extends WidgetBase {
-  createElement() {
-    let element = document.createElement("div");
-    element.classList.add("reflex-row");
-    return element;
-  }
-  updateElement(element, deltaState) {
-    replaceChildren(element, deltaState.children);
-    if (deltaState.spacing !== void 0) {
-      element.style.gap = `${deltaState.spacing}em`;
-    }
-  }
-  updateChildLayouts() {
-    let children = [];
-    let anyGrowers = false;
-    for (let childId of this.state.children) {
-      let child = getInstanceByWidgetId(childId);
-      children.push(child);
-      anyGrowers = anyGrowers || child.state["_grow_"][0];
-    }
-    for (let child of children) {
-      child.replaceLayoutCssProperties({
-        "flex-grow": !anyGrowers || child.state["_grow_"][0] ? "1" : "0"
-      });
     }
   }
 }
@@ -7419,18 +7419,8 @@ function callRemoteMethodDiscardResponse(method, params) {
 }
 function displayConnectionLostPopup() {
   const popup = document.createElement("div");
-  popup.classList.add("reflex-text");
   popup.textContent = "Connection lost. Please refresh the page.";
-  popup.style.position = "fixed";
-  popup.style.top = "2em";
-  popup.style.left = "50%";
-  popup.style.transform = "translateX(-50%)";
-  popup.style.width = "unset";
-  popup.style.height = "unset";
-  popup.style.backgroundColor = "#ffffff";
-  popup.style.fontWeight = "bold";
-  popup.style.padding = "1.5em";
-  popup.style.borderRadius = "99999px";
+  popup.classList.add("reflex-error-popup");
   document.body.appendChild(popup);
 }
 main();
@@ -10568,7 +10558,7 @@ main();
   --reflex-local-accent-color-variant: var(
       --reflex-global-success-color-variant
   );
-  --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+  --reflex-local-text-color: var(--reflex-global-text-on-success-color);
 }
 
 .reflex-switcheroo-warning {
@@ -10576,7 +10566,7 @@ main();
   --reflex-local-accent-color-variant: var(
       --reflex-global-warning-color-variant
   );
-  --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+  --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
 }
 
 .reflex-switcheroo-danger {
@@ -10584,7 +10574,7 @@ main();
   --reflex-local-accent-color-variant: var(
       --reflex-global-danger-color-variant
   );
-  --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+  --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
 }
 
 .reflex-switcheroo-text {
@@ -10633,13 +10623,16 @@ main();
   height: 100%;
 }
 
+html {
+  background: var(--reflex-global-background-color);
+}
+
 body {
   width: 100vw;
   height: 100vh;
   margin: 0;
   padding: 0;
   font-family: Roboto, sans-serif;
-  background: var(--reflex-background-color);
 }
 
 .reflex-widget {
@@ -10666,6 +10659,20 @@ body {
   align-items: stretch;
 }
 
+@keyframes moveRight {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 1.4142135624em 0;
+  }
+}
+.reflex-undefined-space {
+  flex-grow: 1;
+  background-image: repeating-linear-gradient(-45deg, black 0, black 0.5em, #ff9e03 0.5em, #ff9e03 1em);
+  animation: moveRight 0.7s linear infinite;
+}
+
 .reflex-grid {
   display: grid;
 }
@@ -10674,6 +10681,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--reflex-local-text-color);
 }
 
 .reflex-rectangle {
@@ -10800,10 +10808,10 @@ body {
 
 .reflex-switch .container {
   position: relative;
-  width: 3.182em;
-  height: 1.548em;
+  width: 3.182rem;
+  height: 1.548rem;
   margin: auto;
-  border-radius: 4.3em;
+  border-radius: 4.3rem;
   background-color: var(--reflex-global-disabled-color-variant);
   transition: 0.3s ease all;
   z-index: 1;
@@ -10827,38 +10835,38 @@ body {
 .reflex-switch .knob {
   z-index: 2;
   position: absolute;
-  top: 0.172em;
-  left: 0.172em;
-  width: 0.86em;
-  height: 0.43em;
-  padding: 0.387em 0.172em;
+  top: 0.172rem;
+  left: 0.172rem;
+  width: 0.86rem;
+  height: 0.43rem;
+  padding: 0.387em 0.172rem;
   background-color: var(--reflex-global-disabled-color);
   border-radius: 50%;
   transition: 0.3s ease all, left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
 }
 
 .reflex-switch input:active + .knob {
-  width: 1.978em;
-  border-radius: 4.3em;
+  width: 1.978rem;
+  border-radius: 4.3rem;
 }
 
 .reflex-switch.is-on input:active + .knob {
-  margin-left: -1.118em;
+  margin-left: -1.118rem;
 }
 
 .reflex-switch.is-on input + .knob {
-  left: 1.806em;
+  left: 1.806rem;
   background-color: var(--reflex-local-surface-color);
 }
 
 .reflex-dropdown {
-  min-height: 2em;
+  min-height: 2rem;
   background-color: var(--reflex-local-surface-color-variant);
   color: var(--reflex-local-text-color);
   caret-color: var(--reflex-local-accent-color);
   border-radius: var(--reflex-global-corner-radius);
   border: 1.5px solid transparent;
-  padding: 0.3em 0.5em;
+  padding: 0.3em 0.5rem;
   text-align: center;
   outline: none;
 }
@@ -11033,7 +11041,7 @@ body {
 }
 
 .reflex-buttonstyle-minor {
-  outline: 0.15em solid var(--reflex-local-accent-color);
+  outline: 0.1em solid var(--reflex-local-accent-color);
   --reflex-local-text-color: var(--reflex-local-accent-color);
 }
 
@@ -11061,7 +11069,7 @@ body {
 
 .reflex-revealer-header {
   cursor: pointer;
-  padding: 0.8em;
+  padding: 0.8rem;
   width: 100%;
   text-align: left;
   display: flex;
@@ -11074,10 +11082,10 @@ body {
 }
 
 .reflex-revealer-arrow {
-  width: 1.3em;
-  height: 1.3em;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.12 9.29 12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"/></svg>');
   background-size: 100% 100%;
   fill: var(--reflex-local-text-color);
@@ -11096,8 +11104,29 @@ body {
 }
 
 .reflex-revealer-content-inner {
-  padding: 0.8em;
+  padding: 0.8rem;
   transition: opacity 0.3s ease-in-out, transform 0.3s ease;
+}
+
+.reflex-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reflex-error-popup {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  width: unset;
+  height: unset;
+  transform: translateX(-50%);
+  background: var(--reflex-global-surface-color-variant);
+  color: var(--reflex-global-danger-color);
+  font-weight: bold;
+  padding: 1.5rem;
+  border-radius: 99999px;
+  box-shadow: 0 0 0.6em rgba(0, 0, 0, 0.5);
 }
 </style>
 </head>

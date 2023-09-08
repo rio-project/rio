@@ -49,8 +49,8 @@ class Button(widget_base.Widget):
                 children.append(
                     rx.Icon(
                         self.icon,
-                        height=1.1,
-                        width=1.1,
+                        height=1.2,
+                        width=1.2,
                     )
                 )
 
@@ -70,7 +70,7 @@ class Button(widget_base.Widget):
             child = rx.Row(
                 *children,
                 spacing=0.6,
-                margin=0.3,
+                margin=0.2,
                 align_x=0.5,
             )
 
