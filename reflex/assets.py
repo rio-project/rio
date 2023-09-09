@@ -36,6 +36,17 @@ def _securely_hash_bytes_changes_between_runs(data: bytes) -> bytes:
 
 
 class Asset(SelfSerializing):
+    """
+    Base class for assets - i.e. files that the client needs to be able to
+    access. Assets can be hosted locally or remotely.
+
+    Do not instantiate this class directly. Instead, use `Asset.new` or one of
+    the alternative constructors.
+
+    To use an asset in a widget, simply store it in the widget's state. The
+    asset will automatically register itself with the AppServer (if necessary)
+    and serialize itself as a URL.
+    """
     def __init__(
         self,
         media_type: Optional[str] = None,

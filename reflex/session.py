@@ -201,6 +201,11 @@ class Session(unicall.Unicall):
         # Note: These are initialized by the AppServer.
         self.attachments = SessionAttachments(self)
 
+        # This object allows easy access to the app's assets. PathAssets
+        # implement the / operator, so the user can instantiate a PathAsset
+        # simply by writing `session.assets / "my_asset.png"`.
+        self.assets = assets.PathAsset(self._app_server.app.assets_dir)
+
     @property
     def running_in_window(self) -> bool:
         """

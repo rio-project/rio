@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import threading
 import webbrowser
 from datetime import timedelta
+from pathlib import Path
 from typing import Optional, Callable, Awaitable, Any, Union, Iterable
 
 import fastapi
 import uvicorn
+
+import __main__
 
 import reflex as rx
 
@@ -35,6 +39,7 @@ class App:
         on_session_end: rx.EventHandler[rx.Session] = None,
         default_attachments: Iterable[Any] = (),
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
+        assets_dir: Union[str, os.PathLike, None] = None,
     ):
         self.name = name
         self.build = build
@@ -42,6 +47,7 @@ class App:
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)
+        self.assets_dir = Path(__main__.__file__).parent / (assets_dir or '')
 
         if isinstance(ping_pong_interval, timedelta):
             self.ping_pong_interval = ping_pong_interval

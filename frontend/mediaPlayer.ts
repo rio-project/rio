@@ -2,7 +2,7 @@ import { WidgetBase, WidgetState } from './widgetBase';
 
 export type MediaPlayerState = WidgetState & {
     _type_: 'mediaPlayer';
-    media?: string;
+    _media_asset?: string;
     loop?: boolean;
     autoplay?: boolean;
     controls?: boolean;
@@ -19,8 +19,8 @@ export class MediaPlayerWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLMediaElement, deltaState: MediaPlayerState): void {
-        if (deltaState.media !== undefined) {
-            element.src = deltaState.media;
+        if (deltaState._media_asset !== undefined) {
+            element.src = deltaState._media_asset;
         }
 
         if (deltaState.loop !== undefined) {
