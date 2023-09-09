@@ -7,7 +7,9 @@ import reflex as rx
 
 from . import widget_base
 
-__all__ = ["Image"]
+__all__ = [
+    "Image",
+]
 
 
 class Image(widget_base.Widget):

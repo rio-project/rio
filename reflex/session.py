@@ -13,6 +13,7 @@ import weakref
 from dataclasses import dataclass
 from typing import *  # type: ignore
 
+import babel
 import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc
@@ -152,6 +153,12 @@ class Session(unicall.Unicall):
         self._root_widget = root_widget
         self._app_server = app_server_
 
+        # These are injected by the app server after the session has already been created
+        self.external_url: Optional[str] = None  # None if running in a window
+        self.preferred_locales: Tuple[
+            babel.Locale, ...
+        ] = tuple()  # Always has at least one member
+
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
 
@@ -194,6 +201,22 @@ class Session(unicall.Unicall):
         # of the app. They can be looked up by their type.
         # Note: These are initialized by the AppServer.
         self.attachments = SessionAttachments(self)
+
+    @property
+    def running_in_window(self) -> bool:
+        """
+        Returns `True` if the app is running in a local window, and `False` if
+        it is hosted as a website.
+        """
+        return self._app_server.running_in_window
+
+    @property
+    def running_as_website(self) -> bool:
+        """
+        Returns `True` if the app is running as a website, and `False` if it is
+        running in a local window.
+        """
+        return self._app_server.running_in_window
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
@@ -493,7 +516,12 @@ class Session(unicall.Unicall):
             return uniserde.as_json(value, as_type=type_)
 
         # Sequences of serializable values
-        if origin in (list, tuple, collections.abc.Collection, collections.abc.Sequence):
+        if origin in (
+            list,
+            tuple,
+            collections.abc.Collection,
+            collections.abc.Sequence,
+        ):
             return [self._serialize_and_host_value(v, args[0]) for v in value]
 
         # Self-Serializing
@@ -1014,7 +1042,7 @@ class Session(unicall.Unicall):
 
         # Return the file info
         if multiple:
-            return tuple(files)
+            return tuple(files)  # type: ignore
         else:
             return files[0]
 

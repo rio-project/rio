@@ -1,5 +1,6 @@
 import { AlignWidget } from './align';
 import { ButtonWidget } from './button';
+import { SlideshowWidget } from './slideshow';
 import { Color, Fill } from './models';
 import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
@@ -151,6 +152,7 @@ export function getParentWidgetElementExcludingInjected(
 const widgetClasses = {
     'Align-builtin': AlignWidget,
     'Button-builtin': ButtonWidget,
+    'Slideshow-builtin': SlideshowWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Grid-builtin': GridWidget,
@@ -733,7 +735,7 @@ function requestFileUpload(message: any): void {
 function main() {
     // Determine the browser's font size
     var measure = document.createElement('div');
-    measure.style.height = '10em';
+    measure.style.height = '10rem';
     document.body.appendChild(measure);
     pixelsPerEm = measure.offsetHeight / 10;
     document.body.removeChild(measure);
@@ -792,6 +794,8 @@ function onOpen() {
     }
 
     sendMessageOverWebsocket({
+        websiteUrl: window.location.href,
+        preferredLanguages: navigator.languages,
         userSettings: userSettings,
     });
 }

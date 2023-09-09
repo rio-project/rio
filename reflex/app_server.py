@@ -11,6 +11,7 @@ import weakref
 from datetime import timedelta
 from typing import *  # type: ignore
 
+import babel
 import fastapi
 import timer_dict
 import uniserde.case_convert
@@ -42,6 +43,8 @@ def read_frontend_template(template_name: str) -> str:
 
 
 class InitialClientMessage(uniserde.Serde):
+    website_url: str
+    preferred_languages: List[str]
     user_settings: Dict[str, Any]
 
 
@@ -131,7 +134,8 @@ class AppServer(fastapi.FastAPI):
     def __init__(
         self,
         app_: app.App,
-        external_url: str,
+        running_in_window: bool,
+        external_url_override: Optional[str],
         on_session_start: rx.EventHandler[rx.Session],
         on_session_end: rx.EventHandler[rx.Session],
         default_attachments: Tuple[Any, ...],
@@ -141,10 +145,13 @@ class AppServer(fastapi.FastAPI):
 
         # TODO: Maybe parse the url and remove the backslash? Document this?
         # Something?
-        assert not external_url.endswith("/"), external_url
+        assert external_url_override is None or not external_url_override.endswith(
+            "/"
+        ), external_url_override
 
         self.app = app_
-        self.external_url = external_url
+        self.running_in_window = running_in_window
+        self.external_url_override = external_url_override
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = default_attachments
@@ -517,6 +524,35 @@ class AppServer(fastapi.FastAPI):
         # information about it. Wait for it.
         initial_message_json: Jsonable = await websocket.receive_json()
         initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
+
+        # Parse the preferred locales
+        preferred_locales = []
+
+        for raw_locale_string in initial_message.preferred_languages:
+            try:
+                preferred_locales.append(
+                    babel.Locale.parse(
+                        raw_locale_string.replace("-", "_"),
+                    )
+                )
+            except ValueError:
+                pass
+
+        if not preferred_locales:
+            preferred_locales.append(babel.Locale.parse("en"))
+
+        sess.preferred_locales = tuple(preferred_locales)
+
+        # Publish the external URL via the session
+        sess.external_url = (
+            None
+            if self.running_in_window
+            else (
+                initial_message.website_url
+                if self.external_url_override is None
+                else self.external_url_override
+            )
+        )
 
         # Deserialize the user settings
         visited_settings: Dict[str, user_settings_module.UserSettings] = {}

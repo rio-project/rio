@@ -36,7 +36,7 @@ class Theme:
     accent_color_variant: rx.Color
     disabled_color_variant: rx.Color
 
-    # surface colors are often used for backgrounds. Most widgets are placed on
+    # Surface colors are often used for backgrounds. Most widgets are placed on
     # top of the surface color.
     background_color: rx.Color
     surface_color: rx.Color
@@ -55,6 +55,8 @@ class Theme:
     # Other
     corner_radius: float
     base_spacing: float
+    shadow_radius: float
+    shadow_color: rx.Color
 
     # Text styles
     text_color_on_light: rx.Color
@@ -139,6 +141,8 @@ class Theme:
         # Other
         self.corner_radius = corner_radius
         self.base_spacing = base_spacing
+        self.shadow_color = rx.Color.BLACK.replace(opacity=0.5)
+        self.shadow_radius = 1
 
         # Text styles
         self.text_color_on_light = rx.Color.from_grey(0.1)

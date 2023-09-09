@@ -1386,50 +1386,199 @@ class ButtonWidget extends WidgetBase {
     });
   }
 }
-class LinearContainer extends WidgetBase {
+function easeIn(a) {
+  return Math.pow(a, 2);
+}
+function easeOut(a) {
+  return 1 - Math.pow(1 - a, 2);
+}
+function easeInOut(a) {
+  a = (a - 0.5) * Math.PI;
+  a = Math.sin(a);
+  a = (a + 1) / 2;
+  return a;
+}
+const switchDuration = 0.8;
+const progressBarFadeDuration = 0.2;
+class SlideshowWidget extends WidgetBase {
+  constructor() {
+    super(...arguments);
+    this.isPaused = false;
+    this.currentChildIndex = 0;
+    this.waitTimeProgress = 0;
+    this.switchProgress = 0;
+    this.progressBarOpacity = 1;
+  }
   createElement() {
     let element = document.createElement("div");
-    this.grower1 = document.createElement("div");
-    this.grower1.classList.add("reflex-undefined-space");
-    this.grower2 = document.createElement("div");
-    this.grower2.classList.add("reflex-undefined-space");
+    element.classList.add("reflex-slideshow");
+    element.innerHTML = `
+<div class="slideshow-child-container reflex-single-container">
+</div>
+<div class="slideshow-progress"> </div>
+`;
+    this.childContainer = element.querySelector(
+      ".slideshow-child-container"
+    );
+    this.progressBar = element.querySelector(
+      ".slideshow-progress"
+    );
+    element.addEventListener("mouseenter", () => {
+      this.isPaused = true;
+    });
+    element.addEventListener("mouseleave", () => {
+      this.isPaused = false;
+    });
+    this.lastUpdateAt = Date.now() / 1e3;
+    requestAnimationFrame(this.updateLoop.bind(this));
     return element;
   }
   updateElement(element, deltaState) {
-    this.grower1.remove();
-    this.grower2.remove();
-    replaceChildren(element, deltaState.children);
-    element.prepend(this.grower1);
-    element.append(this.grower2);
-    if (deltaState.spacing !== void 0) {
-      element.style.gap = `${deltaState.spacing}em`;
+    if (deltaState.children !== void 0) {
+      replaceChildren(this.childContainer, deltaState.children);
+      for (let child of Array.from(this.childContainer.children)) {
+        if (!(child instanceof HTMLElement)) {
+          continue;
+        }
+        let wrapper = document.createElement("div");
+        wrapper.classList.add("reflex-single-container");
+        wrapper.appendChild(child);
+        this.childContainer.appendChild(wrapper);
+      }
+      let ii = 0;
+      for (let child of Array.from(this.childContainer.children)) {
+        if (!(child instanceof HTMLElement)) {
+          continue;
+        }
+        if (ii == this.currentChildIndex) {
+          child.style.transform = "translateX(0%)";
+        } else {
+          child.style.transform = "translateX(100%)";
+        }
+        ++ii;
+      }
     }
   }
-  updateChildLayouts() {
+  async updateLoop() {
+    if (!this.element.isConnected) {
+      return;
+    }
+    let children = Array.from(
+      this.childContainer.children
+    );
+    if (children.length <= 1) {
+      return;
+    }
+    const now = Date.now() / 1e3;
+    const passedTime = now - this.lastUpdateAt;
+    if (this.waitTimeProgress == 1) {
+      this.switchProgress = Math.min(
+        this.switchProgress + passedTime / switchDuration,
+        1
+      );
+      let offset = easeInOut(this.switchProgress);
+      this.outgoingChild.style.transform = `translateX(${100 * offset}%)`;
+      this.incomingChild.style.transform = `translateX(${100 * (offset - 1)}%)`;
+      this.progressBarOpacity = Math.max(
+        this.progressBarOpacity - passedTime / progressBarFadeDuration,
+        0
+      );
+      this.progressBar.style.opacity = easeOut(
+        this.progressBarOpacity
+      ).toString();
+      if (this.switchProgress == 1) {
+        this.waitTimeProgress = 0;
+        this.progressBarOpacity = 1;
+      }
+    } else if (!this.isPaused) {
+      this.waitTimeProgress = Math.min(
+        this.waitTimeProgress + passedTime / this.state.linger_time,
+        1
+      );
+      this.progressBar.style.width = `${this.waitTimeProgress * 100}%`;
+      this.progressBarOpacity = Math.min(
+        this.progressBarOpacity + passedTime / progressBarFadeDuration,
+        1
+      );
+      this.progressBar.style.opacity = easeIn(
+        this.progressBarOpacity
+      ).toString();
+      if (this.waitTimeProgress == 1) {
+        this.switchProgress = 0;
+        this.outgoingChild = children[this.currentChildIndex];
+        this.currentChildIndex = (this.currentChildIndex + 1) % children.length;
+        this.incomingChild = children[this.currentChildIndex];
+      }
+    } else {
+      this.progressBarOpacity = Math.max(
+        this.progressBarOpacity - passedTime / progressBarFadeDuration,
+        0
+      );
+      this.progressBar.style.opacity = easeOut(
+        this.progressBarOpacity
+      ).toString();
+      if (this.progressBarOpacity === 0) {
+        this.waitTimeProgress = 0;
+      }
+    }
+    this.lastUpdateAt = now;
+    requestAnimationFrame(this.updateLoop.bind(this));
+  }
+}
+class LinearContainer extends WidgetBase {
+  createElement() {
+    let element = document.createElement("div");
+    element.style.display = "flex";
+    this.grower1 = document.createElement("div");
+    this.grower1.classList.add("reflex-undefined-space");
+    this.childContainer = document.createElement("div");
+    this.grower2 = document.createElement("div");
+    this.grower2.classList.add("reflex-undefined-space");
+    element.append(this.grower1);
+    element.append(this.childContainer);
+    element.append(this.grower2);
+    return element;
+  }
+  updateElement(element, deltaState) {
+    replaceChildren(this.childContainer, deltaState.children);
+    if (deltaState.spacing !== void 0) {
+      this.childContainer.style.gap = `${deltaState.spacing}rem`;
+    }
+  }
+  updateChildLayouts_(size_index) {
     let anyGrowers = false;
     for (let childId of this.state["children"]) {
       let child = getInstanceByWidgetId(childId);
-      anyGrowers = anyGrowers || child.state["_grow_"][0];
+      anyGrowers = anyGrowers || child.state["_grow_"][size_index];
       child.replaceLayoutCssProperties({
-        "flex-grow": child.state["_grow_"][0] ? "1" : "0"
+        "flex-grow": child.state["_grow_"][size_index] ? "1" : "0"
       });
     }
     this.grower1.style.flexGrow = anyGrowers ? "0" : "1";
     this.grower2.style.flexGrow = anyGrowers ? "0" : "1";
+    this.childContainer.style.flexGrow = anyGrowers ? "1" : "0";
   }
 }
 class ColumnWidget extends LinearContainer {
   createElement() {
     let element = super.createElement();
-    element.classList.add("reflex-column");
+    element.style.flexDirection = "column";
+    this.childContainer.classList.add("reflex-column");
     return element;
+  }
+  updateChildLayouts() {
+    this.updateChildLayouts_(1);
   }
 }
 class RowWidget extends LinearContainer {
   createElement() {
     let element = super.createElement();
-    element.classList.add("reflex-row");
+    element.style.flexDirection = "row";
+    this.childContainer.classList.add("reflex-row");
     return element;
+  }
+  updateChildLayouts() {
+    this.updateChildLayouts_(0);
   }
 }
 class DropdownWidget extends WidgetBase {
@@ -1518,11 +1667,11 @@ class IconWidget extends WidgetBase {
       let svgElement = element.firstElementChild;
       svgElement.setAttribute(
         "width",
-        width === null ? "100%" : `${width}rem`
+        width === null ? "100%" : `${width * pixelsPerEm}px`
       );
       svgElement.setAttribute(
         "height",
-        height === null ? "100%" : `${height}rem`
+        height === null ? "100%" : `${height * pixelsPerEm}px`
       );
     }
   }
@@ -6970,6 +7119,7 @@ function getParentWidgetElementExcludingInjected(element) {
 const widgetClasses = {
   "Align-builtin": AlignWidget,
   "Button-builtin": ButtonWidget,
+  "Slideshow-builtin": SlideshowWidget,
   "Column-builtin": ColumnWidget,
   "Dropdown-builtin": DropdownWidget,
   "Grid-builtin": GridWidget,
@@ -7342,7 +7492,7 @@ function requestFileUpload(message) {
 }
 function main() {
   var measure = document.createElement("div");
-  measure.style.height = "10em";
+  measure.style.height = "10rem";
   document.body.appendChild(measure);
   pixelsPerEm = measure.offsetHeight / 10;
   document.body.removeChild(measure);
@@ -7386,6 +7536,8 @@ function onOpen() {
     }
   }
   sendMessageOverWebsocket({
+    websiteUrl: window.location.href,
+    preferredLanguages: navigator.languages,
     userSettings
   });
 }
@@ -10645,6 +10797,8 @@ body {
 
 .reflex-margin > * {
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .reflex-column {
@@ -11127,6 +11281,31 @@ body {
   padding: 1.5rem;
   border-radius: 99999px;
   box-shadow: 0 0 0.6em rgba(0, 0, 0, 0.5);
+}
+
+.reflex-slideshow {
+  position: relative;
+  overflow: hidden;
+}
+
+.slideshow-child-container {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+}
+
+.slideshow-child-container > * {
+  grid-column-start: 1;
+  grid-row-start: 1;
+}
+
+.slideshow-progress {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0.3rem;
+  background-color: var(--reflex-local-accent-color);
 }
 </style>
 </head>

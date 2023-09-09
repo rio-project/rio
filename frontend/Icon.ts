@@ -1,6 +1,7 @@
 import { ColorSet, Fill } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { applyFillToSVG } from './design_application';
+import { applyFillToSVG } from './designApplication';
+import { pixelsPerEm } from './app';
 
 export type IconState = WidgetState & {
     svgSource: string;
@@ -38,7 +39,7 @@ function createSVGPath(
 
 export class IconWidget extends WidgetBase {
     state: Required<IconState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-icon');
@@ -63,13 +64,14 @@ export class IconWidget extends WidgetBase {
             let [width, height] = deltaState._size_;
             let svgElement = element.firstElementChild as SVGSVGElement;
 
+            // SVG can't handle `rem`, but needs `px`. Convert.
             svgElement.setAttribute(
                 'width',
-                width === null ? '100%' : `${width}rem`
+                width === null ? '100%' : `${width * pixelsPerEm}px`
             );
             svgElement.setAttribute(
                 'height',
-                height === null ? '100%' : `${height}rem`
+                height === null ? '100%' : `${height * pixelsPerEm}px`
             );
         }
     }
