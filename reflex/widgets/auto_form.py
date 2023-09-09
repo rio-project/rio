@@ -76,10 +76,9 @@ class AutoForm(widget_base.Widget):
         is_loading: bool,
         is_major: bool,
     ) -> rx.Widget:
-        build_method = button.MajorButton if is_major else button.MinorButton
-
-        return build_method(
+        return rx.Button(
             text=text,
+            style="major" if is_major else "minor",
             on_press=on_press,
             is_sensitive=is_sensitive,
             is_loading=is_loading,
@@ -109,7 +108,7 @@ class AutoForm(widget_base.Widget):
         if field_type is int:
             return number_input.NumberInput(
                 value=field_instance,
-                round_to_integer=True,
+                decimals=0,
             )
 
         # `float` -> `NumberInput`

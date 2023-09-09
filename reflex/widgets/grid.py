@@ -7,8 +7,8 @@ from uniserde import JsonDoc  # type: ignore
 
 import reflex as rx
 
-from . import widget_base
 from ..app_server import AppServer
+from . import widget_base
 
 __all__ = ["Grid"]
 
@@ -80,21 +80,23 @@ class Grid(widget_base.HtmlWidget):
                         column=col_nr,
                     )
                 )
-    
-    def add_child(self, child: rx.Widget, row: int, column: int, width: int = 1, height: int = 1) -> None:
+
+    def add_child(
+        self, child: rx.Widget, row: int, column: int, width: int = 1, height: int = 1
+    ) -> None:
         self._children.append(child)
         self._child_positions.append(GridChildPosition(row, column, width, height))
-        
-        if self.session is not None:
+
+        if self._session_ is not None:
             self.session._register_dirty_widget(
                 self,
                 include_fundamental_children_recursively=False,
             )
-    
+
     def _custom_serialize(self, server: AppServer) -> JsonDoc:
         return {
-            '_children': [child._id for child in self._children],
-            '_child_positions': [vars(pos) for pos in self._child_positions],
+            "_children": [child._id for child in self._children],
+            "_child_positions": [vars(pos) for pos in self._child_positions],
         }
 
 

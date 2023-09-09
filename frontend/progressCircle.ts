@@ -1,5 +1,5 @@
 import { colorToCss } from './app';
-import { applyColorSet } from './design_application';
+import { applyColorSet } from './designApplication';
 import { ColorSet } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 
@@ -12,7 +12,7 @@ export type ProgressCircleState = WidgetState & {
 
 export class ProgressCircleWidget extends WidgetBase {
     state: Required<ProgressCircleState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.innerHTML = `

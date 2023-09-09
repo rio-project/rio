@@ -12,7 +12,7 @@ export type MarginState = WidgetState & {
 
 export class MarginWidget extends WidgetBase {
     state: Required<MarginState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('reflex-margin');
@@ -41,17 +41,6 @@ export class MarginWidget extends WidgetBase {
     }
 
     updateChildLayouts(): void {
-        // let marginX = this.state['margin_left']! + this.state['margin_right']!;
-        // let marginY = this.state['margin_top']! + this.state['margin_bottom']!;
-
-        // getInstanceByWidgetId(this.state['child']).replaceLayoutCssProperties({
-        //     'margin-left': `${this.state['margin_left']}em`,
-        //     'margin-top': `${this.state['margin_top']}em`,
-        //     'margin-right': `${this.state['margin_right']}em`,
-        //     'margin-bottom': `${this.state['margin_bottom']}em`,
-        //     width: `calc(100% - ${marginX}em)`,
-        //     height: `calc(100% - ${marginY}em)`,
-        // });
         getInstanceByWidgetId(this.state['child']).replaceLayoutCssProperties(
             {}
         );
