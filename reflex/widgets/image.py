@@ -6,14 +6,13 @@ from typing import Literal
 import reflex as rx
 
 from . import widget_base
+from ..common import ImageLike
 
-__all__ = [
-    "Image",
-]
+__all__ = ["Image"]
 
 
 class Image(widget_base.Widget):
-    image: rx.ImageLike
+    image: ImageLike
     _: KW_ONLY
     fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit"
 

@@ -19,6 +19,7 @@ class _MockApp:
         self._app_server = AppServer(
             self._app,
             external_url_override="https://unit.test",
+            running_in_window=False,
             on_session_start=None,
             on_session_end=None,
             default_attachments=tuple(),

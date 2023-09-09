@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import Dict
 
-from typing_extensions import Self
-from uniserde import Jsonable, JsonDoc
+from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server, theme
 from . import widget_base
 
 __all__ = [

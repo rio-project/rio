@@ -20,7 +20,7 @@ from uniserde import Jsonable
 
 import reflex as rx
 
-from . import app, assets, common, session, user_settings_module, validator, widgets
+from . import app, assets, common, session, user_settings_module, validator
 from .widgets import widget_metadata
 
 try:

@@ -34,7 +34,7 @@ class MediaPlayer(widget_base.HtmlWidget):
         if isinstance(self.media, str):
             self._media_asset = None
         else:
-            self._media_asset = HostedAsset(self.media_type, self.media)
+            self._media_asset = HostedAsset(self.media, self.media_type)
     
     def _custom_serialize(self, app_server: object) -> JsonDoc:
         if self._media_asset is None:

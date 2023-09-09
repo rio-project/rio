@@ -26,11 +26,9 @@ from . import (
     color,
     common,
     errors,
-    fills,
     self_serializing,
     theme,
     user_settings_module,
-    widgets,
 )
 
 __all__ = ["Session"]
@@ -1064,7 +1062,7 @@ class Session(unicall.Unicall):
             media_type = "application/octet-stream"
 
         # Host the file as asset
-        as_asset = assets.HostedAsset(media_type, file_contents)
+        as_asset = assets.HostedAsset(file_contents, media_type)
         self._app_server.weakly_host_asset(as_asset)
 
         # Tell the frontend to download the file
@@ -1084,7 +1082,6 @@ document.body.removeChild(a)
         #
         # TODO: Is there a better way to do this
         async def keepaliver() -> None:
-            temp = as_asset
             await asyncio.sleep(60)
 
         asyncio.create_task(keepaliver())

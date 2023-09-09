@@ -132,7 +132,7 @@ class HostedAsset(SelfSerializing):
         if self.media_type != other.media_type:
             return False
 
-        return self.secret_id == other.secret_id
+        return self.data == other.data
 
 
 class ImageAsset(HostedAsset):
