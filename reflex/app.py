@@ -38,7 +38,7 @@ class App:
     ):
         self.name = name
         self.build = build
-        self._icon = None if icon is None else assets.ImageAsset(icon)
+        self._icon = None if icon is None else assets.Asset.from_image(icon)
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)

@@ -176,7 +176,7 @@ class AppServer(fastapi.FastAPI):
         # dependencies) which are available under public URLS at
         # `/asset/{some-name}`.
         self._assets: weakref.WeakValueDictionary[
-            str, assets.HostedAsset
+            str, assets.Asset
         ] = weakref.WeakValueDictionary()
 
         # All pending file uploads. These are stored in memory for a limited
@@ -310,7 +310,7 @@ class AppServer(fastapi.FastAPI):
         # If an icon is set, make sure a cached version exists
         if self._icon_as_ico_blob is None and self.app._icon is not None:
             try:
-                icon_blob, _ = await self.app._icon._try_fetch_as_blob()
+                icon_blob, _ = await self.app._icon.try_fetch_as_blob()
 
                 input_buffer = io.BytesIO(icon_blob)
                 output_buffer = io.BytesIO()
@@ -394,16 +394,18 @@ class AppServer(fastapi.FastAPI):
             return fastapi.responses.Response(status_code=404)
 
         # Fetch the asset's content and respond
-        if isinstance(asset.data, bytes):
+        if isinstance(asset, assets.BytesAsset):
             return fastapi.responses.Response(
                 content=asset.data,
                 media_type=asset.media_type,
             )
-        else:
+        elif isinstance(asset, assets.PathAsset):
             return fastapi.responses.FileResponse(
-                asset.data,
+                asset.path,
                 media_type=asset.media_type,
             )
+        else:
+            assert False, f'Unable to serve asset of unknown type: {asset}'
 
     async def _serve_file_upload(
         self,

@@ -9,7 +9,7 @@ from uniserde import JsonDoc
 
 from . import widget_base
 from ..session import Session
-from ..assets import HostedAsset
+from ..assets import Asset
 
 __all__ = ["MediaPlayer"]
 
@@ -23,6 +23,7 @@ class MediaPlayer(widget_base.HtmlWidget):
     controls: bool = True
     muted: bool = False
     volume: float = 1.0
+    _media_asset: Optional[Asset] = None
 
     def __post_init__(self):
         if self.media_type is None:
@@ -34,18 +35,7 @@ class MediaPlayer(widget_base.HtmlWidget):
         if isinstance(self.media, str):
             self._media_asset = None
         else:
-            self._media_asset = HostedAsset(self.media, self.media_type)
-    
-    def _custom_serialize(self, app_server: object) -> JsonDoc:
-        if self._media_asset is None:
-            media_url = cast(str, self.media)
-        else:
-            self.session._app_server.weakly_host_asset(self._media_asset)
-            media_url = self._media_asset.url()
-
-        return {
-            'mediaUrl': media_url,
-        }
+            self._media_asset = Asset.new(self.media, self.media_type)
     
 
 MediaPlayer._unique_id = "MediaPlayer-builtin"

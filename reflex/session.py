@@ -1097,7 +1097,7 @@ class Session(unicall.Unicall):
             media_type = "application/octet-stream"
 
         # Host the file as asset
-        as_asset = assets.HostedAsset(file_contents, media_type)
+        as_asset = assets.BytesAsset(file_contents, media_type)
         self._app_server.weakly_host_asset(as_asset)
 
         # Tell the frontend to download the file

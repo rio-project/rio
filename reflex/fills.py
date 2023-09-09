@@ -7,7 +7,7 @@ from typing import Union, Iterable, Tuple, Literal
 from uniserde import Jsonable
 
 from . import app_server, self_serializing
-from .assets import ImageAsset
+from .assets import Asset
 from .color import Color
 from .common import ImageLike
 
@@ -81,7 +81,7 @@ class ImageFill(Fill):
         *,
         fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit",
     ):
-        self._image_asset = ImageAsset(image)
+        self._image_asset = Asset.from_image(image)
         self._fill_mode = fill_mode
 
     def _serialize(self, server: app_server.AppServer) -> Jsonable:
