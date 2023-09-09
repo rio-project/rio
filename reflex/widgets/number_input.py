@@ -43,8 +43,6 @@ class NumberInput(widget_base.Widget):
     suffix_text: str = ""
     minimum: Optional[float] = None
     maximum: Optional[float] = None
-    thousands_separator: str = ","
-    decimal_separator: str = "."
     decimals: int = 2
     on_change: rx.EventHandler[NumberInputChangeEvent] = None
     on_confirm: rx.EventHandler[NumberInputConfirmEvent] = None
@@ -56,8 +54,9 @@ class NumberInput(widget_base.Widget):
         """
 
         # Strip the number down as much as possible
+        locale = self.session.preferred_locales[0]
         raw_value = raw_value.strip()
-        raw_value = raw_value.replace(self.thousands_separator, "")
+        raw_value = raw_value.replace(locale.number_symbols["group"], "")
 
         # Try to parse the value
         if raw_value:
@@ -75,7 +74,7 @@ class NumberInput(widget_base.Widget):
 
             # Try to parse the number
             try:
-                value = float(raw_value.replace(self.decimal_separator, "."))
+                value = float(raw_value.replace(locale.number_symbols["decimal"], "."))
             except ValueError:
                 self.value = self.value  # Force the old value to stay
                 return False
@@ -121,6 +120,7 @@ class NumberInput(widget_base.Widget):
 
     def build(self) -> rx.Widget:
         # Format the number
+        locale = self.session.preferred_locales[0]
         value_str = f"{self.value:.{self.decimals}f}"
         int_str, frac_str = value_str.split(".")
 
@@ -131,13 +131,13 @@ class NumberInput(widget_base.Widget):
             int_str = int_str[:-3]
 
         groups.append(int_str)
-        int_str = self.thousands_separator.join(reversed(groups))
+        int_str = locale.number_symbols["group"].join(reversed(groups))
 
         # Join the strings
         if self.decimals == 0:
             value_str = int_str
         else:
-            value_str = int_str + self.decimal_separator + frac_str
+            value_str = int_str + locale.number_symbols["decimal"] + frac_str
 
         # Build the widget
         return rx.TextInput(

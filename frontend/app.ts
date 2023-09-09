@@ -794,6 +794,8 @@ function onOpen() {
     }
 
     sendMessageOverWebsocket({
+        websiteUrl: window.location.href,
+        preferredLanguages: navigator.languages,
         userSettings: userSettings,
     });
 }

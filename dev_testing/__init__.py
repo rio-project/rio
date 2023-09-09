@@ -286,12 +286,12 @@ rx_app = rx.App(
 if __name__ == "__main__":
     rx_app.run_as_web_server(
         port=8001,
-        external_url="http://localhost:8001",
+        external_url_override="http://localhost:8001",
         quiet=False,
         _validator_factory=validator_factory,
     )
 else:
     app = rx_app.as_fastapi(
-        external_url="http://localhost:8001",
+        external_url_override="http://localhost:8001",
         _validator_factory=validator_factory,
     )

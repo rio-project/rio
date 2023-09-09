@@ -11,7 +11,7 @@ import uvicorn
 
 import reflex as rx
 
-from . import app_server, user_settings_module, validator, widgets
+from . import app_server, validator
 from .image_source import ImageLike, ImageSource
 
 # Only available with the `window` extra
@@ -52,15 +52,17 @@ class App:
 
     def as_fastapi(
         self,
-        external_url: str,
         *,
+        external_url_override: Optional[str] = None,
+        _running_in_window: bool = False,
         _validator_factory: Optional[
             Callable[[rx.Session], validator.Validator]
         ] = None,
     ) -> fastapi.FastAPI:
         return app_server.AppServer(
             self,
-            external_url=external_url,
+            running_in_window=_running_in_window,
+            external_url_override=external_url_override,
             on_session_start=self.on_session_start,
             on_session_end=self.on_session_end,
             default_attachments=self.default_attachments,
@@ -69,8 +71,8 @@ class App:
 
     def run_as_web_server(
         self,
-        external_url: str,
         *,
+        external_url_override: Optional[str] = None,
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
@@ -93,7 +95,8 @@ class App:
 
         # Create the FastAPI server
         fastapi_app = self.as_fastapi(
-            external_url=external_url,
+            external_url_override=external_url_override,
+            _running_in_window=False,
             _validator_factory=_validator_factory,
         )
 
@@ -112,7 +115,7 @@ class App:
     def run_in_browser(
         self,
         *,
-        external_url: Optional[str] = None,
+        external_url_override: Optional[str] = None,
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
@@ -120,14 +123,11 @@ class App:
             Callable[[rx.Session], validator.Validator]
         ] = None,
     ):
-        if external_url is None:
-            external_url = f"http://{host}:{port}"
-
         async def on_startup() -> None:
-            webbrowser.open(external_url)
+            webbrowser.open(f"http://{host}:{port}")
 
         self.run_as_web_server(
-            external_url=external_url,
+            external_url_override=external_url_override,
             host=host,
             port=port,
             quiet=quiet,
@@ -144,7 +144,7 @@ class App:
     ):
         if webview is None:
             raise Exception(
-                "The `window` extra is required to use `App.run_in_window`. Use `pip install reflex[window]` to install it."
+                "The `window` extra is required to use `App.run_in_window`. Run `pip install reflex[window]` to install it."
             )
 
         # Unfortunately, WebView must run in the main thread, which makes this
@@ -164,7 +164,11 @@ class App:
 
         # Start the server, and release the lock once it's running
         def run_web_server():
-            fastapi_app = self.as_fastapi(url, _validator_factory=_validator_factory)
+            fastapi_app = self.as_fastapi(
+                external_url_override=url,
+                _running_in_window=True,
+                _validator_factory=_validator_factory,
+            )
             fastapi_app.add_event_handler("startup", lock.release)
 
             # Suppress stdout messages if requested
