@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
-from typing import *  # type: ignore
+from typing import Union, Iterable, Tuple, Literal
 
 from uniserde import Jsonable
 
 from . import app_server, self_serializing
+from .assets import ImageAsset
 from .color import Color
-from .image_source import ImageLike, ImageSource
+from .common import ImageLike
 
 __all__ = [
     "Fill",
@@ -32,10 +33,6 @@ class Fill(self_serializing.SelfSerializing, ABC):
             return SolidFill(value)
 
         raise TypeError(f"Expected Fill or Color, got {type(value)}")
-
-    @abstractmethod
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:
-        raise NotImplementedError()
 
 
 @dataclass(frozen=True, eq=True)
@@ -84,28 +81,24 @@ class ImageFill(Fill):
         *,
         fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit",
     ):
-        self._image = ImageSource(image)
+        self._image_asset = ImageAsset(image)
         self._fill_mode = fill_mode
 
     def _serialize(self, server: app_server.AppServer) -> Jsonable:
-        # Get the image url, and make sure to host the asset
-        if self._image._asset is None:
-            image_url = self._image._url
-        else:
-            image_url = self._image._asset.url()
-            server.weakly_host_asset(self._image._asset)
-
         return {
             "type": "image",
-            "imageUrl": image_url,
             "fillMode": self._fill_mode,
+            "imageUrl": self._image_asset._serialize(server),
         }
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ImageFill):
             return NotImplemented
 
-        return self._image == other._image and self._fill_mode == other._fill_mode
+        return (
+            self._image_asset == other._image_asset and
+            self._fill_mode == other._fill_mode
+        )
 
     def __hash__(self) -> int:
-        return hash((self._image, self._fill_mode))
+        return hash((self._image_asset, self._fill_mode))

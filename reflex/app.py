@@ -11,19 +11,17 @@ import uvicorn
 
 import reflex as rx
 
-from . import app_server, user_settings_module, validator, widgets
-from .image_source import ImageLike, ImageSource
+from . import app_server, assets, validator
+from .common import ImageLike
 
 # Only available with the `window` extra
 try:
-    import webview  # type: ignore
+    import webview
 except ImportError:
     webview = None
 
 
-__all__ = [
-    "App",
-]
+__all__ = ["App"]
 
 
 class App:
@@ -40,7 +38,7 @@ class App:
     ):
         self.name = name
         self.build = build
-        self._icon = None if icon is None else ImageSource(icon)
+        self._icon = None if icon is None else assets.ImageAsset(icon)
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)

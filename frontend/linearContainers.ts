@@ -8,6 +8,8 @@ export type LinearContainerState = WidgetState & {
 };
 
 class LinearContainer extends WidgetBase {
+    state: Required<LinearContainerState>;
+
     private grower1: HTMLElement;
     private grower2: HTMLElement;
 
@@ -44,7 +46,6 @@ class LinearContainer extends WidgetBase {
     }
 
     updateChildLayouts(): void {
-        let children: WidgetBase[] = [];
         let anyGrowers = false;
 
         // Update everyone's `flex-grow` property.

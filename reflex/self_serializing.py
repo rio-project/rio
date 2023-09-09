@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import *  # type: ignore
+from typing import TYPE_CHECKING
 
 from uniserde import Jsonable
 
@@ -10,9 +10,7 @@ if TYPE_CHECKING:
     from . import app_server
 
 
-__all__ = [
-    "SelfSerializing",
-]
+__all__ = ["SelfSerializing"]
 
 
 class SelfSerializing(ABC):
@@ -22,5 +20,5 @@ class SelfSerializing(ABC):
     """
 
     @abstractmethod
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:  # type: ignore
+    def _serialize(self, server: app_server.AppServer) -> Jsonable:
         raise NotImplementedError

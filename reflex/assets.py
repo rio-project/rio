@@ -1,7 +1,17 @@
+from __future__ import annotations
+
 import hashlib
+import io
 import secrets
 from pathlib import Path
-from typing import *  # type: ignore
+from typing import Optional, Union, Tuple
+
+import aiohttp
+from PIL.Image import Image
+
+from . import app_server
+from .common import Url, ImageLike
+from .self_serializing import SelfSerializing
 
 # Random bytes added during hashing to make any internal values extremely
 # difficult to guess
@@ -22,32 +32,12 @@ def _securely_hash_bytes_changes_between_runs(data: bytes) -> bytes:
     return hasher.digest()
 
 
-class HostedAsset:
+class HostedAsset(SelfSerializing):
     def __init__(
         self,
-        media_type: Optional[str],
-        data: Union[bytes, Path],
+        data: Union[bytes, Path, Url],
+        media_type: Optional[str] = None,
     ):
-        # The asset's id both uniquely identifies the asset, and is used as part
-        # of the asset's URL.
-        #
-        # It is derived from the data, so that if the same file is to be hosted
-        # multiple times only one instance is actually stored. Furthermore, this
-        # allows the client to cache the asset efficiently, since the URL is
-        # always the same.
-        if isinstance(data, bytes):
-            # TODO: Consider only hashing part of the data + media type + size
-            # rather than processing everything
-            secret_id_prefix = "b-"
-            secret_id_bytes = _securely_hash_bytes_changes_between_runs(data)
-        else:
-            secret_id_prefix = "f-"
-            secret_id_bytes = _securely_hash_bytes_changes_between_runs(
-                str(data.resolve()).encode("utf-8")
-            )
-
-        self.secret_id = secret_id_prefix + secret_id_bytes.hex()
-
         # The MIME type of the asset
         self.media_type = media_type
 
@@ -58,6 +48,44 @@ class HostedAsset:
 
         if isinstance(data, Path):
             assert data.exists(), f"Asset file {data} does not exist"
+    
+    @property
+    def secret_id(self) -> str:
+        # The asset's id both uniquely identifies the asset, and is used as part
+        # of the asset's URL.
+        #
+        # It is derived from the data, so that if the same file is to be hosted
+        # multiple times only one instance is actually stored. Furthermore, this
+        # allows the client to cache the asset efficiently, since the URL is
+        # always the same.
+        try:
+            return self._secret_id
+        except AttributeError:
+            pass
+
+        if isinstance(self.data, bytes):
+            # TODO: Consider only hashing part of the data + media type + size
+            # rather than processing everything
+            secret_id_prefix = "b-"
+            secret_id_str = _securely_hash_bytes_changes_between_runs(self.data).hex()
+        elif isinstance(self.data, Path):
+            secret_id_prefix = "f-"
+            secret_id_str = _securely_hash_bytes_changes_between_runs(
+                str(self.data.resolve()).encode("utf-8")
+            ).hex()
+        else:
+            secret_id_prefix = "u-"
+            secret_id_str = self.data
+
+        self._secret_id = secret_id_prefix + secret_id_str
+        return self._secret_id
+    
+    def _serialize(self, server: app_server.AppServer) -> str:
+        if isinstance(self.data, Url):
+            return self.data
+        
+        server.weakly_host_asset(self)
+        return self.url()
 
     def url(self, server_external_url: Optional[str] = None) -> str:
         """
@@ -65,6 +93,8 @@ class HostedAsset:
         `server_external_url` is passed the result will be an absolute URL. If
         not, a relative URL is returned instead.
         """
+        if isinstance(self.data, Url):
+            return self.data
 
         relative_url = f"/reflex/asset/temp-{self.secret_id}"
 
@@ -76,6 +106,24 @@ class HostedAsset:
                 "/"
             ), "server_external_url must not end with a slash"
             return server_external_url + relative_url
+    
+    async def _try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
+        """
+        Try to fetch the image as blob & media type. Raises a `ValueError` if
+        fetching fails.
+        """
+        # URL
+        if isinstance(self.data, Url):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.data) as response:
+                    return await response.read(), response.content_type
+
+        # Straight bytes
+        if isinstance(self.data, bytes):
+            return self.data, self.media_type
+
+        # File
+        return self.data.read_bytes(), self.media_type
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HostedAsset):
@@ -84,7 +132,19 @@ class HostedAsset:
         if self.media_type != other.media_type:
             return False
 
-        if isinstance(self.data, bytes) and isinstance(other.data, bytes):
-            return self.data is other.data
+        return self.secret_id == other.secret_id
 
-        return self.data == other.data
+
+class ImageAsset(HostedAsset):
+    def __init__(
+        self,
+        image: ImageLike,
+        media_type: Optional[str] = None,
+    ):
+        if isinstance(image, Image):
+            file = io.BytesIO()
+            image.save(file, format="PNG")
+            image = file.getvalue()
+            media_type = "image/png"
+
+        super().__init__(image, media_type)

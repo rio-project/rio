@@ -6,7 +6,6 @@ from .common import EventHandler
 from .cursor_style import CursorStyle
 from .errors import *
 from .fills import *
-from .image_source import *
 from .session import *
 from .text_style import *
 from .theme import *

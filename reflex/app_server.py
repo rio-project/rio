@@ -134,7 +134,7 @@ class AppServer(fastapi.FastAPI):
         external_url: str,
         on_session_start: rx.EventHandler[rx.Session],
         on_session_end: rx.EventHandler[rx.Session],
-        default_attachments: Tuple[Any],
+        default_attachments: Tuple[Any, ...],
         validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
     ):
         super().__init__()

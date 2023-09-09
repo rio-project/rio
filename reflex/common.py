@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
+from PIL.Image import Image
+
 from typing_extensions import Annotated
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
@@ -33,6 +35,10 @@ REFLEX_CACHE_DIR = USER_CACHE_DIR / "reflex"
 _READONLY = object()
 T = TypeVar("T")
 Readonly = Annotated[T, _READONLY]
+
+
+Url = str
+ImageLike = Union[Path, Image, Url, bytes]
 
 
 def secure_string_hash(*values: str, hash_length: int = 32) -> str:
