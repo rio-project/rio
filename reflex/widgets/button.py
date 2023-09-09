@@ -84,6 +84,9 @@ class Button(widget_base.Widget):
             is_sensitive=self.is_sensitive and not self.is_loading,
         )
 
+    def __str__(self) -> str:
+        return f"<Button id:{self._id} text:{self.text!r}>"
+
 
 class _ButtonInternal(widget_base.HtmlWidget):
     _: KW_ONLY

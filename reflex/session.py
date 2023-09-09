@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import collections
 import collections.abc
 import enum
 import inspect
@@ -283,14 +284,21 @@ class Session(unicall.Unicall):
 
         # Keep track of all widgets which are visited. Only they will be sent to
         # the client.
-        visited_widgets: Set[rx.Widget] = set()
+        visited_widgets: collections.Counter[rx.Widget] = collections.Counter()
 
         # Build all dirty widgets
         while self._dirty_widgets:
             widget = self._dirty_widgets.pop()
 
             # Remember that this widget has been visited
-            visited_widgets.add(widget)
+            visited_widgets[widget] += 1
+
+            # Catch deep recursions and abort
+            build_count = visited_widgets[widget]
+            if build_count > 5:
+                raise RecursionError(
+                    f"The widget {widget} has been rebuilt {build_count} times during a single refresh. This is likely because one of your widgets' `build` methods is modifying the widget's state"
+                )
 
             # Inject the session into the widget
             #
@@ -385,7 +393,7 @@ class Session(unicall.Unicall):
             # - Update the widget data with the build output resulting from the
             #   operations above
             else:
-                self._reconcile_tree(widget_data, build_result)
+                self._reconcile_tree(widget, widget_data, build_result)
 
                 # Increment the build generation
                 widget_data.build_generation += 1
@@ -632,7 +640,12 @@ class Session(unicall.Unicall):
 
         return result
 
-    def _reconcile_tree(self, old_build_data: WidgetData, new_build: rx.Widget) -> None:
+    def _reconcile_tree(
+        self,
+        builder: rx.Widget,
+        old_build_data: WidgetData,
+        new_build: rx.Widget,
+    ) -> None:
         # Find all pairs of widgets which should be reconciled
         matched_pairs = list(
             self._find_widgets_for_reconciliation(
@@ -693,23 +706,56 @@ class Session(unicall.Unicall):
 
         remap_widgets(reconciled_build_result)
 
-        # Any new widgets which haven't found a match are new and must be
-        # processed by the session
-        #
-        # Note that new widgets cannot possibly have been reconciled, as
-        # reconciliation replaces new instances with their old counterparts.
-        # Thus, only look up the widgets in a set of old widgets.
+        # Postprocess the tree
         reconciled_widgets_old = set(reconciled_widgets_new_to_old.values())
+        weak_builder = weakref.ref(builder)
+        builder_vars = vars(builder)
 
         for widget in reconciled_build_result._iter_direct_and_indirect_children(
             include_self=True
         ):
-            if widget in reconciled_widgets_old:
-                continue
+            # Overriding an attribute can cause the widget to contain widgets
+            # which have never had their builder or state properties injected.
+            # This is handled by the calling function. Update the reference to
+            # the widget's builder
+            widget._weak_builder_ = weak_builder
 
-            self._register_dirty_widget(
-                widget, include_fundamental_children_recursively=False
-            )
+            # Update all state bindings
+            widget_vars = vars(widget)
+
+            for state_property in widget._state_properties_:
+                value = widget_vars[state_property.name]
+                assert not isinstance(value, rx.StateProperty), value
+
+                if not isinstance(value, rx.StateBinding) or value.parent is None:
+                    continue
+
+                builder_attr_name = value.parent.owning_property.name  # type: ignore
+                builder_binding: rx.StateBinding = builder_vars[builder_attr_name]
+
+                if not isinstance(builder_binding, rx.StateBinding):
+                    builder_binding = rx.StateBinding(
+                        owning_widget_weak=weak_builder,
+                        owning_property=getattr(type(builder), builder_attr_name),
+                        is_root=True,
+                        parent=None,
+                        value=builder_binding,
+                    )
+                    builder_vars[builder_attr_name] = builder_binding
+
+                value.parent = builder_binding
+                builder_binding.children.add(value)
+
+            # Any new widgets which haven't found a match are new and must be
+            # processed by the session
+            #
+            # Note that new widgets cannot possibly have been reconciled, as
+            # reconciliation replaces new instances with their old counterparts.
+            # Thus, only look up the widgets in a set of old widgets.
+            if widget not in reconciled_widgets_old:
+                self._register_dirty_widget(
+                    widget, include_fundamental_children_recursively=False
+                )
 
     def _reconcile_widget(
         self,
@@ -785,7 +831,7 @@ class Session(unicall.Unicall):
             # Widgets are a special case. Widget attributes are dirty iff the
             # widget isn't reconciled, i.e. it is a new widget
             if isinstance(new, rx.Widget):
-                return old is reconciled_widgets_new_to_old.get(new, None)
+                return old is new or old is reconciled_widgets_new_to_old.get(new, None)
 
             if isinstance(new, list):
                 if not isinstance(old, list):
@@ -817,20 +863,9 @@ class Session(unicall.Unicall):
                     include_fundamental_children_recursively=False,
                 )
 
-                # TODO / FIXME
-                #
                 # Overriding an attribute can cause the widget to contain
                 # widgets which have never had their builder or state properties
-                # injected. This code avoids this by marking their builder as
-                # dirty. This makes tons of widgets pass through building
-                # multiple times though, for no reason at all.
-                if isinstance(old_widget, rx.HtmlWidget):
-                    builder = old_widget._weak_builder_()
-                    assert builder is not None, old_widget
-                    self._register_dirty_widget(
-                        builder,
-                        include_fundamental_children_recursively=False,
-                    )
+                # injected. This is handled by the calling function.
 
                 break
 

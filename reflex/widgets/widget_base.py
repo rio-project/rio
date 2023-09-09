@@ -559,10 +559,14 @@ class Widget(ABC):
         await self.session._refresh()
 
     def __repr__(self) -> str:
-        result = f"<{type(self).__name__} id:{self._id} -"
+        result = f"<{type(self).__name__} id:{self._id}"
 
+        child_strings = []
         for child in self._iter_direct_children():
-            result += f" {type(child).__name__}:{child._id}"
+            child_strings.append(f" {type(child).__name__}:{child._id}")
+
+        if child_strings:
+            result += " -" + "".join(child_strings)
 
         return result + ">"
 

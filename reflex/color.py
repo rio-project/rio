@@ -349,7 +349,10 @@ class Color:
     YELLOW: ClassVar["Color"]
 
     # Others
+    PINK: ClassVar["Color"]
     PURPLE: ClassVar["Color"]
+    ORANGE: ClassVar["Color"]
+    BROWN: ClassVar["Color"]
 
     # Special
     TRANSPARENT: ClassVar["Color"]
@@ -367,7 +370,9 @@ Color.CYAN = Color.from_rgb(0.0, 1.0, 1.0)
 Color.MAGENTA = Color.from_rgb(1.0, 0.0, 1.0)
 Color.YELLOW = Color.from_rgb(1.0, 1.0, 0.0)
 
+Color.PINK = Color.from_rgb(1.0, 0.0, 1.0)
 Color.PURPLE = Color.from_rgb(0.5, 0.0, 0.5)
+Color.ORANGE = Color.from_rgb(1.0, 0.5, 0.0)
 
 Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)
 
