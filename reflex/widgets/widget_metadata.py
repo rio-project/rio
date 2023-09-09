@@ -5,9 +5,9 @@ from typing import *  # type: ignore
 # children / child ids
 CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "Button-builtin": {"child"},
-    "Slideshow-builtin": {"children"},
     "Column-builtin": {"children"},
     "Dropdown-builtin": set(),
+    "Sticky-builtin": {"child"},
     "Grid-builtin": {"_children"},
     "Icon-builtin": set(),
     "KeyEventListener-builtin": {"child"},
@@ -21,6 +21,7 @@ CHILD_ATTRIBUTE_NAMES: Dict[str, Set[str]] = {
     "Revealer-builtin": {"child"},
     "Row-builtin": {"children"},
     "Slider-builtin": set(),
+    "Slideshow-builtin": {"children"},
     "Stack-builtin": {"children"},
     "Switch-builtin": set(),
     "Text-builtin": set(),

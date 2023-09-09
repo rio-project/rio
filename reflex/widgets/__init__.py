@@ -24,6 +24,7 @@ from .row import *
 from .slider import *
 from .slideshow import *
 from .stack import *
+from .sticky import *
 from .switch import *
 from .text import *
 from .text_input import *

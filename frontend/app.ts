@@ -1,9 +1,9 @@
 import { AlignWidget } from './align';
 import { ButtonWidget } from './button';
-import { SlideshowWidget } from './slideshow';
 import { Color, Fill } from './models';
 import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
+import { StickyWidget } from './sticky';
 import { GridWidget } from './grid';
 import { IconWidget } from './Icon';
 import { KeyEventListenerWidget } from './keyEventListener';
@@ -17,6 +17,7 @@ import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
 import { RevealerWidget } from './revealer';
 import { SliderWidget } from './Slider';
+import { SlideshowWidget } from './slideshow';
 import { StackWidget } from './stack';
 import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
@@ -152,7 +153,6 @@ export function getParentWidgetElementExcludingInjected(
 const widgetClasses = {
     'Align-builtin': AlignWidget,
     'Button-builtin': ButtonWidget,
-    'Slideshow-builtin': SlideshowWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Grid-builtin': GridWidget,
@@ -168,7 +168,9 @@ const widgetClasses = {
     'Revealer-builtin': RevealerWidget,
     'Row-builtin': RowWidget,
     'Slider-builtin': SliderWidget,
+    'Slideshow-builtin': SlideshowWidget,
     'Stack-builtin': StackWidget,
+    'Sticky-builtin': StickyWidget,
     'Switch-builtin': SwitchWidget,
     'Text-builtin': TextWidget,
     'TextInput-builtin': TextInputWidget,

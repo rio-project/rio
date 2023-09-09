@@ -606,3 +606,13 @@ body {
     height: 0.3rem;
     background-color: var(--reflex-local-accent-color);
 }
+
+// Sticky
+.reflex-sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+}
