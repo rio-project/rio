@@ -34,7 +34,7 @@ export class SlideshowWidget extends WidgetBase {
         element.classList.add('reflex-slideshow');
 
         element.innerHTML = `
-<div class="slideshow-child-container reflex-single-container">
+<div class="slideshow-child-container">
 </div>
 <div class="slideshow-progress"> </div>
 `;
@@ -69,22 +69,7 @@ export class SlideshowWidget extends WidgetBase {
     updateElement(element: HTMLElement, deltaState: SlideshowState): void {
         // Update the children
         if (deltaState.children !== undefined) {
-            replaceChildren(this.childContainer, deltaState.children);
-
-            // Wrap all children into another div
-            //
-            // FIXME / TODO: Solve this cleanly. The current implementation
-            // calls replaceChildren on divs that aren't even widgets.
-            for (let child of Array.from(this.childContainer.children)) {
-                if (!(child instanceof HTMLElement)) {
-                    continue;
-                }
-
-                let wrapper = document.createElement('div');
-                wrapper.classList.add('reflex-single-container');
-                wrapper.appendChild(child);
-                this.childContainer.appendChild(wrapper);
-            }
+            replaceChildren(this.childContainer, deltaState.children, true);
 
             // Make sure no children are hiding the current one
             //

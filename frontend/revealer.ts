@@ -60,7 +60,7 @@ function collapseRevealer(elem: HTMLElement): void {
 
 export class RevealerWidget extends WidgetBase {
     state: Required<RevealerState>;
-    
+
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
@@ -101,8 +101,6 @@ export class RevealerWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLElement, deltaState: RevealerState): void {
-        console.log(`Revealer updateElement`, deltaState.is_expanded);
-
         // Update the label
         if (deltaState.label !== undefined) {
             let label = element.querySelector(

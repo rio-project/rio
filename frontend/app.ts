@@ -614,7 +614,8 @@ export function replaceOnlyChild(
 
 export function replaceChildren(
     parentElement: HTMLElement,
-    childIds: undefined | (number | string)[]
+    childIds: undefined | (number | string)[],
+    wrapInDivs: boolean = false
 ) {
     // If undefined, do nothing
     if (childIds === undefined) {
@@ -625,6 +626,21 @@ export function replaceChildren(
     let curElement = parentElement.firstElementChild;
     let curIdIndex = 0;
 
+    let wrap, unwrap;
+    if (wrapInDivs) {
+        wrap = (element: HTMLElement) => {
+            let wrapper = document.createElement('div');
+            wrapper.appendChild(element);
+            return wrapper;
+        };
+        unwrap = (element: HTMLElement) => {
+            return element.firstElementChild!;
+        };
+    } else {
+        wrap = (element: HTMLElement) => element;
+        unwrap = (element: HTMLElement) => element;
+    }
+
     while (true) {
         // If there are no more children in the DOM element, add the remaining
         // children
@@ -632,7 +648,7 @@ export function replaceChildren(
             while (curIdIndex < childIds.length) {
                 let curId = childIds[curIdIndex];
                 let newElement = getElementByWidgetId(curId);
-                parentElement.appendChild(newElement!);
+                parentElement.appendChild(wrap(newElement!));
                 curIdIndex++;
             }
             break;
@@ -643,7 +659,7 @@ export function replaceChildren(
         if (curIdIndex >= childIds.length) {
             while (curElement !== null) {
                 let nextElement = curElement.nextElementSibling;
-                latentWidgets.appendChild(curElement);
+                latentWidgets.appendChild(wrap(curElement));
                 curElement = nextElement;
             }
             break;
@@ -651,7 +667,7 @@ export function replaceChildren(
 
         // This element is the correct element, move on
         let curId = childIds[curIdIndex];
-        if (curElement.id === `reflex-id-${curId}`) {
+        if (unwrap(curElement).id === `reflex-id-${curId}`) {
             curElement = curElement.nextElementSibling;
             curIdIndex++;
             continue;
@@ -660,7 +676,7 @@ export function replaceChildren(
         // This element is not the correct element, insert the correct one
         // instead
         let newElement = getElementByWidgetId(curId);
-        parentElement.insertBefore(newElement!, curElement);
+        parentElement.insertBefore(wrap(newElement!), curElement);
         curIdIndex++;
     }
 }
