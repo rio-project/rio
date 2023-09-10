@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 import threading
 import webbrowser
 from datetime import timedelta
@@ -28,6 +29,23 @@ except ImportError:
 __all__ = ["App"]
 
 
+def _get_main_file() -> Path:
+    try:
+        return Path(__main__.__file__)
+    except AttributeError:
+        return Path(sys.argv[0])
+
+
+def _get_default_app_name() -> str:
+    main_file = _get_main_file()
+    
+    name = main_file.stem
+    if name in ('main', '__main__'):
+        name = main_file.absolute().parent.stem
+    
+    return name.replace("_", " ").title()
+
+
 class App:
     def __init__(
         self,
@@ -44,7 +62,7 @@ class App:
         assert callable(build), "The `build` argument must be a function that returns a Widget"
 
         if name is None:
-            name = Path(__main__.__file__).stem.replace("_", " ").title()
+            name = _get_default_app_name()
             
         self.name = name
         self.build = build
@@ -52,7 +70,7 @@ class App:
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)
-        self.assets_dir = Path(__main__.__file__).parent / (assets_dir or '')
+        self.assets_dir = _get_main_file().parent / (assets_dir or '')
 
         if isinstance(ping_pong_interval, timedelta):
             self.ping_pong_interval = ping_pong_interval

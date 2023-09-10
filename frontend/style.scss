@@ -649,6 +649,9 @@ body {
     // means the video has no minimum/natural size. It cannot "push" other
     // widgets out of the way; it can only ever use up the space it is given.
     // But I believe that is in line with how other media (like images) work.
+    // TODO: Set a minimum size? Since we've robbed videos of their intrinsic
+    // size, they might sometimes end up 0x0 pixels small. A minimum size would
+    // ensure that the video can't completely disappear.
     position: relative;
     
     video {
