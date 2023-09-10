@@ -31,9 +31,9 @@ __all__ = ["App"]
 class App:
     def __init__(
         self,
-        name: str,
         build: Callable[[], rx.Widget],
         *,
+        name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
         on_session_start: rx.EventHandler[rx.Session] = None,
         on_session_end: rx.EventHandler[rx.Session] = None,
@@ -41,6 +41,11 @@ class App:
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
     ):
+        assert callable(build), "The `build` argument must be a function that returns a Widget"
+
+        if name is None:
+            name = Path(__main__.__file__).stem.replace("_", " ").title()
+            
         self.name = name
         self.build = build
         self._icon = None if icon is None else assets.Asset.from_image(icon)
@@ -54,7 +59,7 @@ class App:
         else:
             self.ping_pong_interval = timedelta(seconds=ping_pong_interval)
 
-    def as_fastapi(
+    def _as_fastapi(
         self,
         *,
         external_url_override: Optional[str] = None,
@@ -71,6 +76,15 @@ class App:
             on_session_end=self.on_session_end,
             default_attachments=self.default_attachments,
             validator_factory=_validator_factory,
+        )
+    
+    def as_fastapi(
+        self,
+        *,
+        external_url_override: Optional[str] = None,
+    ):
+        return self._as_fastapi(
+            external_url_override=external_url_override,
         )
 
     def run_as_web_server(
@@ -98,7 +112,7 @@ class App:
             }
 
         # Create the FastAPI server
-        fastapi_app = self.as_fastapi(
+        fastapi_app = self._as_fastapi(
             external_url_override=external_url_override,
             _running_in_window=False,
             _validator_factory=_validator_factory,
@@ -168,7 +182,7 @@ class App:
 
         # Start the server, and release the lock once it's running
         def run_web_server():
-            fastapi_app = self.as_fastapi(
+            fastapi_app = self._as_fastapi(
                 external_url_override=url,
                 _running_in_window=True,
                 _validator_factory=_validator_factory,

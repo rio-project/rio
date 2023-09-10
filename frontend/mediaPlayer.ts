@@ -12,35 +12,43 @@ export type MediaPlayerState = WidgetState & {
 
 export class MediaPlayerWidget extends WidgetBase {
     state: Required<MediaPlayerState>;
+
+    private mediaElement: HTMLVideoElement;
     
     createElement(): HTMLElement {
-        let element = document.createElement('video');
+        let element = document.createElement('div');
+        element.classList.add('reflex-media-player')
+
+        this.mediaElement = document.createElement('video');
+        this.mediaElement.textContent = 'Your browser does not support video/audio playback.';
+        element.appendChild(this.mediaElement)
+
         return element;
     }
 
     updateElement(element: HTMLMediaElement, deltaState: MediaPlayerState): void {
         if (deltaState._media_asset !== undefined) {
-            element.src = deltaState._media_asset;
+            this.mediaElement.src = deltaState._media_asset;
         }
 
         if (deltaState.loop !== undefined) {
-            element.loop = deltaState.loop;
+            this.mediaElement.loop = deltaState.loop;
         }
 
         if (deltaState.autoplay !== undefined) {
-            element.autoplay = deltaState.autoplay;
+            this.mediaElement.autoplay = deltaState.autoplay;
         }
 
         if (deltaState.controls !== undefined) {
-            element.controls = deltaState.controls;
+            this.mediaElement.controls = deltaState.controls;
         }
 
         if (deltaState.muted !== undefined) {
-            element.muted = deltaState.muted;
+            this.mediaElement.muted = deltaState.muted;
         }
 
         if (deltaState.volume !== undefined) {
-            element.volume = deltaState.volume;
+            this.mediaElement.volume = deltaState.volume;
         }
     }
 }

@@ -16,7 +16,6 @@ class LinearContainer extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.style.display = 'flex';
 
         this.grower1 = document.createElement('div');
         this.grower1.classList.add('reflex-undefined-space');
@@ -71,9 +70,7 @@ class LinearContainer extends WidgetBase {
 export class ColumnWidget extends LinearContainer {
     createElement(): HTMLElement {
         let element = super.createElement();
-        element.style.flexDirection = 'column';
-
-        this.childContainer.classList.add('reflex-column');
+        element.classList.add('reflex-column');
 
         return element;
     }
@@ -86,9 +83,7 @@ export class ColumnWidget extends LinearContainer {
 export class RowWidget extends LinearContainer {
     createElement(): HTMLElement {
         let element = super.createElement();
-        element.style.flexDirection = 'row';
-
-        this.childContainer.classList.add('reflex-row');
+        element.classList.add('reflex-row');
 
         return element;
     }

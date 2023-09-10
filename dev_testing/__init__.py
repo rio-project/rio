@@ -273,8 +273,8 @@ def validator_factory(sess: rx.Session) -> rx.validator.Validator:  # type: igno
 
 
 rx_app = rx.App(
-    "Reflex Showcase",
     WidgetShowcase,
+    name="Reflex Showcase",
     on_session_start=lambda sess: print("Session Started"),
     on_session_end=lambda sess: print("Session Ended"),
     default_attachments=[
@@ -291,7 +291,7 @@ if __name__ == "__main__":
         _validator_factory=validator_factory,
     )
 else:
-    app = rx_app.as_fastapi(
+    app = rx_app._as_fastapi(
         external_url_override="http://localhost:8001",
         _validator_factory=validator_factory,
     )

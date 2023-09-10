@@ -1389,7 +1389,6 @@ class ButtonWidget extends WidgetBase {
 class LinearContainer extends WidgetBase {
   createElement() {
     let element = document.createElement("div");
-    element.style.display = "flex";
     this.grower1 = document.createElement("div");
     this.grower1.classList.add("reflex-undefined-space");
     this.childContainer = document.createElement("div");
@@ -1423,8 +1422,7 @@ class LinearContainer extends WidgetBase {
 class ColumnWidget extends LinearContainer {
   createElement() {
     let element = super.createElement();
-    element.style.flexDirection = "column";
-    this.childContainer.classList.add("reflex-column");
+    element.classList.add("reflex-column");
     return element;
   }
   updateChildLayouts() {
@@ -1434,8 +1432,7 @@ class ColumnWidget extends LinearContainer {
 class RowWidget extends LinearContainer {
   createElement() {
     let element = super.createElement();
-    element.style.flexDirection = "row";
-    this.childContainer.classList.add("reflex-row");
+    element.classList.add("reflex-row");
     return element;
   }
   updateChildLayouts() {
@@ -2244,27 +2241,31 @@ class MarginWidget extends WidgetBase {
 }
 class MediaPlayerWidget extends WidgetBase {
   createElement() {
-    let element = document.createElement("video");
+    let element = document.createElement("div");
+    element.classList.add("reflex-media-player");
+    this.mediaElement = document.createElement("video");
+    this.mediaElement.textContent = "Your browser does not support video/audio playback.";
+    element.appendChild(this.mediaElement);
     return element;
   }
   updateElement(element, deltaState) {
     if (deltaState._media_asset !== void 0) {
-      element.src = deltaState._media_asset;
+      this.mediaElement.src = deltaState._media_asset;
     }
     if (deltaState.loop !== void 0) {
-      element.loop = deltaState.loop;
+      this.mediaElement.loop = deltaState.loop;
     }
     if (deltaState.autoplay !== void 0) {
-      element.autoplay = deltaState.autoplay;
+      this.mediaElement.autoplay = deltaState.autoplay;
     }
     if (deltaState.controls !== void 0) {
-      element.controls = deltaState.controls;
+      this.mediaElement.controls = deltaState.controls;
     }
     if (deltaState.muted !== void 0) {
-      element.muted = deltaState.muted;
+      this.mediaElement.muted = deltaState.muted;
     }
     if (deltaState.volume !== void 0) {
-      element.volume = deltaState.volume;
+      this.mediaElement.volume = deltaState.volume;
     }
   }
 }
@@ -10817,13 +10818,15 @@ body {
   height: 100%;
 }
 
-.reflex-column {
+.reflex-column,
+.reflex-column > div.reflex-undefined-space + div {
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
 
-.reflex-row {
+.reflex-row,
+.reflex-row > div.reflex-undefined-space + div {
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -11340,6 +11343,15 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 99999;
+}
+
+.reflex-media-player {
+  position: relative;
+}
+.reflex-media-player video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 </style>
 </head>

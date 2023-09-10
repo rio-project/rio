@@ -205,14 +205,16 @@ body {
 }
 
 // Column
-.reflex-column {
+.reflex-column,
+.reflex-column > div.reflex-undefined-space + div {
     display: flex;
     flex-direction: column;
     align-items: stretch;
 }
 
 // Row
-.reflex-row {
+.reflex-row,
+.reflex-row > div.reflex-undefined-space + div {
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -615,4 +617,22 @@ body {
     width: 100vw;
     height: 100vh;
     z-index: 99999;
+}
+
+// MediaPlayer
+.reflex-media-player {
+    // Videos are weird. For some reason, they can grow larger than their parent
+    // element. Ripping them out of the document flow is the easiest way to make
+    // them behave.
+    // Note: This forces the video to take the size of its parent element, which
+    // means the video has no minimum/natural size. It cannot "push" other
+    // widgets out of the way; it can only ever use up the space it is given.
+    // But I believe that is in line with how other media (like images) work.
+    position: relative;
+    
+    video {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
 }

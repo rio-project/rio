@@ -15,7 +15,7 @@ class _MockApp:
 
         self.outgoing_messages: List[Jsonable] = []
 
-        self._app = rx.App("MockApp", lambda: root_widget)
+        self._app = rx.App(lambda: root_widget)
         self._app_server = AppServer(
             self._app,
             external_url_override="https://unit.test",
