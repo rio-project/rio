@@ -11,10 +11,6 @@
 @include linear-progress.core-styles;
 @include textfield.core-styles;
 
-// Used to highlight problems with the UI to the developer, such as
-// undefined space
-$reflex-developer-error-color: #ff9e03;
-
 // Not visible here:
 //
 // JavaScript sets global theming variables, of the form `--reflex-global-...`.
@@ -219,7 +215,7 @@ body {
 .reflex-row,
 .reflex-row > div.reflex-undefined-space + div {
     pointer-events: none;
-    
+
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -244,8 +240,8 @@ body {
         -45deg,
         black 0,
         black 0.5em,
-        $reflex-developer-error-color 0.5em,
-        $reflex-developer-error-color 1em
+        var(--reflex-global-warning-color) 0.5em,
+        var(--reflex-global-warning-color) 1em
     );
     animation: moveRight 0.7s linear infinite;
 }
@@ -641,7 +637,7 @@ body {
 // MediaPlayer
 .reflex-media-player {
     pointer-events: auto;
-    
+
     // Videos are weird. For some reason, they can grow larger than their parent
     // element. Ripping them out of the document flow is the easiest way to make
     // them behave.
@@ -653,7 +649,7 @@ body {
     // size, they might sometimes end up 0x0 pixels small. A minimum size would
     // ensure that the video can't completely disappear.
     position: relative;
-    
+
     video {
         position: absolute;
         width: 100%;
