@@ -37,11 +37,11 @@ def _get_main_file() -> Path:
 
 def _get_default_app_name() -> str:
     main_file = _get_main_file()
-    
+
     name = main_file.stem
     if name in ('main', '__main__'):
         name = main_file.absolute().parent.stem
-    
+
     return name.replace("_", " ").title()
 
 
@@ -58,11 +58,13 @@ class App:
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
     ):
-        assert callable(build), "The `build` argument must be a function that returns a Widget"
+        assert callable(
+            build
+        ), "The `build` argument must be a function that returns a Widget"
 
         if name is None:
             name = _get_default_app_name()
-            
+
         self.name = name
         self.build = build
         self._icon = None if icon is None else assets.Asset.from_image(icon)
@@ -94,7 +96,7 @@ class App:
             default_attachments=self.default_attachments,
             validator_factory=_validator_factory,
         )
-    
+
     def as_fastapi(
         self,
         *,

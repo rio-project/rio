@@ -137,21 +137,31 @@ def join_routes(base: Iterable[str], new: str) -> List[str]:
     # If the path is absolute (starts with '/'), ignore the base
     if new.startswith("/"):
         stack = []
+        new = new[1:]
     else:
         stack = list(base)
 
+    # Special case: Just '/'
+    if not new:
+        return stack
+
     # Iterate through the parts of the path
-    for part in new.split("/"):
-        # Empty
-        if not part:
+    new_fragments = new.split("/")
+    for ii, fragment in enumerate(new_fragments):
+        # Empty fragments are acceptable only if they are the final fragment,
+        # since that just means the URL ended in a slash
+        if not fragment:
+            if ii == len(new_fragments) - 1:
+                break
+
             raise ValueError(f"Route fragments cannot be empty strings: `{new}`")
 
         # Nop
-        if part == ".":
+        if fragment == ".":
             pass
 
-        # Go to the parent
-        elif part == "..":
+        # One up
+        elif fragment == "..":
             try:
                 stack.pop()
             except IndexError:
@@ -162,6 +172,6 @@ def join_routes(base: Iterable[str], new: str) -> List[str]:
 
         # Go to a child
         else:
-            stack.append(part)
+            stack.append(fragment)
 
     return stack

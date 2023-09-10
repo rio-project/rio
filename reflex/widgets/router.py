@@ -30,8 +30,8 @@ FALLBACK_ROUTE = Route(
         child=rx.Text("The page you requested could not be found."),
         height=4,
         width=12,
-        align_x=0.3,
-        align_y=0.5,
+        align_x=0.5,
+        align_y=0.4,
     ),
 )
 
@@ -77,10 +77,24 @@ class Router(widget_base.Widget):
             align_y=align_y,
         )
 
-        self.routes = {route.fragment_name: route for route in routes}
+        self.routes = {}
         self.fallback_route = fallback_route
-
         self._please_do_not_reconcile_me = object()
+
+        # Convert the routes to a form that facilitates lookup. This is also a
+        # good time for sanity checks
+        for route in routes:
+            if "/" in route.fragment_name:
+                raise ValueError(
+                    f"Route names cannot not contain slashes: {route.fragment_name}",
+                )
+
+            if route.fragment_name in self.routes:
+                raise ValueError(
+                    f'Multiple routes share the same name "{route.fragment_name}"',
+                )
+
+            self.routes[route.fragment_name] = route
 
     def _on_route_change(self) -> None:
         """
@@ -99,6 +113,11 @@ class Router(widget_base.Widget):
         hierarcy of routers this one is. Returns 0 for a top-level router, 1
         for a router inside a router, etc.
         """
+        # Register with the session
+        #
+        # This really should be done only once, and earlier, but the session
+        # isn't available yet in `__init__`
+        self.session._route_change_listeners.add(self)
 
         # TODO / FIXME: This would be nice to cache - store the level in each
         # router, then only look far enough to reach the parent. The problem
@@ -132,12 +151,15 @@ class Router(widget_base.Widget):
         try:
             route_fragment = self.session._current_route[level]
         except IndexError:
+            route_fragment = ""
+
+        try:
+            route = self.routes[route_fragment]
+        except KeyError:
             if self.fallback_route is None:
                 route = FALLBACK_ROUTE
             else:
                 route = self.fallback_route
-        else:
-            route = self.routes.get(route_fragment, FALLBACK_ROUTE)
 
         # Build the child
         return route.build_function()
