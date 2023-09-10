@@ -7,12 +7,11 @@ import threading
 import webbrowser
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, Callable, Awaitable, Any, Union, Iterable
-
-import fastapi
-import uvicorn
+from typing import Any, Awaitable, Callable, Iterable, Optional, Union
 
 import __main__
+import fastapi
+import uvicorn
 
 import reflex as rx
 
@@ -21,7 +20,7 @@ from .common import ImageLike
 
 # Only available with the `window` extra
 try:
-    import webview
+    import webview  # type: ignore
 except ImportError:
     webview = None
 

@@ -20,6 +20,7 @@ from .progress_bar import *
 from .progress_circle import *
 from .rectangle import *
 from .revealer import *
+from .router import *
 from .row import *
 from .slider import *
 from .slideshow import *

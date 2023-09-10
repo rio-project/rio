@@ -17,6 +17,7 @@ from typing import *  # type: ignore
 import babel
 import unicall
 import uniserde
+import yarl
 from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
@@ -143,6 +144,7 @@ class Session(unicall.Unicall):
     def __init__(
         self,
         root_widget: rx.Widget,
+        initial_route: Iterable[str],
         send_message: Callable[[Jsonable], Awaitable[None]],
         receive_message: Callable[[], Awaitable[Jsonable]],
         app_server_: app_server.AppServer,
@@ -151,6 +153,14 @@ class Session(unicall.Unicall):
 
         self._root_widget = root_widget
         self._app_server = app_server_
+
+        # The current route. This isn't used by the session itself, but routers
+        # can use it to agree on what to display.
+        self._current_route: Tuple[str, ...] = tuple(initial_route)
+
+        # A weak set of all widgets which want to be notified when the route
+        # changes. The `Session` will call `_on_route_change` when appropriate.
+        self._route_change_listeners: weakref.WeakSet[rx.Router] = weakref.WeakSet()
 
         # These are injected by the app server after the session has already been created
         self.external_url: Optional[str] = None  # None if running in a window
@@ -221,6 +231,58 @@ class Session(unicall.Unicall):
         running in a local window.
         """
         return self._app_server.running_in_window
+
+    def navigate_to(
+        self,
+        route: str,
+        *,
+        replace: bool = True,
+    ) -> None:
+        """
+        If `route` starts with `/`, `./` o `../`, switch to the given route,
+        without reloading the website. If it starts with `/` the route is taken
+        as absolute, completely superseeding the current route. Otherwise the
+        route is taken as relative to the current route. Any `./` are ignored.
+        `../` are interpreted as "go up one level".
+
+        If `route` doesn't start with `/`, `./` o `../`, it is taken to be a
+        full URL, and the browser will navigate to it.
+
+        Raises a `ValueError` if so many `../` are used that the route would
+        leave the root route.
+
+        If `replace` is `True`, the browser's most recent history entry is
+        replaced with the new route. This means that the user can't go back to
+        the previous route using the browser's back button. If `False`, a new
+        history entry is created, allowing the user to go back to the previous
+        route.
+        """
+        # If this is a full URL, navigate to it
+        if not route.startswith(("/", "./", "../")):
+
+            async def worker() -> None:
+                await self._evaluate_javascript(
+                    f"window.location.href = {json.dumps(route)}",
+                )
+
+            asyncio.create_task(worker())
+            return
+
+        # Update the route
+        self._current_route = tuple(common.join_routes(self._current_route, route))
+
+        # Notify all routers
+        for listener in self._route_change_listeners:
+            listener._on_route_change()
+
+        # Update the browser's history
+        async def worker() -> None:
+            method = "replaceState" if replace else "pushState"
+            await self._evaluate_javascript(
+                f"window.history.{method}(null, null, {json.dumps(route)})",
+            )
+
+        asyncio.create_task(worker())
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
