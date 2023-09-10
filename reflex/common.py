@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import *  # type: ignore
 
 from PIL.Image import Image
-
 from typing_extensions import Annotated
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
@@ -120,3 +119,49 @@ async def call_event_handler(  # type: ignore
     except Exception:
         print("Exception in event handler:")
         traceback.print_exc()
+
+
+def join_routes(base: Iterable[str], new: str) -> List[str]:
+    """
+    Given a base path and a new path, join them together and return the result.
+
+    This will process any `./` and `../` parts in the new path, and return a
+    list of path parts.
+
+    Raises a `ValueError` if so many `../` are used that the route would leave
+    the root route.
+
+    Raises a `ValueError` if
+    """
+
+    # If the path is absolute (starts with '/'), ignore the base
+    if new.startswith("/"):
+        stack = []
+    else:
+        stack = list(base)
+
+    # Iterate through the parts of the path
+    for part in new.split("/"):
+        # Empty
+        if not part:
+            raise ValueError(f"Route fragments cannot be empty strings: `{new}`")
+
+        # Nop
+        if part == ".":
+            pass
+
+        # Go to the parent
+        elif part == "..":
+            try:
+                stack.pop()
+            except IndexError:
+                base_str = "/" + "/".join(base)
+                raise ValueError(
+                    f"Route `{new}` would leave the root route when joined with `{base_str}`"
+                )
+
+        # Go to a child
+        else:
+            stack.append(part)
+
+    return stack

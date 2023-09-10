@@ -1,3 +1,7 @@
+# URLs are used as an important datatype within reflex. Re-export them for easy
+# use.
+from yarl import URL
+
 from . import self_serializing, widgets
 from .app import *
 from .box_style import *

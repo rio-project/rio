@@ -15,6 +15,7 @@ import babel
 import fastapi
 import timer_dict
 import uniserde.case_convert
+import yarl
 from PIL import Image
 from uniserde import Jsonable
 
@@ -186,7 +187,6 @@ class AppServer(fastapi.FastAPI):
         ] = timer_dict.TimerDict(default_duration=timedelta(minutes=15))
 
         # Fastapi
-        self.add_api_route("/", self._serve_index, methods=["GET"])
         # self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
         # self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
         self.add_api_route("/reflex/favicon.ico", self._serve_favicon, methods=["GET"])
@@ -197,6 +197,13 @@ class AppServer(fastapi.FastAPI):
             "/reflex/upload/{upload_token}", self._serve_file_upload, methods=["PUT"]
         )
         self.add_api_websocket_route("/reflex/ws", self._serve_websocket)
+
+        # Because this is a single page application, all other routes should
+        # serve the index page. The session will determine which widgets should
+        # be shown.
+        self.add_api_route(
+            "/{initial_route_str:path}", self._serve_index, methods=["GET"]
+        )
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """
@@ -232,7 +239,11 @@ class AppServer(fastapi.FastAPI):
         """
         self._active_session_tokens[session_token] = None
 
-    async def _serve_index(self) -> fastapi.responses.HTMLResponse:
+    async def _serve_index(
+        self,
+        request: fastapi.Request,
+        initial_route_str: str,
+    ) -> fastapi.responses.HTMLResponse:
         """
         Handler for serving the index HTML page via fastapi.
         """
@@ -242,6 +253,13 @@ class AppServer(fastapi.FastAPI):
 
         # Load the templates
         html = read_frontend_template("index.html")
+
+        # Determine the base URL of the server
+        base_url = request.base_url
+
+        # Determine the initial route
+        route_url = yarl.URL(initial_route_str)
+        initial_route = route_url.path.strip("/").split("/")
 
         # Find the theme
         #
@@ -405,7 +423,7 @@ class AppServer(fastapi.FastAPI):
                 media_type=asset.media_type,
             )
         else:
-            assert False, f'Unable to serve asset of unknown type: {asset}'
+            assert False, f"Unable to serve asset of unknown type: {asset}"
 
     async def _serve_file_upload(
         self,
@@ -517,6 +535,7 @@ class AppServer(fastapi.FastAPI):
         assert isinstance(root_widget, rx.Widget), f"The `build` function passed to the App must return a `Widget` instance, not {root_widget!r}."
         sess = session.Session(
             root_widget,
+            [],  # TODO: Determine the initial route
             send_message,
             receive_message,
             self,

@@ -6,12 +6,11 @@ import threading
 import webbrowser
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, Callable, Awaitable, Any, Union, Iterable
-
-import fastapi
-import uvicorn
+from typing import Any, Awaitable, Callable, Iterable, Optional, Union
 
 import __main__
+import fastapi
+import uvicorn
 
 import reflex as rx
 
@@ -20,7 +19,7 @@ from .common import ImageLike
 
 # Only available with the `window` extra
 try:
-    import webview
+    import webview  # type: ignore
 except ImportError:
     webview = None
 
@@ -52,7 +51,7 @@ class App:
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)
-        self.assets_dir = Path(__main__.__file__).parent / (assets_dir or '')
+        self.assets_dir = Path(__main__.__file__).parent / (assets_dir or "")
 
         if isinstance(ping_pong_interval, timedelta):
             self.ping_pong_interval = ping_pong_interval
