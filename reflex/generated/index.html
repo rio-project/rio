@@ -10809,10 +10809,12 @@ body {
 }
 
 .reflex-align > * {
+  pointer-events: none;
   position: relative;
 }
 
 .reflex-margin > * {
+  pointer-events: none;
   position: relative;
   width: 100%;
   height: 100%;
@@ -10820,6 +10822,7 @@ body {
 
 .reflex-column,
 .reflex-column > div.reflex-undefined-space + div {
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -10827,6 +10830,7 @@ body {
 
 .reflex-row,
 .reflex-row > div.reflex-undefined-space + div {
+  pointer-events: none;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -10841,16 +10845,19 @@ body {
   }
 }
 .reflex-undefined-space {
+  pointer-events: auto;
   flex-grow: 1;
   background-image: repeating-linear-gradient(-45deg, black 0, black 0.5em, #ff9e03 0.5em, #ff9e03 1em);
   animation: moveRight 0.7s linear infinite;
 }
 
 .reflex-grid {
+  pointer-events: none;
   display: grid;
 }
 
 .reflex-text {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10858,6 +10865,7 @@ body {
 }
 
 .reflex-rectangle {
+  pointer-events: auto;
   border-style: solid;
   transition-timing-function: ease;
   /*
@@ -10971,6 +10979,7 @@ body {
 }
 
 .reflex-stack {
+  pointer-events: none;
   display: grid;
 }
 
@@ -10980,6 +10989,7 @@ body {
 }
 
 .reflex-switch .container {
+  pointer-events: auto;
   position: relative;
   width: 3.182rem;
   height: 1.548rem;
@@ -11033,6 +11043,7 @@ body {
 }
 
 .reflex-dropdown {
+  pointer-events: auto;
   min-height: 2rem;
   background-color: var(--reflex-local-surface-color-variant);
   color: var(--reflex-local-text-color);
@@ -11049,6 +11060,7 @@ body {
 }
 
 .reflex-progress-circle {
+  pointer-events: auto;
   width: 0;
   height: 0;
   stroke: var(--reflex-local-accent-color);
@@ -11105,6 +11117,7 @@ body {
   }
 }
 .reflex-button {
+  pointer-events: auto;
   transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out, border-color 0.1s ease-in-out;
   overflow: hidden;
 }
@@ -11241,6 +11254,7 @@ body {
 }
 
 .reflex-revealer-header {
+  pointer-events: auto;
   cursor: pointer;
   padding: 0.8rem;
   width: 100%;
@@ -11282,12 +11296,14 @@ body {
 }
 
 .reflex-icon {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .reflex-error-popup {
+  pointer-events: auto;
   position: fixed;
   top: 2rem;
   left: 50%;
@@ -11303,6 +11319,7 @@ body {
 }
 
 .reflex-slideshow {
+  pointer-events: auto;
   position: relative;
   overflow: hidden;
 }
@@ -11337,6 +11354,7 @@ body {
 }
 
 .reflex-sticky {
+  pointer-events: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -11346,6 +11364,7 @@ body {
 }
 
 .reflex-media-player {
+  pointer-events: auto;
   position: relative;
 }
 .reflex-media-player video {

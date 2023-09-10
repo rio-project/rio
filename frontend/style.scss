@@ -185,7 +185,6 @@ body {
     margin: 0;
     padding: 0;
     font-family: Roboto, sans-serif;
-    // font-size: 13px;
 }
 
 .reflex-widget {
@@ -194,11 +193,13 @@ body {
 
 // Align
 .reflex-align > * {
+    pointer-events: none;
     position: relative;
 }
 
 // Margin
 .reflex-margin > * {
+    pointer-events: none;
     position: relative;
     width: 100%;
     height: 100%;
@@ -207,6 +208,8 @@ body {
 // Column
 .reflex-column,
 .reflex-column > div.reflex-undefined-space + div {
+    pointer-events: none;
+
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -215,6 +218,8 @@ body {
 // Row
 .reflex-row,
 .reflex-row > div.reflex-undefined-space + div {
+    pointer-events: none;
+    
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -232,6 +237,7 @@ body {
 }
 
 .reflex-undefined-space {
+    pointer-events: auto;
     flex-grow: 1;
 
     background-image: repeating-linear-gradient(
@@ -246,11 +252,13 @@ body {
 
 // Grid
 .reflex-grid {
+    pointer-events: none;
     display: grid;
 }
 
 // Text
 .reflex-text {
+    pointer-events: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -260,6 +268,7 @@ body {
 
 // Rectangle
 .reflex-rectangle {
+    pointer-events: auto;
     border-style: solid;
 
     transition-timing-function: ease; // The transition time is set via JS
@@ -303,6 +312,7 @@ body {
 
 // Stack
 .reflex-stack {
+    pointer-events: none;
     display: grid;
 }
 
@@ -313,6 +323,7 @@ body {
 
 // Switch
 .reflex-switch .container {
+    pointer-events: auto;
     position: relative;
     width: 3.182rem;
     height: 1.548rem;
@@ -369,6 +380,7 @@ body {
 
 // Dropdown
 .reflex-dropdown {
+    pointer-events: auto;
     min-height: 2rem;
 
     background-color: var(--reflex-local-surface-color-variant);
@@ -389,6 +401,7 @@ body {
 
 // Progress Circle
 .reflex-progress-circle {
+    pointer-events: auto;
     width: 0;
     height: 0;
     stroke: var(--reflex-local-accent-color);
@@ -448,6 +461,7 @@ body {
 
 // Button
 .reflex-button {
+    pointer-events: auto;
     transition:
         background-color 0.1s ease-in-out,
         color 0.1s ease-in-out,
@@ -506,6 +520,7 @@ body {
 
 // Revealer
 .reflex-revealer-header {
+    pointer-events: auto;
     cursor: pointer;
     padding: 0.8rem;
     width: 100%;
@@ -552,6 +567,7 @@ body {
 
 // Icon
 .reflex-icon {
+    pointer-events: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -559,6 +575,7 @@ body {
 
 // Error popup
 .reflex-error-popup {
+    pointer-events: auto;
     position: fixed;
     top: 2rem;
     left: 50%;
@@ -575,6 +592,7 @@ body {
 
 // Slideshow
 .reflex-slideshow {
+    pointer-events: auto;
     position: relative;
     overflow: hidden;
 }
@@ -611,6 +629,7 @@ body {
 
 // Sticky
 .reflex-sticky {
+    pointer-events: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -621,6 +640,8 @@ body {
 
 // MediaPlayer
 .reflex-media-player {
+    pointer-events: auto;
+    
     // Videos are weird. For some reason, they can grow larger than their parent
     // element. Ripping them out of the document flow is the easiest way to make
     // them behave.
