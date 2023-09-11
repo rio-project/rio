@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY, dataclass
+import asyncio
+from dataclasses import dataclass
 from typing import *  # type: ignore
 
 import reflex as rx
@@ -8,9 +9,16 @@ import reflex as rx
 from . import widget_base
 
 __all__ = [
+    "RouteChangeEvent",
     "Route",
     "Router",
 ]
+
+
+@dataclass
+class RouteChangeEvent:
+    previous_route: str
+    new_route: str
 
 
 @dataclass(frozen=True)
@@ -39,16 +47,26 @@ FALLBACK_ROUTE = Route(
 class Router(widget_base.Widget):
     routes: Dict[str, Route]
     fallback_route: Optional[Route]
+    on_route_change: rx.EventHandler[RouteChangeEvent]
 
     # Routers must not be reconciled completely, because doing so would prevent
     # a rebuild. This value will never compare equal to that of any other
     # router, preventing reconciliation.
     _please_do_not_reconcile_me: object
 
+    # Keeps track of the currently active route
+    #
+    # This is stored in a list to avoid a refresh when the route changes.
+    #
+    # The list is initialized in the `build` method. Until then it has zero
+    # values. Once initialized, it contains a single string.
+    _current_route_name: List[str]
+
     def __init__(
         self,
         *routes: Route,
         fallback_route: Optional[Route] = None,
+        on_route_change: rx.EventHandler[RouteChangeEvent] = None,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -79,14 +97,16 @@ class Router(widget_base.Widget):
 
         self.routes = {}
         self.fallback_route = fallback_route
+        self.on_route_change = on_route_change
         self._please_do_not_reconcile_me = object()
+        self._current_route_name = []
 
         # Convert the routes to a form that facilitates lookup. This is also a
         # good time for sanity checks
         for route in routes:
             if "/" in route.fragment_name:
                 raise ValueError(
-                    f"Route names cannot not contain slashes: {route.fragment_name}",
+                    f"Route names cannot contain slashes: {route.fragment_name}",
                 )
 
             if route.fragment_name in self.routes:
@@ -147,14 +167,34 @@ class Router(widget_base.Widget):
         # Look up the parent router
         level = self._find_router_level()
 
-        # Determine which route to use
+        # Determine the route fragment
         try:
-            route_fragment = self.session._current_route[level]
+            new_route_fragment = self.session._current_route[level]
         except IndexError:
-            route_fragment = ""
+            new_route_fragment = ""
 
+        # Keep track of it
+        if not self._current_route_name:
+            self._current_route_name.append(new_route_fragment)
+        else:
+            old_route_fragment = self._current_route_name[0]
+            self._current_route_name[0] = new_route_fragment
+
+            # Trigger the route change event
+            if old_route_fragment != new_route_fragment:
+                asyncio.create_task(
+                    self._call_event_handler(
+                        self.on_route_change,
+                        RouteChangeEvent(
+                            previous_route=old_route_fragment,
+                            new_route=new_route_fragment,
+                        ),
+                    )
+                )
+
+        # Fetch the route instance
         try:
-            route = self.routes[route_fragment]
+            route = self.routes[new_route_fragment]
         except KeyError:
             if self.fallback_route is None:
                 route = FALLBACK_ROUTE

@@ -758,6 +758,14 @@ function main() {
     pixelsPerEm = measure.offsetHeight / 10;
     document.body.removeChild(measure);
 
+    // Listen for URL changes, so the session can switch route
+    document.addEventListener('popstate', (event) => {
+        console.log(`URL changed to ${window.location.href}`);
+        callRemoteMethodDiscardResponse('onUrlChanged', {
+            newUrl: window.location.href.toString(),
+        });
+    });
+
     // Connect to the websocket
     var url = new URL(
         `/reflex/ws?sessionToken=${sessionToken}`,

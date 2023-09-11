@@ -236,7 +236,7 @@ class Session(unicall.Unicall):
         self,
         route: str,
         *,
-        replace: bool = True,
+        replace: bool = False,
     ) -> None:
         """
         If `route` starts with `/`, `./` o `../`, switch to the given route,
@@ -405,6 +405,11 @@ class Session(unicall.Unicall):
                     if isinstance(value, rx.StateProperty):
                         # In order to create a `StateBinding`, the parent's
                         # attribute must also be a binding
+
+                        # FIXME: Incorrect for high level containers. State
+                        # bindings are not necessarily bound to the widget's
+                        # builder!
+                        print("ffffff", type(widget), value.name)
                         parent_binding = widget_vars[value.name]
 
                         if not isinstance(parent_binding, rx.StateBinding):
@@ -1281,3 +1286,10 @@ document.body.removeChild(a)
     @unicall.local(name="ping")
     async def _ping(self, ping: str) -> str:
         return "pong"
+
+    @unicall.local(name="onUrlChange")
+    async def _on_url_change(self, new_route: str) -> None:
+        """
+        Called by the client when the route changes.
+        """
+        print(f"TODO: The browser has navigated to {new_route}")

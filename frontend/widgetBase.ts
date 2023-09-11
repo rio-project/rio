@@ -25,13 +25,21 @@ export abstract class WidgetBase {
     }
 
     /// Fetches the HTML element associated with this widget. This is a slow
-    /// operation and should be avoided if possible.
-    get element(): HTMLElement {
+    /// operation and should be avoided if possible. Returns `null` if the
+    /// element cannot be found.
+    try_get_element(): HTMLElement | null {
+        return document.getElementById(this.elementId);
+    }
+
+    /// Fetches the HTML element associated with this widget. This is a slow
+    /// operation and should be avoided if possible. It is an error to look up
+    /// an element which does not exist.
+    element(): HTMLElement {
         let element = document.getElementById(this.elementId);
 
         if (element === null) {
             throw new Error(
-                `Instance for element with id ${this.elementId} cannot find its element`
+                `Instance for ${this.state._python_type_} widget with id ${this.elementId} cannot find its element`
             );
         }
 
@@ -59,16 +67,18 @@ export abstract class WidgetBase {
     /// properties, allowing it to remove properties which are no longer
     /// relevant.
     replaceLayoutCssProperties(cssProperties: object): void {
+        let element = this.element();
+
         // Find all properties which are no longer present and remove them
         for (let key in this.layoutCssProperties) {
             if (!(key in cssProperties)) {
-                this.element.style.removeProperty(key);
+                element.style.removeProperty(key);
             }
         }
 
         // Set all properties which are new or changed
         for (let key in cssProperties) {
-            this.element.style.setProperty(key, cssProperties[key]);
+            element.style.setProperty(key, cssProperties[key]);
         }
 
         // Keep track of the new properties
@@ -95,7 +105,7 @@ export abstract class WidgetBase {
 
         // Trigger an update
         // @ts-ignore
-        this.updateElement(this.element, deltaState);
+        this.updateElement(this.element(), deltaState);
     }
 
     setStateAndNotifyBackend(deltaState: object): void {
