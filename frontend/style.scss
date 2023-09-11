@@ -19,6 +19,9 @@
 $z-index-sticky: 10000;
 $z-index-error-popup: 10001;
 
+// Nonstandard transition timing function
+$transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
 // Theme Switcheroos
 .reflex-switcheroo-primary {
     // Theme colors
@@ -587,6 +590,11 @@ body {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
+
+    // This is immediately changed by JavaScript to effect a fade-in
+    opacity: 0;
+
+    transition: opacity 0.7s ease-in;
 }
 
 .reflex-error-popup > div {
@@ -596,7 +604,6 @@ body {
     left: 50%;
     width: unset;
     height: unset;
-    transform: translateX(-50%);
     background: var(--reflex-global-surface-color-variant);
     color: var(--reflex-global-danger-color);
     font-weight: bold;
@@ -604,6 +611,12 @@ body {
     border-radius: 99999px;
     box-shadow: 0 0 var(--reflex-global-shadow-radius)
         var(--reflex-global-shadow-color);
+
+    // This is immediately changed by JavaScript to effect a fade-in
+    transform: translate(-50%, -200%);
+
+    transition: transform 0.4s $transition-timing-overshoot;
+    transition-delay: transform 0.2s;
 }
 
 // Slideshow

@@ -878,6 +878,15 @@ function displayConnectionLostPopup() {
 </div>
 `;
     document.body.appendChild(popup);
+
+    // The popup spawns with opacity 0. Fade it in.
+    //
+    // For some reason `requestAnimationFrame` doesn't work here. Use an actual
+    // timeout instead.
+    setTimeout(() => {
+        popup.style.opacity = '1';
+        popup.firstElementChild!.style.transform = 'translate(-50%, 0)';
+    }, 100);
 }
 
 main();
