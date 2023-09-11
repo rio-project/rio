@@ -28,7 +28,7 @@ class Card(widget_base.Widget):
         thm = self.session.attachments[theme.Theme]
 
         # The higher up the card the larger, but weaker the shadow is
-        hover_height = self.hover_height + self._is_hovered * 0.5
+        hover_height = self.hover_height + self._is_hovered * 0.7
 
         if hover_height == 0:
             shadow_opacity = 0.9

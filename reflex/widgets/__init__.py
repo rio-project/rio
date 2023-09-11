@@ -8,6 +8,7 @@ from .custom_button import *
 from .dropdown import *
 from .grid import *
 from .icon import *
+from .size_trip_switch import *
 from .image import *
 from .key_event_listener import *
 from .markdown_view import *

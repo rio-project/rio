@@ -3,7 +3,6 @@ import { ButtonWidget } from './button';
 import { Color, Fill } from './models';
 import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
-import { StickyWidget } from './sticky';
 import { GridWidget } from './grid';
 import { IconWidget } from './Icon';
 import { KeyEventListenerWidget } from './keyEventListener';
@@ -16,9 +15,11 @@ import { ProgressBarWidget } from './progressBar';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
 import { RevealerWidget } from './revealer';
+import { SizeTripSwitchWidget } from './sizeTripSwitch';
 import { SliderWidget } from './Slider';
 import { SlideshowWidget } from './slideshow';
 import { StackWidget } from './stack';
+import { StickyWidget } from './sticky';
 import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
@@ -167,6 +168,7 @@ const widgetClasses = {
     'Rectangle-builtin': RectangleWidget,
     'Revealer-builtin': RevealerWidget,
     'Row-builtin': RowWidget,
+    'SizeTripSwitch-builtin': SizeTripSwitchWidget,
     'Slider-builtin': SliderWidget,
     'Slideshow-builtin': SlideshowWidget,
     'Stack-builtin': StackWidget,
@@ -884,8 +886,10 @@ function displayConnectionLostPopup() {
     // For some reason `requestAnimationFrame` doesn't work here. Use an actual
     // timeout instead.
     setTimeout(() => {
+        let popupCard = popup.firstElementChild! as HTMLElement;
+
         popup.style.opacity = '1';
-        popup.firstElementChild!.style.transform = 'translate(-50%, 0)';
+        popupCard!.style.transform = 'translate(-50%, 0)';
     }, 100);
 }
 
