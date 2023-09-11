@@ -9,6 +9,7 @@ import json
 import logging
 import secrets
 import sys
+import traceback
 import typing
 import weakref
 from dataclasses import dataclass
@@ -271,8 +272,70 @@ class Session(unicall.Unicall):
             asyncio.create_task(worker())
             return
 
-        # Update the route
-        self._current_route = tuple(common.join_routes(self._current_route, route))
+        # Determine the full route to navigate to
+        initial_target_route = common.join_routes(self._current_route, route)
+
+        # Is any guard opposed to this route?
+        target_route = initial_target_route
+        visited_redirects = {target_route}
+        past_redirects = [target_route]
+
+        while True:
+            for router in self._routers:
+                # Get the route instance
+                try:
+                    route_segment = target_route[router._level[0]]
+                except IndexError:
+                    route_segment = ""
+
+                try:
+                    route_instance = router.routes[route_segment]
+                except KeyError:
+                    # If there is no fallback route this can be safely ignored,
+                    # since the default fallback doesn't have a guard.
+                    if router.fallback_route is None:
+                        continue
+
+                    route_instance = router.fallback_route
+
+                # Run the guard
+                try:
+                    redirect_str = route_instance.guard(self)
+                except Exception:
+                    print("Ignoring guard, because it has raised an exception:")
+                    traceback.print_exc()
+                    continue
+
+                # No redirect - check the next router
+                if redirect_str is None:
+                    continue
+
+                # Honest to god redirect
+                target_route = common.join_routes(self._current_route, redirect_str)
+                break
+
+            # No guard is opposed to this route. Use it
+            else:
+                break
+
+            # Detect infinite loops and break them
+            if target_route in visited_redirects:
+                current_route_str = "/" + "/".join(self._current_route)
+                initial_target_route_str = "/" + "/".join(initial_target_route)
+                route_strings = ["/" + "/".join(route) for route in past_redirects]
+                route_strings_list = " -> " + "\n -> ".join(route_strings)
+
+                logging.warning(
+                    f"Rejecting navigation to `{initial_target_route_str}` because route guards have created an infinite loop:\n\n    {current_route_str}\n{route_strings_list}"
+                )
+                return
+
+            # Remember that this route has been visited before
+            visited_redirects.add(target_route)
+            past_redirects.append(target_route)
+
+        # Update the current route
+        self._current_route = target_route
 
         # Dirty all routers to force a rebuild
         for router in self._routers:

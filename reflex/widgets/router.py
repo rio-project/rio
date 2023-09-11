@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import asyncio
-from dataclasses import dataclass
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
 import reflex as rx
@@ -18,10 +17,8 @@ __all__ = [
 class Route:
     fragment_name: str
     build_function: Callable[[], rx.Widget]
-
-    # TODO: Support guards, so users can e.g. be kicked out of a route if they
-    # are not logged in
-    # guard: Callable[[], Optional[str]] = lambda: ""
+    _: KW_ONLY
+    guard: Callable[[rx.Session], Optional[str]] = lambda _: None
 
 
 FALLBACK_ROUTE = Route(
@@ -48,6 +45,12 @@ class Router(widget_base.Widget):
     # This value will never compare equal to that of any other router,
     # preventing reconciliation.
     _please_do_not_reconcile_me: object
+
+    # How many other routers are above this one in the widget tree. Zero for
+    # top-level routers, 1 for the next level, and so on.
+    #
+    # This is stored in a list so that modifications don't trigger a rebuild.
+    _level = [-1]
 
     def __init__(
         self,
@@ -137,6 +140,9 @@ class Router(widget_base.Widget):
 
             # Chain up
             cur_weak = cur._weak_builder_
+
+        # Update the router's level
+        self._level[0] = level
 
         # Track the parent router in the session
         self.session._routers[self] = None if parent is None else parent._id
