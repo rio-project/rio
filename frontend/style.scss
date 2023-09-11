@@ -15,6 +15,10 @@
 //
 // JavaScript sets global theming variables, of the form `--reflex-global-...`.
 
+// Z-indices for widgets which are expected to show up on top
+$z-index-sticky: 10000;
+$z-index-error-popup: 10001;
+
 // Theme Switcheroos
 .reflex-switcheroo-primary {
     // Theme colors
@@ -575,6 +579,17 @@ body {
 
 // Error popup
 .reflex-error-popup {
+    pointer-events: none;
+    z-index: $z-index-error-popup;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.reflex-error-popup > div {
     pointer-events: auto;
     position: fixed;
     top: 2rem;
@@ -587,7 +602,8 @@ body {
     font-weight: bold;
     padding: 1.5rem;
     border-radius: 99999px;
-    box-shadow: 0 0 0.6em rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 var(--reflex-global-shadow-radius)
+        var(--reflex-global-shadow-color);
 }
 
 // Slideshow
@@ -635,7 +651,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 99999;
+    z-index: $z-index-sticky;
 }
 
 // MediaPlayer

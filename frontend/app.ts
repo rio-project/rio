@@ -871,8 +871,12 @@ export function callRemoteMethodDiscardResponse(
 
 function displayConnectionLostPopup() {
     const popup = document.createElement('div');
-    popup.textContent = 'Connection lost. Please refresh the page.';
     popup.classList.add('reflex-error-popup');
+    popup.innerHTML = `
+<div>
+    Connection lost. Please refresh the page.
+</div>
+`;
     document.body.appendChild(popup);
 }
 
