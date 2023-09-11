@@ -9,6 +9,7 @@ import json
 import logging
 import secrets
 import sys
+import traceback
 import typing
 import weakref
 from dataclasses import dataclass
@@ -158,9 +159,12 @@ class Session(unicall.Unicall):
         # can use it to agree on what to display.
         self._current_route: Tuple[str, ...] = tuple(initial_route)
 
-        # A weak set of all widgets which want to be notified when the route
-        # changes. The `Session` will call `_on_route_change` when appropriate.
-        self._route_change_listeners: weakref.WeakSet[rx.Router] = weakref.WeakSet()
+        # Maps all routers to the id of the router one higher up in the widget
+        # tree. Root routers are mapped to None. This map is kept up to date by
+        # routers themselves.
+        self._routers: weakref.WeakKeyDictionary[
+            rx.Router, Optional[int]
+        ] = weakref.WeakKeyDictionary()
 
         # These are injected by the app server after the session has already been created
         self.external_url: Optional[str] = None  # None if running in a window
@@ -236,7 +240,7 @@ class Session(unicall.Unicall):
         self,
         route: str,
         *,
-        replace: bool = True,
+        replace: bool = False,
     ) -> None:
         """
         If `route` starts with `/`, `./` o `../`, switch to the given route,
@@ -268,12 +272,78 @@ class Session(unicall.Unicall):
             asyncio.create_task(worker())
             return
 
-        # Update the route
-        self._current_route = tuple(common.join_routes(self._current_route, route))
+        # Determine the full route to navigate to
+        initial_target_route = common.join_routes(self._current_route, route)
 
-        # Notify all routers
-        for listener in self._route_change_listeners:
-            listener._on_route_change()
+        # Is any guard opposed to this route?
+        target_route = initial_target_route
+        visited_redirects = {target_route}
+        past_redirects = [target_route]
+
+        while True:
+            for router in self._routers:
+                # Get the route instance
+                try:
+                    route_segment = target_route[router._level[0]]
+                except IndexError:
+                    route_segment = ""
+
+                try:
+                    route_instance = router.routes[route_segment]
+                except KeyError:
+                    # If there is no fallback route this can be safely ignored,
+                    # since the default fallback doesn't have a guard.
+                    if router.fallback_route is None:
+                        continue
+
+                    route_instance = router.fallback_route
+
+                # Run the guard
+                try:
+                    redirect_str = route_instance.guard(self)
+                except Exception:
+                    print("Ignoring guard, because it has raised an exception:")
+                    traceback.print_exc()
+                    continue
+
+                # No redirect - check the next router
+                if redirect_str is None:
+                    continue
+
+                # Honest to god redirect
+                target_route = common.join_routes(self._current_route, redirect_str)
+                break
+
+            # No guard is opposed to this route. Use it
+            else:
+                break
+
+            # Detect infinite loops and break them
+            if target_route in visited_redirects:
+                current_route_str = "/" + "/".join(self._current_route)
+                initial_target_route_str = "/" + "/".join(initial_target_route)
+                route_strings = ["/" + "/".join(route) for route in past_redirects]
+                route_strings_list = " -> " + "\n -> ".join(route_strings)
+
+                logging.warning(
+                    f"Rejecting navigation to `{initial_target_route_str}` because route guards have created an infinite loop:\n\n    {current_route_str}\n{route_strings_list}"
+                )
+                return
+
+            # Remember that this route has been visited before
+            visited_redirects.add(target_route)
+            past_redirects.append(target_route)
+
+        # Update the current route
+        self._current_route = target_route
+
+        # Dirty all routers to force a rebuild
+        for router in self._routers:
+            self._register_dirty_widget(
+                router, include_fundamental_children_recursively=True
+            )
+
+        asyncio.create_task(self._refresh())
 
         # Update the browser's history
         async def worker() -> None:
@@ -395,7 +465,10 @@ class Session(unicall.Unicall):
             # bindings are aware of their widget.
             widget_vars = vars(widget)
 
-            for child in build_result._iter_direct_and_indirect_children(True):
+            for child in build_result._iter_direct_and_indirect_children(
+                include_self=True,
+                cross_build_boundaries=True,
+            ):
                 child_vars = vars(child)
 
                 for state_property in child._state_properties_:
@@ -405,6 +478,10 @@ class Session(unicall.Unicall):
                     if isinstance(value, rx.StateProperty):
                         # In order to create a `StateBinding`, the parent's
                         # attribute must also be a binding
+
+                        # FIXME: Incorrect for high level containers. State
+                        # bindings are not necessarily bound to the widget's
+                        # builder!
                         parent_binding = widget_vars[value.name]
 
                         if not isinstance(parent_binding, rx.StateBinding):
@@ -779,39 +856,12 @@ class Session(unicall.Unicall):
         builder_vars = vars(builder)
 
         for widget in reconciled_build_result._iter_direct_and_indirect_children(
-            include_self=True
+            include_self=True,
+            cross_build_boundaries=False,
         ):
-            # Overriding an attribute can cause the widget to contain widgets
-            # which have never had their builder or state properties injected.
-            # This is handled by the calling function. Update the reference to
-            # the widget's builder
+            # Widgets may now have an incorrect builder assigned. Assign the new
+            # one.
             widget._weak_builder_ = weak_builder
-
-            # Update all state bindings
-            widget_vars = vars(widget)
-
-            for state_property in widget._state_properties_:
-                value = widget_vars[state_property.name]
-                assert not isinstance(value, rx.StateProperty), value
-
-                if not isinstance(value, rx.StateBinding) or value.parent is None:
-                    continue
-
-                builder_attr_name = value.parent.owning_property.name  # type: ignore
-                builder_binding: rx.StateBinding = builder_vars[builder_attr_name]
-
-                if not isinstance(builder_binding, rx.StateBinding):
-                    builder_binding = rx.StateBinding(
-                        owning_widget_weak=weak_builder,
-                        owning_property=getattr(type(builder), builder_attr_name),
-                        is_root=True,
-                        parent=None,
-                        value=builder_binding,
-                    )
-                    builder_vars[builder_attr_name] = builder_binding
-
-                value.parent = builder_binding
-                builder_binding.children.add(value)
 
             # Any new widgets which haven't found a match are new and must be
             # processed by the session
@@ -986,7 +1036,8 @@ class Session(unicall.Unicall):
             include_self: bool = True,
         ) -> None:
             for child in widget._iter_direct_and_indirect_children(
-                include_self=include_self
+                include_self=include_self,
+                cross_build_boundaries=True,
             ):
                 register_widget_by_key(widgets_by_key, child)
 
@@ -1281,3 +1332,10 @@ document.body.removeChild(a)
     @unicall.local(name="ping")
     async def _ping(self, ping: str) -> str:
         return "pong"
+
+    @unicall.local(name="onUrlChange")
+    async def _on_url_change(self, new_route: str) -> None:
+        """
+        Called by the client when the route changes.
+        """
+        print(f"TODO: The browser has navigated to {new_route}")

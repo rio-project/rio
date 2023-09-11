@@ -261,6 +261,10 @@ class Widget(ABC):
     align_y: Optional[float] = None
 
     # Weak reference to the widget whose `build` method returned this widget.
+    #
+    # TODO: What exactly does this mean? Is the builder the widget in which
+    # build() this widget was created? Or the one that has actually added this
+    # child into the widget tree?
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
         # Dataclasses seem to unintentionally turn this function into a method.
         # Make sure it works whether or not `self` is passed.
@@ -270,7 +274,7 @@ class Widget(ABC):
 
     # Each time a widget is built the build generation in that widget's WIDGET
     # DATA is incremented. If this value no longer matches the value in its
-    # parent's WIDGET DATA, the widget is dead.
+    # builder's WIDGET DATA, the widget is dead.
     _build_generation_: int = dataclasses.field(default=-1, init=False)
 
     # Injected by the session when the widget is refreshed
@@ -498,13 +502,25 @@ class Widget(ABC):
 
     def _iter_direct_and_indirect_children(
         self,
+        *,
         include_self: bool,
+        cross_build_boundaries: bool,
     ) -> Iterable["Widget"]:
+        # Special case the widget itself to handle `include_self`
         if include_self:
             yield self
 
-        for child in self._iter_direct_children():
-            yield from child._iter_direct_and_indirect_children(True)
+        if not cross_build_boundaries and not isinstance(self, HtmlWidget):
+            return
+
+        # Iteratively yield all children
+        to_do = list(self._iter_direct_children())
+        while to_do:
+            cur = to_do.pop()
+            yield cur
+
+            if cross_build_boundaries or isinstance(cur, HtmlWidget):
+                to_do.extend(cur._iter_direct_children())
 
     async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")

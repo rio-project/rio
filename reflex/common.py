@@ -121,7 +121,7 @@ async def call_event_handler(  # type: ignore
         traceback.print_exc()
 
 
-def join_routes(base: Iterable[str], new: str) -> List[str]:
+def join_routes(base: Iterable[str], new: str) -> Tuple[str, ...]:
     """
     Given a base path and a new path, join them together and return the result.
 
@@ -137,21 +137,31 @@ def join_routes(base: Iterable[str], new: str) -> List[str]:
     # If the path is absolute (starts with '/'), ignore the base
     if new.startswith("/"):
         stack = []
+        new = new[1:]
     else:
         stack = list(base)
 
+    # Special case: Just '/'
+    if not new:
+        return tuple(stack)
+
     # Iterate through the parts of the path
-    for part in new.split("/"):
-        # Empty
-        if not part:
-            raise ValueError(f"Route fragments cannot be empty strings: `{new}`")
+    new_segments = new.split("/")
+    for ii, segment in enumerate(new_segments):
+        # Empty segments are acceptable only if they are the final segment,
+        # since that just means the URL ended in a slash
+        if not segment:
+            if ii == len(new_segments) - 1:
+                break
+
+            raise ValueError(f"Route segments cannot be empty strings: `{new}`")
 
         # Nop
-        if part == ".":
+        if segment == ".":
             pass
 
-        # Go to the parent
-        elif part == "..":
+        # One up
+        elif segment == "..":
             try:
                 stack.pop()
             except IndexError:
@@ -162,6 +172,6 @@ def join_routes(base: Iterable[str], new: str) -> List[str]:
 
         # Go to a child
         else:
-            stack.append(part)
+            stack.append(segment)
 
-    return stack
+    return tuple(stack)

@@ -94,7 +94,9 @@ export class SlideshowWidget extends WidgetBase {
 
     async updateLoop() {
         // If the slideshow has been removed from the DOM, stop updating
-        if (!this.element.isConnected) {
+        let element = this.try_get_element();
+
+        if (element === null || !element.isConnected) {
             return;
         }
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 from typing import Optional
 
@@ -14,6 +14,7 @@ __all__ = [
 ]
 
 
+@dataclass
 class ButtonPressEvent:
     pass
 

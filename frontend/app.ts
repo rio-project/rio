@@ -758,6 +758,14 @@ function main() {
     pixelsPerEm = measure.offsetHeight / 10;
     document.body.removeChild(measure);
 
+    // Listen for URL changes, so the session can switch route
+    document.addEventListener('popstate', (event) => {
+        console.log(`URL changed to ${window.location.href}`);
+        callRemoteMethodDiscardResponse('onUrlChanged', {
+            newUrl: window.location.href.toString(),
+        });
+    });
+
     // Connect to the websocket
     var url = new URL(
         `/reflex/ws?sessionToken=${sessionToken}`,
@@ -863,9 +871,22 @@ export function callRemoteMethodDiscardResponse(
 
 function displayConnectionLostPopup() {
     const popup = document.createElement('div');
-    popup.textContent = 'Connection lost. Please refresh the page.';
     popup.classList.add('reflex-error-popup');
+    popup.innerHTML = `
+<div>
+    Connection lost. Please refresh the page.
+</div>
+`;
     document.body.appendChild(popup);
+
+    // The popup spawns with opacity 0. Fade it in.
+    //
+    // For some reason `requestAnimationFrame` doesn't work here. Use an actual
+    // timeout instead.
+    setTimeout(() => {
+        popup.style.opacity = '1';
+        popup.firstElementChild!.style.transform = 'translate(-50%, 0)';
+    }, 100);
 }
 
 main();

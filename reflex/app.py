@@ -41,7 +41,9 @@ class App:
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
     ):
-        assert callable(build), "The `build` argument must be a function that returns a Widget"
+        assert callable(
+            build
+        ), "The `build` argument must be a function that returns a Widget"
 
         main_file = _get_main_file()
 
@@ -79,7 +81,7 @@ class App:
             default_attachments=self.default_attachments,
             validator_factory=_validator_factory,
         )
-    
+
     def as_fastapi(
         self,
         *,

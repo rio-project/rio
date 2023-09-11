@@ -63,6 +63,7 @@ def _build_set_theme_variables_message(thm: rx.Theme):
     # Miscellaneous
     variables: Dict[str, str] = {
         "--reflex-global-corner-radius": f"{thm.corner_radius}rem",
+        "--reflex-global-shadow-radius": f"{thm.shadow_radius}rem",
     }
 
     # Theme Colors
@@ -83,6 +84,9 @@ def _build_set_theme_variables_message(thm: rx.Theme):
         "success_color_variant",
         "warning_color_variant",
         "danger_color_variant",
+        "shadow_color",
+        "text_color_on_light",
+        "text_color_on_dark",
     )
 
     for py_color_name in color_names:
@@ -518,6 +522,7 @@ class AppServer(fastapi.FastAPI):
             send_message = websocket.send_json  # type: ignore
             receive_message = websocket.receive_json  # type: ignore
         else:
+
             async def send_message(msg: uniserde.Jsonable) -> None:
                 assert isinstance(validator_instance, validator.Validator)
                 validator_instance.handle_outgoing_message(msg)
@@ -532,7 +537,9 @@ class AppServer(fastapi.FastAPI):
         # Create a session instance to hold all of this state in an organized
         # fashion
         root_widget = self.app.build()
-        assert isinstance(root_widget, rx.Widget), f"The `build` function passed to the App must return a `Widget` instance, not {root_widget!r}."
+        assert isinstance(
+            root_widget, rx.Widget
+        ), f"The `build` function passed to the App must return a `Widget` instance, not {root_widget!r}."
         sess = session.Session(
             root_widget,
             [],  # TODO: Determine the initial route

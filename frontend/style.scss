@@ -11,13 +11,16 @@
 @include linear-progress.core-styles;
 @include textfield.core-styles;
 
-// Used to highlight problems with the UI to the developer, such as
-// undefined space
-$reflex-developer-error-color: #ff9e03;
-
 // Not visible here:
 //
 // JavaScript sets global theming variables, of the form `--reflex-global-...`.
+
+// Z-indices for widgets which are expected to show up on top
+$z-index-sticky: 10000;
+$z-index-error-popup: 10001;
+
+// Nonstandard transition timing function
+$transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
 // Theme Switcheroos
 .reflex-switcheroo-primary {
@@ -170,9 +173,13 @@ $reflex-developer-error-color: #ff9e03;
 }
 
 // General
+.reflex-single-container {
+    display: flex;
+    align-items: stretch;
+}
+
 .reflex-single-container > * {
-    width: 100%;
-    height: 100%;
+    flex-grow: 1;
 }
 
 html {
@@ -219,7 +226,7 @@ body {
 .reflex-row,
 .reflex-row > div.reflex-undefined-space + div {
     pointer-events: none;
-    
+
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -244,8 +251,8 @@ body {
         -45deg,
         black 0,
         black 0.5em,
-        $reflex-developer-error-color 0.5em,
-        $reflex-developer-error-color 1em
+        var(--reflex-global-warning-color) 0.5em,
+        var(--reflex-global-warning-color) 1em
     );
     animation: moveRight 0.7s linear infinite;
 }
@@ -575,19 +582,41 @@ body {
 
 // Error popup
 .reflex-error-popup {
+    pointer-events: none;
+    z-index: $z-index-error-popup;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    // This is immediately changed by JavaScript to effect a fade-in
+    opacity: 0;
+
+    transition: opacity 0.7s ease-in;
+}
+
+.reflex-error-popup > div {
     pointer-events: auto;
     position: fixed;
     top: 2rem;
     left: 50%;
     width: unset;
     height: unset;
-    transform: translateX(-50%);
     background: var(--reflex-global-surface-color-variant);
     color: var(--reflex-global-danger-color);
     font-weight: bold;
     padding: 1.5rem;
     border-radius: 99999px;
-    box-shadow: 0 0 0.6em rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 var(--reflex-global-shadow-radius)
+        var(--reflex-global-shadow-color);
+
+    // This is immediately changed by JavaScript to effect a fade-in
+    transform: translate(-50%, -200%);
+
+    transition: transform 0.4s $transition-timing-overshoot;
+    transition-delay: transform 0.2s;
 }
 
 // Slideshow
@@ -635,13 +664,13 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 99999;
+    z-index: $z-index-sticky;
 }
 
 // MediaPlayer
 .reflex-media-player {
     pointer-events: auto;
-    
+
     // Videos are weird. For some reason, they can grow larger than their parent
     // element. Ripping them out of the document flow is the easiest way to make
     // them behave.
@@ -653,7 +682,7 @@ body {
     // size, they might sometimes end up 0x0 pixels small. A minimum size would
     // ensure that the video can't completely disappear.
     position: relative;
-    
+
     video {
         position: absolute;
         width: 100%;
