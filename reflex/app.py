@@ -28,23 +28,6 @@ except ImportError:
 __all__ = ["App"]
 
 
-def _get_main_file() -> Path:
-    try:
-        return Path(__main__.__file__)
-    except AttributeError:
-        return Path(sys.argv[0])
-
-
-def _get_default_app_name() -> str:
-    main_file = _get_main_file()
-    
-    name = main_file.stem
-    if name in ('main', '__main__'):
-        name = main_file.absolute().parent.stem
-    
-    return name.replace("_", " ").title()
-
-
 class App:
     def __init__(
         self,
@@ -60,8 +43,10 @@ class App:
     ):
         assert callable(build), "The `build` argument must be a function that returns a Widget"
 
+        main_file = _get_main_file()
+
         if name is None:
-            name = _get_default_app_name()
+            name = _get_default_app_name(main_file)
             
         self.name = name
         self.build = build
@@ -69,7 +54,7 @@ class App:
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)
-        self.assets_dir = _get_main_file().parent / (assets_dir or '')
+        self.assets_dir = main_file.parent / (assets_dir or '')
 
         if isinstance(ping_pong_interval, timedelta):
             self.ping_pong_interval = ping_pong_interval
@@ -243,3 +228,37 @@ class App:
 
             server.should_exit = True
             server_thread.join()
+
+
+def _get_main_file() -> Path:
+    try:
+        return Path(__main__.__file__)
+    except AttributeError:
+        pass
+    
+    # Find out if we're being executed by uvicorn
+    main_file = Path(sys.argv[0])
+    if main_file.name != '__main__.py' or main_file.parent != Path(uvicorn.__file__).parent:
+        return main_file
+    
+    # Find out from which module uvicorn imported the app
+    try:
+        app_location = next(arg for arg in sys.argv[1:] if ':' in arg)
+    except StopIteration:
+        return main_file
+    
+    module_name, _, _ = app_location.partition(':')
+    module = sys.modules[module_name]
+
+    if module.__file__ is None:
+        return main_file
+
+    return Path(module.__file__)
+
+
+def _get_default_app_name(main_file: Path) -> str:
+    name = main_file.stem
+    if name in ('main', '__main__', '__init__'):
+        name = main_file.absolute().parent.stem
+    
+    return name.replace("_", " ").title()
