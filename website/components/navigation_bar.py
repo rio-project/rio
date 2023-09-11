@@ -72,13 +72,23 @@ class NavigationBar(rx.Widget):
                             self.active_route,
                         ),
                         NavigationButton(
+                            "News",
+                            "posts",
+                            self.active_route,
+                        ),
+                        NavigationButton(
                             "Docs",
-                            "documentation",
+                            "docs",
+                            self.active_route,
+                        ),
+                        NavigationButton(
+                            "Tools",
+                            "tools",
                             self.active_route,
                         ),
                         NavigationButton(
                             "About Us",
-                            "about-us",
+                            "about",
                             self.active_route,
                         ),
                         spacing=4.0,
