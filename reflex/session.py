@@ -158,9 +158,12 @@ class Session(unicall.Unicall):
         # can use it to agree on what to display.
         self._current_route: Tuple[str, ...] = tuple(initial_route)
 
-        # A weak set of all widgets which want to be notified when the route
-        # changes. The `Session` will call `_on_route_change` when appropriate.
-        self._route_change_listeners: weakref.WeakSet[rx.Router] = weakref.WeakSet()
+        # Maps all routers to the id of the router one higher up in the widget
+        # tree. Root routers are mapped to None. This map is kept up to date by
+        # routers themselves.
+        self._routers: weakref.WeakKeyDictionary[
+            rx.Router, Optional[int]
+        ] = weakref.WeakKeyDictionary()
 
         # These are injected by the app server after the session has already been created
         self.external_url: Optional[str] = None  # None if running in a window
@@ -271,9 +274,13 @@ class Session(unicall.Unicall):
         # Update the route
         self._current_route = tuple(common.join_routes(self._current_route, route))
 
-        # Notify all routers
-        for listener in self._route_change_listeners:
-            listener._on_route_change()
+        # Dirty all routers to force a rebuild
+        for router in self._routers:
+            self._register_dirty_widget(
+                router, include_fundamental_children_recursively=True
+            )
+
+        asyncio.create_task(self._refresh())
 
         # Update the browser's history
         async def worker() -> None:

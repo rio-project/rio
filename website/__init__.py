@@ -37,9 +37,6 @@ def make_slideshow_placeholder(variant: int) -> rx.Widget:
 class AppRoot(rx.Widget):
     active_route: str = ""
 
-    def on_route_change(self, event: rx.RouteChangeEvent) -> None:
-        self.active_route = event.new_route
-
     def build(self) -> rx.Widget:
         return rx.Column(
             # Navbar (sticky)
@@ -66,7 +63,6 @@ class AppRoot(rx.Widget):
                         height="grow",
                     ),
                 ),
-                on_route_change=self.on_route_change,
                 width="grow",
                 height="grow",
             ),
