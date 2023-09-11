@@ -395,7 +395,10 @@ class Session(unicall.Unicall):
             # bindings are aware of their widget.
             widget_vars = vars(widget)
 
-            for child in build_result._iter_direct_and_indirect_children(True):
+            for child in build_result._iter_direct_and_indirect_children(
+                include_self=True,
+                cross_build_boundaries=True,
+            ):
                 child_vars = vars(child)
 
                 for state_property in child._state_properties_:
@@ -409,7 +412,6 @@ class Session(unicall.Unicall):
                         # FIXME: Incorrect for high level containers. State
                         # bindings are not necessarily bound to the widget's
                         # builder!
-                        print("ffffff", type(widget), value.name)
                         parent_binding = widget_vars[value.name]
 
                         if not isinstance(parent_binding, rx.StateBinding):
@@ -784,39 +786,12 @@ class Session(unicall.Unicall):
         builder_vars = vars(builder)
 
         for widget in reconciled_build_result._iter_direct_and_indirect_children(
-            include_self=True
+            include_self=True,
+            cross_build_boundaries=False,
         ):
-            # Overriding an attribute can cause the widget to contain widgets
-            # which have never had their builder or state properties injected.
-            # This is handled by the calling function. Update the reference to
-            # the widget's builder
+            # Widgets may now have an incorrect builder assigned. Assign the new
+            # one.
             widget._weak_builder_ = weak_builder
-
-            # Update all state bindings
-            widget_vars = vars(widget)
-
-            for state_property in widget._state_properties_:
-                value = widget_vars[state_property.name]
-                assert not isinstance(value, rx.StateProperty), value
-
-                if not isinstance(value, rx.StateBinding) or value.parent is None:
-                    continue
-
-                builder_attr_name = value.parent.owning_property.name  # type: ignore
-                builder_binding: rx.StateBinding = builder_vars[builder_attr_name]
-
-                if not isinstance(builder_binding, rx.StateBinding):
-                    builder_binding = rx.StateBinding(
-                        owning_widget_weak=weak_builder,
-                        owning_property=getattr(type(builder), builder_attr_name),
-                        is_root=True,
-                        parent=None,
-                        value=builder_binding,
-                    )
-                    builder_vars[builder_attr_name] = builder_binding
-
-                value.parent = builder_binding
-                builder_binding.children.add(value)
 
             # Any new widgets which haven't found a match are new and must be
             # processed by the session
@@ -991,7 +966,8 @@ class Session(unicall.Unicall):
             include_self: bool = True,
         ) -> None:
             for child in widget._iter_direct_and_indirect_children(
-                include_self=include_self
+                include_self=include_self,
+                cross_build_boundaries=True,
             ):
                 register_widget_by_key(widgets_by_key, child)
 

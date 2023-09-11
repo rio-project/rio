@@ -47,7 +47,7 @@ class AppRoot(rx.Widget):
                 comps.NavigationBar(
                     # active_route=AppRoot.active_route,
                     active_route=self.active_route,
-                    height=6,
+                    height=4,
                     width="grow",
                     align_y=0,
                 ),

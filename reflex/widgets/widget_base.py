@@ -502,13 +502,25 @@ class Widget(ABC):
 
     def _iter_direct_and_indirect_children(
         self,
+        *,
         include_self: bool,
+        cross_build_boundaries: bool,
     ) -> Iterable["Widget"]:
+        # Special case the widget itself to handle `include_self`
         if include_self:
             yield self
 
-        for child in self._iter_direct_children():
-            yield from child._iter_direct_and_indirect_children(True)
+        if not cross_build_boundaries and not isinstance(self, HtmlWidget):
+            return
+
+        # Iteratively yield all children
+        to_do = list(self._iter_direct_children())
+        while to_do:
+            cur = to_do.pop()
+            yield cur
+
+            if cross_build_boundaries or isinstance(cur, HtmlWidget):
+                to_do.extend(cur._iter_direct_children())
 
     async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
