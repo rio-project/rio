@@ -63,7 +63,7 @@ def get_child_widget_containing_attribute_names(cls: Type[widget_base.Widget]) -
 def get_child_widget_containing_attribute_names_for_builtin_widgets() -> Mapping[str, Collection[str]]:
     result = {
         cls._unique_id: get_child_widget_containing_attribute_names(cls)
-        for cls in iter_subclasses(widget_base.HtmlWidget)
+        for cls in iter_subclasses(widget_base.FundamentalWidget)
         if cls._unique_id.endswith("-builtin")
     }
 

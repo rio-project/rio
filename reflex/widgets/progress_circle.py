@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 
-class ProgressCircle(widget_base.HtmlWidget):
+class ProgressCircle(widget_base.FundamentalWidget):
     _: KW_ONLY
     progress: Optional[float]
     color: rx.ColorSet

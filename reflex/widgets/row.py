@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 
-class Row(widget_base.HtmlWidget):
+class Row(widget_base.FundamentalWidget):
     children: collections.abc.Collection[rx.Widget]
     spacing: float = 0.0
 

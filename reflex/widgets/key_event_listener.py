@@ -631,7 +631,7 @@ class KeyPressEvent(_KeyUpDownEvent):
     pass
 
 
-class KeyEventListener(widget_base.HtmlWidget):
+class KeyEventListener(widget_base.FundamentalWidget):
     """
     `on_key_down` is called when a key is pressed down.
 

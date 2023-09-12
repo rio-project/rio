@@ -87,7 +87,7 @@ class Sticky(widget_base.Widget):
         )
 
 
-class _Sticky(widget_base.HtmlWidget):
+class _Sticky(widget_base.FundamentalWidget):
     child: rx.Widget
 
 

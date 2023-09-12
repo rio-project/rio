@@ -19,7 +19,7 @@ class SwitchChangeEvent:
     is_on: bool
 
 
-class Switch(widget_base.HtmlWidget):
+class Switch(widget_base.FundamentalWidget):
     is_on: bool = False
     _: KW_ONLY
     is_sensitive: bool = True

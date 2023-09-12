@@ -10,7 +10,7 @@ from . import widget_base
 __all__ = ["Column"]
 
 
-class Column(widget_base.HtmlWidget):
+class Column(widget_base.FundamentalWidget):
     children: collections.abc.Collection[widget_base.Widget]
     spacing: float
 

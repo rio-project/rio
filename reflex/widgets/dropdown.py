@@ -23,7 +23,7 @@ class DropdownChangeEvent(Generic[T]):
     value: Optional[T]
 
 
-class Dropdown(widget_base.HtmlWidget, Generic[T]):
+class Dropdown(widget_base.FundamentalWidget, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
     selected_value: Optional[T] = None

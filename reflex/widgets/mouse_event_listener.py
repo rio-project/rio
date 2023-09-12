@@ -60,7 +60,7 @@ class MouseLeaveEvent(_MousePositionedEvent):
     pass
 
 
-class MouseEventListener(widget_base.HtmlWidget):
+class MouseEventListener(widget_base.FundamentalWidget):
     child: widget_base.Widget
     _: KW_ONLY
     on_mouse_down: rx.EventHandler[MouseDownEvent] = None

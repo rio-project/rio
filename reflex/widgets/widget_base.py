@@ -485,7 +485,7 @@ class Widget(ABC):
         if include_self:
             yield self
 
-        if not cross_build_boundaries and not isinstance(self, HtmlWidget):
+        if not cross_build_boundaries and not isinstance(self, FundamentalWidget):
             return
 
         # Iteratively yield all children
@@ -494,7 +494,7 @@ class Widget(ABC):
             cur = to_do.pop()
             yield cur
 
-            if cross_build_boundaries or isinstance(cur, HtmlWidget):
+            if cross_build_boundaries or isinstance(cur, FundamentalWidget):
                 to_do.extend(cur._iter_direct_children())
 
     async def _on_message(self, msg: Jsonable) -> None:
@@ -568,13 +568,13 @@ class Widget(ABC):
 Widget._initialize_state_properties(set())
 
 
-class HtmlWidget(Widget):
+class FundamentalWidget(Widget):
     # Unique id for identifying this class in the frontend. This is initialized
     # in `Widget.__init_subclass__`.
     _unique_id: ClassVar[str]
 
     def build(self) -> "Widget":
-        raise RuntimeError(f"Attempted to call `build` on `HtmlWidget` {self}")
+        raise RuntimeError(f"Attempted to call `build` on `FundamentalWidget` {self}")
 
     @classmethod
     def build_javascript_source(cls, sess: rx.Session) -> str:

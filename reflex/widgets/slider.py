@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 
-class Slider(widget_base.HtmlWidget):
+class Slider(widget_base.FundamentalWidget):
     _: KW_ONLY
     min: float = 0
     max: float = 1

@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-class MarkdownView(widget_base.HtmlWidget):
+class MarkdownView(widget_base.FundamentalWidget):
     text: str
 
     @classmethod

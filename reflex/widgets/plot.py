@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-class Plot(widget_base.HtmlWidget):
+class Plot(widget_base.FundamentalWidget):
     """
     Displays the given figure in the website.
 

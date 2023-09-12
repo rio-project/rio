@@ -130,7 +130,7 @@ class Validator:
         self.widgets_by_id: Dict[int, ClientWidget] = {}
 
         # HTML widgets must be registered with the frontend before use. This set
-        # contains the ids (`HtmlWidget._unique_id`) of all registered widgets.
+        # contains the ids (`FundamentalWidget._unique_id`) of all registered widgets.
         self.registered_html_widgets: Set[str] = set(
             inspection.get_child_widget_containing_attribute_names_for_builtin_widgets().keys()
         )

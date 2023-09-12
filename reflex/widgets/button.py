@@ -86,7 +86,7 @@ class Button(widget_base.Widget):
         return f"<Button id:{self._id} text:{self.text!r}>"
 
 
-class _ButtonInternal(widget_base.HtmlWidget):
+class _ButtonInternal(widget_base.FundamentalWidget):
     _: KW_ONLY
     on_press: rx.EventHandler[ButtonPressEvent]
     child: rx.Widget

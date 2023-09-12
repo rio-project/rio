@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 
-class ProgressBar(widget_base.HtmlWidget):
+class ProgressBar(widget_base.FundamentalWidget):
     progress: Optional[float] = None
 
 

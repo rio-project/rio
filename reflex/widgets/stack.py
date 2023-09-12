@@ -10,7 +10,7 @@ from . import widget_base
 __all__ = ["Stack"]
 
 
-class Stack(widget_base.HtmlWidget):
+class Stack(widget_base.FundamentalWidget):
     children: collections.abc.Collection[rx.Widget]
 
     def __init__(

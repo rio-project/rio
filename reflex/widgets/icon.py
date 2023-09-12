@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-class Icon(widget_base.HtmlWidget):
+class Icon(widget_base.FundamentalWidget):
     icon: str
     _: KW_ONLY
     fill: Union[rx.FillLike, color.ColorSet] = "default"

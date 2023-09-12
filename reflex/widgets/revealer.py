@@ -22,7 +22,7 @@ class RevealerChangeEvent:
     is_expanded: bool
 
 
-class Revealer(widget_base.HtmlWidget):
+class Revealer(widget_base.FundamentalWidget):
     label: str
     child: widget_base.Widget
     _: KW_ONLY

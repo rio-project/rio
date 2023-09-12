@@ -21,7 +21,7 @@ class GridChildPosition:
     height: int = 1
 
 
-class Grid(widget_base.HtmlWidget):
+class Grid(widget_base.FundamentalWidget):
     _: KW_ONLY
     row_spacing: float
     column_spacing: float

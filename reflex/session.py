@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import babel
 import collections
 import collections.abc
 import enum
@@ -14,7 +15,7 @@ import weakref
 from dataclasses import dataclass
 from typing import *  # type: ignore
 
-import babel
+import introspection
 import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc
@@ -32,6 +33,7 @@ from . import (
     theme,
     user_settings_module,
 )
+from .widgets import widget_base
 
 __all__ = ["Session"]
 
@@ -177,7 +179,7 @@ class Session(unicall.Unicall):
         # HTML widgets have source code which must be evaluated by the client
         # exactly once. Keep track of which widgets have already sent their
         # source code.
-        self._initialized_html_widgets: Set[Type[rx.HtmlWidget]] = set()
+        self._initialized_html_widgets: Set[Type[widget_base.FundamentalWidget]] = set()
 
         # This lock is used to order state updates that are sent to the client.
         # Without it a message which was generated later might be sent to the
@@ -365,7 +367,7 @@ class Session(unicall.Unicall):
         self._dirty_widgets.add(widget)
 
         if not include_fundamental_children_recursively or not isinstance(
-            widget, rx.HtmlWidget
+            widget, widget_base.FundamentalWidget
         ):
             return
 
@@ -426,7 +428,7 @@ class Session(unicall.Unicall):
             self._weak_widgets_by_id[widget._id] = widget
 
             # Fundamental widgets require no further treatment
-            if isinstance(widget, rx.HtmlWidget):
+            if isinstance(widget, widget_base.FundamentalWidget):
                 continue
 
             # Others need to be built
@@ -450,7 +452,7 @@ class Session(unicall.Unicall):
                     value = child_vars[state_property.name]
 
                     # Create a StateBinding, if requested
-                    if isinstance(value, rx.StateProperty):
+                    if isinstance(value, widget_base.StateProperty):
                         # In order to create a `StateBinding`, the parent's
                         # attribute must also be a binding
 
@@ -459,8 +461,8 @@ class Session(unicall.Unicall):
                         # builder!
                         parent_binding = widget_vars[value.name]
 
-                        if not isinstance(parent_binding, rx.StateBinding):
-                            parent_binding = rx.StateBinding(
+                        if not isinstance(parent_binding, widget_base.StateBinding):
+                            parent_binding = widget_base.StateBinding(
                                 owning_widget_weak=weakref.ref(widget),
                                 owning_property=value,
                                 is_root=True,
@@ -471,7 +473,7 @@ class Session(unicall.Unicall):
                             widget_vars[value.name] = parent_binding
 
                         # Create the child binding
-                        child_binding = rx.StateBinding(
+                        child_binding = widget_base.StateBinding(
                             owning_widget_weak=weakref.ref(child),
                             owning_property=state_property,
                             is_root=False,
@@ -531,7 +533,7 @@ class Session(unicall.Unicall):
                 cur._weak_builder_ = weak_builder_ref
                 cur._build_generation_ = widget_data.build_generation
 
-                if isinstance(cur, rx.HtmlWidget):
+                if isinstance(cur, widget_base.FundamentalWidget):
                     to_do.update(cur._iter_direct_children())
 
         # Determine which widgets are alive, to avoid sending references to dead
@@ -590,7 +592,7 @@ class Session(unicall.Unicall):
             # Initialize all HTML widgets
             for widget in visited_widgets:
                 if (
-                    not isinstance(widget, rx.HtmlWidget)
+                    not isinstance(widget, widget_base.FundamentalWidget)
                     or type(widget) in self._initialized_html_widgets
                 ):
                     continue
@@ -671,7 +673,7 @@ class Session(unicall.Unicall):
             return self._serialize_and_host_value(value, type(value))
 
         # Widgets
-        if rx.is_widget_class(type_):
+        if introspection.safe_is_subclass(type_, rx.Widget):
             return value._id
 
         # Invalid type
@@ -747,7 +749,7 @@ class Session(unicall.Unicall):
 
         # Encode any internal additional state. Doing it this late allows the custom
         # serialization to overwrite automatically generated values.
-        if isinstance(widget, rx.HtmlWidget):
+        if isinstance(widget, widget_base.FundamentalWidget):
             result["_type_"] = widget._unique_id
             result.update(widget._custom_serialize(self._app_server))
 
@@ -886,8 +888,8 @@ class Session(unicall.Unicall):
             # Take care to keep state bindings up to date
             old_value = old_widget_dict[prop.name]
             new_value = new_widget_dict[prop.name]
-            old_is_binding = isinstance(old_value, rx.StateBinding)
-            new_is_binding = isinstance(new_value, rx.StateBinding)
+            old_is_binding = isinstance(old_value, widget_base.StateBinding)
+            new_is_binding = isinstance(new_value, widget_base.StateBinding)
 
             # If the old value was a binding, and the new one isn't, split the
             # tree of bindings. All children are now roots.
@@ -1266,7 +1268,7 @@ document.body.removeChild(a)
             return
 
         # Update the widget's state
-        assert isinstance(widget, rx.HtmlWidget), widget
+        assert isinstance(widget, widget_base.FundamentalWidget), widget
         await widget._on_state_update(delta_state)
 
     @unicall.local(name="widgetMessage")

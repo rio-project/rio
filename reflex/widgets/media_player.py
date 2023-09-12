@@ -12,7 +12,7 @@ from ..common import Url
 __all__ = ["MediaPlayer"]
 
 
-class MediaPlayer(widget_base.HtmlWidget):
+class MediaPlayer(widget_base.FundamentalWidget):
     media: Union[Path, Url, bytes]
     media_type: Optional[str] = None
     _: KW_ONLY

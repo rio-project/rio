@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class Slideshow(widget_base.HtmlWidget):
+class Slideshow(widget_base.FundamentalWidget):
     children: collections.abc.Collection[rx.Widget]
     _: KW_ONLY
     linger_time: float

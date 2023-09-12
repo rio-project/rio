@@ -13,7 +13,7 @@ __all__ = [
 ]
 
 
-class Rectangle(widget_base.HtmlWidget):
+class Rectangle(widget_base.FundamentalWidget):
     _: KW_ONLY
     style: rx.BoxStyle
     child: Optional[rx.Widget] = None

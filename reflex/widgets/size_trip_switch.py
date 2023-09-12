@@ -13,7 +13,7 @@ __all__ = [
 ]
 
 
-class SizeTripSwitch(widget_base.HtmlWidget):
+class SizeTripSwitch(widget_base.FundamentalWidget):
     child: rx.Widget
     _: KW_ONLY
     width_threshold: Optional[float] = None

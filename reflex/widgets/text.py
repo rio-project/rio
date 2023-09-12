@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-class Text(widget_base.HtmlWidget):
+class Text(widget_base.FundamentalWidget):
     text: str
     _: KW_ONLY
     multiline: bool = False

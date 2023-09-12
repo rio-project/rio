@@ -25,7 +25,7 @@ class TextInputConfirmEvent:
     text: str
 
 
-class TextInput(widget_base.HtmlWidget):
+class TextInput(widget_base.FundamentalWidget):
     text: str = ""
     _: KW_ONLY
     placeholder: str = ""
