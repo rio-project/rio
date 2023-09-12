@@ -5,6 +5,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
+import reflex as rx
 from . import widget_base
 
 __all__ = [
@@ -33,8 +34,8 @@ class TextInput(widget_base.HtmlWidget):
     is_secret: bool = False
     is_sensitive: bool = True
     is_valid: bool = True
-    on_change: widget_base.EventHandler[TextInputChangeEvent] = None
-    on_confirm: widget_base.EventHandler[TextInputConfirmEvent] = None
+    on_change: rx.EventHandler[TextInputChangeEvent] = None
+    on_confirm: rx.EventHandler[TextInputConfirmEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event

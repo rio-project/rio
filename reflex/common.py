@@ -77,7 +77,7 @@ class FileInfo:
 T = TypeVar("T")
 P = ParamSpec("P")
 
-EventHandler = Optional[Callable[P, Any | Awaitable[Any]]]
+EventHandler = Optional[Callable[P, Union[Any, Awaitable[Any]]]]
 
 
 @overload

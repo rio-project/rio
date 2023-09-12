@@ -6,6 +6,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
+import reflex as rx
 from .. import app_server
 from . import widget_base
 
@@ -26,7 +27,7 @@ class Dropdown(widget_base.HtmlWidget, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
     selected_value: Optional[T] = None
-    on_change: widget_base.EventHandler[DropdownChangeEvent[T]] = None
+    on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
 
     def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         if not self.options:

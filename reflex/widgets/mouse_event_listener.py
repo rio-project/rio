@@ -4,8 +4,9 @@ import enum
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-from uniserde import Jsonable, JsonDoc
+from uniserde import JsonDoc
 
+import reflex as rx
 from .. import app_server
 from . import widget_base
 
@@ -62,11 +63,11 @@ class MouseLeaveEvent(_MousePositionedEvent):
 class MouseEventListener(widget_base.HtmlWidget):
     child: widget_base.Widget
     _: KW_ONLY
-    on_mouse_down: widget_base.EventHandler[MouseDownEvent] = None
-    on_mouse_up: widget_base.EventHandler[MouseUpEvent] = None
-    on_mouse_move: widget_base.EventHandler[MouseMoveEvent] = None
-    on_mouse_enter: widget_base.EventHandler[MouseEnterEvent] = None
-    on_mouse_leave: widget_base.EventHandler[MouseLeaveEvent] = None
+    on_mouse_down: rx.EventHandler[MouseDownEvent] = None
+    on_mouse_up: rx.EventHandler[MouseUpEvent] = None
+    on_mouse_move: rx.EventHandler[MouseMoveEvent] = None
+    on_mouse_enter: rx.EventHandler[MouseEnterEvent] = None
+    on_mouse_leave: rx.EventHandler[MouseLeaveEvent] = None
 
     def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         return {

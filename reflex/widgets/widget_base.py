@@ -16,17 +16,9 @@ from typing_extensions import dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
-
 from .. import app_server, common, inspection
 
-__all__ = [
-    "EventHandler",
-    "HtmlWidget",
-    "is_widget_class",
-    "StateBinding",
-    "StateProperty",
-    "Widget",
-]
+__all__ = ["Widget"]
 
 
 JAVASCRIPT_SOURCE_TEMPLATE = """
@@ -50,9 +42,6 @@ T = TypeVar("T")
 P = ParamSpec("P")
 
 
-EventHandler = Optional[Callable[P, Any | Awaitable[Any]]]
-
-
 _unique_id_counter = -1
 
 
@@ -60,20 +49,6 @@ def _make_unique_id() -> int:
     global _unique_id_counter
     _unique_id_counter += 1
     return _unique_id_counter
-
-
-def _get_annotated_instance_attributes(cls):
-    attrs = set()
-
-    for cls in cls.__mro__:
-        annotations = vars(cls).get("__annotations__", {})
-        attrs.update(annotations.keys())
-
-    return attrs
-
-
-def is_widget_class(cls: Type[Any]) -> bool:
-    return inspect.isclass(cls) and issubclass(cls, Widget)
 
 
 def make_default_factory_for_value(value: T) -> Callable[[], T]:
@@ -528,21 +503,21 @@ class Widget(ABC):
     @typing.overload
     async def _call_event_handler(
         self,
-        handler: EventHandler[[]],
+        handler: rx.EventHandler[[]],
     ) -> None:
         ...
 
     @typing.overload
     async def _call_event_handler(
         self,
-        handler: EventHandler[[T]],
+        handler: rx.EventHandler[[T]],
         event_data: T,
     ) -> None:
         ...
 
     async def _call_event_handler(  # type: ignore
         self,
-        handler: EventHandler[P],
+        handler: rx.EventHandler[P],
         *event_data: T,  # type: ignore
     ) -> None:
         """

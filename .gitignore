@@ -12,11 +12,8 @@ __pycache__
 /poetry.lock
 /dist
 
-# Generated files, except those needed to run the app
+# Generated files
 /generated/*
-!/generated/app.js
-!/generated/index.html
-!/generated/style.css
 
 # Pytest
 /.pytest_cache
