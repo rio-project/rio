@@ -78,7 +78,7 @@ class NavigationBar(rx.Widget):
                         ),
                         NavigationButton(
                             "Docs",
-                            "docs",
+                            "documentation",
                             self.active_route,
                         ),
                         NavigationButton(
