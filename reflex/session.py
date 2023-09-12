@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import asyncio
 import babel
 import collections
@@ -564,7 +565,7 @@ class Session(unicall.Unicall):
             # Cache and return
             alive_cache[widget] = result
             return result
-        
+
         return {widget for widget in visited_widgets if is_alive(widget)}
 
     async def _refresh(self) -> None:
@@ -1028,13 +1029,15 @@ class Session(unicall.Unicall):
 
                 if isinstance(attr, collections.abc.Iterable):
                     return [item for item in attr if isinstance(item, rx.Widget)]
-                
+
                 return []
 
             # Iterate over the children, but make sure to preserve the topology.
             # Can't just use `iter_direct_children` here, since that would
             # discard topological information.
-            for attr_name in inspection.get_child_widget_containing_attribute_names(type(new_widget)):
+            for attr_name in inspection.get_child_widget_containing_attribute_names(
+                type(new_widget)
+            ):
                 old_value = getattr(old_widget, attr_name, None)
                 new_value = getattr(new_widget, attr_name, None)
 
@@ -1157,22 +1160,30 @@ class Session(unicall.Unicall):
     async def save_file(
         self,
         file_name: str,
-        file_contents: Union[str, bytes],
+        file_contents: Union[Path, str, bytes],
         *,
         media_type: Optional[str] = None,
     ) -> None:
-        # Convert the file contents to bytes
-        if isinstance(file_contents, str):
-            file_contents = file_contents.encode("utf-8")
+        # Create an asset for the file
+        if isinstance(file_contents, Path):
+            as_asset = assets.PathAsset(file_contents, media_type)
 
-            if media_type is None:
-                media_type = "text/plain"
+        elif isinstance(file_contents, str):
+            as_asset = assets.BytesAsset(
+                file_contents.encode("utf-8"),
+                "text/plain" if media_type is None else media_type,
+            )
 
-        elif media_type is None:
-            media_type = "application/octet-stream"
+        elif isinstance(file_contents, bytes):
+            as_asset = assets.BytesAsset(
+                file_contents,
+                "application/octet-stream" if media_type is None else media_type,
+            )
 
-        # Host the file as asset
-        as_asset = assets.BytesAsset(file_contents, media_type)
+        else:
+            raise ValueError(f'The file contents must be a Path, str or bytes, not {file_contents!r}')
+
+        # Host the asset
         self._app_server.weakly_host_asset(as_asset)
 
         # Tell the frontend to download the file
