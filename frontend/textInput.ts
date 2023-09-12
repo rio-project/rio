@@ -19,6 +19,7 @@ export class TextInputWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('label');
+        element.classList.add('reflex-text-input');
         element.classList.add('mdc-text-field');
         element.classList.add('mdc-text-field--filled');
 

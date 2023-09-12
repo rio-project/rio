@@ -299,6 +299,7 @@ function createLayoutWidgetStates(
     let resultId = widgetId;
 
     // Margin
+    console.log(entireState);
     let margin = entireState['_margin_']!;
     if (
         margin[0] !== 0 ||

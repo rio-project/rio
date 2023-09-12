@@ -273,6 +273,11 @@ body {
     color: var(--reflex-local-text-color);
 }
 
+// Text Input
+.reflex-text-input {
+    pointer-events: auto;
+}
+
 // Rectangle
 .reflex-rectangle {
     pointer-events: auto;
