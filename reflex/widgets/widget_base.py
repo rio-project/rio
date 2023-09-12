@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections.abc
 import dataclasses
 import inspect
 import json
@@ -16,7 +17,7 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import app_server, common
+from .. import app_server, common, inspection
 
 __all__ = [
     "EventHandler",
@@ -33,6 +34,7 @@ JAVASCRIPT_SOURCE_TEMPLATE = """
 
 if (%(js_class_name)s !== undefined) {
     window.widgetClasses['%(cls_unique_id)s'] = %(js_class_name)s;
+    window.CHILD_ATTRIBUTE_NAMES['%(cls_unique_id)s'] = %(child_attribute_names)s;
 }
 """
 
@@ -484,7 +486,7 @@ class Widget(ABC):
         raise NotImplementedError()
 
     def _iter_direct_children(self) -> Iterable["Widget"]:
-        for name in _get_annotated_instance_attributes(self.__class__):
+        for name in inspection.get_child_widget_containing_attribute_names(type(self)):
             try:
                 value = getattr(self, name)
             except AttributeError:
@@ -493,12 +495,10 @@ class Widget(ABC):
             if isinstance(value, Widget):
                 yield value
 
-            if isinstance(value, list):
+            if isinstance(value, collections.abc.Iterable):
                 for item in value:
                     if isinstance(item, Widget):
                         yield item
-
-            # TODO: What about other containers
 
     def _iter_direct_and_indirect_children(
         self,
@@ -630,6 +630,9 @@ class HtmlWidget(Widget):
                 "js_source": javascript_source,
                 "js_class_name": cls.__name__,
                 "cls_unique_id": cls._unique_id,
+                "child_attribute_names": json.dumps(
+                    inspection.get_child_widget_containing_attribute_names(cls)
+                ),
             }
 
         css_source = cls.build_css_source(sess)

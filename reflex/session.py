@@ -8,7 +8,6 @@ import inspect
 import json
 import logging
 import secrets
-import sys
 import traceback
 import typing
 import weakref
@@ -18,7 +17,6 @@ from typing import *  # type: ignore
 import babel
 import unicall
 import uniserde
-import yarl
 from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
@@ -29,6 +27,7 @@ from . import (
     color,
     common,
     errors,
+    inspection,
     self_serializing,
     theme,
     user_settings_module,
@@ -38,30 +37,6 @@ __all__ = ["Session"]
 
 
 T = typing.TypeVar("T")
-
-
-def _get_type_hints(cls: type) -> Dict[str, type]:
-    """
-    Reimplementation of `typing.get_type_hints` because it has a stupid bug in
-    python 3.10 where it dies if something is annotated as `dataclasses.KW_ONLY`.
-    """
-    type_hints = {}
-
-    for cls in cls.__mro__:
-        for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
-            if attr_name in type_hints:
-                continue
-
-            if isinstance(annotation, typing.ForwardRef):
-                annotation = annotation.__forward_code__
-
-            if isinstance(annotation, str):
-                globs = vars(sys.modules[cls.__module__])
-                annotation = eval(annotation, globs)
-
-            type_hints[attr_name] = annotation
-
-    return type_hints
 
 
 @dataclass
@@ -587,7 +562,7 @@ class Session(unicall.Unicall):
             # Cache and return
             alive_cache[widget] = result
             return result
-
+        
         return {widget for widget in visited_widgets if is_alive(widget)}
 
     async def _refresh(self) -> None:
@@ -736,7 +711,7 @@ class Session(unicall.Unicall):
         )
 
         # Add user-defined state
-        for name, type_ in _get_type_hints(type(widget)).items():
+        for name, type_ in inspection.get_type_annotations(type(widget)).items():
             # Skip some values
             if name in (
                 "_",
@@ -1045,44 +1020,24 @@ class Session(unicall.Unicall):
             old_widget: rx.Widget,
             new_widget: rx.Widget,
         ) -> None:
+            def _extract_widgets(attr: object) -> List[rx.Widget]:
+                if isinstance(attr, rx.Widget):
+                    return [attr]
+
+                if isinstance(attr, collections.abc.Iterable):
+                    return [item for item in attr if isinstance(item, rx.Widget)]
+                
+                return []
+
             # Iterate over the children, but make sure to preserve the topology.
             # Can't just use `iter_direct_children` here, since that would
             # discard topological information.
-            for name, typ in _get_type_hints(type(new_widget)).items():
-                origin, args = typing.get_origin(typ), typing.get_args(typ)
+            for attr_name in inspection.get_child_widget_containing_attribute_names(type(new_widget)):
+                old_value = getattr(old_widget, attr_name, None)
+                new_value = getattr(new_widget, attr_name, None)
 
-                old_widgets: List[rx.Widget]
-                new_widgets: List[rx.Widget]
-
-                # Widget
-                if rx.is_widget_class(typ):
-                    old_widgets = [getattr(old_widget, name)]
-                    new_widgets = [getattr(new_widget, name)]
-
-                # Union[Widget, ...]
-                elif origin is typing.Union and any(
-                    rx.is_widget_class(arg) for arg in args
-                ):
-                    old_child = getattr(old_widget, name)
-                    new_child = getattr(new_widget, name)
-
-                    old_widgets = (
-                        [old_child] if isinstance(old_child, rx.Widget) else []
-                    )
-                    new_widgets = (
-                        [new_child] if isinstance(new_child, rx.Widget) else []
-                    )
-
-                # List[Widget]
-                elif origin is list and rx.is_widget_class(args[0]):
-                    old_widgets = getattr(old_widget, name)
-                    new_widgets = getattr(new_widget, name)
-
-                # Anything else
-                #
-                # TODO: What about other containers?
-                else:
-                    continue
+                old_widgets = _extract_widgets(old_value)
+                new_widgets = _extract_widgets(new_value)
 
                 # Chain to the children
                 common = min(len(old_widgets), len(new_widgets))

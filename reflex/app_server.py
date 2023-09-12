@@ -21,17 +21,14 @@ from uniserde import Jsonable
 
 import reflex as rx
 
-from . import app, assets, common, session, user_settings_module, validator
-from .widgets import widget_metadata
+from . import app, assets, common, session, user_settings_module, validator, inspection
 
 try:
     import plotly  # type: ignore
 except ImportError:
     plotly = None
 
-__all__ = [
-    "AppServer",
-]
+__all__ = ["AppServer"]
 
 
 @functools.lru_cache(maxsize=None)
@@ -288,7 +285,7 @@ class AppServer(fastapi.FastAPI):
 
         html = html.replace(
             '"{child_attribute_names}"',
-            widget_metadata.CHILD_ATTRIBUTE_NAMES_JSON,
+            json.dumps(inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()),
         )
 
         html = html.replace(
@@ -603,7 +600,7 @@ class AppServer(fastapi.FastAPI):
                 f"{att_instance.section_name}:" if att_instance.section_name else ""
             )
 
-            for py_field_name, field_type in get_type_hints(type(att_instance)).items():
+            for py_field_name, field_type in inspection.get_type_annotations(type(att_instance)).items():
                 # Skip internal fields
                 if py_field_name in user_settings_module.UserSettings.__annotations__:
                     continue

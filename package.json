@@ -2,7 +2,7 @@
   "private": true,
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "build": "vite build frontend/ --outDir ../reflex/generated/ --config vite.config.ts --emptyOutDir",
+    "build": "npx vite build frontend/ --outDir ../reflex/generated/ --config vite.config.ts --emptyOutDir",
     "dev-build": "npm run-script build -- --minify false",
     "showcase": "python3 -m uvicorn showcase:app --host 0.0.0.0 --port 8001 --reload",
     "website": "python3 -m uvicorn website:app --host 0.0.0.0 --port 8001 --reload"
@@ -20,6 +20,7 @@
     "axios": "^1.5.0",
     "material-components-web": "^14.0.0",
     "prettier": "^3.0.3",
+    "sass": "^1.66.1",
     "vite": "^4.4.9",
     "vite-plugin-singlefile": "^0.13.5"
   }

@@ -1,4 +1,3 @@
-from . import widget_metadata
 from .auto_form import *
 from .button import *
 from .card import *

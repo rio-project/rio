@@ -7,7 +7,7 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from ..app_server import AppServer
+from .. import app_server
 from . import widget_base
 
 __all__ = ["Grid"]
@@ -93,7 +93,7 @@ class Grid(widget_base.HtmlWidget):
                 include_fundamental_children_recursively=False,
             )
 
-    def _custom_serialize(self, server: AppServer) -> JsonDoc:
+    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         return {
             "_children": [child._id for child in self._children],
             "_child_positions": [vars(pos) for pos in self._child_positions],

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 import copy
 import json
 import re
@@ -9,8 +10,7 @@ from typing import *  # type: ignore
 
 from uniserde import Jsonable, JsonDoc
 
-from . import session
-from .widgets import widget_metadata
+from . import session, inspection
 
 __all__ = [
     "ClientWidget",
@@ -45,7 +45,7 @@ class ClientWidget:
             raise ValidationError(f"Widget with id `{id}` has non-string type `{type}`")
 
         if (
-            type not in widget_metadata.CHILD_ATTRIBUTE_NAMES
+            type not in inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()
             and type not in registered_html_widgets
         ):
             raise ValidationError(f"Widget with id `{id}` has unknown type `{type}`")
@@ -59,7 +59,7 @@ class ClientWidget:
 
     def _get_child_attribute_names(self) -> Iterable[str]:
         try:
-            return widget_metadata.CHILD_ATTRIBUTE_NAMES[self.type]
+            return inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()[self.type]
         except KeyError:
             return tuple()  # TODO: How to get the children of HTML widgets?
 
@@ -132,7 +132,7 @@ class Validator:
         # HTML widgets must be registered with the frontend before use. This set
         # contains the ids (`HtmlWidget._unique_id`) of all registered widgets.
         self.registered_html_widgets: Set[str] = set(
-            widget_metadata.CHILD_ATTRIBUTE_NAMES.keys()
+            inspection.get_child_widget_containing_attribute_names_for_builtin_widgets().keys()
         )
 
     def dump_message(
@@ -355,13 +355,17 @@ class Validator:
             )
 
         # Make sure no invalid widget references are present
-        invalid_references = {}
+        invalid_references = collections.defaultdict(list)
         for widget in self.widgets_by_id.values():
             for child_id in widget.referenced_child_ids:
                 if child_id not in self.widgets_by_id:
-                    invalid_references.setdefault(widget.id, []).append(child_id)
+                    invalid_references[widget.id].append(child_id)
 
         if invalid_references:
+            invalid_references = {
+                f'{widget_id} ({self.widgets_by_id[widget_id].type})': child_ids
+                for widget_id, child_ids in invalid_references.items()
+            }
             raise ValidationError(
                 f"Invalid widget references detected: {invalid_references}"
             )

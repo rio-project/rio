@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 import uniserde
 from typing_extensions import dataclass_transform
 
-from . import session
+from . import session, inspection
 
 __all__ = [
     "UserSettings",
@@ -27,11 +27,11 @@ class UserSettings:
     _reflex_synchronization_task_: Optional[asyncio.Task] = field(
         default=None, init=False
     )
-    _reflex_type_hints_cache_: ClassVar[Dict[str, Any]]
+    _reflex_type_hints_cache_: ClassVar[Mapping[str, Any]]
 
     def __init_subclass__(cls) -> None:
         dataclass(cls)
-        cls._reflex_type_hints_cache_ = get_type_hints(cls)
+        cls._reflex_type_hints_cache_ = inspection.get_type_annotations(cls)
 
     async def _synchronize_now(self, sess: session.Session) -> None:
         prefix = f"{self.section_name}:" if self.section_name else ""

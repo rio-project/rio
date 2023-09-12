@@ -2,7 +2,6 @@
 # use.
 from yarl import URL
 
-from . import self_serializing, widgets
 from .app import *
 from .box_style import *
 from .color import *
