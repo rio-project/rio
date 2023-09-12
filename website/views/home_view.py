@@ -29,6 +29,29 @@ def make_slideshow_placeholder(variant: int) -> rx.Widget:
     )
 
 
+def make_slide(
+    foreground: rx.Widget,
+    background: rx.ImageLike,
+) -> rx.Widget:
+    return rx.Rectangle(
+        child=rx.Container(
+            child=foreground,
+            width=theme.CENTER_COLUMN_WIDTH,
+            align_x=0.5,
+            margin_top=6,
+            margin_bottom=5,
+        ),
+        style=rx.BoxStyle(
+            fill=rx.ImageFill(
+                background,
+                fill_mode="zoom",
+            ),
+        ),
+        width="grow",
+        height="grow",
+    )
+
+
 class HomeView(rx.Widget):
     def build(self) -> rx.Widget:
         return rx.Column(
@@ -36,43 +59,34 @@ class HomeView(rx.Widget):
                 # Slideshow
                 rx.Column(
                     rx.Slideshow(
-                        rx.Rectangle(
-                            child=rx.Text(
+                        make_slide(
+                            rx.Text(
                                 "Beautiful\nby Default",
-                                margin_top=5,
-                                margin_bottom=5,
-                                align_x=0.3,
-                                align_y=0.1,
+                                align_y=0,
+                                align_x=0,
                                 style=rx.TextStyle(
                                     font_color=rx.Color.BLACK,
                                     font_size=7,
                                     font_weight="bold",
                                 ),
                             ),
-                            style=rx.BoxStyle(
-                                fill=rx.ImageFill(
-                                    Path().resolve()
-                                    / "website"
-                                    / "assets"
-                                    / "material-backgrounds"
-                                    / "pawel-czerwinski-ruJm3dBXCqw-unsplash.jpg",
-                                    fill_mode="zoom",
-                                ),
-                            ),
-                            width="grow",
-                            height="grow",
+                            Path().resolve()
+                            / "website"
+                            / "assets"
+                            / "material-backgrounds"
+                            / "pawel-czerwinski-ruJm3dBXCqw-unsplash.jpg",
                         ),
                         make_slideshow_placeholder(0),
                         # make_slideshow_placeholder(1),
                         # make_slideshow_placeholder(2),
                         # make_slideshow_placeholder(3),
                         width="grow",
-                        linger_time=3,
+                        linger_time=10,
                         height=45,
                     ),
                     rx.Rectangle(
                         style=rx.BoxStyle(fill=theme.THEME.surface_color),
-                        height=11,
+                        height=7,
                     ),
                 ),
                 # Testimonials

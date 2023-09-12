@@ -84,7 +84,7 @@ export class SlideshowWidget extends WidgetBase {
                 if (ii == this.currentChildIndex) {
                     child.style.transform = 'translateX(0%)';
                 } else {
-                    child.style.transform = 'translateX(100%)';
+                    child.style.transform = 'translateX(-100%)';
                 }
 
                 ++ii;
@@ -123,9 +123,11 @@ export class SlideshowWidget extends WidgetBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${100 * offset}%)`;
+            this.outgoingChild.style.transform = `translateX(${
+                -100 * offset
+            }%)`;
             this.incomingChild.style.transform = `translateX(${
-                100 * (offset - 1)
+                -100 * (offset - 1)
             }%)`;
 
             // Update the progress bar's opacity

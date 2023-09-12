@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-import plotly.express as px
 
 import reflex as rx
 
@@ -57,11 +56,7 @@ class AppRoot(rx.Widget):
                 ),
                 rx.Route(
                     "documentation",
-                    lambda: rx.Text(
-                        "This is still better documented than bullet physics.",
-                        width="grow",
-                        height="grow",
-                    ),
+                    views.DocumentationView,
                 ),
                 width="grow",
                 height="grow",
