@@ -672,6 +672,11 @@ body {
     z-index: $z-index-sticky;
 }
 
+// Sticky
+.reflex-spacer {
+    pointer-events: none;
+}
+
 // MediaPlayer
 .reflex-media-player {
     pointer-events: auto;

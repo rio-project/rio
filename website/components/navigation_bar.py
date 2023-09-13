@@ -65,6 +65,7 @@ class NavigationBar(rx.Widget):
                         ),
                         spacing=0.7,
                     ),
+                    rx.Spacer(),
                     rx.Row(
                         NavigationButton(
                             "Home",
@@ -93,10 +94,7 @@ class NavigationBar(rx.Widget):
                         ),
                         spacing=4.0,
                         margin_right=4.0,
-                        align_x=1.0,
-                        width="grow",
                     ),
-                    width="grow",
                 ),
                 style=rx.BoxStyle(
                     fill=surface_color,

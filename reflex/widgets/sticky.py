@@ -5,6 +5,7 @@ from typing import *  # type: ignore
 import reflex as rx
 
 from . import widget_base
+from . import class_container
 
 __all__ = [
     "Sticky",
@@ -64,7 +65,7 @@ class Sticky(widget_base.Widget):
         return rx.Container(
             # Sticky: This is the actual sticky element. It spans the entire
             # screen and doesn't scroll.
-            _Sticky(
+            class_container.ClassContainer(
                 # Inner: This container is used to apply any layouting
                 # attributes passed to the `Sticky` widget.
                 rx.Container(
@@ -75,20 +76,18 @@ class Sticky(widget_base.Widget):
                     margin_top=self._passthrough_margin_top,
                     margin_right=self._passthrough_margin_right,
                     margin_bottom=self._passthrough_margin_bottom,
-                    width=self._passthrough_width,
-                    height=self._passthrough_height,
+                    width=self._passthrough_width,  # type: ignore
+                    height=self._passthrough_height,  # type: ignore
                     align_x=self._passthrough_align_x,
                     align_y=self._passthrough_align_y,
                     child=rx.Container(
                         child=self.child,
                     ),
                 ),
+                classes=[
+                    "reflex-sticky",
+                ],
             ),
         )
 
 
-class _Sticky(widget_base.FundamentalWidget):
-    child: rx.Widget
-
-
-_Sticky._unique_id = "Sticky-builtin"

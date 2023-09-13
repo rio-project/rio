@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import *  # type: ignore
 
 import plotly.express as px
+import json
+import tools.crawl_tree
 
 import reflex as rx
 
@@ -17,6 +19,15 @@ CARD_STYLE_HOVER = CARD_STYLE.replace(
     fill=theme.surface_active_color,
     # shadow_radius=2.5,
 )
+
+
+def dump_tree(sess: rx.Session) -> None:
+    dump = tools.crawl_tree.dump_tree(sess)
+    json.dump(
+        dump.as_json(),
+        (rx.common.PROJECT_ROOT_DIR / "tree-dump.json").open("w"),
+        indent=4,
+    )
 
 
 class Card(rx.Widget):
@@ -224,6 +235,10 @@ class Sidebar(rx.Widget):
                         width=10,
                         height=5,
                     ),
+                ),
+                rx.Button(
+                    "Dump Tree",
+                    on_press=lambda _: dump_tree(self.session),
                 ),
                 spacing=1.0,
                 align_y=0,

@@ -19,7 +19,7 @@ import { SizeTripSwitchWidget } from './sizeTripSwitch';
 import { SliderWidget } from './Slider';
 import { SlideshowWidget } from './slideshow';
 import { StackWidget } from './stack';
-import { StickyWidget } from './sticky';
+import { ClassContainerWidget } from './classContainer';
 import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
@@ -172,7 +172,7 @@ const widgetClasses = {
     'Slider-builtin': SliderWidget,
     'Slideshow-builtin': SlideshowWidget,
     'Stack-builtin': StackWidget,
-    'Sticky-builtin': StickyWidget,
+    'ClassContainer-builtin': ClassContainerWidget,
     'Switch-builtin': SwitchWidget,
     'Text-builtin': TextWidget,
     'TextInput-builtin': TextInputWidget,
