@@ -174,9 +174,9 @@ class AppServer(fastapi.FastAPI):
         # corresponding Python objects are alive.
         #
         # Assets registered here are hosted under `/asset/temp-{asset_id}`. In
-        # addition the server also hosts other assets (such as javascript
-        # dependencies) which are available under public URLS at
-        # `/asset/{some-name}`.
+        # addition the server also permanently hosts other "well known" assets
+        # (such as javascript dependencies) which are available under public
+        # URLS at `/asset/{some-name}`.
         self._assets: weakref.WeakValueDictionary[
             str, assets.Asset
         ] = weakref.WeakValueDictionary()
@@ -285,7 +285,9 @@ class AppServer(fastapi.FastAPI):
 
         html = html.replace(
             '"{child_attribute_names}"',
-            json.dumps(inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()),
+            json.dumps(
+                inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()
+            ),
         )
 
         html = html.replace(
@@ -399,7 +401,7 @@ class AppServer(fastapi.FastAPI):
             # doing it internally anyway.
             if asset_file_path.exists():
                 return fastapi.responses.FileResponse(
-                    common.HOSTED_ASSETS_DIR / asset_id
+                    common.HOSTED_ASSETS_DIR / asset_id,
                 )
 
             # No such file
@@ -600,7 +602,9 @@ class AppServer(fastapi.FastAPI):
                 f"{att_instance.section_name}:" if att_instance.section_name else ""
             )
 
-            for py_field_name, field_type in inspection.get_type_annotations(type(att_instance)).items():
+            for py_field_name, field_type in inspection.get_type_annotations(
+                type(att_instance)
+            ).items():
                 # Skip internal fields
                 if py_field_name in user_settings_module.UserSettings.__annotations__:
                     continue

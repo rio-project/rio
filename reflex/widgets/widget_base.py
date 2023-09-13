@@ -26,7 +26,7 @@ JAVASCRIPT_SOURCE_TEMPLATE = """
 
 if (%(js_class_name)s !== undefined) {
     window.widgetClasses['%(cls_unique_id)s'] = %(js_class_name)s;
-    window.CHILD_ATTRIBUTE_NAMES['%(cls_unique_id)s'] = %(child_attribute_names)s;
+    window.childAttributeNames['%(cls_unique_id)s'] = %(child_attribute_names)s;
 }
 """
 

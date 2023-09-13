@@ -699,3 +699,93 @@ body {
         height: 100%;
     }
 }
+
+// Markdown
+.reflex-markdown-view {
+    pointer-events: auto;
+    width: 100%;
+    height: 100%;
+
+    --reflex-padding: calc(0.5rem + var(--reflex-global-corner-radius));
+}
+
+.reflex-markdown-view {
+    ul {
+        margin: 0;
+        padding-left: 1em;
+        list-style-type: none;
+    }
+
+    ul > li {
+        margin-bottom: 0.4em;
+    }
+
+    ul > li:before {
+        content: '- ';
+        font-weight: bold;
+    }
+
+    p > code {
+        font-family: 'Roboto Mono', monospace;
+        background: var(--reflex-local-surface-color-variant);
+        border-radius: var(--reflex-global-corner-radius);
+        padding: 0.1em 0.3em;
+    }
+}
+
+.reflex-markdown-code-block {
+    background: var(--reflex-local-surface-color-variant);
+    border-radius: var(--reflex-global-corner-radius);
+}
+
+.reflex-markdown-code-block-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: var(--reflex-local-text-color);
+}
+
+.reflex-markdown-code-block-header > * {
+    padding: var(--reflex-padding);
+}
+
+.reflex-markdown-code-block-language {
+    font-family: Roboto, sans-serif;
+    font-size: 0.8rem;
+    font-weight: bold;
+    opacity: 0.4;
+}
+
+.reflex-markdown-code-block-copy-button {
+    min-width: 6rem;
+    min-height: 2.3rem;
+    cursor: pointer;
+    font-family: Roboto, sans-serif;
+    font-size: 0.8rem;
+    border: none;
+    background: none;
+    border-radius: var(--reflex-global-corner-radius);
+    margin: 0;
+    color: var(--reflex-local-text-color);
+    font-weight: bold;
+    opacity: 0.4;
+
+    transition:
+        color 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
+}
+
+.reflex-markdown-code-block-copy-button:hover {
+    color: var(--reflex-local-accent-color);
+    opacity: 1;
+}
+
+.reflex-markdown-code-block > code {
+    font-size: 1rem;
+    display: block;
+    padding: 0 var(--reflex-padding) var(--reflex-padding) var(--reflex-padding);
+}
+
+code {
+    font-family: 'Roboto Mono', monospace;
+}

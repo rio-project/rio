@@ -41,9 +41,6 @@ class NavigationBar(rx.Widget):
             bar_width = "grow"
             bar_align_x = None
 
-        # bar_align_x = None
-        print(bar_width, bar_align_x)
-
         return rx.SizeTripSwitch(
             rx.Rectangle(
                 child=rx.Row(
