@@ -501,6 +501,54 @@ class Widget(ABC):
     async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
+    def _is_in_widget_tree(self, cache: Dict[rx.Widget, bool]) -> bool:
+        """
+        Returns whether this widget is directly or connected to the widget tree
+        of a session.
+
+        This operation is fast, but has to walk up the widget tree to make sure
+        the widget's parent is also connected. Thus, when checking multiple
+        widgets it can easily happen that the same widgets are checked over and
+        over, resulting on O(n log n) runtime. To avoid this, pass a cache
+        dictionary to this function, which will be used to memoize the result.
+
+        Be careful not to reuse the cache if the widget hierarchy might have
+        changed (e.g. after an async yield).
+        """
+
+        # Already cached?
+        try:
+            return cache[self]
+        except KeyError:
+            pass
+
+        # Root widget?
+        if self is self.session._root_widget:
+            result = True
+
+        # No session, can't be connected
+        elif self._session_ is None:
+            result = False
+
+        # Has the builder has been garbage collected?
+        else:
+            builder = self._weak_builder_()
+            if builder is None:
+                result = False
+
+            # Has the builder created new build output, and this widget isn't part
+            # of it anymore?
+            else:
+                parent_data = self.session._lookup_widget_data(builder)
+                result = (
+                    parent_data.build_generation == self._build_generation_
+                    and builder._is_in_widget_tree(cache)
+                )
+
+        # Cache the result and return
+        cache[self] = result
+        return result
+
     @typing.overload
     async def _call_event_handler(
         self,

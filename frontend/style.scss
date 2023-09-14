@@ -24,6 +24,10 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
 // Theme Switcheroos
 .reflex-switcheroo-primary {
+    // surface := primary
+    //
+    // -> All others follow.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-secondary-color);
     --reflex-local-accent-color-variant: var(
@@ -37,16 +41,21 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-heading-color: var(
-        --reflex-global-heading-on-secondary-color
+    --reflex-local-heading-color: var(--reflex-global-heading-on-primary-color);
+    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-secondary-color
     );
-    --reflex-local-text-color: var(--reflex-global-text-on-secondary-color);
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-secondary {
+    // surface := secondary
+    //
+    // -> All others follow.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-primary-color);
     --reflex-local-accent-color-variant: var(
@@ -60,14 +69,23 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-global-heading-on-primary-color);
-    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+    --reflex-local-heading-color: var(
+        --reflex-global-heading-on-secondary-color
+    );
+    --reflex-local-text-color: var(--reflex-global-text-on-secondary-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-primary-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-success {
+    // accent := success
+    //
+    // Surface remains unchanged.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-success-color);
     --reflex-local-accent-color-variant: var(
@@ -75,14 +93,21 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-global-text-on-success-color);
-    --reflex-local-text-color: var(--reflex-global-text-on-success-color);
+    // --reflex-local-heading-color: var(--reflex-global-text-on-success-color);
+    // --reflex-local-text-color: var(--reflex-global-text-on-success-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-success-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-warning {
+    // accent := warning
+    //
+    // Surface remains unchanged.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-warning-color);
     --reflex-local-accent-color-variant: var(
@@ -90,14 +115,21 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-global-text-on-warning-color);
-    --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
+    // --reflex-local-heading-color: var(--reflex-global-text-on-warning-color);
+    // --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-warning-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-danger {
+    // accent := danger
+    //
+    // Surface remains unchanged.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-danger-color);
     --reflex-local-accent-color-variant: var(
@@ -105,14 +137,22 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-global-text-on-danger-color);
-    --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
+    // --reflex-local-heading-color: var(--reflex-global-text-on-danger-color);
+    // --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-danger-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-text {
+    // text := accent
+    //
+    // Useful to change the color of widgets which use the text color, to the
+    // current accent color. E.g. Allows to display text or icons as danger.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-local-text-color);
     --reflex-local-accent-color-variant: var(--reflex-local-text-color);
@@ -126,6 +166,11 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .reflex-switcheroo-default {
+    // surface := surface
+    // accent := primary
+    //
+    // This is simply the default arrangement.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-secondary-color);
     --reflex-local-accent-color-variant: var(
@@ -154,6 +199,8 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .reflex-switcheroo-disabled {
+    // accent := disabled
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-disabled-color);
     --reflex-local-accent-color-variant: var(
@@ -168,6 +215,8 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .reflex-switcheroo-custom {
+    // accent := custom (read from CSS variables)
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-local-custom-color);
     --reflex-local-accent-color-variant: var(
@@ -512,6 +561,7 @@ code {
 .reflex-buttonstyle-major {
     background: var(--reflex-local-accent-color);
     font-weight: bold;
+    --reflex-local-text-color: var(--reflex-local-text-on-accent-color);
 }
 
 .reflex-buttonstyle-major:hover:not(.reflex-switcheroo-disabled) {
@@ -526,7 +576,7 @@ code {
 
 .reflex-buttonstyle-minor:hover:not(.reflex-switcheroo-disabled) {
     background: var(--reflex-local-accent-color);
-    --reflex-local-text-color: var(--reflex-local-text-color);
+    --reflex-local-text-color: var(--reflex-local-text-on-accent-color);
     cursor: pointer;
 }
 

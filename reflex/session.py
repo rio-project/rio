@@ -539,30 +539,11 @@ class Session(unicall.Unicall):
             self._root_widget: True,
         }
 
-        def is_alive(widget: rx.Widget) -> bool:
-            # Already cached?
-            try:
-                return alive_cache[widget]
-            except KeyError:
-                pass
-
-            # Parent has been garbage collected?
-            parent = widget._weak_builder_()
-            if parent is None:
-                result = False
-
-            else:
-                parent_data = self._lookup_widget_data(parent)
-                result = (
-                    parent_data.build_generation == widget._build_generation_
-                    and is_alive(parent)
-                )
-
-            # Cache and return
-            alive_cache[widget] = result
-            return result
-
-        return {widget for widget in visited_widgets if is_alive(widget)}
+        return {
+            widget
+            for widget in visited_widgets
+            if widget._is_in_widget_tree(alive_cache)
+        }
 
     async def _refresh(self) -> None:
         """
