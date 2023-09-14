@@ -30,13 +30,17 @@ class NotificationBar(widget_base.Widget):
         thm = self.session.attachments[rx.Theme]
 
         if self.level == "success":
-            color = thm.success_color
+            background_color = thm.success_color
+            text_color = thm.text_color_for(background_color)
         elif self.level == "info":
-            color = thm.secondary_color
+            background_color = thm.secondary_color
+            text_color = thm.text_on_secondary_color
         elif self.level == "warning":
-            color = thm.warning_color
+            background_color = thm.warning_color
+            text_color = thm.text_color_for(background_color)
         elif self.level == "error":
-            color = thm.danger_color
+            background_color = thm.danger_color
+            text_color = thm.text_color_for(background_color)
         else:
             raise ValueError(f"Invalid level: {self.level!r}")
 
@@ -46,12 +50,12 @@ class NotificationBar(widget_base.Widget):
                 self.text,
                 margin=thm.base_spacing,
                 multiline=self.multiline,
-                style=thm.text_on_primary_style.replace(
-                    font_color=color.contrasting(0.9),
+                style=thm.text_style.replace(
+                    font_color=text_color,
                 ),
             ),
             style=rx.BoxStyle(
-                fill=color,
+                fill=background_color,
                 corner_radius=thm.corner_radius,
             ),
         )
