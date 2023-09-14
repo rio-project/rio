@@ -66,10 +66,10 @@ def _build_set_theme_variables_message(thm: rx.Theme):
     # Theme Colors
     color_names = (
         "primary_color",
-        "accent_color",
+        "secondary_color",
         "disabled_color",
         "primary_color_variant",
-        "accent_color_variant",
+        "secondary_color_variant",
         "disabled_color_variant",
         "background_color",
         "surface_color",
@@ -82,6 +82,10 @@ def _build_set_theme_variables_message(thm: rx.Theme):
         "warning_color_variant",
         "danger_color_variant",
         "shadow_color",
+        "heading_on_primary_color",
+        "text_on_primary_color",
+        "heading_on_secondary_color",
+        "text_on_secondary_color",
         "text_color_on_light",
         "text_color_on_dark",
     )
@@ -94,23 +98,36 @@ def _build_set_theme_variables_message(thm: rx.Theme):
 
     # Text styles
     style_names = (
-        "heading_on_primary",
-        "subheading_on_primary",
-        "text_on_primary",
-        "heading_on_accent",
-        "subheading_on_accent",
-        "text_on_accent",
-        "heading_on_surface",
-        "subheading_on_surface",
-        "text_on_surface",
+        "heading1",
+        "heading2",
+        "heading3",
+        "text",
     )
 
     for style_name in style_names:
         style = getattr(thm, f"{style_name}_style")
         assert isinstance(style, rx.TextStyle), style
 
-        css_prefix = f"--reflex-global-{style_name.replace('_', '-')}"
+        css_prefix = f"--reflex-global-{style_name}"
+        variables[f"{css_prefix}-font-name"] = style.font_name
         variables[f"{css_prefix}-color"] = f"#{style.font_color.hex}"
+        variables[f"{css_prefix}-font-size"] = f"{style.font_size}rem"
+        variables[f"{css_prefix}-italic"] = "italic" if style.italic else "normal"
+        variables[f"{css_prefix}-font-weight"] = style.font_weight
+        variables[f"{css_prefix}-underlined"] = (
+            "underline" if style.underlined else "unset"
+        )
+        variables[f"{css_prefix}-all-caps"] = "uppercase" if style.all_caps else "unset"
+
+    # Colors that need to be extracted from styles
+    variables[
+        "--reflex-global-heading-on-surface-color"
+    ] = f"#{thm.heading1_style.font_color.hex}"
+
+    variables[
+        "--reflex-global-text-on-surface-color"
+    ] = f"#{thm.text_style.font_color.hex}"
+
 
     # Colors derived from, but not stored in the theme
     derived_colors = {

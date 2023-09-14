@@ -51,11 +51,6 @@ class WidgetData:
     # build output.
     build_generation: int
 
-    # The ids of all widgets contained in this build output. This does not
-    # include the children of non-fundamental widgets, since they have their own
-    # build output.
-    contained_widget_ids: Set[int]
-
 
 class WontSerialize(Exception):
     pass
@@ -492,7 +487,7 @@ class Session(unicall.Unicall):
             # No, this is the first time
             except KeyError:
                 # Create the widget data and cache it
-                widget_data = WidgetData(build_result, 0, set())
+                widget_data = WidgetData(build_result, 0)
                 self._weak_widget_data_by_widget[widget] = widget_data
 
                 # Mark all fresh widgets as dirty
@@ -565,6 +560,11 @@ class Session(unicall.Unicall):
             # Cache and return
             alive_cache[widget] = result
             return result
+
+        print("Alive check")
+        for widget in visited_widgets:
+            if not is_alive(widget):
+                print(f"Dropping dead widget #{widget._id} from the session")
 
         return {widget for widget in visited_widgets if is_alive(widget)}
 
@@ -1181,7 +1181,9 @@ class Session(unicall.Unicall):
             )
 
         else:
-            raise ValueError(f'The file contents must be a Path, str or bytes, not {file_contents!r}')
+            raise ValueError(
+                f"The file contents must be a Path, str or bytes, not {file_contents!r}"
+            )
 
         # Host the asset
         self._app_server.weakly_host_asset(as_asset)

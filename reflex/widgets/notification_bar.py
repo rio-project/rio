@@ -32,7 +32,7 @@ class NotificationBar(widget_base.Widget):
         if self.level == "success":
             color = thm.success_color
         elif self.level == "info":
-            color = thm.accent_color
+            color = thm.secondary_color
         elif self.level == "warning":
             color = thm.warning_color
         elif self.level == "error":

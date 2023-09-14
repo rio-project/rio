@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import functools
@@ -37,14 +36,16 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
 
 
 @functools.lru_cache(maxsize=None)
-def get_child_widget_containing_attribute_names(cls: Type[widget_base.Widget]) -> Collection[str]:
+def get_child_widget_containing_attribute_names(
+    cls: Type[widget_base.Widget],
+) -> Collection[str]:
     attr_names = []
 
     for attr_name, annotation in get_type_annotations(cls).items():
         origin = get_origin(annotation)
         if origin is None:
             origin = annotation
-        
+
         args = get_args(annotation)
 
         if safe_is_subclass(origin, widget_base.Widget):
@@ -55,17 +56,19 @@ def get_child_widget_containing_attribute_names(cls: Type[widget_base.Widget]) -
         elif origin in (list, set, tuple, Sequence, Collection):
             if any(safe_is_subclass(arg, widget_base.Widget) for arg in args):
                 attr_names.append(attr_name)
-    
+
     return attr_names
 
 
 @functools.lru_cache(maxsize=None)
-def get_child_widget_containing_attribute_names_for_builtin_widgets() -> Mapping[str, Collection[str]]:
+def get_child_widget_containing_attribute_names_for_builtin_widgets() -> (
+    Mapping[str, Collection[str]]
+):
     result = {
-        cls._unique_id: get_child_widget_containing_attribute_names(cls)
+        cls._unique_id: get_child_widget_containing_attribute_names(cls)  # type: ignore
         for cls in iter_subclasses(widget_base.FundamentalWidget)
-        if cls._unique_id.endswith("-builtin")
+        if cls._unique_id.endswith("-builtin")  # type: ignore
     }
 
-    result['Placeholder'] = ['_child_']
+    result["Placeholder"] = ["_child_"]
     return result

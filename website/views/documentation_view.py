@@ -4,6 +4,7 @@ import reflex as rx
 from .. import theme
 
 from .. import components as comps
+import tools.build_docs
 
 
 OUTLINE = {
@@ -39,9 +40,9 @@ Welcome to the `TypeScript` tutorial! In this tutorial you will see
 
 ## What is `TypeScript`?
 
-`TypeScript` is a statically typed language that builds on the foundation
-of `JavaScript`. It allows you to catch errors at compile-time and write
-more maintainable code.
+`TypeScript` is a statically typed language that builds on the foundation of
+`JavaScript`. It allows you to catch errors at compile-time and write more
+maintainable code.
 
 ### Installation
 
@@ -55,10 +56,10 @@ You can check the installed version using:
 
 ## Your First `TypeScript` Program
 
-Let's create a simple `TypeScript` program. Create a file called hello.ts
-with the following content:
+Let's create a simple `TypeScript` program. Create a file called hello.ts with
+the following content:
 
-```
+```typescript
 function sayHello(name: string) {
     console.log(`Hello, ${name}!`);
 }
@@ -87,9 +88,8 @@ You should see the output: "Hello, TypeScript!"
 In `TypeScript`, you can declare variables with types:
 
 ```typescript
-let age: number = 30;
-let name: string = "John";
-let isStudent: boolean = true;
+let age: number = 30; let name: string = "John"; let isStudent:
+boolean = true;
 ```
 
 ### Functions
@@ -110,13 +110,11 @@ You can define custom types using interfaces:
 
 ```typescript
 interface Person {
-    name: string;
-    age: number;
+    name: string; age: number;
 }
 
 const person: Person = {
-    name: "Alice",
-    age: 25,
+    name: "Alice", age: 25,
 };
 ```
 
@@ -133,16 +131,19 @@ class Animal {
     }
 }
 
-const dog = new Animal("Dog");
-dog.speak();
+const dog = new Animal("Dog"); dog.speak();
 ```
 
 ## Conclusion
 
-This is just the beginning of your `TypeScript` journey. `TypeScript` offers many
-more features like enums, generics, and advanced type system capabilities.
+_This is just the beginning of your `TypeScript` journey_. `TypeScript` offers
+many more features like enums, generics, and advanced type system capabilities.
 Explore and enjoy the power of `TypeScript` in your projects!
-`;
+
+You can find more information on the [official `TypeScript`
+website](https://www.typescriptlang.org/).
+
+**Thank you for reading!**
 """
 
 
@@ -184,11 +185,14 @@ class DocumentationView(rx.Widget):
                 rx.Router(
                     rx.Route(
                         "",
-                        lambda: rx.MarkdownView(
-                            text=DOCS_STR,
+                        lambda: rx.Column(
+                            comps.ClassApiDocsView(
+                                tools.build_docs.parse_class(rx.Column)
+                            ),
+                            rx.MarkdownView(text=DOCS_STR),
                             width=65,
                             height="grow",
-                            align_x=0,
+                            align_x=0.5,
                         ),
                     ),
                     width="grow",

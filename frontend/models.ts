@@ -2,7 +2,7 @@ export type Color = [number, number, number, number];
 
 export type ColorSet =
     | 'primary'
-    | 'accent'
+    | 'secondary'
     | 'success'
     | 'warning'
     | 'danger'
@@ -14,8 +14,6 @@ export type ColorSet =
           colorVariant: Color;
           textColor: Color;
       };
-
-
 
 export type Fill =
     | {

@@ -5,12 +5,48 @@ import { WidgetBase, WidgetState } from './widgetBase';
 export type TextState = WidgetState & {
     text?: string;
     multiline?: boolean;
-    style?: TextStyle | null;
+    style?: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle;
 };
+
+function getTextStyleValues(
+    style: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle
+): object {
+    let result = {};
+
+    // Predefined style from theme
+    if (typeof style === 'string') {
+        let textOrHeading = style === 'text' ? 'text' : 'heading';
+
+        // Local values
+        result['color'] = `var(--reflex-local-${textOrHeading}-color)`;
+
+        // Global values
+        let cssPrefix = `var(--reflex-global-${style}-`;
+        result['font-family'] = cssPrefix + 'font-name)';
+        result['font-size'] = cssPrefix + 'font-size)';
+        result['font-weight'] = cssPrefix + 'font-weight)';
+        result['text-italic'] = cssPrefix + 'font-italic)';
+        result['text-decoration'] = cssPrefix + 'underlined)';
+        result['text-transform'] = cssPrefix + 'all-caps)';
+    }
+
+    // Explicitly defined style
+    else {
+        result['font-family'] = style.fontName;
+        result['color'] = colorToCss(style.fontColor);
+        result['font-size'] = style.fontSize + 'em';
+        result['font-style'] = style.italic ? 'italic' : 'normal';
+        result['font-weight'] = style.fontWeight;
+        result['text-decoration'] = style.underlined ? 'underline' : 'none';
+        result['text-transform'] = style.allCaps ? 'uppercase' : 'none';
+    }
+
+    return result;
+}
 
 export class TextWidget extends WidgetBase {
     state: Required<TextState>;
-    
+
     createElement(): HTMLElement {
         let containerElement = document.createElement('div');
         containerElement.classList.add('reflex-text');
@@ -34,35 +70,9 @@ export class TextWidget extends WidgetBase {
         }
 
         // Text style: No change
-        if (deltaState.style === undefined) {
-        }
-        // Default style for this environment
-        else if (deltaState.style === null) {
-            // Remove properties that can't be inherited (as of yet)
-            textElement.style.removeProperty('font-family');
-            textElement.style.removeProperty('font-size');
-            textElement.style.removeProperty('font-style');
-            textElement.style.removeProperty('font-weight');
-            textElement.style.removeProperty('text-decoration');
-            textElement.style.removeProperty('text-transform');
-
-            // Set the others from variables
-            textElement.style.color = 'var(--reflex-local-text-color)';
-        }
-        // Explicit style
-        else {
-            const style = deltaState.style;
-            textElement.style.fontFamily = style.fontName;
-            textElement.style.color = colorToCss(style.fontColor);
-            textElement.style.fontSize = style.fontSize + 'em';
-            textElement.style.fontStyle = style.italic ? 'italic' : 'normal';
-            textElement.style.fontWeight = style.fontWeight;
-            textElement.style.textDecoration = style.underlined
-                ? 'underline'
-                : 'none';
-            textElement.style.textTransform = style.allCaps
-                ? 'uppercase'
-                : 'none';
+        if (deltaState.style !== undefined) {
+            let styleValues = getTextStyleValues(deltaState.style);
+            Object.assign(textElement.style, styleValues);
         }
     }
 }

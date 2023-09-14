@@ -1,11 +1,14 @@
 import reflex as rx
 import uniserde
 from dataclasses import dataclass
+import json
 from typing import *  # type: ignore
 import reflex.inspection
 from uniserde import Jsonable
 
 from reflex.widgets.widget_base import FundamentalWidget
+
+DUMP_PATH = rx.common.PROJECT_ROOT_DIR / "tree-dump.json"
 
 
 @uniserde.as_child
@@ -20,6 +23,7 @@ class Attribute:
 @dataclass
 class Widget(uniserde.Serde):
     id: int
+    type: str
     parent: Optional[int]
     builder: Optional[int]
     attributes: List[Attribute]
@@ -31,7 +35,6 @@ class TreeDump(uniserde.Serde):
 
 
 def _get_attr_value(attr_value: Any) -> Union[str, List[int]]:
-
     if prop.name in child_containing_attribute_names:
         if attr_value is None:
             attr_children = []
@@ -97,13 +100,14 @@ def _dump_worker(
     # Instantiate the result
     yield Widget(
         id=widget._id,
+        type=type(widget).__name__,
         parent=parent,
         builder=builder,
         attributes=attributes,
     )
 
 
-def dump_tree(sess: rx.Session) -> TreeDump:
+def dump_tree(sess: rx.Session) -> None:
     # Make sure there are no pending changes
     sess._refresh_sync()
 
@@ -118,6 +122,13 @@ def dump_tree(sess: rx.Session) -> TreeDump:
     )
 
     # Instantiate the result
-    return TreeDump(
+    dump = TreeDump(
         widgets=widgets,
     )
+
+    # Dump the result to a file
+    with open(DUMP_PATH, "w") as f:
+        json.dump(
+            dump.as_json(),
+            f,
+        )

@@ -17,7 +17,7 @@ __all__ = [
 @dataclass(frozen=True)
 class TextStyle(self_serializing.SelfSerializing):
     _: KW_ONLY
-    font_name: Optional[str] = None
+    font_name: str = "Roboto"
     font_color: Color = Color.BLACK
     font_size: float = 1.0
     italic: bool = False

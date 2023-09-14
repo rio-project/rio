@@ -109,6 +109,9 @@ class ClientWidget:
             assert isinstance(property_value, list), property_value
             yield from property_value
 
+    def __str__(self) -> str:
+        return f"{self.type} #{self.id}"
+
 
 class ValidationError(Exception):
     pass
@@ -117,11 +120,11 @@ class ValidationError(Exception):
 class Validator:
     def __init__(
         self,
-        session_: session.Session,
+        sess: session.Session,
         *,
         dump_directory_path: Optional[Path] = None,
     ):
-        self.session = session_
+        self.session = sess
 
         if dump_directory_path is not None:
             assert dump_directory_path.exists(), dump_directory_path
@@ -380,7 +383,7 @@ class Validator:
 
         if invalid_references:
             invalid_references = {
-                f"{widget_id} ({self.widgets_by_id[widget_id].type})": child_ids
+                str(self.widgets_by_id[widget_id]): child_ids
                 for widget_id, child_ids in invalid_references.items()
             }
             raise ValidationError(

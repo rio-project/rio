@@ -25,9 +25,9 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 // Theme Switcheroos
 .reflex-switcheroo-primary {
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-accent-color);
+    --reflex-local-accent-color: var(--reflex-global-secondary-color);
     --reflex-local-accent-color-variant: var(
-        --reflex-global-accent-color-variant
+        --reflex-global-secondary-color-variant
     );
 
     // Surface
@@ -37,13 +37,16 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-accent-color);
+    --reflex-local-heading-color: var(
+        --reflex-global-heading-on-secondary-color
+    );
+    --reflex-local-text-color: var(--reflex-global-text-on-secondary-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-accent {
+.reflex-switcheroo-secondary {
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-primary-color);
     --reflex-local-accent-color-variant: var(
@@ -51,12 +54,13 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Surface
-    --reflex-local-surface-color: var(--reflex-global-accent-color);
+    --reflex-local-surface-color: var(--reflex-global-secondary-color);
     --reflex-local-surface-color-variant: var(
-        --reflex-global-accent-color-variant
+        --reflex-global-secondary-color-variant
     );
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-global-heading-on-primary-color);
     --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
 
     // Material Design Web
@@ -71,6 +75,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-global-text-on-success-color);
     --reflex-local-text-color: var(--reflex-global-text-on-success-color);
 
     // Material Design Web
@@ -85,6 +90,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-global-text-on-warning-color);
     --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
 
     // Material Design Web
@@ -99,6 +105,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-global-text-on-danger-color);
     --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
 
     // Material Design Web
@@ -111,6 +118,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     --reflex-local-accent-color-variant: var(--reflex-local-text-color);
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-local-text-color);
     --reflex-local-text-color: var(--reflex-local-text-color);
 
     // Material Design Web
@@ -119,9 +127,9 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
 .reflex-switcheroo-default {
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-accent-color);
+    --reflex-local-accent-color: var(--reflex-global-secondary-color);
     --reflex-local-accent-color-variant: var(
-        --reflex-global-accent-color-variant
+        --reflex-global-secondary-color-variant
     );
 
     // Surface
@@ -131,11 +139,12 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-global-heading-on-surface-color);
     --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
 
     // Material Design Web
-    --mdc-theme-primary: var(--reflex-global-accent-color);
-    --mdc-theme-secondary: var(--reflex-global-accent-color-variant);
+    --mdc-theme-primary: var(--reflex-global-secondary-color);
+    --mdc-theme-secondary: var(--reflex-global-secondary-color-variant);
     --mdc-theme-surface: var(--reflex-global-surface-color);
     --mdc-theme-background: var(--reflex-global-background-color);
 
@@ -186,12 +195,20 @@ html {
     background: var(--reflex-global-background-color);
 }
 
+a {
+    color: var(--reflex-local-accent-color);
+}
+
 body {
     width: 100vw;
     height: 100vh;
     margin: 0;
     padding: 0;
     font-family: Roboto, sans-serif;
+}
+
+code {
+    font-family: 'Roboto Mono', monospace;
 }
 
 .reflex-widget {
@@ -786,6 +803,50 @@ body {
     padding: 0 var(--reflex-padding) var(--reflex-padding) var(--reflex-padding);
 }
 
-code {
-    font-family: 'Roboto Mono', monospace;
+.reflex-markdown-view {
+    h1 {
+        font-family: var(--reflex-global-heading1-font-name);
+        color: var(--reflex-local-heading-color);
+        font-size: var(--reflex-global-heading1-font-size);
+        font-style: var(--reflex-global-heading1-italic);
+        font-weight: var(--reflex-global-heading1-font-weight);
+        text-decoration: var(--reflex-global-heading1-underlined);
+        text-transform: var(--reflex-global-heading1-all-caps);
+
+        margin-top: 2em;
+    }
+
+    h2 {
+        font-family: var(--reflex-global-heading2-font-name);
+        color: var(--reflex-local-heading-color);
+        font-size: var(--reflex-global-heading2-font-size);
+        font-style: var(--reflex-global-heading2-italic);
+        font-weight: var(--reflex-global-heading2-font-weight);
+        text-decoration: var(--reflex-global-heading2-underlined);
+        text-transform: var(--reflex-global-heading2-all-caps);
+
+        margin-top: 1.5em;
+    }
+
+    h3 {
+        font-family: var(--reflex-global-heading3-font-name);
+        color: var(--reflex-local-heading-color);
+        font-size: var(--reflex-global-heading3-font-size);
+        font-style: var(--reflex-global-heading3-italic);
+        font-weight: var(--reflex-global-heading3-font-weight);
+        text-decoration: var(--reflex-global-heading3-underlined);
+        text-transform: var(--reflex-global-heading3-all-caps);
+
+        margin-top: 1em;
+    }
+
+    p {
+        font-family: var(--reflex-global-text-font-name);
+        color: var(--reflex-local-text-color);
+        font-size: var(--reflex-global-text-font-size);
+        font-style: var(--reflex-global-text-italic);
+        font-weight: var(--reflex-global-text-font-weight);
+        text-decoration: var(--reflex-global-text-underlined);
+        text-transform: var(--reflex-global-text-all-caps);
+    }
 }

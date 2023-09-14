@@ -21,15 +21,6 @@ CARD_STYLE_HOVER = CARD_STYLE.replace(
 )
 
 
-def dump_tree(sess: rx.Session) -> None:
-    dump = tools.crawl_tree.dump_tree(sess)
-    json.dump(
-        dump.as_json(),
-        (rx.common.PROJECT_ROOT_DIR / "tree-dump.json").open("w"),
-        indent=4,
-    )
-
-
 class Card(rx.Widget):
     child: rx.Widget
 
@@ -87,15 +78,12 @@ class Sidebar(rx.Widget):
             child=rx.Column(
                 rx.Text(
                     "Reflex UI",
-                    style=rx.TextStyle(
-                        font_color=theme.primary_color,
-                        font_size=3.0,
-                    ),
+                    style="heading1",
                     margin_top=1.0,
                 ),
                 rx.Text(
                     "The reactive UI library for Python",
-                    style=rx.TextStyle(font_color=theme.primary_color),
+                    style="heading2",
                     margin_top=0.6,
                 ),
                 rx.Grid(
@@ -238,7 +226,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.Button(
                     "Dump Tree",
-                    on_press=lambda _: dump_tree(self.session),
+                    on_press=lambda _: tools.crawl_tree.dump_tree(self.session),
                 ),
                 spacing=1.0,
                 align_y=0,
