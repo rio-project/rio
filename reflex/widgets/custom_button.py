@@ -4,9 +4,8 @@ from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
 import reflex as rx
-from . import button
-from . import widget_base
 
+from . import button, widget_base
 
 __all__ = [
     "CustomButton",

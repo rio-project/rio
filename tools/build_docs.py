@@ -1,9 +1,11 @@
+import inspect
 from dataclasses import dataclass
 from typing import *  # type: ignore
+
 import docstring_parser
 from stream_tui import *  # type: ignore
-import inspect
-from website.models import FunctionDocs, FunctionParameter, ClassDocs, ClassField
+
+from website.models import ClassDocs, ClassField, FunctionDocs, FunctionParameter
 
 
 def str_type_hint(typ: Type) -> str:

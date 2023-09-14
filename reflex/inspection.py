@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import functools
 import sys
-from collections.abc import Collection, Sequence, Mapping
-from typing import ForwardRef, Type, Union, get_origin, get_args
+from collections.abc import Collection, Mapping, Sequence
+from typing import ForwardRef, Type, Union, get_args, get_origin
 
 from introspection import iter_subclasses, safe_is_subclass
 

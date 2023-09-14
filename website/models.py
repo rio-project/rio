@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-import uniserde
 from typing import *  # type: ignore
+
+import uniserde
 
 
 @dataclass

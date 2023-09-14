@@ -1,8 +1,9 @@
-import tools.crawl_tree as ct
-from typing import *  # type: ignore
 import json
+from typing import *  # type: ignore
+
 from stream_tui import *  # type: ignore
 
+import tools.crawl_tree as ct
 
 root_widget: ct.Widget
 tree: ct.TreeDump

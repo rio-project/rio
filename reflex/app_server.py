@@ -21,7 +21,7 @@ from uniserde import Jsonable
 
 import reflex as rx
 
-from . import app, assets, common, session, user_settings_module, validator, inspection
+from . import app, assets, common, inspection, session, user_settings_module, validator
 
 try:
     import plotly  # type: ignore
@@ -127,7 +127,6 @@ def _build_set_theme_variables_message(thm: rx.Theme):
     variables[
         "--reflex-global-text-on-surface-color"
     ] = f"#{thm.text_style.font_color.hex}"
-
 
     # Colors derived from, but not stored in the theme
     derived_colors = {

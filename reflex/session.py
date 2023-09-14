@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
 import asyncio
-import babel
 import collections
 import collections.abc
 import enum
@@ -14,8 +12,10 @@ import traceback
 import typing
 import weakref
 from dataclasses import dataclass
+from pathlib import Path
 from typing import *  # type: ignore
 
+import babel
 import introspection
 import unicall
 import uniserde

@@ -1,11 +1,10 @@
 from typing import *  # type: ignore
 
 import reflex as rx
-from .. import theme
-
-from .. import components as comps
 import tools.build_docs
 
+from .. import components as comps
+from .. import theme
 
 OUTLINE = {
     "Introduction": (

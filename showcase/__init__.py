@@ -1,11 +1,11 @@
+import json
 from pathlib import Path
 from typing import *  # type: ignore
 
 import plotly.express as px
-import json
-import tools.crawl_tree
 
 import reflex as rx
+import tools.crawl_tree
 
 theme = rx.Theme()
 

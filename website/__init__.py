@@ -1,12 +1,10 @@
 from pathlib import Path
 from typing import *  # type: ignore
-from . import models
-
 
 import reflex as rx
 
 from . import components as comps
-from . import theme, views
+from . import models, theme, views
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"

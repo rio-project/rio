@@ -4,8 +4,7 @@ from typing import *  # type: ignore
 
 import reflex as rx
 
-from . import widget_base
-from . import class_container
+from . import class_container, widget_base
 
 __all__ = [
     "Sticky",
@@ -89,5 +88,3 @@ class Sticky(widget_base.Widget):
                 ],
             ),
         )
-
-
