@@ -1,4 +1,5 @@
-import json
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import *  # type: ignore
 
@@ -63,9 +64,9 @@ def _dump_worker(
 ) -> Iterable[Widget]:
     # Fetch all of the widget's attributes
     attributes: List[Attribute] = []
-    child_containing_attribute_names = (
-        reflex.inspection.get_child_widget_containing_attribute_names(widget)
-    )
+    # child_containing_attribute_names = (
+    #     reflex.inspection.get_child_widget_containing_attribute_names(type(widget))
+    # )
 
     for prop in widget._state_properties_:
         raw_attr_value = prop.__get__(widget, None)
@@ -74,7 +75,8 @@ def _dump_worker(
             Attribute(
                 name=prop.name,
                 type="TODO-type",
-                value=_get_attr_value(raw_attr_value),
+                # value=_get_attr_value(raw_attr_value),
+                value=str(raw_attr_value),
                 bound_to=None,  # TODO
             )
         )
@@ -108,7 +110,7 @@ def _dump_worker(
     )
 
 
-def dump_tree(sess: rx.Session) -> None:
+def dump_tree(sess: rx.Session) -> TreeDump:
     # Make sure there are no pending changes
     sess._refresh_sync()
 
@@ -123,13 +125,6 @@ def dump_tree(sess: rx.Session) -> None:
     )
 
     # Instantiate the result
-    dump = TreeDump(
+    return TreeDump(
         widgets=widgets,
     )
-
-    # Dump the result to a file
-    with open(DUMP_PATH, "w") as f:
-        json.dump(
-            dump.as_json(),
-            f,
-        )

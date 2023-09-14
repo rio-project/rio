@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 import plotly.express as px
 
 import reflex as rx
-import tools.crawl_tree
+import reflex.crawl_tree
 
 theme = rx.Theme()
 
@@ -226,7 +226,7 @@ class Sidebar(rx.Widget):
                 ),
                 rx.Button(
                     "Dump Tree",
-                    on_press=lambda _: tools.crawl_tree.dump_tree(self.session),
+                    on_press=lambda _: reflex.crawl_tree.dump_tree(self.session),
                 ),
                 spacing=1.0,
                 align_y=0,

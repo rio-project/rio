@@ -492,7 +492,8 @@ class Session(unicall.Unicall):
 
                 # Mark all fresh widgets as dirty
                 self._register_dirty_widget(
-                    build_result, include_fundamental_children_recursively=True
+                    build_result,
+                    include_fundamental_children_recursively=True,
                 )
 
             # Yes, rescue state. This will:
@@ -560,11 +561,6 @@ class Session(unicall.Unicall):
             # Cache and return
             alive_cache[widget] = result
             return result
-
-        print("Alive check")
-        for widget in visited_widgets:
-            if not is_alive(widget):
-                print(f"Dropping dead widget #{widget._id} from the session")
 
         return {widget for widget in visited_widgets if is_alive(widget)}
 
@@ -831,7 +827,6 @@ class Session(unicall.Unicall):
         # Postprocess the tree
         reconciled_widgets_old = set(reconciled_widgets_new_to_old.values())
         weak_builder = weakref.ref(builder)
-        builder_vars = vars(builder)
 
         for widget in reconciled_build_result._iter_direct_and_indirect_children(
             include_self=True,
@@ -849,7 +844,8 @@ class Session(unicall.Unicall):
             # Thus, only look up the widgets in a set of old widgets.
             if widget not in reconciled_widgets_old:
                 self._register_dirty_widget(
-                    widget, include_fundamental_children_recursively=False
+                    widget,
+                    include_fundamental_children_recursively=False,
                 )
 
     def _reconcile_widget(
@@ -914,6 +910,28 @@ class Session(unicall.Unicall):
 
                 # Save the binding's value in case this is the root binding
                 new_value.value = old_value.value
+
+            # If the new widget will be reconciled with the old one, the new one
+            # mustn't be assigned to the widget, because it isn't the one that
+            # survives reconciliation. This is safe to do there, because the
+            # widget cannot possibly make the widget dirty, since it is being
+            # reconciled.
+            #
+            # TODO: Does this need an additional check to make sure this old
+            # widget will be reconciled with this new widget? Wouldn't it
+            # technically be possible that, because of keys, one of them will be
+            # reconciled, but not the other?
+            try:
+                if new_value in reconciled_widgets_new_to_old:
+                    if reconciled_widgets_new_to_old[new_value] is not old_value:
+                        raise NotImplementedError(
+                            "Handle reconciliation of one, but not the other widget (see comment)"
+                        )
+                    continue
+
+            # Unhashable values can't be looked up in the dictionary
+            except TypeError:
+                pass
 
             overridden_values[prop.name] = new_value
 

@@ -8,9 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
+import uniserde
 from uniserde import Jsonable, JsonDoc
 
-from . import inspection, session
+from . import crawl_tree, inspection, session
 
 __all__ = [
     "ClientWidget",
@@ -311,6 +312,18 @@ class Validator:
         handler(msg["params"])
 
     def _handle_outgoing_updateWidgetStates(self, msg: Any) -> None:
+        # Dump the widget state, as seen by the backend
+        if self.dump_directory_path is not None:
+            tree = crawl_tree.dump_tree(self.session)
+            path = self.dump_directory_path / f"session-state.json"
+
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(
+                    tree.as_json(),
+                    f,
+                    indent=4,
+                )
+
         # Dump the message, if requested
         self.dump_message(msg, incoming=False)
 
