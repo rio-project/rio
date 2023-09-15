@@ -6,7 +6,7 @@ from dataclasses import dataclass, is_dataclass
 from typing import *  # type: ignore
 
 import docstring_parser
-import introspection
+import introspection.typing
 from stream_tui import *  # type: ignore
 
 from . import models
@@ -21,19 +21,11 @@ DEFAULT_FACTORY_VALUES: Dict[Any, Any] = {
 
 
 def str_type_hint(typ: Type) -> str:
-    # TODO:
-    # - Take care of origin/args
-    # - Display unions as a | b
-    # - Add / Strip qualifiers
-    # - Normalize list / List & Co
+    # Make sure the type annotation has been parsed
+    assert not isinstance(typ, str), typ
 
-    if isinstance(typ, str):
-        return typ
-
-    if typ is None:
-        return "None"
-
-    return typ.__name__
+    # Then pretty-string the type
+    return introspection.typing.annotation_to_string(typ)
 
 
 def parse_docstring(docstring: str) -> docstring_parser.Docstring:
@@ -102,7 +94,7 @@ def parse_function(func: Callable) -> models.FunctionDocs:
 
         parameters[param_name] = models.FunctionParameter(
             name=param_name,
-            type="",  # Filled in later
+            type=None,  # Filled in later
             default=param_default,
             kw_only=param.kind == inspect.Parameter.KEYWORD_ONLY,
             collect_positional=param.kind == inspect.Parameter.VAR_POSITIONAL,

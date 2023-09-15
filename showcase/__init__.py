@@ -11,7 +11,7 @@ theme = rx.Theme()
 
 CARD_STYLE = rx.BoxStyle(
     fill=theme.surface_color,
-    corner_radius=theme.corner_radius,
+    corner_radius=theme.corner_radius_small,
     # shadow_color=theme.active_color.replace(opacity=0.1),
 )
 

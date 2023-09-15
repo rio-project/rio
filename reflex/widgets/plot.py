@@ -45,7 +45,7 @@ class Plot(widget_base.FundamentalWidget):
             thm = self.session.attachments[rx.Theme]
             box_style = rx.BoxStyle(
                 fill=thm.surface_color_variant,
-                corner_radius=thm.corner_radius,
+                corner_radius=thm.corner_radius_small,
             )
         else:
             box_style = self.style

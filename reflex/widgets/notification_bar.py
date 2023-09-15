@@ -56,6 +56,6 @@ class NotificationBar(widget_base.Widget):
             ),
             style=rx.BoxStyle(
                 fill=background_color,
-                corner_radius=thm.corner_radius,
+                corner_radius=thm.corner_radius_small,
             ),
         )

@@ -98,8 +98,8 @@ class NavigationBar(rx.Widget):
                     corner_radius=(
                         0,
                         0,
-                        theme.LARGE_CORNER_RADIUS,
-                        theme.LARGE_CORNER_RADIUS,
+                        theme.THEME.corner_radius_large,
+                        theme.THEME.corner_radius_large,
                     ),
                     shadow_color=theme.THEME.shadow_color,
                     shadow_radius=theme.THEME.shadow_radius,

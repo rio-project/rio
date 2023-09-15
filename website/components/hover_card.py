@@ -41,7 +41,7 @@ class HoverCard(rx.Widget):
                 child=rx.Text("Sample Text"),
                 style=rx.BoxStyle(
                     fill=theme.THEME.surface_color,
-                    corner_radius=theme.LARGE_CORNER_RADIUS,
+                    corner_radius=theme.THEME.corner_radius_large,
                     shadow_color=theme.THEME.shadow_color,
                     shadow_radius=theme.THEME.shadow_radius if self._is_hovered else 0,
                 ),

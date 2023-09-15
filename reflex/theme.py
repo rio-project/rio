@@ -53,7 +53,7 @@ class Theme:
     danger_color_variant: rx.Color
 
     # Other
-    corner_radius: float
+    corner_radius_small: float
     base_spacing: float
     shadow_radius: float
     shadow_color: rx.Color
@@ -81,7 +81,8 @@ class Theme:
         success_color: Optional[rx.Color] = None,
         warning_color: Optional[rx.Color] = None,
         danger_color: Optional[rx.Color] = None,
-        corner_radius: float = 0.6,
+        corner_radius_small: float = 0.6,
+        corner_radius_large: float = 3.0,
         base_spacing: float = 0.5,
         light: bool = True,
     ) -> None:
@@ -138,7 +139,8 @@ class Theme:
         self.danger_color_variant = _make_variant_color(self.danger_color)
 
         # Other
-        self.corner_radius = corner_radius
+        self.corner_radius_small = corner_radius_small
+        self.corner_radius_large = corner_radius_large
         self.base_spacing = base_spacing
         self.shadow_color = rx.Color.BLACK.replace(opacity=0.5)
         self.shadow_radius = 1

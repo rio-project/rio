@@ -43,7 +43,7 @@ class Testimonial(rx.Widget):
                     align_y=0.5,
                 ),
             ),
-            corner_radius=theme.LARGE_CORNER_RADIUS,
+            corner_radius=theme.THEME.corner_radius_large,
             width=30,
             height=12,
         )
