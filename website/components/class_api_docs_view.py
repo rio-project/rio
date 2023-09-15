@@ -1,13 +1,12 @@
 from typing import *  # type: ignore
 
 import reflex as rx
+import reflex_docs.models as docmodels
 from reflex import escape_markdown as es
 from reflex import escape_markdown_code as esc
 
-from .. import models
 
-
-def _str_parameter(param: models.FunctionParameter) -> str:
+def _str_parameter(param: docmodels.FunctionParameter) -> str:
     parts = []
 
     # Name
@@ -25,7 +24,7 @@ def _str_parameter(param: models.FunctionParameter) -> str:
 
 
 def _str_function_signature(
-    docs: models.FunctionDocs,
+    docs: docmodels.FunctionDocs,
     *,
     owning_class_name: Optional[str] = None,
 ) -> str:
@@ -68,7 +67,7 @@ def _str_function_signature(
 
 
 class ClassApiDocsView(rx.Widget):
-    docs: models.ClassDocs
+    docs: docmodels.ClassDocs
 
     def build(self) -> rx.Widget:
         parts = []

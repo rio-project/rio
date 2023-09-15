@@ -13,6 +13,14 @@ from reflex.widgets.widget_base import FundamentalWidget
 DUMP_PATH = rx.common.PROJECT_ROOT_DIR / "tree-dump.json"
 
 
+__all__ = [
+    "Attribute",
+    "Widget",
+    "dump_tree",
+    "TreeDump",
+]
+
+
 @uniserde.as_child
 @dataclass
 class Attribute:
@@ -36,24 +44,24 @@ class TreeDump(uniserde.Serde):
     widgets: List[Widget]
 
 
-def _get_attr_value(attr_value: Any) -> Union[str, List[int]]:
-    if prop.name in child_containing_attribute_names:
-        if attr_value is None:
-            attr_children = []
-        elif isinstance(attr_value, rx.Widget):
-            attr_children = [attr_value]
-        elif isinstance(attr_value, (list, tuple)):
-            attr_children = attr_value
-        elif isinstance(attr_value, dict):
-            attr_children = attr_value.values()
-        else:
-            raise NotImplementedError(
-                f"Unsupported type for attribute {prop.name}: {type(attr_value)}"
-            )
+# def _get_attr_value(attr_value: Any) -> Union[str, List[int]]:
+#     if prop.name in child_containing_attribute_names:
+#         if attr_value is None:
+#             attr_children = []
+#         elif isinstance(attr_value, rx.Widget):
+#             attr_children = [attr_value]
+#         elif isinstance(attr_value, (list, tuple)):
+#             attr_children = attr_value
+#         elif isinstance(attr_value, dict):
+#             attr_children = attr_value.values()
+#         else:
+#             raise NotImplementedError(
+#                 f"Unsupported type for attribute {prop.name}: {type(attr_value)}"
+#             )
 
-        attr_value = [child._id for child in attr_children]
-    else:
-        attr_value = str(attr_value)
+#         attr_value = [child._id for child in attr_children]
+#     else:
+#         attr_value = str(attr_value)
 
 
 def _dump_worker(

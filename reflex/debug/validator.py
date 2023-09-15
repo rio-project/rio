@@ -11,7 +11,8 @@ from typing import *  # type: ignore
 import uniserde
 from uniserde import Jsonable, JsonDoc
 
-from . import crawl_tree, inspection, session
+from .. import inspection, session
+from . import crawl_tree
 
 __all__ = [
     "ClientWidget",

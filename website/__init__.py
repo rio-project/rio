@@ -4,7 +4,7 @@ from typing import *  # type: ignore
 import reflex as rx
 
 from . import components as comps
-from . import models, theme, views
+from . import theme, views
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"

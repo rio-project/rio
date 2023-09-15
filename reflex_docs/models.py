@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from typing import *  # type: ignore
 
 import uniserde
+from typing_extensions import Self
+
+from . import parsers
 
 
 @dataclass
@@ -29,6 +32,10 @@ class FunctionDocs(uniserde.Serde):
 
     raises: List[Tuple[str, str]]  # type, description
 
+    @classmethod
+    def parse(cls, func: Callable) -> "Self":
+        return parsers.parse_function(func)
+
 
 @dataclass
 class ClassField(uniserde.Serde):
@@ -47,3 +54,7 @@ class ClassDocs(uniserde.Serde):
 
     short_description: Optional[str]
     long_description: Optional[str]
+
+    @classmethod
+    def parse(cls, typ: Type) -> "Self":
+        return parsers.parse_class(typ)

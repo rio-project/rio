@@ -113,7 +113,7 @@ class StateBinding:
             if owning_widget is not None and owning_widget._session_ is not None:
                 owning_widget._session_._register_dirty_widget(
                     owning_widget,
-                    include_fundamental_children_recursively=False,
+                    include_children_recursively=False,
                 )
 
             to_do.extend(cur.children)
@@ -210,7 +210,7 @@ class StateProperty:
         if instance._session_ is not None:
             instance._session_._register_dirty_widget(
                 instance,
-                include_fundamental_children_recursively=False,
+                include_children_recursively=False,
             )
 
     def __repr__(self) -> str:
@@ -468,6 +468,11 @@ class Widget(ABC):
             except AttributeError:
                 continue
 
+            # Skip strings. They're technically iterable, but comparing them
+            # element by element is slow and pointless
+            if isinstance(value, str):
+                continue
+
             if isinstance(value, Widget):
                 yield value
 
@@ -593,7 +598,7 @@ class Widget(ABC):
     async def force_refresh(self) -> None:
         self.session._register_dirty_widget(
             self,
-            include_fundamental_children_recursively=False,
+            include_children_recursively=False,
         )
 
         await self.session._refresh()

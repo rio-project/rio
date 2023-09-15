@@ -21,7 +21,7 @@ from uniserde import Jsonable
 
 import reflex as rx
 
-from . import app, assets, common, inspection, session, user_settings_module, validator
+from . import app, assets, common, debug, inspection, session, user_settings_module
 
 try:
     import plotly  # type: ignore
@@ -157,7 +157,7 @@ class AppServer(fastapi.FastAPI):
         on_session_start: rx.EventHandler[rx.Session],
         on_session_end: rx.EventHandler[rx.Session],
         default_attachments: Tuple[Any, ...],
-        validator_factory: Optional[Callable[[rx.Session], validator.Validator]],
+        validator_factory: Optional[Callable[[rx.Session], debug.Validator]],
     ):
         super().__init__()
 
@@ -539,12 +539,12 @@ class AppServer(fastapi.FastAPI):
         else:
 
             async def send_message(msg: uniserde.Jsonable) -> None:
-                assert isinstance(validator_instance, validator.Validator)
+                assert isinstance(validator_instance, debug.Validator)
                 validator_instance.handle_outgoing_message(msg)
                 await websocket.send_json(msg)
 
             async def receive_message() -> uniserde.Jsonable:
-                assert isinstance(validator_instance, validator.Validator)
+                assert isinstance(validator_instance, debug.Validator)
                 msg = await websocket.receive_json()
                 validator_instance.handle_incoming_message(msg)
                 return msg
@@ -682,7 +682,7 @@ class AppServer(fastapi.FastAPI):
             # indefinitely.
             sess._register_dirty_widget(
                 root_widget,
-                include_fundamental_children_recursively=True,
+                include_children_recursively=True,
             )
             asyncio.create_task(sess._refresh())
 

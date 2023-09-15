@@ -15,7 +15,7 @@ import uvicorn
 
 import reflex as rx
 
-from . import app_server, assets, validator
+from . import app_server, assets, debug
 from .common import ImageLike
 
 # Only available with the `window` extra
@@ -68,9 +68,7 @@ class App:
         *,
         external_url_override: Optional[str] = None,
         _running_in_window: bool = False,
-        _validator_factory: Optional[
-            Callable[[rx.Session], validator.Validator]
-        ] = None,
+        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
     ) -> fastapi.FastAPI:
         return app_server.AppServer(
             self,
@@ -86,9 +84,7 @@ class App:
         self,
         *,
         external_url_override: Optional[str] = None,
-        _validator_factory: Optional[
-            Callable[[rx.Session], validator.Validator]
-        ] = None,
+        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
     ):
         return self._as_fastapi(
             external_url_override=external_url_override,
@@ -102,9 +98,7 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
-        _validator_factory: Optional[
-            Callable[[rx.Session], validator.Validator]
-        ] = None,
+        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
         _on_startup: Optional[Callable[[], Awaitable[None]]] = None,
     ) -> None:
         # Suppress stdout messages if requested
@@ -145,9 +139,7 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
-        _validator_factory: Optional[
-            Callable[[rx.Session], validator.Validator]
-        ] = None,
+        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
     ):
         async def on_startup() -> None:
             webbrowser.open(f"http://{host}:{port}")
@@ -164,9 +156,7 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
-        _validator_factory: Optional[
-            Callable[[rx.Session], validator.Validator]
-        ] = None,
+        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
     ):
         if webview is None:
             raise Exception(

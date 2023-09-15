@@ -1,7 +1,7 @@
 from typing import *  # type: ignore
 
 import reflex as rx
-import tools.build_docs
+import reflex_docs
 
 from .. import components as comps
 from .. import theme
@@ -186,7 +186,7 @@ class DocumentationView(rx.Widget):
                         "",
                         lambda: rx.Column(
                             comps.ClassApiDocsView(
-                                tools.build_docs.parse_class(rx.Column)
+                                reflex_docs.ClassDocs.parse(rx.Column)
                             ),
                             rx.MarkdownView(text=DOCS_STR),
                             width=65,
