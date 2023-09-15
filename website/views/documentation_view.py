@@ -6,25 +6,70 @@ import reflex_docs
 from .. import components as comps
 from .. import theme
 
-OUTLINE = {
-    "Introduction": (
-        "What is Reflex?",
-        "Why Reflex?",
-        "How does Reflex work?",
+OUTLINE: Tuple[Optional[Tuple[str, Tuple[str, ...]]], ...] = (
+    (
+        "Getting Started",
+        (
+            "A",
+            "B",
+            "C",
+        ),
     ),
-    "Getting Started": (
-        "Installation",
-        "Hello World",
-        "Widgets",
-        "Layouts",
+    (
+        "How-To",
+        (
+            "Set up a Project",
+            "Add Pages to a Project",
+            "Deploy a Project",
+            "Multiple Pages",
+            "Theming",
+        ),
     ),
-    "Advanced": (
-        "Styling",
-        "Events",
-        "Animations",
-        "Reflex CLI",
+    # API Docs
+    None,
+    (
+        "Inputs",
+        (
+            "A",
+            "B",
+            "C",
+        ),
     ),
-}
+    (
+        "Containers & Layout",
+        (
+            "A",
+            "B",
+            "C",
+        ),
+    ),
+    (
+        "Tripswitches",
+        (
+            "A",
+            "B",
+            "C",
+        ),
+    ),
+    (
+        "Other",
+        (
+            "A",
+            "B",
+            "C",
+        ),
+    ),
+    # Internal / Developer / Contributor Documentation
+    None,
+    (
+        "Contributing",
+        (
+            "A",
+            "B",
+            "C",
+        ),
+    ),
+)
 
 
 DOCS_STR = """
@@ -146,24 +191,47 @@ website](https://www.typescriptlang.org/).
 """
 
 
-class DocumentationView(rx.Widget):
+class FlatCard(rx.Widget):
+    child: rx.Widget
+    corner_radius: Union[
+        float, Tuple[float, float, float, float]
+    ] = theme.THEME.corner_radius_large
+
     def build(self) -> rx.Widget:
-        # Build the outliner
+        return rx.Card(
+            rx.Container(
+                self.child,
+                margin=2,
+            ),
+            corner_radius=self.corner_radius,
+            hover_height=0,
+            elevate_on_hover=0,
+        )
+
+
+class Outliner(rx.Widget):
+    def build(self) -> rx.Widget:
         chapter_expanders = []
 
-        for chapter, sections in OUTLINE.items():
+        for section in OUTLINE:
+            if section is None:
+                chapter_expanders.append(rx.Spacer(height=3))
+                continue
+
+            title, subsections = section
+
             buttons = [
                 rx.Button(
                     section,
                     color=rx.Color.TRANSPARENT,
                     on_press=lambda _: self.session.navigate_to(f"./{section}"),
                 )
-                for section in sections
+                for section in subsections
             ]
 
             chapter_expanders.append(
                 rx.Revealer(
-                    chapter,
+                    title,
                     rx.Column(
                         *buttons,
                         spacing=theme.THEME.base_spacing,
@@ -171,33 +239,60 @@ class DocumentationView(rx.Widget):
                 ),
             )
 
-        # Combine everything
+        return FlatCard(
+            child=rx.Column(
+                *chapter_expanders,
+                width=13,
+                align_y=0,
+            ),
+            corner_radius=(
+                0,
+                theme.THEME.corner_radius_large,
+                theme.THEME.corner_radius_large,
+                0,
+            ),
+            margin_top=3,
+            align_y=0,
+        )
+
+
+class DocumentationView(rx.Widget):
+    def build(self) -> rx.Widget:
         return rx.Column(
-            comps.NavigationBarDeadSpace(),
-            rx.Row(
-                rx.Column(
-                    *chapter_expanders,
-                    margin_left=3,
-                    width=20,
+            rx.Sticky(
+                Outliner(
+                    align_x=0,
+                    align_y=0.5,
+                ),
+            ),
+            rx.Stack(
+                comps.NavigationBarDeadSpace(
+                    height=22,
                     align_y=0,
                 ),
                 rx.Router(
                     rx.Route(
                         "",
                         lambda: rx.Column(
-                            comps.ClassApiDocsView(
-                                reflex_docs.ClassDocs.parse(rx.Column)
+                            FlatCard(
+                                comps.ClassApiDocsView(
+                                    reflex_docs.ClassDocs.parse(rx.Column)
+                                ),
                             ),
-                            rx.MarkdownView(text=DOCS_STR),
+                            FlatCard(
+                                rx.MarkdownView(text=DOCS_STR),
+                            ),
+                            margin_left=23,
+                            margin_bottom=4,
+                            spacing=3,
                             width=65,
                             height="grow",
                             align_x=0.5,
                         ),
                     ),
+                    margin_top=14,
                     width="grow",
                     height="grow",
                 ),
-                height="grow",
-                spacing=3,
             ),
         )

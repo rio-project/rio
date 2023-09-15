@@ -565,8 +565,8 @@ class Widget(ABC):
 
     def _is_in_widget_tree(self, cache: Dict[rx.Widget, bool]) -> bool:
         """
-        Returns whether this widget is directly or connected to the widget tree
-        of a session.
+        Returns whether this widget is directly or indirectly connected to the
+        widget tree of a session.
 
         This operation is fast, but has to walk up the widget tree to make sure
         the widget's parent is also connected. Thus, when checking multiple

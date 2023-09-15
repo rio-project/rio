@@ -24,8 +24,8 @@ class Route:
 FALLBACK_ROUTE = Route(
     fragment_name="",
     # TODO: build a nice error page
-    build_function=lambda: rx.Card(
-        child=rx.Text("The page you requested could not be found."),
+    build_function=lambda: rx.Text(
+        "The page you requested could not be found.",
         height=4,
         width=12,
         align_x=0.5,

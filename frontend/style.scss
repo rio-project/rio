@@ -271,11 +271,8 @@ code {
 }
 
 // Margin
-.reflex-margin > * {
+.reflex-margin {
     pointer-events: none;
-    position: relative;
-    width: 100%;
-    height: 100%;
 }
 
 // Column
@@ -320,7 +317,7 @@ code {
         black 50%,
         black 75%,
         var(--reflex-global-warning-color) 75%,
-        var(--reflex-global-warning-color),
+        var(--reflex-global-warning-color)
     );
     background-size: 2rem 2rem;
     animation: barber-pole 0.7s linear infinite;
@@ -549,10 +546,6 @@ code {
         border-color 0.1s ease-in-out;
 
     overflow: hidden; // Needed for the ripple effect
-}
-
-.reflex-button > * {
-    min-height: 2.2rem;
 }
 
 .reflex-button:not(.reflex-switcheroo-disabled) {
@@ -866,7 +859,11 @@ code {
         text-decoration: var(--reflex-global-heading1-underlined);
         text-transform: var(--reflex-global-heading1-all-caps);
 
-        margin-top: 2em;
+        margin-top: 0;
+
+        :not(:first-child) {
+            margin-top: 2em;
+        }
     }
 
     h2 {
@@ -878,7 +875,11 @@ code {
         text-decoration: var(--reflex-global-heading2-underlined);
         text-transform: var(--reflex-global-heading2-all-caps);
 
-        margin-top: 1.5em;
+        margin-top: 0;
+
+        :not(:first-child) {
+            margin-top: 1.5em;
+        }
     }
 
     h3 {
@@ -890,7 +891,11 @@ code {
         text-decoration: var(--reflex-global-heading3-underlined);
         text-transform: var(--reflex-global-heading3-all-caps);
 
-        margin-top: 1em;
+        margin-top: 0;
+
+        :not(:first-child) {
+            margin-top: 1em;
+        }
     }
 
     p {

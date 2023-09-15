@@ -68,8 +68,10 @@ class Button(widget_base.Widget):
             child = rx.Row(
                 *children,
                 spacing=0.6,
-                margin=0.2,
+                margin=0.3,
                 align_x=0.5,
+                # Make sure there's no popping when switching between Text & ProgressCircle
+                height=1.6,
             )
 
         # Delegate to a HTML Widget

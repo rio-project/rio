@@ -144,6 +144,9 @@ class Session(unicall.Unicall):
             babel.Locale, ...
         ]  # Always has at least one member
 
+        self.window_width: float
+        self.window_height: float
+
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
 
@@ -371,7 +374,7 @@ class Session(unicall.Unicall):
                 include_children_recursively=True,
             )
 
-    def _refresh_sync(self) -> Set[rx.Widget]:
+    def _refresh_sync(self) -> Tuple[Set[rx.Widget], Dict[int, JsonDoc]]:
         """
         See `refresh` for details on what this function does.
 
@@ -385,11 +388,6 @@ class Session(unicall.Unicall):
         widget tree. Those widgets are NOT included in the function's result.
         """
 
-        # If nothing is dirty just return. While the loop below wouldn't do
-        # anything anyway, this avoids sending a message to the client.
-        if not self._dirty_widgets:
-            return set()
-
         # Keep track of all widgets which are visited. Only they will be sent to
         # the client.
         visited_widgets: collections.Counter[rx.Widget] = collections.Counter()
@@ -398,8 +396,6 @@ class Session(unicall.Unicall):
         while self._dirty_widgets:
             widget = self._dirty_widgets.pop()
 
-            print(widget)
-
             # Remember that this widget has been visited
             visited_widgets[widget] += 1
 
@@ -407,7 +403,7 @@ class Session(unicall.Unicall):
             build_count = visited_widgets[widget]
             if build_count > 5:
                 raise RecursionError(
-                    f"The widget {widget} has been rebuilt {build_count} times during a single refresh. This is likely because one of your widgets' `build` methods is modifying the widget's state"
+                    f"The widget `{widget}` has been rebuilt {build_count} times during a single refresh. This is likely because one of your widgets' `build` methods is modifying the widget's state"
                 )
 
             # Fundamental widgets require no further treatment
@@ -475,29 +471,38 @@ class Session(unicall.Unicall):
             self._root_widget: True,
         }
 
-        killed = set()
-
         for widget in visited_widgets:
-            if not widget._is_in_widget_tree(alive_cache):
-                killed.add(widget)
+            widget._is_in_widget_tree(alive_cache)
 
-        for widget in killed:
-            print(f"Killed widget {widget}")
+        # Serialize
+        alive_set = set(alive_cache.keys())
+        to_serialize = alive_set.copy()
+        seralized_widgets: Set[rx.Widget] = set()
+        delta_states: Dict[int, JsonDoc] = {}
 
-        print(
-            "Survivors",
-            {
-                widget
-                for widget in visited_widgets
-                if widget._is_in_widget_tree(alive_cache)
-            },
-        )
+        while to_serialize:
+            cur: rx.Widget = to_serialize.pop()
 
-        return {
-            widget
-            for widget in visited_widgets
-            if widget._is_in_widget_tree(alive_cache)
-        }
+            # Serialize it. Since this function already has to walk all of the
+            # widget's children, it also returns all of them.
+            cur_children, cur_serialized = self._serialize_and_host_widget(cur)
+
+            # Add the serialized widget to the result
+            seralized_widgets.add(cur)
+            delta_states[cur._id] = cur_serialized
+
+            # Any children of this widget are also definitely alive. If they
+            # haven't been found to be alive yet, do so now.
+            if isinstance(cur, widget_base.FundamentalWidget):
+                new_alives = cur_children - alive_set
+
+                to_serialize.update(new_alives)
+                alive_set.update(new_alives)
+
+                for child in new_alives:
+                    child._weak_builder_ = weakref.ref(cur)
+
+        return seralized_widgets, delta_states
 
     async def _refresh(self) -> None:
         """
@@ -515,7 +520,12 @@ class Session(unicall.Unicall):
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
             # Refresh and get a set of all widgets which have been visited
-            visited_widgets = self._refresh_sync()
+            visited_widgets, delta_states = self._refresh_sync()
+
+            assert len(visited_widgets) == len(delta_states), (
+                visited_widgets,
+                delta_states,
+            )
 
             # Avoid sending empty messages
             if not visited_widgets:
@@ -532,28 +542,32 @@ class Session(unicall.Unicall):
                 await widget._initialize_on_client(self)
                 self._initialized_html_widgets.add(type(widget)._unique_id)
 
-            # Send the new state to the client if necessary
-            delta_states: Dict[int, Any] = {
-                widget._id: self._serialize_and_host_widget(widget)
-                for widget in visited_widgets
-            }
-
             # Check whether the root widget needs replacing
             if self._root_widget in visited_widgets:
                 root_widget_id = self._root_widget._id
             else:
                 root_widget_id = None
 
+            # Send the new state to the client
             await self._update_widget_states(delta_states, root_widget_id)
 
-    def _serialize_and_host_value(self, value: Any, type_: Type) -> Jsonable:
+    def _serialize_and_host_value(
+        self,
+        value: Any,
+        type_: Type,
+        visited: Set[rx.Widget],
+    ) -> Jsonable:
         """
-        Which values are serialized for state depends on the annotated datatypes.
-        There is no point in sending fancy values over to the client which it can't
-        interpret.
+        Which values are serialized for state depends on the annotated
+        datatypes. There is no point in sending fancy values over to the client
+        which it can't interpret.
 
-        This function attempts to serialize the value, or raises a `WontSerialize`
-        exception if this value shouldn't be included in the state.
+        This function attempts to serialize the value, or raises a
+        `WontSerialize` exception if this value shouldn't be included in the
+        state.
+
+        If the result contains any references to widgets, they are added to the
+        `visited` set.
         """
         origin = typing.get_origin(type_)
         args = typing.get_args(type_)
@@ -576,7 +590,14 @@ class Session(unicall.Unicall):
 
         # Sequences of serializable values
         if origin is list:
-            return [self._serialize_and_host_value(v, args[0]) for v in value]
+            return [
+                self._serialize_and_host_value(
+                    v,
+                    args[0],
+                    visited,
+                )
+                for v in value
+            ]
 
         # Self-Serializing
         if isinstance(value, self_serializing.SelfSerializing):
@@ -593,27 +614,35 @@ class Session(unicall.Unicall):
                 return None
 
             type_ = next(type_ for type_ in args if type_ is not type(None))
-            return self._serialize_and_host_value(value, type_)
+            return self._serialize_and_host_value(value, type_, visited)
 
         # Literal
         if origin is Literal:
-            return self._serialize_and_host_value(value, type(value))
+            return self._serialize_and_host_value(value, type(value), visited)
 
         # Widgets
         if introspection.safe_is_subclass(type_, rx.Widget):
+            visited.add(value)
             return value._id
 
         # Invalid type
         raise WontSerialize()
 
-    def _serialize_and_host_widget(self, widget: rx.Widget) -> Jsonable:
+    def _serialize_and_host_widget(
+        self, widget: rx.Widget
+    ) -> Tuple[Set[rx.Widget], JsonDoc]:
         """
         Serializes the widget, non-recursively. Children are serialized just by
         their `_id`.
 
         Non-fundamental widgets must have been built, and their output cached in
         the session.
+
+        The result is a tuple of:
+        - All widgets which were encountered as children of the given `widget`
+        - The serialized widget
         """
+        visited: Set[rx.Widget] = set()
         result: JsonDoc = {
             "_python_type_": type(widget).__name__,
         }
@@ -643,7 +672,9 @@ class Session(unicall.Unicall):
         for name, type_ in inspection.get_attributes_to_serialize(type(widget)).items():
             try:
                 result[name] = self._serialize_and_host_value(
-                    getattr(widget, name), type_
+                    getattr(widget, name),
+                    type_,
+                    visited,
                 )
             except WontSerialize:
                 pass
@@ -660,7 +691,7 @@ class Session(unicall.Unicall):
             result["_type_"] = "Placeholder"
             result["_child_"] = self._lookup_widget_data(widget).build_result._id
 
-        return result
+        return visited, result
 
     def _reconcile_tree(
         self,

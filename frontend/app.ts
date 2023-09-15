@@ -832,6 +832,8 @@ function onOpen() {
         websiteUrl: window.location.href,
         preferredLanguages: navigator.languages,
         userSettings: userSettings,
+        windowWidth: window.innerWidth / pixelsPerEm,
+        windowHeight: window.innerHeight / pixelsPerEm,
     });
 }
 

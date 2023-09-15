@@ -54,6 +54,9 @@ class InitialClientMessage(uniserde.Serde):
     preferred_languages: List[str]
     user_settings: Dict[str, Any]
 
+    window_width: float
+    window_height: float
+
 
 def _build_set_theme_variables_message(thm: rx.Theme):
     """
@@ -584,6 +587,9 @@ class AppServer(fastapi.FastAPI):
         # information about it. Wait for it.
         initial_message_json: Jsonable = await websocket.receive_json()
         initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
+
+        sess.window_width = initial_message.window_width
+        sess.window_height = initial_message.window_height
 
         # Parse the preferred locales
         preferred_locales = []

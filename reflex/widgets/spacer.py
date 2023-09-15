@@ -13,14 +13,16 @@ class Spacer(class_container.ClassContainer):
     def __init__(
         self,
         *,
+        width: Union[Literal["grow"], float] = "grow",
+        height: Union[Literal["grow"], float] = "grow",
         key: Optional[str] = None,
     ):
         super().__init__(
             None,
             ["reflex-spacer"],
             key=key,
-            width="grow",
-            height="grow",
+            width=width,
+            height=height,
         )
 
 
