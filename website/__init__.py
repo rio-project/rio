@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import *  # type: ignore
 
 import reflex as rx
+import reflex.debug
 
 from . import components as comps
 from . import theme, views
@@ -80,8 +81,10 @@ if __name__ == "__main__":
         port=8001,
         external_url_override="http://localhost:8001",
         quiet=False,
+        _validator_factory=reflex.debug.Validator,
     )
 else:
     app = rx_app.as_fastapi(
         external_url_override="http://localhost:8001",
+        _validator_factory=reflex.debug.Validator,
     )

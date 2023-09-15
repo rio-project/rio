@@ -87,12 +87,6 @@ class Grid(widget_base.FundamentalWidget):
         self._children.append(child)
         self._child_positions.append(GridChildPosition(row, column, width, height))
 
-        if self._session_ is not None:
-            self.session._register_dirty_widget(
-                self,
-                include_children_recursively=False,
-            )
-
     def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
         return {
             "_children": [child._id for child in self._children],

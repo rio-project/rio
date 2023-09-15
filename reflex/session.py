@@ -29,6 +29,7 @@ from . import (
     color,
     common,
     errors,
+    global_state,
     inspection,
     self_serializing,
     theme,
@@ -117,7 +118,6 @@ class Session(unicall.Unicall):
 
     def __init__(
         self,
-        root_widget: rx.Widget,
         initial_route: Iterable[str],
         send_message: Callable[[Jsonable], Awaitable[None]],
         receive_message: Callable[[], Awaitable[Jsonable]],
@@ -125,7 +125,6 @@ class Session(unicall.Unicall):
     ):
         super().__init__(send_message=send_message, receive_message=receive_message)
 
-        self._root_widget = root_widget
         self._app_server = app_server_
 
         # The current route. This isn't used by the session itself, but routers
@@ -140,10 +139,11 @@ class Session(unicall.Unicall):
         ] = weakref.WeakKeyDictionary()
 
         # These are injected by the app server after the session has already been created
-        self.external_url: Optional[str] = None  # None if running in a window
+        self._root_widget: rx.Widget
+        self.external_url: Optional[str]  # None if running in a window
         self.preferred_locales: Tuple[
             babel.Locale, ...
-        ] = tuple()  # Always has at least one member
+        ]  # Always has at least one member
 
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
@@ -409,13 +409,6 @@ class Session(unicall.Unicall):
                     f"The widget {widget} has been rebuilt {build_count} times during a single refresh. This is likely because one of your widgets' `build` methods is modifying the widget's state"
                 )
 
-            # Inject the session into the widget
-            #
-            # Widgets need to know the session they are part of, so that any
-            # contained `StateProperty` instances can inform the session that
-            # their widget is dirty, among other things.
-            widget._session_ = self
-
             # Keep track of this widget's existence
             #
             # Widgets must be known by their id, so any messages addressed to
@@ -427,57 +420,14 @@ class Session(unicall.Unicall):
                 continue
 
             # Others need to be built
-            build_result = widget.build()
+            global_state.currently_building_widget = widget
+            global_state.currently_building_session = self
 
-            # Inject the building widget into the state bindings of all
-            # generated widgets.
-            #
-            # Take care to do this before reconciliation, because reconciliation
-            # needs to access state bindings, which is only possible once the
-            # bindings are aware of their widget.
-            widget_vars = vars(widget)
-
-            for child in build_result._iter_direct_and_indirect_children(
-                include_self=True,
-                cross_build_boundaries=True,
-            ):
-                child_vars = vars(child)
-
-                for state_property in child._state_properties_:
-                    value = child_vars[state_property.name]
-
-                    # Create a StateBinding, if requested
-                    if isinstance(value, widget_base.StateProperty):
-                        # In order to create a `StateBinding`, the parent's
-                        # attribute must also be a binding
-
-                        # FIXME: Incorrect for high level containers. State
-                        # bindings are not necessarily bound to the widget's
-                        # builder!
-                        parent_binding = widget_vars[value.name]
-
-                        if not isinstance(parent_binding, widget_base.StateBinding):
-                            parent_binding = widget_base.StateBinding(
-                                owning_widget_weak=weakref.ref(widget),
-                                owning_property=value,
-                                is_root=True,
-                                parent=None,
-                                value=parent_binding,
-                                children=weakref.WeakSet(),
-                            )
-                            widget_vars[value.name] = parent_binding
-
-                        # Create the child binding
-                        child_binding = widget_base.StateBinding(
-                            owning_widget_weak=weakref.ref(child),
-                            owning_property=state_property,
-                            is_root=False,
-                            parent=parent_binding,
-                            value=None,
-                            children=weakref.WeakSet(),
-                        )
-                        parent_binding.children.add(child_binding)
-                        child_vars[state_property.name] = child_binding
+            try:
+                build_result = widget.build()
+            finally:
+                global_state.currently_building_widget = None
+                global_state.currently_building_session = None
 
             # Has this widget been built before?
             try:
@@ -488,12 +438,6 @@ class Session(unicall.Unicall):
                 # Create the widget data and cache it
                 widget_data = WidgetData(build_result, 0)
                 self._weak_widget_data_by_widget[widget] = widget_data
-
-                # Mark all fresh widgets as dirty
-                self._register_dirty_widget(
-                    build_result,
-                    include_children_recursively=True,
-                )
 
             # Yes, rescue state. This will:
             #
@@ -537,6 +481,12 @@ class Session(unicall.Unicall):
         alive_cache: Dict[rx.Widget, bool] = {
             self._root_widget: True,
         }
+
+        killed = set()
+
+        for widget in visited_widgets:
+            if not widget._is_in_widget_tree(alive_cache):
+                killed.add(widget)
 
         return {
             widget
@@ -767,6 +717,12 @@ class Session(unicall.Unicall):
                 reconciled_widgets_new_to_old,
             )
 
+            # Performance optimization: Since the new widget has just been
+            # reconciled into the old one, it cannot possibly still be part of
+            # the widget tree. It is thus safe to remove from the set of dirty
+            # widgets to prevent a pointless rebuild.
+            self._dirty_widgets.discard(new_widget)
+
         # Update the widget data. If the root widget was not reconciled, the new
         # widget is the new build result.
         try:
@@ -810,7 +766,6 @@ class Session(unicall.Unicall):
         remap_widgets(reconciled_build_result)
 
         # Postprocess the tree
-        reconciled_widgets_old = set(reconciled_widgets_new_to_old.values())
         weak_builder = weakref.ref(builder)
 
         for widget in reconciled_build_result._iter_direct_and_indirect_children(
@@ -820,18 +775,6 @@ class Session(unicall.Unicall):
             # Widgets may now have an incorrect builder assigned. Assign the new
             # one.
             widget._weak_builder_ = weak_builder
-
-            # Any new widgets which haven't found a match are new and must be
-            # processed by the session
-            #
-            # Note that new widgets cannot possibly have been reconciled, as
-            # reconciliation replaces new instances with their old counterparts.
-            # Thus, only look up the widgets in a set of old widgets.
-            if widget not in reconciled_widgets_old:
-                self._register_dirty_widget(
-                    widget,
-                    include_children_recursively=False,
-                )
 
     def _reconcile_widget(
         self,
@@ -944,11 +887,6 @@ class Session(unicall.Unicall):
                     old_widget,
                     include_children_recursively=False,
                 )
-
-                # Overriding an attribute can cause the widget to contain
-                # widgets which have never had their builder or state properties
-                # injected. This is handled by the calling function.
-
                 break
 
         # Override the key now. It should never be preserved, but doesn't make

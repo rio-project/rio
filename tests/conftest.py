@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 from typing import AsyncGenerator, Container, List, Set
 
+import babel
 import pytest
 from uniserde import Jsonable, JsonDoc
 
@@ -27,12 +28,14 @@ class _MockApp:
             validator_factory=None,
         )
         self._session = rx.Session(
-            root_widget=root_widget,
             initial_route=[],
             send_message=self._send_message,  # type: ignore
             receive_message=self._receive_message,
             app_server_=self._app_server,
         )
+        self._session._root_widget = root_widget
+        self._session.external_url = None
+        self.preferred_locales = (babel.Locale.parse("en_US"),)
 
         self._session._register_dirty_widget(
             root_widget,

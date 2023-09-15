@@ -21,7 +21,16 @@ from uniserde import Jsonable
 
 import reflex as rx
 
-from . import app, assets, common, debug, inspection, session, user_settings_module
+from . import (
+    app,
+    assets,
+    common,
+    debug,
+    global_state,
+    inspection,
+    session,
+    user_settings_module,
+)
 
 try:
     import plotly  # type: ignore
@@ -551,17 +560,25 @@ class AppServer(fastapi.FastAPI):
 
         # Create a session instance to hold all of this state in an organized
         # fashion
-        root_widget = self.app.build()
-        assert isinstance(
-            root_widget, rx.Widget
-        ), f"The `build` function passed to the App must return a `Widget` instance, not {root_widget!r}."
         sess = session.Session(
-            root_widget,
             [],  # TODO: Determine the initial route
             send_message,
             receive_message,
             self,
         )
+
+        # Build the root widget
+        global_state.currently_building_widget = None
+        global_state.currently_building_session = sess
+
+        try:
+            sess._root_widget = self.app.build()
+        finally:
+            global_state.currently_building_session = None
+
+        assert isinstance(
+            sess._root_widget, rx.Widget
+        ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
 
         # Upon connecting, the client sends an initial message containing
         # information about it. Wait for it.
@@ -674,16 +691,12 @@ class AppServer(fastapi.FastAPI):
         await common.call_event_handler(self.on_session_start, sess)
 
         try:
-            # Trigger an initial build. This will also send the initial state to
-            # the frontend.
+            # Trigger an refresh. This will also send the initial state to the
+            # frontend.
             #
             # This is done in a task, because the server is not yet running, so
             # the method would never receive a response, and thus would hang
             # indefinitely.
-            sess._register_dirty_widget(
-                root_widget,
-                include_children_recursively=True,
-            )
             asyncio.create_task(sess._refresh())
 
             # Serve the socket

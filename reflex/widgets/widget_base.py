@@ -17,7 +17,7 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import app_server, common, inspection
+from .. import app_server, common, global_state, inspection
 
 __all__ = ["Widget"]
 
@@ -175,34 +175,25 @@ class StateProperty:
                 f"Cannot assign to readonly property {cls_name}.{self.name}"
             )
 
-        # If this property is part of a state binding delegate to the binding
-        # instead
+        # Look up the stored value
         instance_vars = vars(instance)
         try:
             local_value = instance_vars[self.name]
-
-        # No value was assigned yet, i.e. this function was called by the
-        # widget's `__init__`. If this is a plain value assign it. Even if it is
-        # a `StateProperty` the binding will be created by the `Session`, so
-        # just keep track of the value in that case as well.
         except KeyError:
-            assert instance._session_ is None
-            instance_vars[self.name] = value
-            return
+            pass
+        else:
+            # If a value is already stored, that means this is a re-assignment.
+            # Which further means it's an assignment outside of `__init__`.
+            # Which is not a valid place to create a state binding.
+            if isinstance(value, StateProperty):
+                raise RuntimeError(
+                    "State bindings can only be created when calling the widget constructor"
+                )
 
-        # A value has already been assigned. This is mutation of an existing
-        # widget
-
-        # State bindings may only be created when the widget is constructed
-        if isinstance(value, StateProperty):
-            raise RuntimeError(
-                "State bindings can only be created when the widget is constructed"
-            )
-
-        # Delegate to the binding if it exists
-        if isinstance(local_value, StateBinding):
-            local_value.set_value(value)
-            return
+            # Delegate to the binding if it exists
+            if isinstance(local_value, StateBinding):
+                local_value.set_value(value)
+                return
 
         # Otherwise set the value directly and mark the widget as dirty
         instance_vars[self.name] = value
@@ -316,14 +307,26 @@ class Widget(ABC):
         self._explicitly_set_properties_.update(bound_args.arguments)
 
     @staticmethod
-    def _post_init(
+    def _init_wrapper(
         original_init,
         self: "Widget",
         *args,
         **kwargs,
     ):
+        # Fetch the session this widget is part of
+        if global_state.currently_building_session is None:
+            raise RuntimeError("Widgets can only be created inside of `build` methods.")
+
+        self._session_ = global_state.currently_building_session
+        self._session_._register_dirty_widget(
+            self,
+            include_children_recursively=False,
+        )
+
+        # Chain up to the original `__init__`
         original_init(self, *args, **kwargs)
 
+        # Initialize the margins
         def elvis(*args):
             for arg in args:
                 if arg is not None:
@@ -335,6 +338,62 @@ class Widget(ABC):
         self.margin_top = elvis(self.margin_top, self.margin_y, self.margin, 0)
         self.margin_right = elvis(self.margin_right, self.margin_x, self.margin, 0)
         self.margin_bottom = elvis(self.margin_bottom, self.margin_y, self.margin, 0)
+
+        # Initialize any state bindings
+        self._create_state_bindings()
+
+    def _create_state_bindings(self) -> None:
+        creator = global_state.currently_building_widget
+
+        # The creator can be `None` if this widget was created by the app's
+        # `build` function. It's not possible to create a state binding in that
+        # case.
+        if creator is None:
+            return
+
+        creator_vars = vars(creator)
+        self_vars = vars(self)
+
+        for state_property in self._state_properties_:
+            # The dataclass constructor doesn't actually assign default values
+            # as instance attributes. In that case we get a KeyError here. But
+            # default values can't be state bindings, so just skip this
+            # attribute
+            try:
+                value = self_vars[state_property.name]
+            except KeyError:
+                continue
+
+            # Create a StateBinding, if requested
+            if not isinstance(value, StateProperty):
+                continue
+
+            # In order to create a `StateBinding`, the creator's
+            # attribute must also be a binding
+            parent_binding = creator_vars[value.name]
+
+            if not isinstance(parent_binding, StateBinding):
+                parent_binding = StateBinding(
+                    owning_widget_weak=weakref.ref(creator),
+                    owning_property=value,
+                    is_root=True,
+                    parent=None,
+                    value=parent_binding,
+                    children=weakref.WeakSet(),
+                )
+                creator_vars[value.name] = parent_binding
+
+            # Create the child binding
+            child_binding = StateBinding(
+                owning_widget_weak=weakref.ref(self),
+                owning_property=state_property,
+                is_root=False,
+                parent=parent_binding,
+                value=None,
+                children=weakref.WeakSet(),
+            )
+            parent_binding.children.add(child_binding)
+            self_vars[state_property.name] = child_binding
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -358,7 +417,7 @@ class Widget(ABC):
         # calls our initialization code.
         if not has_custom_init:
             introspection.wrap_method(
-                cls._post_init,
+                cls._init_wrapper,
                 cls,
                 "__init__",
             )
@@ -620,6 +679,11 @@ class Widget(ABC):
 # `Widget.__init_subclass__`. However, since `Widget` isn't a subclass of
 # itself this needs to be done manually.
 Widget._initialize_state_properties(set())
+introspection.wrap_method(
+    Widget._init_wrapper,
+    Widget,
+    "__init__",
+)
 
 
 class FundamentalWidget(Widget):
