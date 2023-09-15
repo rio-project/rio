@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from dataclasses import KW_ONLY
-import reflex as rx
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
 from uniserde import JsonDoc
+
+import reflex as rx
 
 from . import widget_base
 

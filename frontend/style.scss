@@ -24,10 +24,14 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
 // Theme Switcheroos
 .reflex-switcheroo-primary {
+    // surface := primary
+    //
+    // -> All others follow.
+
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-accent-color);
+    --reflex-local-accent-color: var(--reflex-global-secondary-color);
     --reflex-local-accent-color-variant: var(
-        --reflex-global-accent-color-variant
+        --reflex-global-secondary-color-variant
     );
 
     // Surface
@@ -37,13 +41,21 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-accent-color);
+    --reflex-local-heading-color: var(--reflex-global-heading-on-primary-color);
+    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-secondary-color
+    );
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-accent {
+.reflex-switcheroo-secondary {
+    // surface := secondary
+    //
+    // -> All others follow.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-primary-color);
     --reflex-local-accent-color-variant: var(
@@ -51,19 +63,29 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Surface
-    --reflex-local-surface-color: var(--reflex-global-accent-color);
+    --reflex-local-surface-color: var(--reflex-global-secondary-color);
     --reflex-local-surface-color-variant: var(
-        --reflex-global-accent-color-variant
+        --reflex-global-secondary-color-variant
     );
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
+    --reflex-local-heading-color: var(
+        --reflex-global-heading-on-secondary-color
+    );
+    --reflex-local-text-color: var(--reflex-global-text-on-secondary-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-primary-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-success {
+    // accent := success
+    //
+    // Surface remains unchanged.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-success-color);
     --reflex-local-accent-color-variant: var(
@@ -71,13 +93,21 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-success-color);
+    // --reflex-local-heading-color: var(--reflex-global-text-on-success-color);
+    // --reflex-local-text-color: var(--reflex-global-text-on-success-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-success-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-warning {
+    // accent := warning
+    //
+    // Surface remains unchanged.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-warning-color);
     --reflex-local-accent-color-variant: var(
@@ -85,13 +115,21 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
+    // --reflex-local-heading-color: var(--reflex-global-text-on-warning-color);
+    // --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-warning-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-danger {
+    // accent := danger
+    //
+    // Surface remains unchanged.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-danger-color);
     --reflex-local-accent-color-variant: var(
@@ -99,18 +137,28 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
+    // --reflex-local-heading-color: var(--reflex-global-text-on-danger-color);
+    // --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
+    --reflex-local-text-on-accent-color: var(
+        --reflex-global-text-on-danger-color
+    );
 
     // Material Design Web
     // TODO
 }
 
 .reflex-switcheroo-text {
+    // text := accent
+    //
+    // Useful to change the color of widgets which use the text color, to the
+    // current accent color. E.g. Allows to display text or icons as danger.
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-local-text-color);
     --reflex-local-accent-color-variant: var(--reflex-local-text-color);
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-local-text-color);
     --reflex-local-text-color: var(--reflex-local-text-color);
 
     // Material Design Web
@@ -118,10 +166,15 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .reflex-switcheroo-default {
+    // surface := surface
+    // accent := primary
+    //
+    // This is simply the default arrangement.
+
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-accent-color);
+    --reflex-local-accent-color: var(--reflex-global-secondary-color);
     --reflex-local-accent-color-variant: var(
-        --reflex-global-accent-color-variant
+        --reflex-global-secondary-color-variant
     );
 
     // Surface
@@ -131,11 +184,12 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     );
 
     // Text styles
+    --reflex-local-heading-color: var(--reflex-global-heading-on-surface-color);
     --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
 
     // Material Design Web
-    --mdc-theme-primary: var(--reflex-global-accent-color);
-    --mdc-theme-secondary: var(--reflex-global-accent-color-variant);
+    --mdc-theme-primary: var(--reflex-global-secondary-color);
+    --mdc-theme-secondary: var(--reflex-global-secondary-color-variant);
     --mdc-theme-surface: var(--reflex-global-surface-color);
     --mdc-theme-background: var(--reflex-global-background-color);
 
@@ -145,6 +199,8 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .reflex-switcheroo-disabled {
+    // accent := disabled
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-disabled-color);
     --reflex-local-accent-color-variant: var(
@@ -159,6 +215,8 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .reflex-switcheroo-custom {
+    // accent := custom (read from CSS variables)
+
     // Theme colors
     --reflex-local-accent-color: var(--reflex-local-custom-color);
     --reflex-local-accent-color-variant: var(
@@ -186,12 +244,20 @@ html {
     background: var(--reflex-global-background-color);
 }
 
+a {
+    color: var(--reflex-local-accent-color);
+}
+
 body {
     width: 100vw;
     height: 100vh;
     margin: 0;
     padding: 0;
     font-family: Roboto, sans-serif;
+}
+
+code {
+    font-family: 'Roboto Mono', monospace;
 }
 
 .reflex-widget {
@@ -274,6 +340,11 @@ body {
     justify-content: center;
 
     color: var(--reflex-local-text-color);
+}
+
+// Text Input
+.reflex-text-input {
+    pointer-events: auto;
 }
 
 // Rectangle
@@ -493,6 +564,7 @@ body {
 .reflex-buttonstyle-major {
     background: var(--reflex-local-accent-color);
     font-weight: bold;
+    --reflex-local-text-color: var(--reflex-local-text-on-accent-color);
 }
 
 .reflex-buttonstyle-major:hover:not(.reflex-switcheroo-disabled) {
@@ -507,7 +579,7 @@ body {
 
 .reflex-buttonstyle-minor:hover:not(.reflex-switcheroo-disabled) {
     background: var(--reflex-local-accent-color);
-    --reflex-local-text-color: var(--reflex-local-text-color);
+    --reflex-local-text-color: var(--reflex-local-text-on-accent-color);
     cursor: pointer;
 }
 
@@ -670,6 +742,11 @@ body {
     z-index: $z-index-sticky;
 }
 
+// Sticky
+.reflex-spacer {
+    pointer-events: none;
+}
+
 // MediaPlayer
 .reflex-media-player {
     pointer-events: auto;
@@ -690,5 +767,139 @@ body {
         position: absolute;
         width: 100%;
         height: 100%;
+    }
+}
+
+// Markdown
+.reflex-markdown-view {
+    pointer-events: auto;
+    width: 100%;
+    height: 100%;
+
+    --reflex-padding: calc(0.5rem + var(--reflex-global-corner-radius));
+}
+
+.reflex-markdown-view {
+    ul {
+        margin: 0;
+        padding-left: 1em;
+        list-style-type: none;
+    }
+
+    ul > li {
+        margin-bottom: 0.4em;
+    }
+
+    ul > li:before {
+        content: '- ';
+        font-weight: bold;
+    }
+
+    p > code {
+        font-family: 'Roboto Mono', monospace;
+        background: var(--reflex-local-surface-color-variant);
+        border-radius: var(--reflex-global-corner-radius);
+        padding: 0.1em 0.3em;
+    }
+}
+
+.reflex-markdown-code-block {
+    background: var(--reflex-local-surface-color-variant);
+    border-radius: var(--reflex-global-corner-radius);
+}
+
+.reflex-markdown-code-block-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: var(--reflex-local-text-color);
+}
+
+.reflex-markdown-code-block-header > * {
+    padding: var(--reflex-padding);
+}
+
+.reflex-markdown-code-block-language {
+    font-family: Roboto, sans-serif;
+    font-size: 0.8rem;
+    font-weight: bold;
+    opacity: 0.4;
+}
+
+.reflex-markdown-code-block-copy-button {
+    min-width: 6rem;
+    min-height: 2.3rem;
+    cursor: pointer;
+    font-family: Roboto, sans-serif;
+    font-size: 0.8rem;
+    border: none;
+    background: none;
+    border-radius: var(--reflex-global-corner-radius);
+    margin: 0;
+    color: var(--reflex-local-text-color);
+    font-weight: bold;
+    opacity: 0.4;
+
+    transition:
+        color 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
+}
+
+.reflex-markdown-code-block-copy-button:hover {
+    color: var(--reflex-local-accent-color);
+    opacity: 1;
+}
+
+.reflex-markdown-code-block > code {
+    font-size: 1rem;
+    display: block;
+    padding: 0 var(--reflex-padding) var(--reflex-padding) var(--reflex-padding);
+}
+
+.reflex-markdown-view {
+    h1 {
+        font-family: var(--reflex-global-heading1-font-name);
+        color: var(--reflex-local-heading-color);
+        font-size: var(--reflex-global-heading1-font-size);
+        font-style: var(--reflex-global-heading1-italic);
+        font-weight: var(--reflex-global-heading1-font-weight);
+        text-decoration: var(--reflex-global-heading1-underlined);
+        text-transform: var(--reflex-global-heading1-all-caps);
+
+        margin-top: 2em;
+    }
+
+    h2 {
+        font-family: var(--reflex-global-heading2-font-name);
+        color: var(--reflex-local-heading-color);
+        font-size: var(--reflex-global-heading2-font-size);
+        font-style: var(--reflex-global-heading2-italic);
+        font-weight: var(--reflex-global-heading2-font-weight);
+        text-decoration: var(--reflex-global-heading2-underlined);
+        text-transform: var(--reflex-global-heading2-all-caps);
+
+        margin-top: 1.5em;
+    }
+
+    h3 {
+        font-family: var(--reflex-global-heading3-font-name);
+        color: var(--reflex-local-heading-color);
+        font-size: var(--reflex-global-heading3-font-size);
+        font-style: var(--reflex-global-heading3-italic);
+        font-weight: var(--reflex-global-heading3-font-weight);
+        text-decoration: var(--reflex-global-heading3-underlined);
+        text-transform: var(--reflex-global-heading3-all-caps);
+
+        margin-top: 1em;
+    }
+
+    p {
+        font-family: var(--reflex-global-text-font-name);
+        color: var(--reflex-local-text-color);
+        font-size: var(--reflex-global-text-font-size);
+        font-style: var(--reflex-global-text-italic);
+        font-weight: var(--reflex-global-text-font-weight);
+        text-decoration: var(--reflex-global-text-underlined);
+        text-transform: var(--reflex-global-text-all-caps);
     }
 }

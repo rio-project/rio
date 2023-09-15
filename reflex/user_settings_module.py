@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 import uniserde
 from typing_extensions import dataclass_transform
 
-from . import session, inspection
+from . import inspection, session
 
 __all__ = [
     "UserSettings",

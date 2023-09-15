@@ -35,7 +35,8 @@ class _MockApp:
         )
 
         self._session._register_dirty_widget(
-            root_widget, include_fundamental_children_recursively=True
+            root_widget,
+            include_children_recursively=True,
         )
 
     async def _send_message(self, message: JsonDoc) -> None:

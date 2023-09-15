@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import collections.abc
-from typing import Optional, Literal, Union
+from typing import Literal, Optional, Union
 
 import reflex as rx
 

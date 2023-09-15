@@ -5,8 +5,8 @@ from typing import Literal
 
 import reflex as rx
 
-from . import widget_base
 from ..common import ImageLike
+from . import widget_base
 
 __all__ = ["Image"]
 

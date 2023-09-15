@@ -6,8 +6,8 @@ from typing import *  # type: ignore
 
 import reflex as rx
 
-from . import button, notification_bar, number_input, switch, text, widget_base
 from .. import inspection
+from . import button, notification_bar, number_input, switch, text, widget_base
 
 __all__ = ["AutoForm"]
 
@@ -155,7 +155,9 @@ class AutoForm(widget_base.Widget):
             )
 
         # One row per field
-        for field_name, field_type in inspection.get_type_annotations(type(self)).items():
+        for field_name, field_type in inspection.get_type_annotations(
+            type(self)
+        ).items():
             rows.append(
                 rx.Row(
                     text.Text(

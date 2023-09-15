@@ -7,7 +7,6 @@ from .custom_button import *
 from .dropdown import *
 from .grid import *
 from .icon import *
-from .size_trip_switch import *
 from .image import *
 from .key_event_listener import *
 from .markdown_view import *
@@ -22,8 +21,10 @@ from .rectangle import *
 from .revealer import *
 from .router import *
 from .row import *
+from .size_trip_switch import *
 from .slider import *
 from .slideshow import *
+from .spacer import *
 from .stack import *
 from .sticky import *
 from .switch import *

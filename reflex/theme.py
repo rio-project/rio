@@ -29,11 +29,11 @@ class Theme:
 
     # The main theme colors
     primary_color: rx.Color
-    accent_color: rx.Color
+    secondary_color: rx.Color
     disabled_color: rx.Color
 
     primary_color_variant: rx.Color
-    accent_color_variant: rx.Color
+    secondary_color_variant: rx.Color
     disabled_color_variant: rx.Color
 
     # Surface colors are often used for backgrounds. Most widgets are placed on
@@ -59,26 +59,25 @@ class Theme:
     shadow_color: rx.Color
 
     # Text styles
+    heading1_style: rx.TextStyle
+    heading2_style: rx.TextStyle
+    heading2_style: rx.TextStyle
+    text_style: rx.TextStyle
+
+    heading_on_primary_color: rx.Color
+    text_on_primary_color: rx.Color
+
+    heading_on_secondary_color: rx.Color
+    text_on_secondary_color: rx.Color
+
     text_color_on_light: rx.Color
     text_color_on_dark: rx.Color
-
-    heading_on_primary_style: rx.TextStyle
-    subheading_on_primary_style: rx.TextStyle
-    text_on_primary_style: rx.TextStyle
-
-    heading_on_accent_style: rx.TextStyle
-    subheading_on_accent_style: rx.TextStyle
-    text_on_accent_style: rx.TextStyle
-
-    heading_on_surface_style: rx.TextStyle
-    subheading_on_surface_style: rx.TextStyle
-    text_on_surface_style: rx.TextStyle
 
     def __init__(
         self,
         *,
         primary_color: Optional[rx.Color] = None,
-        accent_color: Optional[rx.Color] = None,
+        secondary_color: Optional[rx.Color] = None,
         success_color: Optional[rx.Color] = None,
         warning_color: Optional[rx.Color] = None,
         danger_color: Optional[rx.Color] = None,
@@ -91,31 +90,31 @@ class Theme:
             # Consider "ee3f59"
             primary_color = rx.Color.from_hex("c202ee")
 
-        if accent_color is None:
-            accent_color = rx.Color.from_hex("329afc")
+        if secondary_color is None:
+            secondary_color = rx.Color.from_hex("329afc")
 
         # Main theme colors
         self.primary_color = primary_color
-        self.accent_color = accent_color
+        self.secondary_color = secondary_color
         self.disabled_color = rx.Color.from_grey(0.6 if light else 0.3)
 
         # Create variants for them
         self.primary_color_variant = _make_variant_color(primary_color)
-        self.accent_color_variant = _make_variant_color(accent_color)
+        self.secondary_color_variant = _make_variant_color(secondary_color)
         self.disabled_color_variant = _make_variant_color(self.disabled_color)
 
         # Determine the background colors based on whether the theme is light or
         # dark
         if light:
             self.background_color = rx.Color.from_grey(1.0)
-            self.surface_color = rx.Color.from_grey(0.98).blend(primary_color, 0.02)
+            self.surface_color = rx.Color.from_grey(0.98).blend(primary_color, 0.03)
             self.surface_color_variant = self.surface_color.darker(0.02)
-            self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
+            self.surface_active_color = self.surface_color.blend(primary_color, 0.06)
         else:
             self.background_color = rx.Color.from_grey(0.12)
-            self.surface_color = rx.Color.from_grey(0.19).blend(primary_color, 0.02)
+            self.surface_color = rx.Color.from_grey(0.19).blend(primary_color, 0.03)
             self.surface_color_variant = self.surface_color.darker(0.06)
-            self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
+            self.surface_active_color = self.surface_color.blend(primary_color, 0.06)
 
         # Semantic colors
         if success_color is None:
@@ -145,49 +144,28 @@ class Theme:
         self.shadow_radius = 1
 
         # Text styles
+
+        # These are filled out first, so the remaining colors may access them
+        # via `self._text_color_for`.
         self.text_color_on_light = rx.Color.from_grey(0.1)
         self.text_color_on_dark = rx.Color.from_grey(0.9)
 
-        # Prepare values which are referenced later
-        heading_style = rx.TextStyle(
-            font_color=rx.Color.MAGENTA,  # Placeholder, replaced later
-            font_size=2.0,
+        self.heading1_style = rx.TextStyle(
+            font_size=3.0,
+            font_color=self.primary_color,
         )
-        subheading_style = heading_style.replace(font_size=1.5)
-        text_style = heading_style.replace(font_size=1.25)
-
-        font_color_on_primary = self.text_color_for(self.primary_color)
-        font_color_on_accent = self.text_color_for(self.accent_color)
-        font_color_on_surface = self.text_color_for(self.surface_color)
-
-        # Fill in the text styles
-        self.heading_on_primary_style = heading_style.replace(
-            font_color=font_color_on_primary
-        )
-        self.subheading_on_primary_style = subheading_style.replace(
-            font_color=font_color_on_primary
-        )
-        self.text_on_primary_style = text_style.replace(
-            font_color=font_color_on_primary
+        self.heading2_style = self.heading1_style.replace(font_size=2.0)
+        self.heading3_style = self.heading1_style.replace(font_size=1.5)
+        self.text_style = self.heading1_style.replace(
+            font_size=1,
+            font_color=self.text_color_for(self.surface_color),
         )
 
-        self.heading_on_accent_style = heading_style.replace(
-            font_color=font_color_on_accent
-        )
-        self.subheading_on_accent_style = subheading_style.replace(
-            font_color=font_color_on_accent
-        )
-        self.text_on_accent_style = text_style.replace(font_color=font_color_on_accent)
+        self.heading_on_primary_color = self.secondary_color
+        self.text_on_primary_color = self.secondary_color
 
-        self.heading_on_surface_style = heading_style.replace(
-            font_color=font_color_on_surface
-        )
-        self.subheading_on_surface_style = subheading_style.replace(
-            font_color=font_color_on_surface
-        )
-        self.text_on_surface_style = text_style.replace(
-            font_color=font_color_on_surface
-        )
+        self.heading_on_secondary_color = self.primary_color
+        self.text_on_secondary_color = self.primary_color
 
     def text_color_for(self, color: rx.Color) -> rx.Color:
         """

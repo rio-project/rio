@@ -90,7 +90,7 @@ class Grid(widget_base.FundamentalWidget):
         if self._session_ is not None:
             self.session._register_dirty_widget(
                 self,
-                include_fundamental_children_recursively=False,
+                include_children_recursively=False,
             )
 
     def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:

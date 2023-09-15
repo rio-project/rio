@@ -12,6 +12,7 @@ import traceback
 import typing
 import weakref
 from dataclasses import dataclass
+from pathlib import Path
 from typing import *  # type: ignore
 
 import babel
@@ -49,11 +50,6 @@ class WidgetData:
     # widgets to determine whether they are still part of their parent's current
     # build output.
     build_generation: int
-
-    # The ids of all widgets contained in this build output. This does not
-    # include the children of non-fundamental widgets, since they have their own
-    # build output.
-    contained_widget_ids: Set[int]
 
 
 class WontSerialize(Exception):
@@ -317,9 +313,7 @@ class Session(unicall.Unicall):
 
         # Dirty all routers to force a rebuild
         for router in self._routers:
-            self._register_dirty_widget(
-                router, include_fundamental_children_recursively=True
-            )
+            self._register_dirty_widget(router, include_children_recursively=True)
 
         asyncio.create_task(self._refresh())
 
@@ -353,21 +347,21 @@ class Session(unicall.Unicall):
         self,
         widget: rx.Widget,
         *,
-        include_fundamental_children_recursively: bool,
+        include_children_recursively: bool,
     ) -> None:
         """
         Add the widget to the set of dirty widgets. The widget is only held
         weakly by the session.
 
         If `include_fundamental_children_recursively` is true, all children of
-        the widget that are fundamental widgets are also added.
+        the widget are also added.
 
         The children of non-fundamental widgets are not added, since they will
         be added after the parent is built anyway.
         """
         self._dirty_widgets.add(widget)
 
-        if not include_fundamental_children_recursively or not isinstance(
+        if not include_children_recursively or not isinstance(
             widget, widget_base.FundamentalWidget
         ):
             return
@@ -375,7 +369,7 @@ class Session(unicall.Unicall):
         for child in widget._iter_direct_children():
             self._register_dirty_widget(
                 child,
-                include_fundamental_children_recursively=True,
+                include_children_recursively=True,
             )
 
     def _refresh_sync(self) -> Set[rx.Widget]:
@@ -492,12 +486,13 @@ class Session(unicall.Unicall):
             # No, this is the first time
             except KeyError:
                 # Create the widget data and cache it
-                widget_data = WidgetData(build_result, 0, set())
+                widget_data = WidgetData(build_result, 0)
                 self._weak_widget_data_by_widget[widget] = widget_data
 
                 # Mark all fresh widgets as dirty
                 self._register_dirty_widget(
-                    build_result, include_fundamental_children_recursively=True
+                    build_result,
+                    include_children_recursively=True,
                 )
 
             # Yes, rescue state. This will:
@@ -543,30 +538,11 @@ class Session(unicall.Unicall):
             self._root_widget: True,
         }
 
-        def is_alive(widget: rx.Widget) -> bool:
-            # Already cached?
-            try:
-                return alive_cache[widget]
-            except KeyError:
-                pass
-
-            # Parent has been garbage collected?
-            parent = widget._weak_builder_()
-            if parent is None:
-                result = False
-
-            else:
-                parent_data = self._lookup_widget_data(parent)
-                result = (
-                    parent_data.build_generation == widget._build_generation_
-                    and is_alive(parent)
-                )
-
-            # Cache and return
-            alive_cache[widget] = result
-            return result
-
-        return {widget for widget in visited_widgets if is_alive(widget)}
+        return {
+            widget
+            for widget in visited_widgets
+            if widget._is_in_widget_tree(alive_cache)
+        }
 
     async def _refresh(self) -> None:
         """
@@ -803,7 +779,11 @@ class Session(unicall.Unicall):
         def remap_widgets(parent: rx.Widget) -> None:
             parent_vars = vars(parent)
 
-            for attr_name, attr_value in parent_vars.items():
+            for attr_name in inspection.get_child_widget_containing_attribute_names(
+                type(parent)
+            ):
+                attr_value = parent_vars[attr_name]
+
                 # Just a widget
                 if isinstance(attr_value, rx.Widget):
                     try:
@@ -815,15 +795,16 @@ class Session(unicall.Unicall):
 
                     remap_widgets(attr_value)
 
-                # List
+                # List / Collection
                 elif isinstance(attr_value, list):
                     for ii, item in enumerate(attr_value):
                         if isinstance(item, rx.Widget):
                             try:
-                                attr_value[ii] = reconciled_widgets_new_to_old[item]
+                                item = reconciled_widgets_new_to_old[item]
                             except KeyError:
                                 pass
 
+                            attr_value[ii] = item
                             remap_widgets(item)
 
         remap_widgets(reconciled_build_result)
@@ -831,7 +812,6 @@ class Session(unicall.Unicall):
         # Postprocess the tree
         reconciled_widgets_old = set(reconciled_widgets_new_to_old.values())
         weak_builder = weakref.ref(builder)
-        builder_vars = vars(builder)
 
         for widget in reconciled_build_result._iter_direct_and_indirect_children(
             include_self=True,
@@ -849,7 +829,8 @@ class Session(unicall.Unicall):
             # Thus, only look up the widgets in a set of old widgets.
             if widget not in reconciled_widgets_old:
                 self._register_dirty_widget(
-                    widget, include_fundamental_children_recursively=False
+                    widget,
+                    include_children_recursively=False,
                 )
 
     def _reconcile_widget(
@@ -928,8 +909,14 @@ class Session(unicall.Unicall):
             if isinstance(new, rx.Widget):
                 return old is new or old is reconciled_widgets_new_to_old.get(new, None)
 
-            if isinstance(new, list):
-                if not isinstance(old, list):
+            # Strings are collections, but comparing them item by item is slow
+            # and doesn't work, because each item is itself a collection,
+            # leading to infinite recursion
+            if isinstance(new, str):
+                return old == new
+
+            if isinstance(new, collections.abc.Collection):
+                if not isinstance(old, collections.abc.Collection):
                     return False
 
                 if len(old) != len(new):
@@ -955,7 +942,7 @@ class Session(unicall.Unicall):
             if not values_equal(old_value, new_value):
                 self._register_dirty_widget(
                     old_widget,
-                    include_fundamental_children_recursively=False,
+                    include_children_recursively=False,
                 )
 
                 # Overriding an attribute can cause the widget to contain
@@ -1160,22 +1147,32 @@ class Session(unicall.Unicall):
     async def save_file(
         self,
         file_name: str,
-        file_contents: Union[str, bytes],
+        file_contents: Union[Path, str, bytes],
         *,
         media_type: Optional[str] = None,
     ) -> None:
-        # Convert the file contents to bytes
-        if isinstance(file_contents, str):
-            file_contents = file_contents.encode("utf-8")
+        # Create an asset for the file
+        if isinstance(file_contents, Path):
+            as_asset = assets.PathAsset(file_contents, media_type)
 
-            if media_type is None:
-                media_type = "text/plain"
+        elif isinstance(file_contents, str):
+            as_asset = assets.BytesAsset(
+                file_contents.encode("utf-8"),
+                "text/plain" if media_type is None else media_type,
+            )
 
-        elif media_type is None:
-            media_type = "application/octet-stream"
+        elif isinstance(file_contents, bytes):
+            as_asset = assets.BytesAsset(
+                file_contents,
+                "application/octet-stream" if media_type is None else media_type,
+            )
 
-        # Host the file as asset
-        as_asset = assets.BytesAsset(file_contents, media_type)
+        else:
+            raise ValueError(
+                f"The file contents must be a Path, str or bytes, not {file_contents!r}"
+            )
+
+        # Host the asset
         self._app_server.weakly_host_asset(as_asset)
 
         # Tell the frontend to download the file

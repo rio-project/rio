@@ -1,9 +1,11 @@
+import json
 from pathlib import Path
 from typing import *  # type: ignore
 
 import plotly.express as px
 
 import reflex as rx
+import reflex.debug
 
 theme = rx.Theme()
 
@@ -76,15 +78,12 @@ class Sidebar(rx.Widget):
             child=rx.Column(
                 rx.Text(
                     "Reflex UI",
-                    style=rx.TextStyle(
-                        font_color=theme.primary_color,
-                        font_size=3.0,
-                    ),
+                    style="heading1",
                     margin_top=1.0,
                 ),
                 rx.Text(
                     "The reactive UI library for Python",
-                    style=rx.TextStyle(font_color=theme.primary_color),
+                    style="heading2",
                     margin_top=0.6,
                 ),
                 rx.Grid(
@@ -176,8 +175,8 @@ class Sidebar(rx.Widget):
                     "Spam",
                     shape="circle",
                     color=rx.Color.CYAN,
-                    width=20,
-                    height=20,
+                    width=3,
+                    height=3,
                     align_x=0.5,
                 ),
                 rx.ProgressBar(0.4),
@@ -211,18 +210,22 @@ class Sidebar(rx.Widget):
                         ripple=True,
                         width=7,
                         height=7,
+                        align_x=0,
+                        align_y=0,
                     ),
                     rx.Rectangle(
                         style=rx.BoxStyle(fill=rx.Color.YELLOW),
                         ripple=True,
                         width=5,
                         height=10,
+                        align_x=0,
                     ),
                     rx.Rectangle(
                         style=rx.BoxStyle(fill=rx.Color.GREEN),
                         ripple=True,
                         width=10,
                         height=5,
+                        align_y=0,
                     ),
                 ),
                 spacing=1.0,
@@ -265,10 +268,10 @@ class WidgetShowcase(rx.Widget):
         )
 
 
-def validator_factory(sess: rx.Session) -> rx.validator.Validator:  # type: ignore
-    return rx.validator.Validator(  # type: ignore
+def validator_factory(sess: rx.Session) -> reflex.debug.Validator:
+    return reflex.debug.Validator(
         sess,
-        # dump_directory_path=boe_reflex.common.GENERATED_DIR,
+        dump_directory_path=reflex.common.GENERATED_DIR,
     )
 
 

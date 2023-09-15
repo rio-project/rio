@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-
 import reflex as rx
 
 from . import components as comps

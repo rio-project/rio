@@ -28,7 +28,7 @@ export function applyColorSet(element: HTMLElement, color: ColorSet): void {
     // Remove all switcheroos
     element.classList.remove(
         'reflex-switcheroo-primary',
-        'reflex-switcheroo-accent',
+        'reflex-switcheroo-secondary',
         'reflex-switcheroo-success',
         'reflex-switcheroo-warning',
         'reflex-switcheroo-danger',

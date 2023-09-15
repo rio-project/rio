@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
+from typing import *  # type: ignore
 
 import reflex as rx
 
@@ -15,6 +16,7 @@ __all__ = [
 class Card(widget_base.Widget):
     child: rx.Widget
     _: KW_ONLY
+    corner_radius: Optional[float] = None
     hover_height: float = 1.0
     _is_hovered: bool = False
 
@@ -44,7 +46,9 @@ class Card(widget_base.Widget):
                 ),
                 style=rx.BoxStyle(
                     fill=thm.surface_color,
-                    corner_radius=thm.corner_radius,
+                    corner_radius=thm.corner_radius
+                    if self.corner_radius is None
+                    else self.corner_radius,
                     shadow_color=thm.shadow_color.replace(opacity=shadow_opacity),
                     shadow_radius=thm.shadow_radius * hover_height,
                 ),

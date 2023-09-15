@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
-from typing import Union, Iterable, Tuple, Literal
+from typing import Iterable, Literal, Tuple, Union
 
 from uniserde import Jsonable
 
@@ -96,8 +96,8 @@ class ImageFill(Fill):
             return NotImplemented
 
         return (
-            self._image_asset == other._image_asset and
-            self._fill_mode == other._fill_mode
+            self._image_asset == other._image_asset
+            and self._fill_mode == other._fill_mode
         )
 
     def __hash__(self) -> int:

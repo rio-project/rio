@@ -27,7 +27,7 @@ JAVASCRIPT_SOURCE_TEMPLATE = """
 
 if (%(js_class_name)s !== undefined) {
     window.widgetClasses['%(cls_unique_id)s'] = %(js_class_name)s;
-    window.CHILD_ATTRIBUTE_NAMES['%(cls_unique_id)s'] = %(child_attribute_names)s;
+    window.childAttributeNames['%(cls_unique_id)s'] = %(child_attribute_names)s;
 }
 """
 
@@ -113,7 +113,7 @@ class StateBinding:
             if owning_widget is not None and owning_widget._session_ is not None:
                 owning_widget._session_._register_dirty_widget(
                     owning_widget,
-                    include_fundamental_children_recursively=False,
+                    include_children_recursively=False,
                 )
 
             to_do.extend(cur.children)
@@ -210,7 +210,7 @@ class StateProperty:
         if instance._session_ is not None:
             instance._session_._register_dirty_widget(
                 instance,
-                include_fundamental_children_recursively=False,
+                include_children_recursively=False,
             )
 
     def __repr__(self) -> str:
@@ -468,6 +468,11 @@ class Widget(ABC):
             except AttributeError:
                 continue
 
+            # Skip strings. They're technically iterable, but comparing them
+            # element by element is slow and pointless
+            if isinstance(value, str):
+                continue
+
             if isinstance(value, Widget):
                 yield value
 
@@ -500,6 +505,54 @@ class Widget(ABC):
 
     async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
+
+    def _is_in_widget_tree(self, cache: Dict[rx.Widget, bool]) -> bool:
+        """
+        Returns whether this widget is directly or connected to the widget tree
+        of a session.
+
+        This operation is fast, but has to walk up the widget tree to make sure
+        the widget's parent is also connected. Thus, when checking multiple
+        widgets it can easily happen that the same widgets are checked over and
+        over, resulting on O(n log n) runtime. To avoid this, pass a cache
+        dictionary to this function, which will be used to memoize the result.
+
+        Be careful not to reuse the cache if the widget hierarchy might have
+        changed (e.g. after an async yield).
+        """
+
+        # Already cached?
+        try:
+            return cache[self]
+        except KeyError:
+            pass
+
+        # Root widget?
+        if self is self.session._root_widget:
+            result = True
+
+        # No session, can't be connected
+        elif self._session_ is None:
+            result = False
+
+        # Has the builder has been garbage collected?
+        else:
+            builder = self._weak_builder_()
+            if builder is None:
+                result = False
+
+            # Has the builder created new build output, and this widget isn't part
+            # of it anymore?
+            else:
+                parent_data = self.session._lookup_widget_data(builder)
+                result = (
+                    parent_data.build_generation == self._build_generation_
+                    and builder._is_in_widget_tree(cache)
+                )
+
+        # Cache the result and return
+        cache[self] = result
+        return result
 
     @typing.overload
     async def _call_event_handler(
@@ -545,7 +598,7 @@ class Widget(ABC):
     async def force_refresh(self) -> None:
         self.session._register_dirty_widget(
             self,
-            include_fundamental_children_recursively=False,
+            include_children_recursively=False,
         )
 
         await self.session._refresh()

@@ -381,7 +381,7 @@ Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)
 ColorSet: TypeAlias = Union[
     Literal[
         "primary",
-        "accent",
+        "secondary",
         "success",
         "warning",
         "danger",

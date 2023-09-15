@@ -1,6 +1,7 @@
 import hashlib
 import inspect
 import os
+import re
 import secrets
 import traceback
 from dataclasses import dataclass
@@ -38,6 +39,9 @@ Readonly = Annotated[T, _READONLY]
 
 
 ImageLike = Union[Path, Image, URL, bytes]
+
+MARKDOWN_ESCAPE = re.compile(r"([\\`\*_\{\}\[\]\(\)#\+\-.!])")
+MAKRDOWN_CODE_ESCAPE = re.compile(r"([\\`])")
 
 
 def secure_string_hash(*values: str, hash_length: int = 32) -> str:
@@ -175,3 +179,21 @@ def join_routes(base: Iterable[str], new: str) -> Tuple[str, ...]:
             stack.append(segment)
 
     return tuple(stack)
+
+
+def escape_markdown(text: str) -> str:
+    """
+    Given any text, this function returns a string which, when rendered as
+    markdown, will display the same text.
+    """
+    # TODO: Find a proper function for this. The current one is a total hack.
+    return re.sub(MARKDOWN_ESCAPE, r"\\\1", text)
+
+
+def escape_markdown_code(text: str) -> str:
+    """
+    Given any text, this function returns a string which, when rendered inside a
+    markdown code block, will display the same text.
+    """
+    # TODO: Find a proper function for this. The current one is a total hack.
+    return re.sub(MAKRDOWN_CODE_ESCAPE, r"\\\1", text)

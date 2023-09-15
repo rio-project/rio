@@ -13,7 +13,7 @@ __pycache__
 /dist
 
 # Generated files
-/generated/*
+/reflex/generated/*
 
 # Pytest
 /.pytest_cache

@@ -1,5 +1,6 @@
 import { AlignWidget } from './align';
 import { ButtonWidget } from './button';
+import { ClassContainerWidget } from './classContainer';
 import { Color, Fill } from './models';
 import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
@@ -7,6 +8,7 @@ import { GridWidget } from './grid';
 import { IconWidget } from './Icon';
 import { KeyEventListenerWidget } from './keyEventListener';
 import { MarginWidget } from './margin';
+import { MarkdownViewWidget } from './markdownView';
 import { MediaPlayerWidget } from './mediaPlayer';
 import { MouseEventListenerWidget } from './mouseEventListener';
 import { PlaceholderWidget } from './placeholder';
@@ -19,7 +21,6 @@ import { SizeTripSwitchWidget } from './sizeTripSwitch';
 import { SliderWidget } from './Slider';
 import { SlideshowWidget } from './slideshow';
 import { StackWidget } from './stack';
-import { StickyWidget } from './sticky';
 import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
@@ -31,8 +32,10 @@ const sessionToken = '{session_token}';
 const pingPongIntervalSeconds: number = '{ping_pong_interval}';
 
 // @ts-ignore
-const CHILD_ATTRIBUTE_NAMES: { [id: string]: string[] } =
+const childAttributeNames: { [id: string]: string[] } =
     '{child_attribute_names}';
+
+globalThis.childAttributeNames = childAttributeNames;
 
 // @ts-ignore
 const INITIAL_MESSAGES: Array<object> = '{initial_messages}';
@@ -154,12 +157,14 @@ export function getParentWidgetElementExcludingInjected(
 const widgetClasses = {
     'Align-builtin': AlignWidget,
     'Button-builtin': ButtonWidget,
+    'ClassContainer-builtin': ClassContainerWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Grid-builtin': GridWidget,
     'Icon-builtin': IconWidget,
     'KeyEventListener-builtin': KeyEventListenerWidget,
     'Margin-builtin': MarginWidget,
+    'MarkdownView-builtin': MarkdownViewWidget,
     'MediaPlayer-builtin': MediaPlayerWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
     'Plot-builtin': PlotWidget,
@@ -172,7 +177,6 @@ const widgetClasses = {
     'Slider-builtin': SliderWidget,
     'Slideshow-builtin': SlideshowWidget,
     'Stack-builtin': StackWidget,
-    'Sticky-builtin': StickyWidget,
     'Switch-builtin': SwitchWidget,
     'Text-builtin': TextWidget,
     'TextInput-builtin': TextInputWidget,
@@ -259,7 +263,10 @@ async function processMessage(message: any) {
         };
 
         if (responseIsError) {
-            rpcResponse['error'] = response;
+            rpcResponse['error'] = {
+                code: -32000,
+                message: response,
+            };
         } else {
             rpcResponse['result'] = response;
         }
@@ -348,7 +355,7 @@ function replaceChildrenWithLayoutWidgets(
     message: { [id: string]: WidgetState }
 ): void {
     let propertyNamesWithChildren =
-        CHILD_ATTRIBUTE_NAMES[deltaState['_type_']!] || [];
+        childAttributeNames[deltaState['_type_']!] || [];
 
     function cleanId(id: string): string {
         return id.split('-')[0];

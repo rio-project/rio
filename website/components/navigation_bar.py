@@ -41,9 +41,6 @@ class NavigationBar(rx.Widget):
             bar_width = "grow"
             bar_align_x = None
 
-        # bar_align_x = None
-        print(bar_width, bar_align_x)
-
         return rx.SizeTripSwitch(
             rx.Rectangle(
                 child=rx.Row(
@@ -65,6 +62,7 @@ class NavigationBar(rx.Widget):
                         ),
                         spacing=0.7,
                     ),
+                    rx.Spacer(),
                     rx.Row(
                         NavigationButton(
                             "Home",
@@ -78,7 +76,7 @@ class NavigationBar(rx.Widget):
                         ),
                         NavigationButton(
                             "Docs",
-                            "docs",
+                            "documentation",
                             self.active_route,
                         ),
                         NavigationButton(
@@ -93,10 +91,7 @@ class NavigationBar(rx.Widget):
                         ),
                         spacing=4.0,
                         margin_right=4.0,
-                        align_x=1.0,
-                        width="grow",
                     ),
-                    width="grow",
                 ),
                 style=rx.BoxStyle(
                     fill=surface_color,
