@@ -75,8 +75,8 @@ class Sticky(widget_base.Widget):
                     margin_top=self._passthrough_margin_top,
                     margin_right=self._passthrough_margin_right,
                     margin_bottom=self._passthrough_margin_bottom,
-                    width=self._passthrough_width,
-                    height=self._passthrough_height,
+                    width=self._passthrough_width,  # type: ignore
+                    height=self._passthrough_height,  # type: ignore
                     align_x=self._passthrough_align_x,
                     align_y=self._passthrough_align_y,
                     child=rx.Container(

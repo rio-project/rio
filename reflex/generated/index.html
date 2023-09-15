@@ -1477,17 +1477,6 @@ class DropdownWidget extends WidgetBase {
     }
   }
 }
-class StickyWidget extends WidgetBase {
-  createElement() {
-    let element = document.createElement("div");
-    element.classList.add("reflex-sticky");
-    element.classList.add("reflex-single-container");
-    return element;
-  }
-  updateElement(element, deltaState) {
-    replaceOnlyChild(element, deltaState.child);
-  }
-}
 class GridWidget extends WidgetBase {
   createElement() {
     let element = document.createElement("div");
@@ -3085,6 +3074,46 @@ class RevealerWidget extends WidgetBase {
     }
   }
 }
+function watchWidget(widget, callback) {
+  let resizeObserver;
+  const handleResize = (entries) => {
+    for (const entry of entries) {
+      const { width, height } = entry.contentRect;
+      callback(width, height);
+    }
+  };
+  resizeObserver = new ResizeObserver(handleResize);
+  resizeObserver.observe(widget);
+  const checkWidgetInDOM = () => {
+    if (widget.isConnected) {
+      setTimeout(checkWidgetInDOM, 3e4);
+    }
+    resizeObserver.disconnect();
+  };
+  setTimeout(checkWidgetInDOM, 3e4);
+}
+class SizeTripSwitchWidget extends WidgetBase {
+  createElement() {
+    let element = document.createElement("div");
+    element.classList.add("reflex-single-container");
+    watchWidget(element, this.processSize.bind(this));
+    return element;
+  }
+  updateElement(element, deltaState) {
+    replaceOnlyChild(element, deltaState.child);
+    this.processSize(element.clientWidth, element.clientHeight);
+  }
+  processSize(width, height) {
+    const is_wide = this.state.width_threshold !== null && width / pixelsPerEm > this.state.width_threshold;
+    const is_tall = this.state.height_threshold !== null && height / pixelsPerEm > this.state.height_threshold;
+    if (is_wide !== this.state.is_wide || is_tall !== this.state.is_tall) {
+      this.setStateAndNotifyBackend({
+        is_wide,
+        is_tall
+      });
+    }
+  }
+}
 /**
  * @license
  * Copyright 2020 Google Inc.
@@ -4494,7 +4523,7 @@ class SlideshowWidget extends WidgetBase {
         if (ii == this.currentChildIndex) {
           child.style.transform = "translateX(0%)";
         } else {
-          child.style.transform = "translateX(100%)";
+          child.style.transform = "translateX(-100%)";
         }
         ++ii;
       }
@@ -4519,8 +4548,8 @@ class SlideshowWidget extends WidgetBase {
         1
       );
       let offset = easeInOut(this.switchProgress);
-      this.outgoingChild.style.transform = `translateX(${100 * offset}%)`;
-      this.incomingChild.style.transform = `translateX(${100 * (offset - 1)}%)`;
+      this.outgoingChild.style.transform = `translateX(${-100 * offset}%)`;
+      this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)}%)`;
       this.progressBarOpacity = Math.max(
         this.progressBarOpacity - passedTime / progressBarFadeDuration,
         0
@@ -4583,6 +4612,17 @@ class StackWidget extends WidgetBase {
       child.replaceLayoutCssProperties({ zIndex: `${zIndex}` });
       zIndex += 1;
     }
+  }
+}
+class StickyWidget extends WidgetBase {
+  createElement() {
+    let element = document.createElement("div");
+    element.classList.add("reflex-sticky");
+    element.classList.add("reflex-single-container");
+    return element;
+  }
+  updateElement(element, deltaState) {
+    replaceOnlyChild(element, deltaState.child);
   }
 }
 class SwitchWidget extends WidgetBase {
@@ -7144,6 +7184,7 @@ const widgetClasses = {
   "Rectangle-builtin": RectangleWidget,
   "Revealer-builtin": RevealerWidget,
   "Row-builtin": RowWidget,
+  "SizeTripSwitch-builtin": SizeTripSwitchWidget,
   "Slider-builtin": SliderWidget,
   "Slideshow-builtin": SlideshowWidget,
   "Stack-builtin": StackWidget,
@@ -7611,8 +7652,9 @@ function displayConnectionLostPopup() {
 `;
   document.body.appendChild(popup);
   setTimeout(() => {
+    let popupCard = popup.firstElementChild;
     popup.style.opacity = "1";
-    popup.firstElementChild.style.transform = "translate(-50%, 0)";
+    popupCard.style.transform = "translate(-50%, 0)";
   }, 100);
 }
 main();
@@ -10863,19 +10905,20 @@ body {
   align-items: stretch;
 }
 
-@keyframes moveRight {
-  0% {
+@keyframes barber-pole {
+  from {
     background-position: 0 0;
   }
-  100% {
-    background-position: 1.4142135624em 0;
+  to {
+    background-position: 2rem 0rem;
   }
 }
 .reflex-undefined-space {
   pointer-events: auto;
   flex-grow: 1;
-  background-image: repeating-linear-gradient(-45deg, black 0, black 0.5em, var(--reflex-global-warning-color) 0.5em, var(--reflex-global-warning-color) 1em);
-  animation: moveRight 0.7s linear infinite;
+  background-image: linear-gradient(-45deg, black 25%, var(--reflex-global-warning-color) 25%, var(--reflex-global-warning-color) 50%, black 50%, black 75%, var(--reflex-global-warning-color) 75%, var(--reflex-global-warning-color));
+  background-size: 2rem 2rem;
+  animation: barber-pole 0.7s linear infinite;
 }
 
 .reflex-grid {

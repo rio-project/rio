@@ -233,13 +233,12 @@ body {
 }
 
 // Undefined Space Highlight
-@keyframes moveRight {
-    0% {
+@keyframes barber-pole {
+    from {
         background-position: 0 0;
     }
-
-    100% {
-        background-position: 1.4142135623730951em 0;
+    to {
+        background-position: 2rem 0rem;
     }
 }
 
@@ -247,14 +246,18 @@ body {
     pointer-events: auto;
     flex-grow: 1;
 
-    background-image: repeating-linear-gradient(
+    background-image: linear-gradient(
         -45deg,
-        black 0,
-        black 0.5em,
-        var(--reflex-global-warning-color) 0.5em,
-        var(--reflex-global-warning-color) 1em
+        black 25%,
+        var(--reflex-global-warning-color) 25%,
+        var(--reflex-global-warning-color) 50%,
+        black 50%,
+        black 75%,
+        var(--reflex-global-warning-color) 75%,
+        var(--reflex-global-warning-color),
     );
-    animation: moveRight 0.7s linear infinite;
+    background-size: 2rem 2rem;
+    animation: barber-pole 0.7s linear infinite;
 }
 
 // Grid

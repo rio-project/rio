@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import babel
 import collections
 import collections.abc
 import enum
@@ -15,6 +14,7 @@ import weakref
 from dataclasses import dataclass
 from typing import *  # type: ignore
 
+import babel
 import introspection
 import unicall
 import uniserde
@@ -179,7 +179,9 @@ class Session(unicall.Unicall):
         # HTML widgets have source code which must be evaluated by the client
         # exactly once. Keep track of which widgets have already sent their
         # source code.
-        self._initialized_html_widgets: Set[Type[widget_base.FundamentalWidget]] = set()
+        self._initialized_html_widgets: Set[str] = set(
+            inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()
+        )
 
         # This lock is used to order state updates that are sent to the client.
         # Without it a message which was generated later might be sent to the
@@ -192,10 +194,9 @@ class Session(unicall.Unicall):
         # Note: These are initialized by the AppServer.
         self.attachments = SessionAttachments(self)
 
-        # This object allows easy access to the app's assets. PathAssets
-        # implement the / operator, so the user can instantiate a PathAsset
-        # simply by writing `session.assets / "my_asset.png"`.
-        self.assets = assets.PathAsset(self._app_server.app.assets_dir)
+        # This allows easy access to the app's assets. Users can simply write
+        # `widget.session.assets / "my_asset.png"`.
+        self.assets = self._app_server.app.assets_dir
 
     @property
     def running_in_window(self) -> bool:
@@ -564,7 +565,7 @@ class Session(unicall.Unicall):
             # Cache and return
             alive_cache[widget] = result
             return result
-        
+
         return {widget for widget in visited_widgets if is_alive(widget)}
 
     async def _refresh(self) -> None:
@@ -593,12 +594,12 @@ class Session(unicall.Unicall):
             for widget in visited_widgets:
                 if (
                     not isinstance(widget, widget_base.FundamentalWidget)
-                    or type(widget) in self._initialized_html_widgets
+                    or type(widget)._unique_id in self._initialized_html_widgets
                 ):
                     continue
 
                 await widget._initialize_on_client(self)
-                self._initialized_html_widgets.add(type(widget))
+                self._initialized_html_widgets.add(type(widget)._unique_id)
 
             # Send the new state to the client if necessary
             delta_states: Dict[int, Any] = {
@@ -1028,13 +1029,15 @@ class Session(unicall.Unicall):
 
                 if isinstance(attr, collections.abc.Iterable):
                     return [item for item in attr if isinstance(item, rx.Widget)]
-                
+
                 return []
 
             # Iterate over the children, but make sure to preserve the topology.
             # Can't just use `iter_direct_children` here, since that would
             # discard topological information.
-            for attr_name in inspection.get_child_widget_containing_attribute_names(type(new_widget)):
+            for attr_name in inspection.get_child_widget_containing_attribute_names(
+                type(new_widget)
+            ):
                 old_value = getattr(old_widget, attr_name, None)
                 new_value = getattr(new_widget, attr_name, None)
 

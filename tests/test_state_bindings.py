@@ -15,35 +15,35 @@ class Grandparent(rx.Widget):
         return Parent(Grandparent.text)
 
 
-async def test_binding_assignment_on_child(MockApp):
+async def test_binding_assignment_on_child(create_mockapp):
     root_widget = Parent()
-    app = await MockApp(root_widget)
-    text_widget: rx.Text = app.get_build_output(root_widget)
+    async with create_mockapp(root_widget) as app:
+        text_widget: rx.Text = app.get_build_output(root_widget)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    text_widget.text = "Hello"
+        text_widget.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, text_widget}
-    assert root_widget.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, text_widget}
+        assert root_widget.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_parent(MockApp):
+async def test_binding_assignment_on_parent(create_mockapp):
     root_widget = Parent()
-    app = await MockApp(root_widget)
-    text_widget: rx.Text = app.get_build_output(root_widget)
+    async with create_mockapp(root_widget) as app:
+        text_widget: rx.Text = app.get_build_output(root_widget)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    root_widget.text = "Hello"
+        root_widget.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, text_widget}
-    assert root_widget.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, text_widget}
+        assert root_widget.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_sibling(MockApp):
+async def test_binding_assignment_on_sibling(create_mockapp):
     class Root(rx.Widget):
         text: str = ""
 
@@ -54,86 +54,86 @@ async def test_binding_assignment_on_sibling(MockApp):
             )
 
     root_widget = Root()
-    app = await MockApp(root_widget)
-    text1, text2 = app.get_build_output(root_widget).children
+    async with create_mockapp(root_widget) as app:
+        text1, text2 = app.get_build_output(root_widget).children
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    text1.text = "Hello"
+        text1.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, text1, text2}
-    assert root_widget.text == "Hello"
-    assert text1.text == "Hello"
-    assert text2.text == "Hello"
+        assert app.dirty_widgets == {root_widget, text1, text2}
+        assert root_widget.text == "Hello"
+        assert text1.text == "Hello"
+        assert text2.text == "Hello"
 
 
-async def test_binding_assignment_on_grandchild(MockApp):
+async def test_binding_assignment_on_grandchild(create_mockapp):
     root_widget = Grandparent()
-    app = await MockApp(root_widget)
-    parent: Parent = app.get_build_output(root_widget)
-    text_widget: rx.Text = app.get_build_output(parent)
+    async with create_mockapp(root_widget) as app:
+        parent: Parent = app.get_build_output(root_widget)
+        text_widget: rx.Text = app.get_build_output(parent)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    text_widget.text = "Hello"
+        text_widget.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, parent, text_widget}
-    assert root_widget.text == "Hello"
-    assert parent.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, parent, text_widget}
+        assert root_widget.text == "Hello"
+        assert parent.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_middle(MockApp):
+async def test_binding_assignment_on_middle(create_mockapp):
     root_widget = Grandparent()
-    app = await MockApp(root_widget)
-    parent: Parent = app.get_build_output(root_widget)
-    text_widget: rx.Text = app.get_build_output(parent)
+    async with create_mockapp(root_widget) as app:
+        parent: Parent = app.get_build_output(root_widget)
+        text_widget: rx.Text = app.get_build_output(parent)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    parent.text = "Hello"
+        parent.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, parent, text_widget}
-    assert root_widget.text == "Hello"
-    assert parent.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, parent, text_widget}
+        assert root_widget.text == "Hello"
+        assert parent.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_child_after_reconciliation(MockApp):
+async def test_binding_assignment_on_child_after_reconciliation(create_mockapp):
     root_widget = Parent()
-    app = await MockApp(root_widget)
-    text_widget: rx.Text = app.get_build_output(root_widget)
+    async with create_mockapp(root_widget) as app:
+        text_widget: rx.Text = app.get_build_output(root_widget)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    # Rebuild the root widget, which reconciles the child
-    await root_widget.force_refresh()
+        # Rebuild the root widget, which reconciles the child
+        await root_widget.force_refresh()
 
-    text_widget.text = "Hello"
+        text_widget.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, text_widget}
-    assert root_widget.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, text_widget}
+        assert root_widget.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_parent_after_reconciliation(MockApp):
+async def test_binding_assignment_on_parent_after_reconciliation(create_mockapp):
     root_widget = Parent()
-    app = await MockApp(root_widget)
-    text_widget: rx.Text = app.get_build_output(root_widget)
+    async with create_mockapp(root_widget) as app:
+        text_widget: rx.Text = app.get_build_output(root_widget)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    # Rebuild the root widget, which reconciles the child
-    await root_widget.force_refresh()
+        # Rebuild the root widget, which reconciles the child
+        await root_widget.force_refresh()
 
-    root_widget.text = "Hello"
+        root_widget.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, text_widget}
-    assert root_widget.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, text_widget}
+        assert root_widget.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_sibling_after_reconciliation(MockApp):
+async def test_binding_assignment_on_sibling_after_reconciliation(create_mockapp):
     class Root(rx.Widget):
         text: str = ""
 
@@ -144,55 +144,55 @@ async def test_binding_assignment_on_sibling_after_reconciliation(MockApp):
             )
 
     root_widget = Root()
-    app = await MockApp(root_widget)
-    text1, text2 = app.get_build_output(root_widget).children
+    async with create_mockapp(root_widget) as app:
+        text1, text2 = app.get_build_output(root_widget).children
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    # Rebuild the root widget, which reconciles the children
-    await root_widget.force_refresh()
+        # Rebuild the root widget, which reconciles the children
+        await root_widget.force_refresh()
 
-    text1.text = "Hello"
+        text1.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, text1, text2}
-    assert root_widget.text == "Hello"
-    assert text1.text == "Hello"
-    assert text2.text == "Hello"
+        assert app.dirty_widgets == {root_widget, text1, text2}
+        assert root_widget.text == "Hello"
+        assert text1.text == "Hello"
+        assert text2.text == "Hello"
 
 
-async def test_binding_assignment_on_grandchild_after_reconciliation(MockApp):
+async def test_binding_assignment_on_grandchild_after_reconciliation(create_mockapp):
     root_widget = Grandparent()
-    app = await MockApp(root_widget)
-    parent: Parent = app.get_build_output(root_widget)
-    text_widget: rx.Text = app.get_build_output(parent)
+    async with create_mockapp(root_widget) as app:
+        parent: Parent = app.get_build_output(root_widget)
+        text_widget: rx.Text = app.get_build_output(parent)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    # Rebuild the root widget, which reconciles the child
-    await root_widget.force_refresh()
+        # Rebuild the root widget, which reconciles the child
+        await root_widget.force_refresh()
 
-    text_widget.text = "Hello"
+        text_widget.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, parent, text_widget}
-    assert root_widget.text == "Hello"
-    assert parent.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, parent, text_widget}
+        assert root_widget.text == "Hello"
+        assert parent.text == "Hello"
+        assert text_widget.text == "Hello"
 
 
-async def test_binding_assignment_on_middle_after_reconciliation(MockApp):
+async def test_binding_assignment_on_middle_after_reconciliation(create_mockapp):
     root_widget = Grandparent()
-    app = await MockApp(root_widget)
-    parent: Parent = app.get_build_output(root_widget)
-    text_widget: rx.Text = app.get_build_output(parent)
+    async with create_mockapp(root_widget) as app:
+        parent: Parent = app.get_build_output(root_widget)
+        text_widget: rx.Text = app.get_build_output(parent)
 
-    assert not app.dirty_widgets
+        assert not app.dirty_widgets
 
-    # Rebuild the root widget, which reconciles the child
-    await root_widget.force_refresh()
+        # Rebuild the root widget, which reconciles the child
+        await root_widget.force_refresh()
 
-    parent.text = "Hello"
+        parent.text = "Hello"
 
-    assert app.dirty_widgets == {root_widget, parent, text_widget}
-    assert root_widget.text == "Hello"
-    assert parent.text == "Hello"
-    assert text_widget.text == "Hello"
+        assert app.dirty_widgets == {root_widget, parent, text_widget}
+        assert root_widget.text == "Hello"
+        assert parent.text == "Hello"
+        assert text_widget.text == "Hello"

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import socket
 import sys
 import threading
 import webbrowser
@@ -49,14 +50,14 @@ class App:
 
         if name is None:
             name = _get_default_app_name(main_file)
-            
+
         self.name = name
         self.build = build
         self._icon = None if icon is None else assets.Asset.from_image(icon)
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)
-        self.assets_dir = main_file.parent / (assets_dir or '')
+        self.assets_dir = main_file.parent / (assets_dir or "")
 
         if isinstance(ping_pong_interval, timedelta):
             self.ping_pong_interval = ping_pong_interval
@@ -175,7 +176,7 @@ class App:
 
         # TODO: How to choose a free port?
         host = "localhost"
-        port = 8000
+        port = _choose_free_port(host)
         url = f"http://{host}:{port}"
 
         # This lock is released once the server is running
@@ -237,19 +238,22 @@ def _get_main_file() -> Path:
         return Path(__main__.__file__)
     except AttributeError:
         pass
-    
+
     # Find out if we're being executed by uvicorn
     main_file = Path(sys.argv[0])
-    if main_file.name != '__main__.py' or main_file.parent != Path(uvicorn.__file__).parent:
+    if (
+        main_file.name != "__main__.py"
+        or main_file.parent != Path(uvicorn.__file__).parent
+    ):
         return main_file
-    
+
     # Find out from which module uvicorn imported the app
     try:
-        app_location = next(arg for arg in sys.argv[1:] if ':' in arg)
+        app_location = next(arg for arg in sys.argv[1:] if ":" in arg)
     except StopIteration:
         return main_file
-    
-    module_name, _, _ = app_location.partition(':')
+
+    module_name, _, _ = app_location.partition(":")
     module = sys.modules[module_name]
 
     if module.__file__ is None:
@@ -260,7 +264,13 @@ def _get_main_file() -> Path:
 
 def _get_default_app_name(main_file: Path) -> str:
     name = main_file.stem
-    if name in ('main', '__main__', '__init__'):
+    if name in ("main", "__main__", "__init__"):
         name = main_file.absolute().parent.stem
-    
+
     return name.replace("_", " ").title()
+
+
+def _choose_free_port(host: str) -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind((host, 0))
+        return sock.getsockname()[1]

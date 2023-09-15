@@ -16,6 +16,7 @@ from typing_extensions import dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
+
 from .. import app_server, common, inspection
 
 __all__ = ["Widget"]
@@ -328,7 +329,7 @@ class Widget(ABC):
                 if arg is not None:
                     return arg
 
-            assert False
+            assert False  # pragma: no cover
 
         self.margin_left = elvis(self.margin_left, self.margin_x, self.margin, 0)
         self.margin_top = elvis(self.margin_top, self.margin_y, self.margin, 0)

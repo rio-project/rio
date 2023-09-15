@@ -7,13 +7,13 @@ import os
 import secrets
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple, Union
 
 import aiohttp
 from PIL.Image import Image
 
 from . import app_server
-from .common import Url, ImageLike
+from .common import URL, ImageLike
 from .self_serializing import SelfSerializing
 
 # Random bytes added during hashing to make any internal values extremely
@@ -47,30 +47,31 @@ class Asset(SelfSerializing):
     asset will automatically register itself with the AppServer (if necessary)
     and serialize itself as a URL.
     """
+
     def __init__(
         self,
         media_type: Optional[str] = None,
     ):
         # The MIME type of the asset
         self.media_type = media_type
-    
+
     @classmethod
     def new(
         cls,
-        data: Union[bytes, Path, Url],
+        data: Union[bytes, Path, URL],
         media_type: Optional[str] = None,
     ) -> Asset:
         if isinstance(data, Path):
             return PathAsset(data, media_type)
-        
-        if isinstance(data, Url):
+
+        if isinstance(data, URL):
             return UrlAsset(data, media_type)
-        
+
         if isinstance(data, bytes):
             return BytesAsset(data, media_type)
-        
+
         raise TypeError(f"Invalid asset data type: {type(data)}")
-    
+
     @classmethod
     def from_image(
         cls,
@@ -82,9 +83,9 @@ class Asset(SelfSerializing):
             image.save(file, format="PNG")
             image = file.getvalue()
             media_type = "image/png"
-        
+
         return cls.new(image, media_type)
-    
+
     @abc.abstractmethod
     async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
         """
@@ -99,7 +100,7 @@ class Asset(SelfSerializing):
 
         if self.media_type != other.media_type:
             return False
-        
+
         if type(self) != type(other):
             return False
 
@@ -114,10 +115,11 @@ class HostedAsset(Asset):
     """
     Base class for assets that are hosted locally.
     """
+
     def _serialize(self, server: app_server.AppServer) -> str:
         server.weakly_host_asset(self)
         return self.url()
-    
+
     @property
     def secret_id(self) -> str:
         # The asset's id both uniquely identifies the asset, and is used as part
@@ -151,7 +153,7 @@ class HostedAsset(Asset):
                 "/"
             ), "server_external_url must not end with a slash"
             return server_external_url + relative_url
-    
+
     @abc.abstractmethod
     def _get_secret_id(self) -> str:
         raise NotImplementedError
@@ -166,22 +168,23 @@ class BytesAsset(HostedAsset):
         super().__init__(media_type)
 
         self.data = data
-    
+
     def _eq(self, other: BytesAsset) -> bool:
         return self.data == other.data
 
     async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
         return self.data, self.media_type
-    
+
     def _get_secret_id(self) -> str:
         # TODO: Consider only hashing part of the data + media type + size
         # rather than processing everything
-        return 'b-' + _securely_hash_bytes_changes_between_runs(self.data).hex()
+        return "b-" + _securely_hash_bytes_changes_between_runs(self.data).hex()
 
 
 @lru_cache
 def path_exists(path: Path) -> bool:
     return path.exists()
+
 
 @lru_cache
 def path_is_file(path: Path) -> bool:
@@ -198,7 +201,7 @@ class PathAsset(HostedAsset):
 
         self.path = Path(path)
         assert path_exists(self.path), f"Asset file {self.path} does not exist"
-    
+
     def _eq(self, other: PathAsset) -> bool:
         return self.path == other.path
 
@@ -207,33 +210,33 @@ class PathAsset(HostedAsset):
             return self.path.read_bytes(), self.media_type
         except IOError:
             raise ValueError(f"Could not load asset from {self.path}")
-    
+
     def _get_secret_id(self) -> str:
-        return 'f-' + _securely_hash_bytes_changes_between_runs(
-            str(self.path).encode("utf-8")
-        ).hex()
-    
-    def __truediv__(self, other: str) -> PathAsset:
-        return PathAsset(self.path / other)
+        return (
+            "f-"
+            + _securely_hash_bytes_changes_between_runs(
+                str(self.path).encode("utf-8")
+            ).hex()
+        )
 
 
 class UrlAsset(Asset):
     def __init__(
         self,
-        url: Url,
+        url: URL,
         media_type: Optional[str] = None,
     ):
         super().__init__(media_type)
 
         self._url = url
-    
+
     def _serialize(self, server: app_server.AppServer) -> str:
-        return self._url
-    
+        return str(self._url)
+
     def _eq(self, other: UrlAsset) -> bool:
         return self.url == other.url
-    
-    def url(self, server_external_url: Optional[str] = None) -> str:
+
+    def url(self, server_external_url: Optional[str] = None) -> URL:
         return self._url
 
     async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:

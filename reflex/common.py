@@ -9,6 +9,7 @@ from typing import *  # type: ignore
 
 from PIL.Image import Image
 from typing_extensions import Annotated
+from yarl import URL
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
@@ -36,8 +37,7 @@ T = TypeVar("T")
 Readonly = Annotated[T, _READONLY]
 
 
-Url = str
-ImageLike = Union[Path, Image, Url, bytes]
+ImageLike = Union[Path, Image, URL, bytes]
 
 
 def secure_string_hash(*values: str, hash_length: int = 32) -> str:
