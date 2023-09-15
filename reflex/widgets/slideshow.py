@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import collections.abc
 from dataclasses import KW_ONLY
 from datetime import timedelta
-from typing import Literal, Optional, Union
+from typing import *  # type: ignore
 
 import reflex as rx
 
@@ -15,7 +14,7 @@ __all__ = [
 
 
 class Slideshow(widget_base.FundamentalWidget):
-    children: collections.abc.Collection[rx.Widget]
+    children: List[rx.Widget]
     _: KW_ONLY
     linger_time: float
 

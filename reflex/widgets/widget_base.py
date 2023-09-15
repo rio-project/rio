@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import collections.abc
 import dataclasses
 import inspect
 import json
@@ -229,6 +228,8 @@ class Widget(ABC):
     align_x: Optional[float] = None
     align_y: Optional[float] = None
 
+    _id: int = dataclasses.field(init=False)
+
     # Weak reference to the widget whose `build` method returned this widget.
     #
     # TODO: What exactly does this mean? Is the builder the widget in which
@@ -313,6 +314,9 @@ class Widget(ABC):
         *args,
         **kwargs,
     ):
+        # Create a unique ID for this widget
+        self._id = _make_unique_id()
+
         # Fetch the session this widget is part of
         if global_state.currently_building_session is None:
             raise RuntimeError("Widgets can only be created inside of `build` methods.")
@@ -322,6 +326,12 @@ class Widget(ABC):
             self,
             include_children_recursively=False,
         )
+
+        # Keep track of this widget's existence
+        #
+        # Widgets must be known by their id, so any messages addressed to
+        # them can be passed on correctly.
+        self._session_._weak_widgets_by_id[self._id] = self
 
         # Chain up to the original `__init__`
         original_init(self, *args, **kwargs)
@@ -444,7 +454,7 @@ class Widget(ABC):
         """
         cls._state_properties_ = parent_state_properties.copy()
 
-        # Placeholder function, until a better one is implemented in the
+        # TODO: Placeholder function, until a better one is implemented in the
         # `introspection` package.
         def is_classvar(annotation: Any) -> bool:
             if isinstance(annotation, str):
@@ -463,6 +473,7 @@ class Widget(ABC):
                 "_",
                 "_build_generation_",
                 "_explicitly_set_properties_",
+                "_id",
                 "_init_signature_",
                 "_session_",
                 "_weak_builder_",
@@ -480,19 +491,6 @@ class Widget(ABC):
 
             # Add it to the set of all state properties for rapid lookup
             cls._state_properties_.add(state_property)
-
-    @property
-    def _id(self) -> int:
-        """
-        Return an unchanging, unique ID for this widget, so it can be identified
-        over the API.
-        """
-        try:
-            return vars(self)["_id"]
-        except KeyError:
-            _id = _make_unique_id()
-            vars(self)["_id"] = _id
-            return _id
 
     @property
     def session(self) -> "rx.Session":
@@ -535,7 +533,7 @@ class Widget(ABC):
             if isinstance(value, Widget):
                 yield value
 
-            if isinstance(value, collections.abc.Iterable):
+            if isinstance(value, list):
                 for item in value:
                     if isinstance(item, Widget):
                         yield item
@@ -590,18 +588,14 @@ class Widget(ABC):
         if self is self.session._root_widget:
             result = True
 
-        # No session, can't be connected
-        elif self._session_ is None:
-            result = False
-
         # Has the builder has been garbage collected?
         else:
             builder = self._weak_builder_()
             if builder is None:
                 result = False
 
-            # Has the builder created new build output, and this widget isn't part
-            # of it anymore?
+            # Has the builder since created new build output, and this widget
+            # isn't part of it anymore?
             else:
                 parent_data = self.session._lookup_widget_data(builder)
                 result = (

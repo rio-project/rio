@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import collections
-import collections.abc
 import enum
 import inspect
 import json
@@ -399,6 +398,8 @@ class Session(unicall.Unicall):
         while self._dirty_widgets:
             widget = self._dirty_widgets.pop()
 
+            print(widget)
+
             # Remember that this widget has been visited
             visited_widgets[widget] += 1
 
@@ -408,12 +409,6 @@ class Session(unicall.Unicall):
                 raise RecursionError(
                     f"The widget {widget} has been rebuilt {build_count} times during a single refresh. This is likely because one of your widgets' `build` methods is modifying the widget's state"
                 )
-
-            # Keep track of this widget's existence
-            #
-            # Widgets must be known by their id, so any messages addressed to
-            # them can be passed on correctly.
-            self._weak_widgets_by_id[widget._id] = widget
 
             # Fundamental widgets require no further treatment
             if isinstance(widget, widget_base.FundamentalWidget):
@@ -465,16 +460,14 @@ class Session(unicall.Unicall):
                 del build_result
 
             # Inject the builder and build generation
-            to_do = {widget_data.build_result}
-            weak_builder_ref = weakref.ref(widget)
+            weak_builder = weakref.ref(widget)
 
-            while to_do:
-                cur = to_do.pop()
-                cur._weak_builder_ = weak_builder_ref
-                cur._build_generation_ = widget_data.build_generation
-
-                if isinstance(cur, widget_base.FundamentalWidget):
-                    to_do.update(cur._iter_direct_children())
+            for child in widget_data.build_result._iter_direct_and_indirect_children(
+                include_self=True,
+                cross_build_boundaries=False,
+            ):
+                child._weak_builder_ = weak_builder
+                child._build_generation_ = widget_data.build_generation
 
         # Determine which widgets are alive, to avoid sending references to dead
         # widgets to the frontend.
@@ -487,6 +480,18 @@ class Session(unicall.Unicall):
         for widget in visited_widgets:
             if not widget._is_in_widget_tree(alive_cache):
                 killed.add(widget)
+
+        for widget in killed:
+            print(f"Killed widget {widget}")
+
+        print(
+            "Survivors",
+            {
+                widget
+                for widget in visited_widgets
+                if widget._is_in_widget_tree(alive_cache)
+            },
+        )
 
         return {
             widget
@@ -570,12 +575,7 @@ class Session(unicall.Unicall):
             return uniserde.as_json(value, as_type=type_)
 
         # Sequences of serializable values
-        if origin in (
-            list,
-            tuple,
-            collections.abc.Collection,
-            collections.abc.Sequence,
-        ):
+        if origin is list:
             return [self._serialize_and_host_value(v, args[0]) for v in value]
 
         # Self-Serializing
@@ -640,33 +640,7 @@ class Session(unicall.Unicall):
         )
 
         # Add user-defined state
-        for name, type_ in inspection.get_type_annotations(type(widget)).items():
-            # Skip some values
-            if name in (
-                "_",
-                "_build_generation_",
-                "_explicitly_set_properties_",
-                "_init_signature_",
-                "_session_",
-                "_state_properties_",
-                "_weak_builder_",
-                "align_x",
-                "align_y",
-                "height",
-                "margin_bottom",
-                "margin_left",
-                "margin_right",
-                "margin_top",
-                "margin_x",
-                "margin_y",
-                "margin",
-                "width",
-                "grow_x",
-                "grow_y",
-            ):
-                continue
-
-            # Let the serialization function handle the value
+        for name, type_ in inspection.get_attributes_to_serialize(type(widget)).items():
             try:
                 result[name] = self._serialize_and_host_value(
                     getattr(widget, name), type_
@@ -765,17 +739,6 @@ class Session(unicall.Unicall):
 
         remap_widgets(reconciled_build_result)
 
-        # Postprocess the tree
-        weak_builder = weakref.ref(builder)
-
-        for widget in reconciled_build_result._iter_direct_and_indirect_children(
-            include_self=True,
-            cross_build_boundaries=False,
-        ):
-            # Widgets may now have an incorrect builder assigned. Assign the new
-            # one.
-            widget._weak_builder_ = weak_builder
-
     def _reconcile_widget(
         self,
         old_widget: rx.Widget,
@@ -852,14 +815,8 @@ class Session(unicall.Unicall):
             if isinstance(new, rx.Widget):
                 return old is new or old is reconciled_widgets_new_to_old.get(new, None)
 
-            # Strings are collections, but comparing them item by item is slow
-            # and doesn't work, because each item is itself a collection,
-            # leading to infinite recursion
-            if isinstance(new, str):
-                return old == new
-
-            if isinstance(new, collections.abc.Collection):
-                if not isinstance(old, collections.abc.Collection):
+            if isinstance(new, list):
+                if not isinstance(old, list):
                     return False
 
                 if len(old) != len(new):
@@ -894,6 +851,10 @@ class Session(unicall.Unicall):
         overridden_values["key"] = new_widget.key
 
         # Now combine the old and new dictionaries
+        #
+        # Notice that the widget's `_weak_builder_` is always preserved. So even
+        # widgets whose position in the tree has changed still have the correct
+        # builder set.
         old_widget_dict.update(overridden_values)
 
     def _find_widgets_for_reconciliation(
@@ -952,7 +913,7 @@ class Session(unicall.Unicall):
                 if isinstance(attr, rx.Widget):
                     return [attr]
 
-                if isinstance(attr, collections.abc.Iterable):
+                if isinstance(attr, list):
                     return [item for item in attr if isinstance(item, rx.Widget)]
 
                 return []

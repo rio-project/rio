@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import collections.abc
-from typing import Literal, Optional, Union
+from typing import *  # type: ignore
 
 import reflex as rx
 
@@ -11,7 +10,7 @@ __all__ = ["Column"]
 
 
 class Column(widget_base.FundamentalWidget):
-    children: collections.abc.Collection[widget_base.Widget]
+    children: List[widget_base.Widget]
     spacing: float
 
     def __init__(

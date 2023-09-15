@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import functools
 import sys
-from collections.abc import Collection, Mapping, Sequence
-from typing import ForwardRef, Type, Union, get_args, get_origin
+from typing import *  # type: ignore
 
 from introspection import iter_subclasses, safe_is_subclass
 
@@ -36,6 +35,45 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
 
 
 @functools.lru_cache(maxsize=None)
+def get_attributes_to_serialize(cls: Type[widget_base.Widget]) -> Mapping[str, Type]:
+    """
+    Returns a dictionary of attribute names to their types that should be
+    serialized for the given widget class.
+    """
+    result = {}
+
+    for attr_name, annotation in get_type_annotations(cls).items():
+        if attr_name in {
+            "_",
+            "_build_generation_",
+            "_explicitly_set_properties_",
+            "_id",
+            "_init_signature_",
+            "_session_",
+            "_state_properties_",
+            "_weak_builder_",
+            "align_x",
+            "align_y",
+            "grow_x",
+            "grow_y",
+            "height",
+            "margin_bottom",
+            "margin_left",
+            "margin_right",
+            "margin_top",
+            "margin_x",
+            "margin_y",
+            "margin",
+            "width",
+        }:
+            continue
+
+        result[attr_name] = annotation
+
+    return result
+
+
+@functools.lru_cache(maxsize=None)
 def get_child_widget_containing_attribute_names(
     cls: Type[widget_base.Widget],
 ) -> Collection[str]:
@@ -53,11 +91,11 @@ def get_child_widget_containing_attribute_names(
         elif origin is Union:
             if any(safe_is_subclass(arg, widget_base.Widget) for arg in args):
                 attr_names.append(attr_name)
-        elif origin in (list, set, tuple, Sequence, Collection):
+        elif origin is list:
             if any(safe_is_subclass(arg, widget_base.Widget) for arg in args):
                 attr_names.append(attr_name)
 
-    return attr_names
+    return tuple(attr_names)
 
 
 @functools.lru_cache(maxsize=None)
