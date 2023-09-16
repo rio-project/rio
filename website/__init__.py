@@ -34,15 +34,11 @@ def make_slideshow_placeholder(variant: int) -> rx.Widget:
 
 
 class AppRoot(rx.Widget):
-    active_route: str = ""
-
     def build(self) -> rx.Widget:
         return rx.Column(
             # Navbar (sticky)
             rx.Sticky(
                 comps.NavigationBar(
-                    # active_route=AppRoot.active_route,
-                    active_route=self.active_route,
                     height=4,
                     width="grow",
                     align_y=0,

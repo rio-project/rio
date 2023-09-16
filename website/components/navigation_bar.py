@@ -1,4 +1,5 @@
 import random
+from dataclasses import field
 
 import reflex as rx
 
@@ -33,7 +34,10 @@ class NavigationButton(rx.Widget):
 
 
 class NavigationBar(rx.Widget):
-    active_route: str
+    active_route: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.on_route_change()
 
     def on_route_change(self) -> None:
         try:

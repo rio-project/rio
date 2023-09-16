@@ -56,6 +56,14 @@ class WontSerialize(Exception):
     pass
 
 
+async def dummy_send_message(message: Jsonable) -> None:
+    raise NotImplementedError()
+
+
+async def dummy_receive_message() -> JsonDoc:
+    raise NotImplementedError()
+
+
 class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
@@ -117,12 +125,14 @@ class Session(unicall.Unicall):
 
     def __init__(
         self,
-        initial_route: Iterable[str],
-        send_message: Callable[[Jsonable], Awaitable[None]],
-        receive_message: Callable[[], Awaitable[Jsonable]],
         app_server_: app_server.AppServer,
+        base_url: rx.URL,
+        initial_route: Iterable[str],
     ):
-        super().__init__(send_message=send_message, receive_message=receive_message)
+        super().__init__(
+            send_message=dummy_send_message,
+            receive_message=dummy_receive_message,
+        )
 
         self._app_server = app_server_
 

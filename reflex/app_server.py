@@ -217,7 +217,7 @@ class AppServer(fastapi.FastAPI):
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
         # connection.
-        self._active_session_tokens = timer_dict.TimerDict[str, None](
+        self._active_session_tokens = timer_dict.TimerDict[str, rx.Session](
             default_duration=timedelta(minutes=60),
         )
 
@@ -271,26 +271,24 @@ class AppServer(fastapi.FastAPI):
         # assigned, then overwritten by a short-lived one?
         self._assets[asset.secret_id] = asset
 
-    def check_and_refresh_session(self, session_token: str) -> None:
+    def check_and_refresh_session(self, session_token: str) -> rx.Session:
         """
         Look up the session token. If it is valid the session's duration
         is refreshed so it doesn't expire. If the token is not valid,
         a HttpException is raised.
         """
 
-        if session_token not in self._active_session_tokens:
+        try:
+            sess = self._active_session_tokens[session_token]
+        except KeyError:
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid session token.",
-            )
+            ) from None
 
-        self._active_session_tokens[session_token] = None
+        self._active_session_tokens[session_token] = sess
 
-    def refresh_session(self, session_token: str) -> None:
-        """
-        Refresh the session's duration to prevent timeout.
-        """
-        self._active_session_tokens[session_token] = None
+        return sess
 
     async def _serve_index(
         self,
@@ -300,34 +298,40 @@ class AppServer(fastapi.FastAPI):
         """
         Handler for serving the index HTML page via fastapi.
         """
-        # Create a new session token
-        session_token = secrets.token_urlsafe()
-        self._active_session_tokens[session_token] = None
-
-        # Load the templates
-        html = read_frontend_template("index.html")
-
-        # Determine the base URL of the server
-        base_url = request.base_url
 
         # Determine the initial route
-        route_url = yarl.URL(initial_route_str)
+        route_url = rx.URL(initial_route_str)
         initial_route = route_url.path.strip("/").split("/")
 
-        # Find the theme
+        # Create a session instance to hold all of this state in an organized
+        # fashion.
         #
-        # TODO: This is imperfect, as it doesn't allow changing the theme
-        # dynamically, or even in the `on_session_start` event.
-        for thm in self.default_attachments:
-            if isinstance(thm, rx.Theme):
-                break
-        else:
+        # The session is still missing a lot of values at this point, such as
+        # `send_message` and `receive_message`. It will be finished once the
+        # websocket connection is established.
+        session_token = secrets.token_urlsafe()
+        sess = session.Session(
+            app_server_=self,
+            base_url=rx.URL(str(request.base_url)),
+            initial_route=initial_route,
+        )
+
+        self._active_session_tokens[session_token] = sess
+
+        # Make sure a theme is attached
+        if rx.Theme not in sess.attachments:
             thm = rx.Theme()
+            sess.attachments.add(thm)
+        else:
+            thm = sess.attachments[rx.Theme]
 
         # Create a list of initial messages for the client to process
         initial_messages = [
             _build_set_theme_variables_message(thm),
         ]
+
+        # Load the templates
+        html = read_frontend_template("index.html")
 
         # Fill in any placeholders
         html = html.replace(
@@ -562,7 +566,7 @@ class AppServer(fastapi.FastAPI):
         del sessionToken
 
         # Make sure the session token is valid
-        self.check_and_refresh_session(session_token)
+        sess = self.check_and_refresh_session(session_token)
 
         # Accept the socket
         await websocket.accept()
@@ -570,8 +574,15 @@ class AppServer(fastapi.FastAPI):
         # Create a function for sending messages to the frontend. This function
         # will also pipe the message to the validator if one is present.
         if self.validator_factory is None:
-            send_message = websocket.send_json  # type: ignore
-            receive_message = websocket.receive_json  # type: ignore
+            sess._send_message = websocket.send_json  # type: ignore
+
+            async def receive_message() -> uniserde.Jsonable:
+                # Refresh the session's duration
+                self._active_session_tokens[session_token] = sess
+
+                # Fetch a message
+                return await websocket.receive_json()
+
         else:
 
             async def send_message(msg: uniserde.Jsonable) -> None:
@@ -581,34 +592,19 @@ class AppServer(fastapi.FastAPI):
 
             async def receive_message() -> uniserde.Jsonable:
                 assert isinstance(validator_instance, debug.Validator)
+                # Refresh the session's duration
+                self._active_session_tokens[session_token] = sess
+
+                # Fetch a message
                 msg = await websocket.receive_json()
                 validator_instance.handle_incoming_message(msg)
                 return msg
 
-        # Create a session instance to hold all of this state in an organized
-        # fashion
-        sess = session.Session(
-            [],  # TODO: Determine the initial route
-            send_message,
-            receive_message,
-            self,
-        )
-
-        # Build the root widget
-        global_state.currently_building_widget = None
-        global_state.currently_building_session = sess
-
-        try:
-            sess._root_widget = self.app.build()
-        finally:
-            global_state.currently_building_session = None
-
-        assert isinstance(
-            sess._root_widget, rx.Widget
-        ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
+            sess._send_message = send_message
+            sess._receive_message = receive_message
 
         # Upon connecting, the client sends an initial message containing
-        # information about it. Wait for it.
+        # information about it. Wait for that.
         initial_message_json: Jsonable = await websocket.receive_json()
         initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
 
@@ -717,11 +713,24 @@ class AppServer(fastapi.FastAPI):
             None if self.validator_factory is None else self.validator_factory(sess)
         )
 
+        # Build the root widget
+        global_state.currently_building_widget = None
+        global_state.currently_building_session = sess
+
+        try:
+            sess._root_widget = self.app.build()
+        finally:
+            global_state.currently_building_session = None
+
+        assert isinstance(
+            sess._root_widget, rx.Widget
+        ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
+
         # Trigger the `on_session_started` event
         await common.call_event_handler(self.on_session_start, sess)
 
         try:
-            # Trigger an refresh. This will also send the initial state to the
+            # Trigger a refresh. This will also send the initial state to the
             # frontend.
             #
             # This is done in a task, because the server is not yet running, so
