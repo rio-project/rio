@@ -293,5 +293,6 @@ class DocumentationView(rx.Widget):
                     width="grow",
                     height="grow",
                 ),
+                key="waitforme",
             ),
         )

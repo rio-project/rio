@@ -424,9 +424,13 @@ class Validator:
         ids_superfluous = sorted(ids_sent - ids_existing)
 
         if ids_superfluous:
-            print(
-                f"Validator Warning: Message contained superfluous widget ids: {ids_superfluous}"
-            )
+            print(f"Validator Warning: Message contained superfluous widget ids:")
+
+            for id in ids_superfluous:
+                delta_state = msg["deltaStates"][id]
+                print(
+                    f'-  {delta_state.get("_type_", "unknown type")} #{id}  -  {delta_state}'
+                )
 
         # Dump the client state if requested
         self.dump_client_state()

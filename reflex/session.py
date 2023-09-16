@@ -472,11 +472,13 @@ class Session(unicall.Unicall):
             self._root_widget: True,
         }
 
-        for widget in visited_widgets:
-            widget._is_in_widget_tree(alive_cache)
+        alive_set = {
+            widget
+            for widget in visited_widgets
+            if widget._is_in_widget_tree(alive_cache)
+        }
 
         # Serialize
-        alive_set = set(alive_cache.keys())
         to_serialize = alive_set.copy()
         seralized_widgets: Set[rx.Widget] = set()
         delta_states: Dict[int, JsonDoc] = {}
@@ -501,9 +503,12 @@ class Session(unicall.Unicall):
                 alive_set.update(new_alives)
 
                 for child in new_alives:
-                    child._weak_builder_ = weakref.ref(cur)
+                    cur_builder = cur._weak_builder_()
+                    assert cur_builder is not None
+
+                    child._weak_builder_ = cur._weak_builder_
                     child._build_generation_ = self._lookup_widget_data(
-                        cur
+                        cur_builder
                     ).build_generation
 
         return seralized_widgets, delta_states
@@ -633,7 +638,8 @@ class Session(unicall.Unicall):
         raise WontSerialize()
 
     def _serialize_and_host_widget(
-        self, widget: rx.Widget
+        self,
+        widget: rx.Widget,
     ) -> Tuple[Set[rx.Widget], JsonDoc]:
         """
         Serializes the widget, non-recursively. Children are serialized just by

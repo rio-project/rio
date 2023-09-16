@@ -167,8 +167,6 @@ for (let key in VARIABLES) {{
         key,
         VARIABLES[key]
     );
-
-    console.log(document.documentElement);
 }}
 response = null;
 
