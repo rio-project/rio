@@ -22,3 +22,8 @@ currently_building_widget: Optional[rx.Widget] = None
 # - `Session`: The session that owns the currently building widget
 # - `None`: No build is currently in progress
 currently_building_session: Optional[rx.Session] = None
+
+
+# This counter is increased each time a widget is built. It can thus be used to
+# uniquely identify the build generation of every widget.
+build_generation: int = 0

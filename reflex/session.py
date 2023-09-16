@@ -448,7 +448,8 @@ class Session(unicall.Unicall):
                 self._reconcile_tree(widget, widget_data, build_result)
 
                 # Increment the build generation
-                widget_data.build_generation += 1
+                widget_data.build_generation = global_state.build_generation
+                global_state.build_generation += 1
 
                 # Reconciliation can change the build result. Make sure nobody
                 # uses `build_result` instead of `widget_data.build_result` from
@@ -501,6 +502,9 @@ class Session(unicall.Unicall):
 
                 for child in new_alives:
                     child._weak_builder_ = weakref.ref(cur)
+                    child._build_generation_ = self._lookup_widget_data(
+                        cur
+                    ).build_generation
 
         return seralized_widgets, delta_states
 
