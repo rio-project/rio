@@ -2,7 +2,6 @@
 # use.
 from yarl import URL
 
-from . import event
 from .app import *
 from .box_style import *
 from .color import *

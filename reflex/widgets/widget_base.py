@@ -16,7 +16,7 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import app_server, common, event, global_state, inspection
+from .. import app_server, common, global_state, inspection
 
 __all__ = ["Widget"]
 
@@ -261,7 +261,7 @@ class Widget(ABC):
 
     # Maps event tags to the methods that handle them. The methods aren't bound
     # to the instance yet, so make sure to pass `self` when calling them
-    _reflex_event_handlers_: ClassVar[Dict[event.EventTag, Callable]]
+    _reflex_event_handlers_: ClassVar[Dict[str, Callable]]
 
     @classmethod
     def _preprocess_dataclass_fields(cls):
@@ -339,7 +339,7 @@ class Widget(ABC):
 
         # Some events need support from the session. Register them
         for event_tag, event_handler in self._reflex_event_handlers_.items():
-            if event_tag == event.EventTag.ON_ROUTE_CHANGE:
+            if event_tag == "on_route_change":
                 self._session_._route_change_callbacks[self] = event_handler
 
         # Chain up to the original `__init__`
@@ -457,13 +457,8 @@ class Widget(ABC):
         # instantiation.
         cls._reflex_event_handlers_ = {}
 
-        for name, member in vars(cls).items():
-            try:
-                event_tag = member._reflex_session_event_tag_
-            except AttributeError:
-                continue
-
-            cls._reflex_event_handlers_[event_tag] = member
+        if cls.on_route_change is not Widget.on_route_change:
+            cls._reflex_event_handlers_["on_route_change"] = cls.on_route_change
 
     @classmethod
     def _initialize_state_properties(
@@ -689,6 +684,12 @@ class Widget(ABC):
             result += " -" + "".join(child_strings)
 
         return result + ">"
+
+    # Event Handler Templates
+    #
+    # Users may override these synchronously or asynchronously
+    def on_route_change(self) -> Any:
+        pass
 
 
 # Most classes have their state properties initialized in

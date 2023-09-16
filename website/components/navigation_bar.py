@@ -35,8 +35,7 @@ class NavigationButton(rx.Widget):
 class NavigationBar(rx.Widget):
     active_route: str
 
-    @rx.event.on_route_change
-    def _on_route_change(self) -> None:
+    def on_route_change(self) -> None:
         try:
             self.active_route = self.session.current_route[0]
         except IndexError:
