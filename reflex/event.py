@@ -10,10 +10,13 @@ __all__ = [
 ]
 
 
+T = TypeVar("T", bound="rx.Widget")
+
+
 class EventTag(enum.Enum):
     ON_ROUTE_CHANGE = enum.auto()
 
 
-def on_route_change(func: Callable[[rx.Widget], None]):
+def on_route_change(func: Callable[[T], None]) -> Callable[[T], None]:
     func._reflex_session_event_tag_ = EventTag.ON_ROUTE_CHANGE
     return func
