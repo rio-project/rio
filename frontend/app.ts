@@ -763,6 +763,14 @@ function main() {
         });
     });
 
+    // Listen for resize events
+    window.addEventListener('resize', (event) => {
+        callRemoteMethodDiscardResponse('onWindowResize', {
+            newWidth: window.innerWidth / pixelsPerEm,
+            newHeight: window.innerHeight / pixelsPerEm,
+        });
+    });
+
     // Connect to the websocket
     var url = new URL(
         `/reflex/ws?sessionToken=${sessionToken}`,

@@ -146,6 +146,12 @@ class Session(unicall.Unicall):
             rx.Widget, Callable[[rx.Widget], None]
         ] = weakref.WeakKeyDictionary()
 
+        # All widgets / methods which should be called when the session's window
+        # size has changed.
+        self._on_window_resize_callbacks: weakref.WeakKeyDictionary[
+            rx.Widget, Callable[[rx.Widget], None]
+        ] = weakref.WeakKeyDictionary()
+
         # These are injected by the app server after the session has already been created
         self._root_widget: rx.Widget
         self.external_url: Optional[str]  # None if running in a window
@@ -349,7 +355,10 @@ class Session(unicall.Unicall):
         # Trigger the `on_route_change` event
         async def event_worker() -> None:
             for widget, callback in self._route_change_callbacks.items():
-                await common.call_event_handler(lambda: callback(widget))
+                asyncio.create_task(
+                    common.call_event_handler(lambda: callback(widget)),
+                    name="`on_route_change` event handler",
+                )
 
         asyncio.create_task(event_worker())
 
@@ -1261,3 +1270,19 @@ document.body.removeChild(a)
         Called by the client when the route changes.
         """
         print(f"TODO: The browser has navigated to {new_route}")
+
+    @unicall.local(name="onWindowResize")
+    async def _on_window_resize(self, new_width: float, new_height: float) -> None:
+        """
+        Called by the client when the window is resized.
+        """
+        # Update the stored window size
+        self._window_width = new_width
+        self._window_height = new_height
+
+        # Call any registered callbacks
+        for widget, callback in self._on_window_resize_callbacks.items():
+            asyncio.create_task(
+                common.call_event_handler(lambda: callback(widget)),
+                name="`on_window_resize` event handler",
+            )
