@@ -64,7 +64,6 @@ export class RevealerWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('expanded');
         element.classList.add('reflex-revealer');
 
         element.innerHTML = `
@@ -96,6 +95,13 @@ export class RevealerWidget extends WidgetBase {
                 expandRevealer(element);
             }
         };
+
+        // Make sure all CSS is set up for the collapsed state
+        //
+        // TODO: This doesn't seem to be working. The first time a revealer is
+        // expanded, no animation is shown.
+        element.classList.add('expanded');
+        collapseRevealer(element);
 
         return element;
     }

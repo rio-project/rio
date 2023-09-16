@@ -59,6 +59,14 @@ OUTLINE: Tuple[Optional[Tuple[str, Tuple[str, ...]]], ...] = (
             "C",
         ),
     ),
+    (
+        "Non-Widgets",
+        (
+            "A",
+            "B",
+            "C",
+        ),
+    ),
     # Internal / Developer / Contributor Documentation
     None,
     (

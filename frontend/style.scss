@@ -921,3 +921,13 @@ code {
         text-transform: var(--reflex-global-text-all-caps);
     }
 }
+
+// Link
+.reflex-link {
+    pointer-events: auto;
+}
+
+.reflex-text-link {
+    color: var(--reflex-local-accent-color);
+    cursor: pointer;
+}

@@ -6,7 +6,7 @@ from .. import theme
 
 
 class FooterColumn(rx.Widget):
-    entries: List[Tuple[str, str]]
+    entries: List[Tuple[str, Union[str, rx.URL]]]
 
     def build(self) -> rx.Widget:
         text_style = rx.TextStyle(
@@ -15,9 +15,10 @@ class FooterColumn(rx.Widget):
 
         return rx.Column(
             *[
-                rx.Text(
-                    entry[0],
-                    style=text_style,
+                rx.Link(
+                    child=entry[0],
+                    link=entry[1],
+                    # style=text_style,
                 )
                 for entry in self.entries
             ],
@@ -53,9 +54,9 @@ class Footer(rx.Widget):
                     ),
                     FooterColumn(
                         entries=[
-                            ("Privacy", "#"),
-                            ("Terms", "#"),
-                            ("Imprint", "#"),
+                            ("Privacy", rx.URL("http://google.com")),
+                            ("Terms", "ddg.gg"),
+                            ("Docs", "/documentation"),
                         ],
                     ),
                     spacing=6.0,

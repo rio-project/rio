@@ -25,6 +25,7 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { LinkWidget } from './link';
 
 const sessionToken = '{session_token}';
 
@@ -163,6 +164,7 @@ const widgetClasses = {
     'Grid-builtin': GridWidget,
     'Icon-builtin': IconWidget,
     'KeyEventListener-builtin': KeyEventListenerWidget,
+    'Link-builtin': LinkWidget,
     'Margin-builtin': MarginWidget,
     'MarkdownView-builtin': MarkdownViewWidget,
     'MediaPlayer-builtin': MediaPlayerWidget,
