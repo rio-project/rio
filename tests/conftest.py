@@ -65,7 +65,7 @@ class _MockApp:
             if message["method"] == "updateWidgetStates":
                 return {
                     self._session._weak_widgets_by_id[widget_id]
-                    for widget_id in message["params"]["deltaStates"]
+                    for widget_id in message["params"]["deltaStates"]  # type: ignore
                 }
 
         return set()

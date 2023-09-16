@@ -43,3 +43,40 @@ async def test_reconcile_same_widget_instance(create_mockapp):
         # root_widget to refresh, it's reasonable to send that widget's data to
         # JS.
         assert not app.outgoing_messages or app.last_updated_widgets == {root_widget}
+
+
+async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
+    # Situation:
+    # HighLevelWidget1 contains HighLevelWidget2
+    # HighLevelWidget2 contains LowLevelContainer
+    # HighLevelWidget1 is rebuilt and changes the child of LowLevelContainer
+    # -> LowLevelContainer is reconciled and dirty (because it has new children)
+    # -> HighLevelWidget2 is reconciled but *not* dirty because its child was
+    # reconciled
+    # The end result is that there is a new widget (the child of
+    # LowLevelContainer), whose builder (HighLevelWidget2) is not "dirty". Make
+    # sure the new widget is initialized correctly despite this.
+    class HighLevelWidget1(rx.Widget):
+        switch: bool = False
+
+        def build(self):
+            if self.switch:
+                child = rx.Switch()
+            else:
+                child = rx.Text("hi")
+
+            return HighLevelWidget2(rx.Column(child))
+
+    class HighLevelWidget2(rx.Widget):
+        child: rx.Widget
+
+        def build(self):
+            return self.child
+
+    root_widget = HighLevelWidget1()
+
+    async with create_mockapp(root_widget) as app:
+        root_widget.switch = True
+        await app.refresh()
+
+        assert any(isinstance(widget, rx.Switch) for widget in app.last_updated_widgets)

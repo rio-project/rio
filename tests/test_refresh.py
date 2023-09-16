@@ -1,6 +1,29 @@
 import reflex as rx
 
 
+async def test_refresh_with_nothing_to_do(create_mockapp):
+    root_widget = rx.Text("Hello")
+
+    async with create_mockapp(root_widget) as app:
+        app.outgoing_messages.clear()
+        await app.refresh()
+
+        assert not app.dirty_widgets
+        assert not app.last_updated_widgets
+
+
+async def test_refresh_with_clean_root_widget(create_mockapp):
+    text_widget = rx.Text("Hello")
+    root_widget = rx.Container(text_widget)
+
+    async with create_mockapp(root_widget) as app:
+        text_widget.text = "World"
+
+        await app.refresh()
+
+        assert app.last_updated_widgets == {text_widget}
+
+
 async def test_rebuild_widget_with_dead_parent(create_mockapp):
     class WidgetWithState(rx.Widget):
         state: str

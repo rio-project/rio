@@ -1,3 +1,4 @@
+import sys
 import webbrowser
 from pathlib import Path
 
@@ -13,5 +14,7 @@ cov.stop()
 cov.save()
 
 cov.html_report()
-html_path = Path(__file__).parent / "htmlcov" / "index.html"
-webbrowser.open(html_path.as_uri())
+
+if "--no-open" not in sys.argv:
+    html_path = Path(__file__).parent / "htmlcov" / "index.html"
+    webbrowser.open(html_path.as_uri())
