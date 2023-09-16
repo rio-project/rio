@@ -222,7 +222,7 @@ def parse_class(cls: Type) -> models.ClassDocs:
     # Build the result
     return models.ClassDocs(
         name=cls.__name__,
-        fields=[],
+        fields=list(fields_by_name.values()),
         functions=functions,
         short_description=short_description,
         long_description=long_description,

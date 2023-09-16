@@ -113,9 +113,9 @@ class Theme:
             self.surface_active_color = self.surface_color.blend(primary_color, 0.06)
         else:
             self.background_color = rx.Color.from_grey(0.12)
-            self.surface_color = rx.Color.from_grey(0.19).blend(primary_color, 0.03)
+            self.surface_color = rx.Color.from_grey(0.19).blend(primary_color, 0.025)
             self.surface_color_variant = self.surface_color.darker(0.06)
-            self.surface_active_color = self.surface_color.blend(primary_color, 0.06)
+            self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
 
         # Semantic colors
         if success_color is None:

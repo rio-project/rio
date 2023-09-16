@@ -93,7 +93,7 @@ class ClassApiDocsView(rx.Widget):
                 if field.description is not None:
                     parts.append(f"{field.description}\n\n")
 
-                parts.append(f"Type: `{es(field.type)}`")
+                parts.append(f"Type: `{esc(field.type)}`\n\n")
 
         else:
             parts.append(f"`{self.docs.name}` has no public fields.")
@@ -112,7 +112,7 @@ class ClassApiDocsView(rx.Widget):
                     parts.append(f"{fun.short_description}\n\n")
 
                 # Signature
-                parts.append("```python\n")
+                parts.append("```\n")
                 parts.append(
                     _str_function_signature(
                         fun,
@@ -128,4 +128,7 @@ class ClassApiDocsView(rx.Widget):
         # Events
         # TODO
 
-        return rx.MarkdownView("".join(parts))
+        return rx.MarkdownView(
+            "".join(parts),
+            default_language="python",
+        )

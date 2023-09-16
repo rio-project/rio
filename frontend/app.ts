@@ -186,8 +186,6 @@ const widgetClasses = {
 globalThis.widgetClasses = widgetClasses;
 
 async function processMessage(message: any) {
-    console.log('Received message: ', message);
-
     // If this isn't a method call, ignore it
     if (message.method === undefined) {
         return;
@@ -219,6 +217,7 @@ async function processMessage(message: any) {
         } catch (e) {
             response = e.toString();
             responseIsError = true;
+            console.log(`Uncaught exception in \`evaluateJavaScript\`: ${e}`);
         }
     }
 
@@ -234,17 +233,6 @@ async function processMessage(message: any) {
             localStorage.setItem(
                 `reflex:userSetting:${key}`,
                 JSON.stringify(message.params.deltaSettings[key])
-            );
-        }
-        response = null;
-    }
-
-    // Set theme variables
-    else if (message.method == 'setThemeVariables') {
-        for (let key in message.params.variables) {
-            document.documentElement.style.setProperty(
-                key,
-                message.params.variables[key]
             );
         }
         response = null;
@@ -840,6 +828,7 @@ function onOpen() {
 function onMessage(event: any) {
     // Parse the message JSON
     let message = JSON.parse(event.data);
+    console.log('Received message: ', message);
 
     // Handle it
     processMessage(message);

@@ -36,7 +36,7 @@ OUTLINE: Tuple[Optional[Tuple[str, Tuple[str, ...]]], ...] = (
         ),
     ),
     (
-        "Containers & Layout",
+        "Layout",
         (
             "A",
             "B",
@@ -251,7 +251,6 @@ class Outliner(rx.Widget):
                 theme.THEME.corner_radius_large,
                 0,
             ),
-            margin_top=3,
             align_y=0,
         )
 
@@ -262,7 +261,7 @@ class DocumentationView(rx.Widget):
             rx.Sticky(
                 Outliner(
                     align_x=0,
-                    align_y=0.5,
+                    align_y=0.4,
                 ),
             ),
             rx.Stack(

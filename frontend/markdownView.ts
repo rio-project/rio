@@ -5,7 +5,7 @@ import hljs from 'highlight.js';
 export type MarkdownViewState = WidgetState & {
     _type_: 'MarkdownView-builtin';
     child?: null | number | string;
-    classes?: string[];
+    default_language?: null | string;
 };
 
 // Remove an equal amount of trim from each line, taking care to ignore
@@ -40,7 +40,19 @@ function blockTrim(value: string) {
 }
 
 // Convert a Markdown string to HTML and render it in the given div.
-function convertMarkdown(markdownSource: string, div: HTMLElement) {
+function convertMarkdown(
+    markdownSource: string,
+    div: HTMLElement,
+    defaultLanguage: null | string
+) {
+    // Drop the default language if it isn't supported or recognized
+    if (
+        defaultLanguage !== null &&
+        hljs.getLanguage(defaultLanguage) === undefined
+    ) {
+        defaultLanguage = null;
+    }
+
     // Convert the Markdown content to HTML
     const converter = new showdown.Converter();
     div.innerHTML = converter.makeHtml(markdownSource);
@@ -56,7 +68,7 @@ function convertMarkdown(markdownSource: string, div: HTMLElement) {
             : '';
 
         // Was a language specified?
-        let specifiedLanguage: string | null = null;
+        let specifiedLanguage: string | null = defaultLanguage;
         for (const cls of codeBlockInner.classList) {
             if (cls.startsWith('language-')) {
                 specifiedLanguage = cls.replace('language-', '');
@@ -126,6 +138,25 @@ function convertMarkdown(markdownSource: string, div: HTMLElement) {
             }, 5000);
         });
     });
+
+    // Highlight inline code
+    //
+    // Since these are very short, guessing the language probably isn't a great
+    // idea. Only do this if a default language was specified.
+    //
+    // TODO: What if most code blocks had the same language specified? Use the
+    // same one here?
+    if (defaultLanguage !== null) {
+        const inlineCodeBlocks = div.querySelectorAll('code');
+        inlineCodeBlocks.forEach((codeElement) => {
+            let hlResult = hljs.highlight(codeElement.textContent || '', {
+                language: defaultLanguage!,
+                ignoreIllegals: true,
+            });
+
+            codeElement.innerHTML = hlResult.value;
+        });
+    }
 }
 
 export class MarkdownViewWidget extends WidgetBase {
@@ -139,7 +170,10 @@ export class MarkdownViewWidget extends WidgetBase {
 
     updateElement(element, deltaState) {
         if (deltaState.text !== undefined) {
-            convertMarkdown(deltaState.text, element);
+            let defaultLanguage =
+                deltaState.defaultLanguage || this.state.default_language;
+
+            convertMarkdown(deltaState.text, element, defaultLanguage);
         }
     }
 }

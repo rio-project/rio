@@ -71,7 +71,8 @@ def _build_set_theme_variables_message(thm: rx.Theme):
 
     # Miscellaneous
     variables: Dict[str, str] = {
-        "--reflex-global-corner-radius": f"{thm.corner_radius_small}rem",
+        "--reflex-global-corner-radius-small": f"{thm.corner_radius_small}rem",
+        "--reflex-global-corner-radius-large": f"{thm.corner_radius_large}rem",
         "--reflex-global-shadow-radius": f"{thm.shadow_radius}rem",
     }
 
@@ -150,12 +151,37 @@ def _build_set_theme_variables_message(thm: rx.Theme):
     for css_name, color in derived_colors.items():
         variables[f"--reflex-global-{css_name}"] = f"#{color.hex}"
 
+    # Assign to the html's `data-theme` attribute. This is used to dynamically
+    # switch highlight.js themes.
+    theme_variant = (
+        "light" if thm.background_color.perceived_brightness > 0.5 else "dark"
+    )
+
+    # Build JavaScript code which applies the theme
+    js_source = f"""
+VARIABLES = {json.dumps(variables)};
+
+// Expose the CSS Variables
+for (let key in VARIABLES) {{
+    document.documentElement.style.setProperty(
+        key,
+        VARIABLES[key]
+    );
+
+    console.log(document.documentElement);
+}}
+response = null;
+
+// Set the theme variant
+document.documentElement.setAttribute("data-theme", "{theme_variant}");
+"""
+
     # Wrap in JSON-RPC
     return {
         "jsonrpc": "2.0",
-        "method": "setThemeVariables",
+        "method": "evaluateJavaScript",
         "params": {
-            "variables": variables,
+            "javaScriptSource": js_source,
         },
     }
 

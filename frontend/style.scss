@@ -7,9 +7,20 @@
 @use '@material/slider/styles' as sliderStyles;
 @use '@material/switch/styles' as switchStyles;
 @use '@material/textfield';
+@use 'sass:meta';
 
 @include linear-progress.core-styles;
 @include textfield.core-styles;
+
+// Light / Dark highlight.js themes
+//
+// Switch between these by setting the `data-theme` attribute on the `html`
+html[data-theme='light'] {
+    @include meta.load-css('highlightjs-default-light.css');
+}
+html[data-theme='dark'] {
+    @include meta.load-css('highlightjs-default-dark.css');
+}
 
 // Not visible here:
 //
@@ -465,7 +476,7 @@ code {
     color: var(--reflex-local-text-color);
     caret-color: var(--reflex-local-accent-color);
 
-    border-radius: var(--reflex-global-corner-radius);
+    border-radius: var(--reflex-global-corner-radius-small);
     border: 1.5px solid transparent;
 
     padding: 0.3em 0.5rem;
@@ -582,7 +593,7 @@ code {
 }
 
 .reflex-shape-rounded {
-    border-radius: var(--reflex-global-corner-radius);
+    border-radius: var(--reflex-global-corner-radius-small);
 }
 
 .reflex-shape-rectangle {
@@ -769,10 +780,12 @@ code {
     width: 100%;
     height: 100%;
 
-    --reflex-padding: calc(0.5rem + var(--reflex-global-corner-radius));
+    --reflex-padding: calc(0.5rem + var(--reflex-global-corner-radius-small));
 }
 
 .reflex-markdown-view {
+    color: var(--reflex-local-text-color);
+
     ul {
         margin: 0;
         padding-left: 1em;
@@ -791,14 +804,14 @@ code {
     p > code {
         font-family: 'Roboto Mono', monospace;
         background: var(--reflex-local-surface-color-variant);
-        border-radius: var(--reflex-global-corner-radius);
+        border-radius: var(--reflex-global-corner-radius-small);
         padding: 0.1em 0.3em;
     }
 }
 
 .reflex-markdown-code-block {
     background: var(--reflex-local-surface-color-variant);
-    border-radius: var(--reflex-global-corner-radius);
+    border-radius: var(--reflex-global-corner-radius-small);
 }
 
 .reflex-markdown-code-block-header {
@@ -827,7 +840,7 @@ code {
     font-size: 0.8rem;
     border: none;
     background: none;
-    border-radius: var(--reflex-global-corner-radius);
+    border-radius: var(--reflex-global-corner-radius-small);
     margin: 0;
     color: var(--reflex-local-text-color);
     font-weight: bold;
