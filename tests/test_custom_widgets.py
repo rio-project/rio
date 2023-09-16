@@ -1,7 +1,14 @@
 import dataclasses
 from typing import List
 
+import pytest
+
 import reflex as rx
+
+
+@pytest.fixture(autouse=True)
+def _enable_widget_instantiation(enable_widget_instantiation):
+    pass
 
 
 def test_fields_with_defaults():
