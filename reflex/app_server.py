@@ -218,7 +218,7 @@ class AppServer(fastapi.FastAPI):
         # identify themselves, for example to reconnect in case of a lost
         # connection.
         self._active_session_tokens = timer_dict.TimerDict[str, rx.Session](
-            default_duration=timedelta(minutes=60),
+            default_duration=timedelta(minutes=9999999 if running_in_window else 60),
         )
 
         # All assets that have been registered with this session. They are held
