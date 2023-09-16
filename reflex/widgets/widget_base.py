@@ -16,7 +16,7 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import app_server, common, global_state, inspection
+from .. import app_server, common, event, global_state, inspection
 
 __all__ = ["Widget"]
 
@@ -259,6 +259,10 @@ class Widget(ABC):
     # Cache for the set of all `StateProperty` instances in this class
     _state_properties_: ClassVar[Set["StateProperty"]]
 
+    # Maps event tags to the methods that handle them. The methods aren't bound
+    # to the instance yet, so make sure to pass `self` when calling them
+    _reflex_event_handlers_: ClassVar[Dict[event.EventTag, Callable]]
+
     @classmethod
     def _preprocess_dataclass_fields(cls):
         # When a field has a default value (*not* default factory!), the
@@ -332,6 +336,11 @@ class Widget(ABC):
         # Widgets must be known by their id, so any messages addressed to
         # them can be passed on correctly.
         self._session_._weak_widgets_by_id[self._id] = self
+
+        # Some events need support from the session. Register them
+        for event_tag, event_handler in self._reflex_event_handlers_.items():
+            if event_tag == event.EventTag.ON_ROUTE_CHANGE:
+                self._session_._route_change_callbacks[self] = event_handler
 
         # Chain up to the original `__init__`
         original_init(self, *args, **kwargs)
@@ -442,6 +451,19 @@ class Widget(ABC):
             all_parent_state_properties.update(base._state_properties_)
 
         cls._initialize_state_properties(all_parent_state_properties)
+
+        # Keep track of all event handlers. By gathering them here, the widget
+        # constructor doesn't have to re-scan the entire class for each
+        # instantiation.
+        cls._reflex_event_handlers_ = {}
+
+        for name, member in vars(cls).items():
+            try:
+                event_tag = member._reflex_session_event_tag_
+            except AttributeError:
+                continue
+
+            cls._reflex_event_handlers_[event_tag] = member
 
     @classmethod
     def _initialize_state_properties(
@@ -697,6 +719,8 @@ class FundamentalWidget(Widget):
         return ""
 
     def __init_subclass__(cls):
+        # Assign a unique id to this class. This allows the frontend to identify
+        # widgets.
         hash_ = common.secure_string_hash(
             cls.__module__,
             cls.__qualname__,
@@ -705,6 +729,7 @@ class FundamentalWidget(Widget):
 
         cls._unique_id = f"{cls.__name__}-{hash_}"
 
+        # Chain up
         super().__init_subclass__()
 
     @classmethod

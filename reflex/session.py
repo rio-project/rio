@@ -137,6 +137,15 @@ class Session(unicall.Unicall):
             rx.Router, Optional[int]
         ] = weakref.WeakKeyDictionary()
 
+        # All widgets / methods which should be called when the session's route
+        # has changed.
+        #
+        # The methods don't have the widget bound yet, so they don't unduly
+        # prevent the widget from being garbage collected.
+        self._route_change_callbacks: weakref.WeakKeyDictionary[
+            rx.Widget, Callable[[rx.Widget], None]
+        ] = weakref.WeakKeyDictionary()
+
         # These are injected by the app server after the session has already been created
         self._root_widget: rx.Widget
         self.external_url: Optional[str]  # None if running in a window
@@ -212,6 +221,15 @@ class Session(unicall.Unicall):
         """
         return self._app_server.running_in_window
 
+    @property
+    def current_route(self) -> Tuple[str, ...]:
+        """
+        Returns the current route as a tuple of strings.
+
+        This property is read-only. To change the route, use `Session.navigate_to`.
+        """
+        return self._current_route
+
     def navigate_to(
         self,
         route: str,
@@ -240,12 +258,12 @@ class Session(unicall.Unicall):
         # If this is a full URL, navigate to it
         if not route.startswith(("/", "./", "../")):
 
-            async def worker() -> None:
+            async def history_worker() -> None:
                 await self._evaluate_javascript(
                     f"window.location.href = {json.dumps(route)}",
                 )
 
-            asyncio.create_task(worker())
+            asyncio.create_task(history_worker())
             return
 
         # Determine the full route to navigate to
@@ -320,13 +338,20 @@ class Session(unicall.Unicall):
         asyncio.create_task(self._refresh())
 
         # Update the browser's history
-        async def worker() -> None:
+        async def history_worker() -> None:
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
                 f"window.history.{method}(null, null, {json.dumps(route)})",
             )
 
-        asyncio.create_task(worker())
+        asyncio.create_task(history_worker())
+
+        # Trigger the `on_route_change` event
+        async def event_worker() -> None:
+            for widget, callback in self._route_change_callbacks.items():
+                await common.call_event_handler(lambda: callback(widget))
+
+        asyncio.create_task(event_worker())
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """

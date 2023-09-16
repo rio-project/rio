@@ -36,6 +36,13 @@ class NavigationButton(rx.Widget):
 class NavigationBar(rx.Widget):
     active_route: str
 
+    @rx.event.on_route_change
+    def _on_route_change(self) -> None:
+        try:
+            self.active_route = self.session.current_route[0]
+        except IndexError:
+            self.active_route = ""
+
     def build(self) -> rx.Widget:
         surface_color = theme.THEME.surface_color
         text_color = theme.THEME.text_color_for(surface_color)
