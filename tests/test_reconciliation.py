@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import reflex as rx
 
 
@@ -7,6 +9,7 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
 
         def __init__(self, label, size=5):
             super().__init__(width=size, height=size)
+
             self.label = label
 
         def build(self):
@@ -80,3 +83,27 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
         await app.refresh()
 
         assert any(isinstance(widget, rx.Switch) for widget in app.last_updated_widgets)
+
+
+async def test_reconcile_unusual_types(create_mockapp):
+    class Container(rx.Widget):
+        def build(self) -> rx.Widget:
+            return CustomWidget(
+                integer=4,
+                text="bar",
+                tuple=(2.0, rx.Text("baz")),
+                byte_array=bytearray(b"foo"),
+            )
+
+    class CustomWidget(rx.Widget):
+        integer: int
+        text: str
+        tuple: Tuple[float, rx.Widget]
+        byte_array: bytearray
+
+        def build(self):
+            return rx.Text(self.text)
+
+    root_widget = Container()
+    async with create_mockapp(root_widget) as mock_app:
+        await root_widget.force_refresh()

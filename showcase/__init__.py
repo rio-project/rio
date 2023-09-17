@@ -201,8 +201,11 @@ class Sidebar(rx.Widget):
                     on_change=lambda evt: print("Revealer Changed:", evt.is_expanded),
                     is_expanded=Sidebar.expanded,
                 ),
-                rx.Switch(
-                    is_on=Sidebar.expanded,
+                rx.ScrollTarget(
+                    "scroll-target",
+                    rx.Switch(
+                        is_on=Sidebar.expanded,
+                    ),
                 ),
                 rx.Stack(
                     rx.Rectangle(

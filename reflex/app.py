@@ -97,7 +97,7 @@ class App:
         *,
         external_url_override: Optional[str] = None,
         host: str = "localhost",
-        port: int = 8000,
+        port: Optional[int] = None,  # FIXME: Choose free port if None
         quiet: bool = True,
         _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
         _on_startup: Optional[Callable[[], Awaitable[None]]] = None,

@@ -26,6 +26,7 @@ import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { LinkWidget } from './link';
+import { ScrollTargetWidget } from './scrollTarget';
 
 const sessionToken = '{session_token}';
 
@@ -103,7 +104,7 @@ export function getElementByWidgetId(id: number | string): HTMLElement {
     let element = document.getElementById(`reflex-id-${id}`);
 
     if (element === null) {
-        throw `Could not find widget with id ${id}`;
+        throw `Could not find html element with id ${id}`;
     }
 
     return element;
@@ -175,6 +176,7 @@ const widgetClasses = {
     'Rectangle-builtin': RectangleWidget,
     'Revealer-builtin': RevealerWidget,
     'Row-builtin': RowWidget,
+    'ScrollTarget-builtin': ScrollTargetWidget,
     'SizeTripSwitch-builtin': SizeTripSwitchWidget,
     'Slider-builtin': SliderWidget,
     'Slideshow-builtin': SlideshowWidget,
@@ -455,9 +457,9 @@ function updateWidgetStates(
     // Create a HTML element to hold all latent widgets, so they aren't
     // garbage collected while updating the DOM.
     let latentWidgets = document.createElement('div');
-    document.body.appendChild(latentWidgets);
     latentWidgets.id = 'reflex-latent-widgets';
     latentWidgets.style.display = 'none';
+    document.body.appendChild(latentWidgets);
 
     // Make sure all widgets mentioned in the message have a corresponding HTML
     // element
