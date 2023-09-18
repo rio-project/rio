@@ -318,6 +318,14 @@ class AppServer(fastapi.FastAPI):
 
         self._active_session_tokens[session_token] = sess
 
+        # Add any attachments, except for user settings. These are deserialized
+        # later on, once the client has sent the initial message.
+        for attachment in self.default_attachments:
+            if isinstance(attachment, user_settings_module.UserSettings):
+                continue
+
+            sess.attachments.add(copy.deepcopy(attachment))
+
         # Make sure a theme is attached
         if rx.Theme not in sess.attachments:
             thm = rx.Theme()
@@ -697,16 +705,6 @@ class AppServer(fastapi.FastAPI):
 
                 # Attach the instance to the session
                 sess.attachments._add(att_instance, synchronize=False)
-
-        # Add any other attachments
-        for attachment in self.default_attachments:
-            if isinstance(attachment, user_settings_module.UserSettings):
-                continue
-
-            sess.attachments.add(copy.deepcopy(attachment))
-
-        if rx.Theme not in sess.attachments:
-            sess.attachments.add(rx.Theme())
 
         # Optionally create a validator
         validator_instance = (

@@ -5,6 +5,7 @@ description = ""
 authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>", "Paul Pinterits"]
 readme = "README.md"
 packages = [{ include = "reflex" }]
+include = ["reflex/generated/index.html"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -20,12 +21,13 @@ pywebview = { version = "^4.2.2", optional = true }
 timer-dict = "^1.0.0"
 typing-extensions = "^4.5.0"
 uniserde = "^0.3.8"
-uvicorn = {extras = ["standard"], version = "^0.23.2"}
+uvicorn = { extras = ["standard"], version = "^0.23.2" }
 unicall = "^0.1.2"
-pandas = {version = "^2.0.3", optional = true}
-plotly = {version = "^5.16.1", optional = true}
+pandas = { version = "^2.0.3", optional = true }
+plotly = { version = "^5.16.1", optional = true }
 babel = "^2.12.1"
 yarl = "^1.9.2"
+docstring-parser = "^0.15"
 
 [tool.poetry.extras]
 window = ["cefpython3", "pygobject", "pywebview"]
@@ -39,6 +41,7 @@ pre-commit = "^3.1.1"
 pytest = "^7.3.1"
 stream-tui = "^0.6.1"
 ipykernel = "^6.25.2"
+
 
 [build-system]
 requires = ["poetry-core"]
