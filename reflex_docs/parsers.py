@@ -9,6 +9,8 @@ import docstring_parser
 import introspection.typing
 from stream_tui import *  # type: ignore
 
+from reflex.inspection import get_type_annotations
+
 from . import models
 
 # Maps common default factories to the value they represent
@@ -165,7 +167,7 @@ def parse_class(cls: Type) -> models.ClassDocs:
     # Parse the fields
     fields_by_name: Dict[str, models.ClassField] = {}
 
-    for name, typ in get_type_hints(cls).items():
+    for name, typ in get_type_annotations(cls).items():
         if typ is dataclasses.KW_ONLY:
             continue
 
