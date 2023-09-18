@@ -66,19 +66,36 @@ class Color:
 
     @classmethod
     def from_hex(cls, hex_color: str) -> "Color":
-        # Drop the leading `#` if present
+        # Drop any leading `#` if present
         hex_color = hex_color.removeprefix("#")
 
         # Make sure the string is the correct length
-        if len(hex_color) not in (6, 8):
-            raise ValueError("The hex string must be 6 or 8 characters long")
+        if len(hex_color) not in (3, 4, 6, 8):
+            raise ValueError("The hex string must be 3, 4, 6 or 8 characters long")
+
+        # Split the string into the individual components
+        if len(hex_color) == 3:
+            rh, gh, bh = hex_color
+            ah = "ff"
+        elif len(hex_color) == 4:
+            rh, gh, bh, ah = hex_color
+        elif len(hex_color) == 6:
+            rh, gh, bh = hex_color[0:2], hex_color[2:4], hex_color[4:6]
+            ah = "ff"
+        else:
+            rh, gh, bh, ah = (
+                hex_color[0:2],
+                hex_color[2:4],
+                hex_color[4:6],
+                hex_color[6:8],
+            )
 
         # Parse it
         return cls.from_rgb(
-            red=int(hex_color[0:2], 16) / 255,
-            green=int(hex_color[2:4], 16) / 255,
-            blue=int(hex_color[4:6], 16) / 255,
-            opacity=int(hex_color[6:8], 16) / 255 if len(hex_color) == 8 else 1.0,
+            red=int(rh, 16) / 255,
+            green=int(gh, 16) / 255,
+            blue=int(bh, 16) / 255,
+            opacity=int(ah, 16) / 255,
         )
 
     @classmethod
