@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 from typing_extensions import TypeAlias
 from uniserde import Jsonable
 
-import reflex as rx
+from . import app_server
 
 __all__ = [
     "Color",
@@ -197,7 +197,8 @@ class Color:
         red_hex = f"{int(round(self.red*255)):02x}"
         green_hex = f"{int(round(self.green*255)):02x}"
         blue_hex = f"{int(round(self.blue*255)):02x}"
-        return red_hex + green_hex + blue_hex
+        opacity_hex = f"{int(round(self.opacity*255)):02x}"
+        return red_hex + green_hex + blue_hex + opacity_hex
 
     def replace(
         self,
@@ -349,6 +350,9 @@ class Color:
 
     def __hash__(self) -> int:
         return hash(self.rgba)
+
+    def _serialize(self, server: app_server.AppServer) -> Jsonable:
+        return self.rgba
 
     # Greys
     BLACK: ClassVar["Color"]

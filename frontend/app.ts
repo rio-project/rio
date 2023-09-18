@@ -2,11 +2,13 @@ import { AlignWidget } from './align';
 import { ButtonWidget } from './button';
 import { ClassContainerWidget } from './classContainer';
 import { Color, Fill } from './models';
+import { ColorPickerWidget } from './colorPicker';
 import { ColumnWidget, RowWidget } from './linearContainers';
 import { DropdownWidget } from './dropdown';
 import { GridWidget } from './grid';
 import { IconWidget } from './icon';
 import { KeyEventListenerWidget } from './keyEventListener';
+import { LinkWidget } from './link';
 import { MarginWidget } from './margin';
 import { MarkdownViewWidget } from './markdownView';
 import { MediaPlayerWidget } from './mediaPlayer';
@@ -17,6 +19,8 @@ import { ProgressBarWidget } from './progressBar';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
 import { RevealerWidget } from './revealer';
+import { ScrollContainerWidget } from './scrollContainer';
+import { ScrollTargetWidget } from './scrollTarget';
 import { SizeTripSwitchWidget } from './sizeTripSwitch';
 import { SliderWidget } from './slider';
 import { SlideshowWidget } from './slideshow';
@@ -25,9 +29,6 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { LinkWidget } from './link';
-import { ScrollTargetWidget } from './scrollTarget';
-import { ScrollContainerWidget } from './scrollContainer';
 
 const sessionToken = '{session_token}';
 
@@ -161,6 +162,7 @@ const widgetClasses = {
     'Align-builtin': AlignWidget,
     'Button-builtin': ButtonWidget,
     'ClassContainer-builtin': ClassContainerWidget,
+    'ColorPicker-builtin': ColorPickerWidget,
     'Column-builtin': ColumnWidget,
     'Dropdown-builtin': DropdownWidget,
     'Grid-builtin': GridWidget,

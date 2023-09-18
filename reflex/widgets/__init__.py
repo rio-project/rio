@@ -1,6 +1,7 @@
 from .auto_form import *
 from .button import *
 from .card import *
+from .color_picker import *
 from .column import *
 from .container import *
 from .custom_button import *

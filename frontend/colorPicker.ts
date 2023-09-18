@@ -1,0 +1,372 @@
+import { Color } from './models';
+import { WidgetBase, WidgetState } from './widgetBase';
+import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from './colorConversion';
+
+export type ColorPickerState = WidgetState & {
+    color?: Color;
+    pick_opacity?: boolean;
+};
+
+export class ColorPickerWidget extends WidgetBase {
+    state: Required<ColorPickerState>;
+
+    private colorSquare: HTMLElement;
+    private squareKnob: HTMLElement;
+
+    private hueBarOuter: HTMLElement;
+    private hueBarInner: HTMLElement;
+    private hueIndicator: HTMLElement;
+
+    private opacityBarOuter: HTMLElement;
+    private opacityBarInner: HTMLElement;
+    private opacityIndicator: HTMLElement;
+
+    private selectedColorLabel: HTMLInputElement;
+
+    private selectedHsv: [number, number, number] = [0, 0, 0];
+
+    private latentEventHandlers: any[] = [];
+
+    createElement(): HTMLElement {
+        // Create the elements
+        let containerElement = document.createElement('div');
+        containerElement.classList.add('reflex-color-picker');
+
+        containerElement.innerHTML = `
+        <div class="reflex-color-picker-color-square">
+            <div class="reflex-color-picker-knob"></div>
+        </div>
+
+        <div class="reflex-color-picker-hue-bar reflex-color-picker-slider-outer">
+            <div class="reflex-color-slider-inner"></div>
+            <div class="reflex-color-picker-knob"></div>
+        </div>
+
+        <div class="reflex-color-picker-opacity-bar reflex-color-picker-slider-outer">
+            <div class="reflex-color-slider-inner"></div>
+            <div class="reflex-color-slider-inner reflex-checkered"></div>
+            <div class="reflex-color-picker-knob"></div>
+        </div>
+
+        <div class="reflex-color-picker-result-container">
+            <div class="reflex-color-picker-selected-color-circle">
+                <div></div>
+                <div class="reflex-checkered"></div>
+            </div>
+            <input type='text' class="reflex-color-picker-selected-color-label" value="dummy" />
+        </div>`;
+
+        // Expose them as properties
+        this.colorSquare = containerElement.querySelector(
+            '.reflex-color-picker-color-square'
+        )!;
+        this.squareKnob = this.colorSquare.querySelector(
+            '.reflex-color-picker-knob'
+        )!;
+
+        this.hueBarOuter = containerElement.querySelector(
+            '.reflex-color-picker-hue-bar'
+        )!;
+        this.hueBarInner = this.hueBarOuter.querySelector(
+            '.reflex-color-slider-inner'
+        )!;
+        this.hueIndicator = this.hueBarOuter.querySelector(
+            '.reflex-color-picker-knob'
+        )!;
+
+        this.opacityBarOuter = containerElement.querySelector(
+            '.reflex-color-picker-opacity-bar'
+        )!;
+        this.opacityBarInner = this.opacityBarOuter.querySelector(
+            '.reflex-color-slider-inner'
+        )!;
+        this.opacityIndicator = this.opacityBarOuter.querySelector(
+            '.reflex-color-picker-knob'
+        )!;
+
+        this.selectedColorLabel = containerElement.querySelector(
+            '.reflex-color-picker-selected-color-label'
+        )!;
+
+        // Subscribe to mouse down events. The other events will be subscribed
+        // to only once needed.
+        this.colorSquare.addEventListener(
+            'mousedown',
+            this.onHueWheelMouseDown.bind(this)
+        );
+        this.hueBarOuter.addEventListener(
+            'mousedown',
+            this.onHueBarMouseDown.bind(this)
+        );
+        this.opacityBarOuter.addEventListener(
+            'mousedown',
+            this.onOpacityBarMouseDown.bind(this)
+        );
+        this.selectedColorLabel.addEventListener(
+            'change',
+            this.setFromUserHex.bind(this)
+        );
+
+        // TODO: This widget probably doesn't unsubscribe from events if it
+        // gets removed from the DOM. This is a memory leak.
+
+        return containerElement;
+    }
+
+    updateElement(
+        colorPicker: HTMLElement,
+        deltaState: ColorPickerState
+    ): void {
+        // Color
+        if (deltaState.color !== undefined) {
+            this.selectedHsv = rgbToHsv(
+                deltaState.color[0],
+                deltaState.color[1],
+                deltaState.color[2]
+            );
+        }
+
+        // Pick Opacity
+        if (deltaState.pick_opacity === true) {
+            this.opacityBarOuter.style.display = 'block';
+        } else if (deltaState.pick_opacity === false) {
+            this.opacityBarOuter.style.display = 'none';
+
+            if (this.state.color !== undefined) {
+                this.state.color[3] = 1.0;
+            }
+        }
+
+        // Apply the modified state
+        requestAnimationFrame(() => {
+            this.matchWidgetToSelectedHsv();
+        });
+    }
+
+    matchWidgetToSelectedHsv(): void {
+        // Precompute the color in RGB
+        let [r, g, b] = hsvToRgb(
+            this.selectedHsv[0],
+            this.selectedHsv[1],
+            this.selectedHsv[2]
+        );
+
+        this.state.color[0] = r;
+        this.state.color[1] = g;
+        this.state.color[2] = b;
+
+        let rgbHex = rgbToHex(r, g, b);
+        let rgbaHex = rgbaToHex(r, g, b, this.state.color[3]);
+
+        // Update the colors
+        let element = this.element();
+        element.style.setProperty('--chosen-color-opaque', `#${rgbHex}`);
+        element.style.setProperty('--chosen-color-transparent', `#${rgbaHex}`);
+
+        let onlyHueRgb = hsvToRgb(this.selectedHsv[0], 1, 1);
+        let hueHex = rgbToHex(onlyHueRgb[0], onlyHueRgb[1], onlyHueRgb[2]);
+
+        this.colorSquare.style.background = `
+            linear-gradient(
+                to top,
+                black,
+                transparent
+            ),
+            linear-gradient(
+                to right,
+                white,
+                #${hueHex}
+            )`;
+
+        this.hueIndicator.style.background = `#${hueHex}`;
+
+        // Place the saturation/brightness indicator
+        const boundingBox = this.colorSquare.getBoundingClientRect();
+        const saturationX = this.selectedHsv[1] * boundingBox.width;
+        const brightnessY = (1 - this.selectedHsv[2]) * boundingBox.height;
+
+        this.squareKnob.style.left = `${saturationX}px`;
+        this.squareKnob.style.top = `${brightnessY}px`;
+
+        // Place the hue indicator
+        const hueX = (boundingBox.width * this.selectedHsv[0]) / 360;
+        this.hueIndicator.style.left = `${hueX}px`;
+
+        // Place the opacity indicator
+        const brightnessX = boundingBox.width * this.state.color[3];
+        this.opacityIndicator.style.left = `${brightnessX}px`;
+
+        // Update the output label
+        this.selectedColorLabel.value = this.state.pick_opacity
+            ? rgbaHex
+            : rgbHex;
+    }
+
+    updateSaturationBrightness(x: number, y: number): void {
+        const boundingBox = this.colorSquare.getBoundingClientRect();
+        this.selectedHsv[1] = (x - boundingBox.left) / boundingBox.width;
+        this.selectedHsv[1] = Math.max(0, Math.min(1, this.selectedHsv[1]));
+
+        this.selectedHsv[2] = 1 - (y - boundingBox.top) / boundingBox.height;
+        this.selectedHsv[2] = Math.max(0, Math.min(1, this.selectedHsv[2]));
+
+        this.matchWidgetToSelectedHsv();
+    }
+
+    updateHue(x: number): void {
+        const boundingBox = this.hueBarOuter.getBoundingClientRect();
+        this.selectedHsv[0] =
+            (360 * (x - boundingBox.left)) / boundingBox.width;
+        this.selectedHsv[0] = Math.max(0, Math.min(360, this.selectedHsv[0]));
+
+        this.matchWidgetToSelectedHsv();
+    }
+
+    updateOpacity(x: number): void {
+        const boundingBox = this.opacityBarOuter.getBoundingClientRect();
+        this.state.color[3] = (x - boundingBox.left) / boundingBox.width;
+        this.state.color[3] = Math.max(0, Math.min(1, this.state.color[3]));
+
+        this.matchWidgetToSelectedHsv();
+    }
+
+    bindHandler(eventName: string, handler: any) {
+        let boundHandler = handler.bind(this);
+        document.addEventListener(eventName, boundHandler);
+        this.latentEventHandlers.push([eventName, boundHandler]);
+    }
+
+    onHueWheelMouseDown(event) {
+        this.updateSaturationBrightness(event.clientX, event.clientY);
+
+        // Subscribe to other events and keep track of them
+        this.bindHandler('mousemove', this.onHueWheelMouseMove);
+        this.bindHandler('mouseup', this.selectionFinished);
+    }
+
+    onHueWheelMouseMove(event) {
+        this.updateSaturationBrightness(event.clientX, event.clientY);
+    }
+
+    onHueBarMouseDown(event) {
+        this.updateHue(event.clientX);
+
+        // Subscribe to other events and keep track of them
+        this.bindHandler('mousemove', this.onhueBarMouseMove);
+        this.bindHandler('mouseup', this.selectionFinished);
+    }
+
+    onhueBarMouseMove(event) {
+        this.updateHue(event.clientX);
+    }
+
+    onOpacityBarMouseDown(event) {
+        this.updateOpacity(event.clientX);
+
+        // Subscribe to other events and keep track of them
+        this.bindHandler('mousemove', this.onOpacityBarMouseMove);
+        this.bindHandler('mouseup', this.selectionFinished);
+    }
+
+    onOpacityBarMouseMove(event) {
+        this.updateOpacity(event.clientX);
+    }
+
+    selectionFinished() {
+        // Send the final color to the frontend
+        this.sendMessageToBackend({
+            color: this.state.color,
+        });
+
+        // Unsubscribe from all events
+        for (let handler of this.latentEventHandlers) {
+            let [eventName, boundHandler] = handler;
+            document.removeEventListener(eventName, boundHandler);
+        }
+
+        this.latentEventHandlers = [];
+    }
+
+    lenientlyParseColorHex(hex) {
+        // Try to very leniently parse the user-provided hex string
+        hex = hex.trim();
+
+        // Drop the leading # if it exists
+        hex = hex.startsWith('#') ? hex.slice(1).trim() : hex;
+
+        // Make sure the input consists only of valid characters
+        if (!/^[0-9a-fA-F]+$/.test(hex)) {
+            return null;
+        }
+
+        // rgb
+        if (hex.length == 3) {
+            let [r, g, b] = hex;
+            return [
+                parseInt(r + r, 16) / 255,
+                parseInt(g + g, 16) / 255,
+                parseInt(b + b, 16) / 255,
+                1.0,
+            ];
+        }
+
+        // rgba
+        if (hex.length == 4) {
+            let [r, g, b, a] = hex;
+            return [
+                parseInt(r + r, 16) / 255,
+                parseInt(g + g, 16) / 255,
+                parseInt(b + b, 16) / 255,
+                parseInt(a + a, 16) / 255,
+            ];
+        }
+
+        // rrggbb
+        if (hex.length == 6) {
+            let [r, g, b] = hex.match(/.{2}/g);
+            return [
+                parseInt(r, 16) / 255,
+                parseInt(g, 16) / 255,
+                parseInt(b, 16) / 255,
+                1.0,
+            ];
+        }
+
+        // rrggbbaa
+        if (hex.length == 8) {
+            let [r, g, b, a] = hex.match(/.{2}/g);
+            return [
+                parseInt(r, 16) / 255,
+                parseInt(g, 16) / 255,
+                parseInt(b, 16) / 255,
+                parseInt(a, 16) / 255,
+            ];
+        }
+
+        // Invalid format
+        return null;
+    }
+
+    setFromUserHex(event) {
+        // Try to parse the value
+        let color = this.lenientlyParseColorHex(event.target.value);
+
+        // Invalid color
+        if (color === null) {
+            return;
+        }
+
+        // If a color could be parsed, update the widget
+        let [h, s, l] = rgbToHsv(color[0], color[1], color[2]);
+        this.selectedHsv[0] = h;
+        this.selectedHsv[1] = s;
+        this.selectedHsv[2] = l;
+        this.state.color[3] = this.state.pick_opacity ? color[3] : 1.0;
+
+        // Update the widget
+        this.matchWidgetToSelectedHsv();
+
+        // Deselect the text input
+        event.target.blur();
+    }
+}

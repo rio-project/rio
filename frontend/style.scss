@@ -316,11 +316,6 @@ code {
     color: var(--reflex-local-text-color);
 }
 
-// Text Input
-.reflex-text-input {
-    pointer-events: auto;
-}
-
 // Rectangle
 .reflex-rectangle {
     pointer-events: auto;
@@ -892,4 +887,179 @@ code {
 // ScrollContainer
 .reflex-scroll-container {
     pointer-events: auto; // Needs pointer events so that the scrollbar can be interacted with
+}
+
+// Color Picker
+.reflex-color-picker {
+    pointer-events: none;
+
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.reflex-color-picker-color-square {
+    pointer-events: auto;
+
+    position: relative;
+    min-height: 6rem;
+    cursor: crosshair;
+    margin-bottom: 0.7rem;
+    border-radius: 0.45rem;
+    flex-grow: 1;
+}
+
+.reflex-color-picker-slider-outer {
+    pointer-events: auto;
+
+    position: relative;
+    padding: 0.7rem 0;
+}
+
+.reflex-color-slider-inner {
+    height: 0.9rem;
+    cursor: crosshair;
+    border-radius: 99rem;
+}
+
+.reflex-color-picker-knob {
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    border: 0.2rem solid white;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    background: var(--chosen-color-opaque);
+
+    /* Allow clicking through the knob */
+    pointer-events: none;
+    cursor: crosshair;
+}
+
+.reflex-color-picker-slider-outer > .reflex-color-picker-knob {
+    top: 50%;
+}
+
+.color-slider-checkers {
+    border-radius: 99rem;
+}
+
+.reflex-color-picker-hue-bar > .reflex-color-slider-inner {
+    background: linear-gradient(
+        to right,
+        red,
+        yellow,
+        lime,
+        aqua,
+        blue,
+        magenta,
+        red
+    );
+}
+
+.reflex-color-picker-opacity-bar
+    > .reflex-color-slider-inner:not(.reflex-checkered) {
+    position: absolute;
+    top: 0.7rem;
+    left: 0;
+    right: 0;
+    bottom: 0.7rem;
+
+    background: linear-gradient(
+        to right,
+        transparent,
+        var(--chosen-color-opaque)
+    );
+}
+
+.reflex-color-picker-result-container {
+    margin-top: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.reflex-color-picker-selected-color-circle {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.reflex-color-picker-selected-color-circle > * {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.reflex-color-picker-selected-color-circle > div:first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background: var(--chosen-color-transparent);
+}
+
+.reflex-color-picker-selected-color-circle-color {
+    background: var(--chosen-color-transparent);
+}
+
+.reflex-color-picker-selected-color-label {
+    pointer-events: auto;
+    opacity: 0.25;
+
+    /* Fixed width to avoid movement when the value changes */
+    width: 5rem;
+
+    /* Text style */
+    font-family: Roboto;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: bold;
+
+    /* Override the default styling */
+    background: transparent;
+    border: none;
+    padding: 0.3rem;
+    border-radius: 0.5rem;
+
+    transition:
+        opacity 0.1s ease-in-out,
+        color 0.1s ease-in-out,
+        background-color 0.1s ease-in-out;
+}
+
+.reflex-color-picker-selected-color-label:focus {
+    outline: none;
+
+    opacity: 1;
+    color: var(--reflex-local-accent-color);
+    background: var(--reflex-local-surface-color-variant);
+}
+
+.reflex-checkered {
+    --checker-color: #888;
+    --checker-size: 0.9rem;
+
+    background-image: linear-gradient(
+            45deg,
+            var(--checker-color) 25%,
+            transparent 25%
+        ),
+        linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
+        linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
+        linear-gradient(45deg, var(--checker-color) 25%, transparent 25%);
+
+    background-size: var(--checker-size) var(--checker-size);
+    background-position:
+        0 0,
+        0 0,
+        calc(var(--checker-size) * -0.5) calc(var(--checker-size) * -0.5),
+        calc(var(--checker-size) * 0.5) calc(var(--checker-size) * 0.5);
 }

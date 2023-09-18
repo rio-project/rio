@@ -22,6 +22,7 @@ export class TextInputWidget extends WidgetBase {
         element.classList.add('reflex-text-input');
         element.classList.add('mdc-text-field');
         element.classList.add('mdc-text-field--filled');
+        element.style.pointerEvents = 'auto';
 
         element.innerHTML = `
 <span class="mdc-text-field__ripple"></span>

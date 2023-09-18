@@ -1,8 +1,5 @@
-import json
 from pathlib import Path
 from typing import *  # type: ignore
-
-import plotly.express as px
 
 import reflex as rx
 import reflex.debug
@@ -184,6 +181,15 @@ class Sidebar(rx.Widget):
                     ),
                     rx.ProgressBar(0.4),
                     rx.ProgressBar(None),
+                    rx.ColorPicker(
+                        rx.Color.RED,
+                        on_change=lambda evt: print("RGB Color Changed:", evt.color),
+                    ),
+                    rx.ColorPicker(
+                        rx.Color.GREEN,
+                        pick_opacity=True,
+                        on_change=lambda evt: print("RGBA Color Changed:", evt.color),
+                    ),
                     rx.Switch(
                         on_change=lambda _: print("Switch 1 Changed"),
                     ),
@@ -246,14 +252,6 @@ class Sidebar(rx.Widget):
 
 class WidgetShowcase(rx.Widget):
     def build(self) -> rx.Widget:
-        df = px.data.gapminder().query("country=='Canada'")
-        fig = px.line(
-            df,
-            x="year",
-            y="lifeExp",
-            title="Life expectancy in Canada",
-        )
-
         return rx.Row(
             Sidebar(
                 width=30,
@@ -265,10 +263,6 @@ class WidgetShowcase(rx.Widget):
                     rx.Text("Hello World"),
                     rx.Text("Hello World"),
                     rx.Text("Hello World"),
-                    rx.Plot(
-                        figure=fig,
-                        # height=20,
-                    ),
                 ),
                 margin_x=4,
                 align_y=0.2,

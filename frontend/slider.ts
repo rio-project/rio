@@ -18,6 +18,7 @@ export class SliderWidget extends WidgetBase {
         let element = document.createElement('div');
         element.classList.add('mdc-slider');
         element.classList.add('reflex-slider');
+        element.style.pointerEvents = 'auto';
 
         element.innerHTML = `
         <input class="mdc-slider__input" type="range" min="0" max="1000" value="250">
