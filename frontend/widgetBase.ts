@@ -27,7 +27,7 @@ export abstract class WidgetBase {
     /// Fetches the HTML element associated with this widget. This is a slow
     /// operation and should be avoided if possible. Returns `null` if the
     /// element cannot be found.
-    try_get_element(): HTMLElement | null {
+    tryGetElement(): HTMLElement | null {
         return document.getElementById(this.elementId);
     }
 
@@ -60,7 +60,7 @@ export abstract class WidgetBase {
 
     /// Update the layout relevant CSS attributes for all of the widget's
     /// children.
-    updateChildLayouts(): void {}
+    updateChildLayouts(): void { }
 
     /// Used by the parent for assigning the layout relevant CSS attributes to
     /// the widget's HTML element. This function keeps track of the assigned

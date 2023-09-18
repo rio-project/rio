@@ -17,8 +17,10 @@ export class ScrollTargetWidget extends WidgetBase {
         // have ids of the form `reflex-id-...`. So we must create a container
         // for our <a> element.
         let element = document.createElement('span');
+        element.classList.add('reflex-single-container');
 
         let anchorElement = document.createElement('a');
+        anchorElement.classList.add('reflex-single-container');
         element.appendChild(anchorElement);
 
         return element;

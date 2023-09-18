@@ -94,7 +94,7 @@ export class SlideshowWidget extends WidgetBase {
 
     async updateLoop() {
         // If the slideshow has been removed from the DOM, stop updating
-        let element = this.try_get_element();
+        let element = this.tryGetElement();
 
         if (element === null || !element.isConnected) {
             return;
@@ -123,12 +123,10 @@ export class SlideshowWidget extends WidgetBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${
-                -100 * offset
-            }%)`;
-            this.incomingChild.style.transform = `translateX(${
-                -100 * (offset - 1)
-            }%)`;
+            this.outgoingChild.style.transform = `translateX(${-100 * offset
+                }%)`;
+            this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)
+                }%)`;
 
             // Update the progress bar's opacity
             this.progressBarOpacity = Math.max(

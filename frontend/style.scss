@@ -18,6 +18,7 @@
 html[data-theme='light'] {
     @include meta.load-css('highlightjs-default-light.css');
 }
+
 html[data-theme='dark'] {
     @include meta.load-css('highlightjs-default-dark.css');
 }
@@ -41,22 +42,16 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-secondary-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-secondary-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-secondary-color-variant);
 
     // Surface
     --reflex-local-surface-color: var(--reflex-global-primary-color);
-    --reflex-local-surface-color-variant: var(
-        --reflex-global-primary-color-variant
-    );
+    --reflex-local-surface-color-variant: var(--reflex-global-primary-color-variant);
 
     // Text styles
     --reflex-local-heading-color: var(--reflex-global-heading-on-primary-color);
     --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-secondary-color
-    );
+    --reflex-local-text-on-accent-color: var(--reflex-global-text-on-secondary-color);
 
     // Material Design Web
     // TODO
@@ -69,24 +64,16 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-primary-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-primary-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-primary-color-variant);
 
     // Surface
     --reflex-local-surface-color: var(--reflex-global-secondary-color);
-    --reflex-local-surface-color-variant: var(
-        --reflex-global-secondary-color-variant
-    );
+    --reflex-local-surface-color-variant: var(--reflex-global-secondary-color-variant);
 
     // Text styles
-    --reflex-local-heading-color: var(
-        --reflex-global-heading-on-secondary-color
-    );
+    --reflex-local-heading-color: var(--reflex-global-heading-on-secondary-color);
     --reflex-local-text-color: var(--reflex-global-text-on-secondary-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-primary-color
-    );
+    --reflex-local-text-on-accent-color: var(--reflex-global-text-on-primary-color);
 
     // Material Design Web
     // TODO
@@ -99,16 +86,12 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-success-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-success-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-success-color-variant);
 
     // Text styles
     // --reflex-local-heading-color: var(--reflex-global-text-on-success-color);
     // --reflex-local-text-color: var(--reflex-global-text-on-success-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-success-color
-    );
+    --reflex-local-text-on-accent-color: var(--reflex-global-text-on-success-color);
 
     // Material Design Web
     // TODO
@@ -121,16 +104,12 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-warning-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-warning-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-warning-color-variant);
 
     // Text styles
     // --reflex-local-heading-color: var(--reflex-global-text-on-warning-color);
     // --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-warning-color
-    );
+    --reflex-local-text-on-accent-color: var(--reflex-global-text-on-warning-color);
 
     // Material Design Web
     // TODO
@@ -143,16 +122,12 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-danger-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-danger-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-danger-color-variant);
 
     // Text styles
     // --reflex-local-heading-color: var(--reflex-global-text-on-danger-color);
     // --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-danger-color
-    );
+    --reflex-local-text-on-accent-color: var(--reflex-global-text-on-danger-color);
 
     // Material Design Web
     // TODO
@@ -184,15 +159,11 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-secondary-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-secondary-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-secondary-color-variant);
 
     // Surface
     --reflex-local-surface-color: var(--reflex-global-surface-color);
-    --reflex-local-surface-color-variant: var(
-        --reflex-global-surface-color-variant
-    );
+    --reflex-local-surface-color-variant: var(--reflex-global-surface-color-variant);
 
     // Text styles
     --reflex-local-heading-color: var(--reflex-global-heading-on-surface-color);
@@ -214,9 +185,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-global-disabled-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-disabled-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-global-disabled-color-variant);
 
     // Text styles
     --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
@@ -230,9 +199,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     // Theme colors
     --reflex-local-accent-color: var(--reflex-local-custom-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-local-custom-color-variant
-    );
+    --reflex-local-accent-color-variant: var(--reflex-local-custom-color-variant);
 
     // Text styles
     --reflex-local-text-color: var(--reflex-local-custom-text-color);
@@ -247,7 +214,7 @@ $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     align-items: stretch;
 }
 
-.reflex-single-container > * {
+.reflex-single-container>* {
     flex-grow: 1;
 }
 
@@ -276,7 +243,7 @@ code {
 }
 
 // Align
-.reflex-align > * {
+.reflex-align>* {
     pointer-events: none;
     position: relative;
 }
@@ -288,7 +255,7 @@ code {
 
 // Column
 .reflex-column,
-.reflex-column > div.reflex-undefined-space + div {
+.reflex-column>div.reflex-undefined-space+div {
     pointer-events: none;
 
     display: flex;
@@ -298,7 +265,7 @@ code {
 
 // Row
 .reflex-row,
-.reflex-row > div.reflex-undefined-space + div {
+.reflex-row>div.reflex-undefined-space+div {
     pointer-events: none;
 
     display: flex;
@@ -311,6 +278,7 @@ code {
     from {
         background-position: 0 0;
     }
+
     to {
         background-position: 2rem 0rem;
     }
@@ -320,16 +288,14 @@ code {
     pointer-events: auto;
     flex-grow: 1;
 
-    background-image: linear-gradient(
-        -45deg,
-        black 25%,
-        var(--reflex-global-warning-color) 25%,
-        var(--reflex-global-warning-color) 50%,
-        black 50%,
-        black 75%,
-        var(--reflex-global-warning-color) 75%,
-        var(--reflex-global-warning-color)
-    );
+    background-image: linear-gradient(-45deg,
+            black 25%,
+            var(--reflex-global-warning-color) 25%,
+            var(--reflex-global-warning-color) 50%,
+            black 50%,
+            black 75%,
+            var(--reflex-global-warning-color) 75%,
+            var(--reflex-global-warning-color));
     background-size: 2rem 2rem;
     animation: barber-pole 0.7s linear infinite;
 }
@@ -369,13 +335,8 @@ code {
     background: var(--rectangle-background);
     border-color: var(--rectangle-stroke-color);
     border-width: var(--rectangle-stroke-width);
-    border-radius: var(--rectangle-corner-radius-top-left)
-        var(--rectangle-corner-radius-top-right)
-        var(--rectangle-corner-radius-bottom-right)
-        var(--rectangle-corner-radius-bottom-left);
-    box-shadow: var(--rectangle-shadow-offset-x)
-        var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius)
-        var(--rectangle-shadow-color);
+    border-radius: var(--rectangle-corner-radius-top-left) var(--rectangle-corner-radius-top-right) var(--rectangle-corner-radius-bottom-right) var(--rectangle-corner-radius-bottom-left);
+    box-shadow: var(--rectangle-shadow-offset-x) var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius) var(--rectangle-shadow-color);
 }
 
 .reflex-rectangle-ripple {
@@ -390,13 +351,8 @@ code {
     background: var(--rectangle-background-hover);
     border-color: var(--rectangle-stroke-color-hover);
     border-width: var(--rectangle-stroke-width-hover);
-    border-radius: var(--rectangle-corner-radius-top-left-hover)
-        var(--rectangle-corner-radius-top-right-hover)
-        var(--rectangle-corner-radius-bottom-right-hover)
-        var(--rectangle-corner-radius-bottom-left-hover);
-    box-shadow: var(--rectangle-shadow-offset-x-hover)
-        var(--rectangle-shadow-offset-y-hover)
-        var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
+    border-radius: var(--rectangle-corner-radius-top-left-hover) var(--rectangle-corner-radius-top-right-hover) var(--rectangle-corner-radius-bottom-right-hover) var(--rectangle-corner-radius-bottom-left-hover);
+    box-shadow: var(--rectangle-shadow-offset-x-hover) var(--rectangle-shadow-offset-y-hover) var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
 // Stack
@@ -405,7 +361,7 @@ code {
     display: grid;
 }
 
-.reflex-stack > * {
+.reflex-stack>* {
     grid-column-start: 1;
     grid-row-start: 1;
 }
@@ -453,16 +409,16 @@ code {
         left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
 }
 
-.reflex-switch input:active + .knob {
+.reflex-switch input:active+.knob {
     width: 1.978rem;
     border-radius: 4.3rem;
 }
 
-.reflex-switch.is-on input:active + .knob {
+.reflex-switch.is-on input:active+.knob {
     margin-left: -1.118rem;
 }
 
-.reflex-switch.is-on input + .knob {
+.reflex-switch.is-on input+.knob {
     left: 1.806rem;
     background-color: var(--reflex-local-surface-color);
 }
@@ -539,10 +495,12 @@ code {
         stroke-dasharray: 1, 200;
         stroke-dashoffset: 0;
     }
+
     50% {
         stroke-dasharray: 90, 200;
         stroke-dashoffset: -35px;
     }
+
     100% {
         stroke-dashoffset: -125px;
     }
@@ -676,7 +634,7 @@ code {
     transition: opacity 0.7s ease-in;
 }
 
-.reflex-error-popup > div {
+.reflex-error-popup>div {
     pointer-events: auto;
     position: fixed;
     top: 2rem;
@@ -688,8 +646,7 @@ code {
     font-weight: bold;
     padding: 1.5rem;
     border-radius: 99999px;
-    box-shadow: 0 0 var(--reflex-global-shadow-radius)
-        var(--reflex-global-shadow-color);
+    box-shadow: 0 0 var(--reflex-global-shadow-radius) var(--reflex-global-shadow-color);
 
     // This is immediately changed by JavaScript to effect a fade-in
     transform: translate(-50%, -200%);
@@ -712,14 +669,14 @@ code {
     height: 100%;
 }
 
-.slideshow-child-container > div {
+.slideshow-child-container>div {
     grid-column-start: 1;
     grid-row-start: 1;
     width: 100%;
     height: 100%;
 }
 
-.slideshow-child-container > div > * {
+.slideshow-child-container>div>* {
     grid-column-start: 1;
     grid-row-start: 1;
     width: 100%;
@@ -792,16 +749,16 @@ code {
         list-style-type: none;
     }
 
-    ul > li {
+    ul>li {
         margin-bottom: 0.4em;
     }
 
-    ul > li:before {
+    ul>li:before {
         content: '- ';
         font-weight: bold;
     }
 
-    p > code {
+    p>code {
         font-family: 'Roboto Mono', monospace;
         background: var(--reflex-local-surface-color-variant);
         border-radius: var(--reflex-global-corner-radius-small);
@@ -821,7 +778,7 @@ code {
     color: var(--reflex-local-text-color);
 }
 
-.reflex-markdown-code-block-header > * {
+.reflex-markdown-code-block-header>* {
     padding: var(--reflex-padding);
 }
 
@@ -856,7 +813,7 @@ code {
     opacity: 1;
 }
 
-.reflex-markdown-code-block > code {
+.reflex-markdown-code-block>code {
     font-size: 1rem;
     display: block;
     padding: 0 var(--reflex-padding) var(--reflex-padding) var(--reflex-padding);
@@ -930,4 +887,9 @@ code {
 .reflex-text-link {
     color: var(--reflex-local-accent-color);
     cursor: pointer;
+}
+
+// ScrollContainer
+.reflex-scroll-container {
+    pointer-events: auto; // Needs pointer events so that the scrollbar can be interacted with
 }

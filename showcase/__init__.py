@@ -75,164 +75,170 @@ class Sidebar(rx.Widget):
 
     def build(self) -> rx.Widget:
         return Card(
-            child=rx.Column(
-                rx.Text(
-                    "Reflex UI",
-                    style="heading1",
-                    margin_top=1.0,
-                ),
-                rx.Text(
-                    "The reactive UI library for Python",
-                    style="heading2",
-                    margin_top=0.6,
-                ),
-                rx.Grid(
-                    [
-                        rx.TextInput(
-                            placeholder="Plain",
-                            text=Sidebar.search_text,
-                            prefix_text="prefix",
-                            on_change=lambda evt: print("plain-change:", evt.text),
-                            is_sensitive=False,
-                        ),
-                        rx.TextInput(
-                            placeholder="Secret",
-                            text=Sidebar.search_text,
-                            is_secret=True,
-                            suffix_text="suffix",
-                            on_confirm=lambda evt: print("secret-confirm:", evt.text),
-                        ),
-                    ],
-                    [
-                        rx.Button(
-                            "Button",
-                            # icon="bootstrap/zoom-out",
-                            is_sensitive=bool(self.search_text),
-                            color=rx.Color.BLACK
-                            if bool(self.search_text)
-                            else rx.Color.RED,
-                        ),
-                        rx.ProgressCircle(
-                            progress=None,
-                        ),
-                    ],
-                ),
-                KeyEventTester(),
-                rx.Row(
-                    rx.Icon(
-                        "archive",
-                        fill=rx.Color.BLUE,
-                        width=3.0,
-                        height=3.0,
+            child=rx.ScrollContainer(
+                rx.Column(
+                    rx.Text(
+                        "Reflex UI",
+                        style="heading1",
+                        margin_top=1.0,
                     ),
-                    rx.Icon(
-                        "material/archive/fill",
-                        fill=rx.LinearGradientFill(
-                            (rx.Color.RED, 0),
-                            (rx.Color.BLUE, 1),
-                            angle_degrees=20,
-                        ),
-                        width=3.0,
-                        height=3.0,
+                    rx.Text(
+                        "The reactive UI library for Python",
+                        style="heading2",
+                        margin_top=0.6,
                     ),
-                    rx.Icon(
-                        "material/castle",
-                        fill=rx.ImageFill(
-                            Path(__file__).parent / "test.png",
-                        ),
-                        width=3.0,
-                        height=3.0,
+                    rx.Grid(
+                        [
+                            rx.TextInput(
+                                placeholder="Plain",
+                                text=Sidebar.search_text,
+                                prefix_text="prefix",
+                                on_change=lambda evt: print("plain-change:", evt.text),
+                                is_sensitive=False,
+                            ),
+                            rx.TextInput(
+                                placeholder="Secret",
+                                text=Sidebar.search_text,
+                                is_secret=True,
+                                suffix_text="suffix",
+                                on_confirm=lambda evt: print(
+                                    "secret-confirm:", evt.text
+                                ),
+                            ),
+                        ],
+                        [
+                            rx.Button(
+                                "Button",
+                                # icon="bootstrap/zoom-out",
+                                is_sensitive=bool(self.search_text),
+                                color=rx.Color.BLACK
+                                if bool(self.search_text)
+                                else rx.Color.RED,
+                            ),
+                            rx.ProgressCircle(
+                                progress=None,
+                            ),
+                        ],
                     ),
-                    align_x=0.5,
-                    spacing=1,
-                ),
-                rx.Row(
-                    rx.Text("⇇ Undef space ⇉"),
-                ),
-                rx.Slider(value=0.1),
-                rx.Button(
-                    "Foo",
-                    on_press=lambda _: print("Button Pressed"),
-                    shape="pill",
-                    style="major",
-                    is_loading=True,
-                ),
-                rx.Button(
-                    "Bar",
-                    icon="material/castle/fill",
-                    shape="rounded",
-                    style="minor",
-                    color="danger",
-                    # is_sensitive=False,
-                ),
-                rx.Button(
-                    "Baz",
-                    icon="material/archive/fill",
-                    shape="rectangle",
-                    color="warning",
-                ),
-                rx.Button(
-                    "Spam",
-                    shape="circle",
-                    color=rx.Color.CYAN,
-                    width=3,
-                    height=3,
-                    align_x=0.5,
-                ),
-                rx.ProgressBar(0.4),
-                rx.ProgressBar(None),
-                rx.Switch(
-                    on_change=lambda _: print("Switch 1 Changed"),
-                ),
-                rx.Switch(
-                    is_sensitive=False,
-                    on_change=lambda _: print("Switch 2 Changed"),
-                ),
-                rx.NumberInput(
-                    3.0,
-                    placeholder="Number",
-                    prefix_text="$",
-                    decimals=2,
-                ),
-                rx.Text("I ❤️ U 🏎️"),
-                rx.Revealer(
-                    "Revealer",
-                    rx.Text("Hello World"),
-                    on_change=lambda evt: print("Revealer Changed:", evt.is_expanded),
-                    is_expanded=Sidebar.expanded,
-                ),
-                rx.ScrollTarget(
-                    "scroll-target",
+                    KeyEventTester(),
+                    rx.Row(
+                        rx.Icon(
+                            "archive",
+                            fill=rx.Color.BLUE,
+                            width=3.0,
+                            height=3.0,
+                        ),
+                        rx.Icon(
+                            "material/archive/fill",
+                            fill=rx.LinearGradientFill(
+                                (rx.Color.RED, 0),
+                                (rx.Color.BLUE, 1),
+                                angle_degrees=20,
+                            ),
+                            width=3.0,
+                            height=3.0,
+                        ),
+                        rx.Icon(
+                            "material/castle",
+                            fill=rx.ImageFill(
+                                Path(__file__).parent / "test.png",
+                            ),
+                            width=3.0,
+                            height=3.0,
+                        ),
+                        align_x=0.5,
+                        spacing=1,
+                    ),
+                    rx.Row(
+                        rx.Text("⇇ Undef space ⇉"),
+                    ),
+                    rx.Slider(value=0.1),
+                    rx.Button(
+                        "Foo",
+                        on_press=lambda _: print("Button Pressed"),
+                        shape="pill",
+                        style="major",
+                        is_loading=True,
+                    ),
+                    rx.Button(
+                        "Bar",
+                        icon="material/castle/fill",
+                        shape="rounded",
+                        style="minor",
+                        color="danger",
+                        # is_sensitive=False,
+                    ),
+                    rx.Button(
+                        "Baz",
+                        icon="material/archive/fill",
+                        shape="rectangle",
+                        color="warning",
+                    ),
+                    rx.Button(
+                        "Spam",
+                        shape="circle",
+                        color=rx.Color.CYAN,
+                        width=3,
+                        height=3,
+                        align_x=0.5,
+                    ),
+                    rx.ProgressBar(0.4),
+                    rx.ProgressBar(None),
                     rx.Switch(
-                        is_on=Sidebar.expanded,
+                        on_change=lambda _: print("Switch 1 Changed"),
                     ),
-                ),
-                rx.Stack(
-                    rx.Rectangle(
-                        style=rx.BoxStyle(fill=rx.Color.RED),
-                        ripple=True,
-                        width=7,
-                        height=7,
-                        align_x=0,
-                        align_y=0,
+                    rx.Switch(
+                        is_sensitive=False,
+                        on_change=lambda _: print("Switch 2 Changed"),
                     ),
-                    rx.Rectangle(
-                        style=rx.BoxStyle(fill=rx.Color.YELLOW),
-                        ripple=True,
-                        width=5,
-                        height=10,
-                        align_x=0,
+                    rx.NumberInput(
+                        3.0,
+                        placeholder="Number",
+                        prefix_text="$",
+                        decimals=2,
                     ),
-                    rx.Rectangle(
-                        style=rx.BoxStyle(fill=rx.Color.GREEN),
-                        ripple=True,
-                        width=10,
-                        height=5,
-                        align_y=0,
+                    rx.Text("I ❤️ U 🏎️"),
+                    rx.Revealer(
+                        "Revealer",
+                        rx.Text("Hello World"),
+                        on_change=lambda evt: print(
+                            "Revealer Changed:", evt.is_expanded
+                        ),
+                        is_expanded=Sidebar.expanded,
                     ),
-                ),
-                spacing=1.0,
-                align_y=0,
+                    rx.ScrollTarget(
+                        "scroll-target",
+                        rx.Switch(
+                            is_on=Sidebar.expanded,
+                        ),
+                    ),
+                    rx.Stack(
+                        rx.Rectangle(
+                            style=rx.BoxStyle(fill=rx.Color.RED),
+                            ripple=True,
+                            width=7,
+                            height=7,
+                            align_x=0,
+                            align_y=0,
+                        ),
+                        rx.Rectangle(
+                            style=rx.BoxStyle(fill=rx.Color.YELLOW),
+                            ripple=True,
+                            width=5,
+                            height=10,
+                            align_x=0,
+                        ),
+                        rx.Rectangle(
+                            style=rx.BoxStyle(fill=rx.Color.GREEN),
+                            ripple=True,
+                            width=10,
+                            height=5,
+                            align_y=0,
+                        ),
+                    ),
+                    spacing=1.0,
+                    align_y=0,
+                )
             ),
             margin=1.0,
         )

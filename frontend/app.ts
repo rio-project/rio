@@ -27,6 +27,7 @@ import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { LinkWidget } from './link';
 import { ScrollTargetWidget } from './scrollTarget';
+import { ScrollContainerWidget } from './scrollContainer';
 
 const sessionToken = '{session_token}';
 
@@ -176,6 +177,7 @@ const widgetClasses = {
     'Rectangle-builtin': RectangleWidget,
     'Revealer-builtin': RevealerWidget,
     'Row-builtin': RowWidget,
+    'ScrollContainer-builtin': ScrollContainerWidget,
     'ScrollTarget-builtin': ScrollTargetWidget,
     'SizeTripSwitch-builtin': SizeTripSwitchWidget,
     'Slider-builtin': SliderWidget,

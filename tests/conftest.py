@@ -40,13 +40,14 @@ def _enable_widget_instantiation(
         validator_factory=None,
     )
     session = rx.Session(
-        initial_route=[],
-        send_message=send_message,
-        receive_message=receive_message,
-        app_server_=app_server,
+        app_server,
+        rx.URL("https://unit.test"),
+        (),
     )
     session.external_url = None
     session.preferred_locales = (babel.Locale.parse("en_US"),)
+    session._send_message = send_message
+    session._receive_message = receive_message
 
     reflex.global_state.currently_building_session = session
 

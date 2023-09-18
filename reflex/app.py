@@ -97,11 +97,13 @@ class App:
         *,
         external_url_override: Optional[str] = None,
         host: str = "localhost",
-        port: Optional[int] = None,  # FIXME: Choose free port if None
+        port: int = 8000,
         quiet: bool = True,
         _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
         _on_startup: Optional[Callable[[], Awaitable[None]]] = None,
     ) -> None:
+        port = _ensure_valid_port(host, port)
+
         # Suppress stdout messages if requested
         kwargs = {}
 
@@ -138,10 +140,12 @@ class App:
         *,
         external_url_override: Optional[str] = None,
         host: str = "localhost",
-        port: int = 8000,
+        port: Optional[int] = None,
         quiet: bool = True,
         _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
     ):
+        port = _ensure_valid_port(host, port)
+
         async def on_startup() -> None:
             webbrowser.open(f"http://{host}:{port}")
 
@@ -170,7 +174,7 @@ class App:
 
         # TODO: How to choose a free port?
         host = "localhost"
-        port = _choose_free_port(host)
+        port = _ensure_valid_port(host, None)
         url = f"http://{host}:{port}"
 
         # This lock is released once the server is running
@@ -268,3 +272,22 @@ def _choose_free_port(host: str) -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind((host, 0))
         return sock.getsockname()[1]
+
+
+def _port_is_in_use(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        try:
+            sock.bind((host, port))
+            return False
+        except OSError:
+            return True
+
+
+def _ensure_valid_port(host: str, port: Optional[int]) -> int:
+    if port is None:
+        return _choose_free_port(host)
+
+    # if _port_is_in_use(host, port):
+    #     raise ValueError(f"The port {host}:{port} is already in use")
+
+    return port
