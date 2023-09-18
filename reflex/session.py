@@ -1176,6 +1176,7 @@ document.body.removeChild(a)
         #
         # TODO: Is there a better way to do this
         async def keepaliver() -> None:
+            holdonewellgethelp = as_asset
             await asyncio.sleep(60)
 
         asyncio.create_task(keepaliver())
