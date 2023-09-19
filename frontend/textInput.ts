@@ -22,9 +22,9 @@ export class TextInputWidget extends WidgetBase {
 
         element.innerHTML = `
             <input type="text" style="order: 2" placeholder="">
-            <div class="reflex-text-input-hint-text reflex-text-input-prefix-text" style="order: 1">$</div>
-            <div class="reflex-text-input-hint-text reflex-text-input-suffix-text" style="order: 3">USD</div>
-            <div class="reflex-text-input-label">Amount</div>
+            <div class="reflex-text-input-hint-text reflex-text-input-prefix-text" style="order: 1"></div>
+            <div class="reflex-text-input-hint-text reflex-text-input-suffix-text" style="order: 3"></div>
+            <div class="reflex-text-input-label"></div>
             <div class="reflex-text-input-color-bar"></div>
         `;
 

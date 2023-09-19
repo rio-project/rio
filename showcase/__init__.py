@@ -121,7 +121,8 @@ class Sidebar(rx.Widget):
                         {
                             "Foo": "bar",
                             "Baz": "spam",
-                        }
+                        },
+                        label="Dropdown",
                     ),
                     KeyEventTester(),
                     rx.Row(

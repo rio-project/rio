@@ -1,5 +1,4 @@
 import { WidgetBase, WidgetState } from './widgetBase';
-import { MDCTextField } from '@material/textfield';
 
 export type DropdownState = WidgetState & {
     _type_: 'dropdown';
@@ -22,28 +21,26 @@ export class DropdownWidget extends WidgetBase {
 
     private popupElement: HTMLElement;
     private optionsElement: HTMLElement;
-
-    private mdcTextField: MDCTextField;
+    private textInputElement: HTMLElement;
+    private inputElement: HTMLInputElement;
 
     createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
         element.classList.add('reflex-dropdown');
+        element.classList.add('mdc-ripple-surface');
 
         element.innerHTML = `
-<label class="mdc-text-field mdc-text-field--filled">
-    <span class="mdc-text-field__ripple"></span>
-    <span class="mdc-floating-label"></span>
-    <span class="mdc-text-field__affix mdc-text-field__affix--prefix"></span>
-    <input class="mdc-text-field__input" type="text">
-    <span class="mdc-text-field__affix mdc-text-field__affix--suffix"></span>
-    <span class="mdc-line-ripple"></span>
-    <div class=reflex-dropdown-obstruction></div>
-</label>
+        <div class="reflex-text-input">
+            <input type="text" placeholder="" style="pointer-events: none" disabled>
+            <div class="reflex-text-input-label"></div>
+            <div class="reflex-text-input-color-bar"></div>
+            <div class="reflex-icon-revealer-arrow"></div>
+        </div>
 
-<div class='reflex-popup'>
-    <div class="reflex-dropdown-options"></div>
-</div>
+        <div class='reflex-popup'>
+            <div class="reflex-dropdown-options"></div>
+        </div>
 `;
 
         // Expose them as properties
@@ -55,9 +52,11 @@ export class DropdownWidget extends WidgetBase {
             '.reflex-dropdown-options'
         ) as HTMLElement;
 
-        let obstructionElement = element.querySelector(
-            '.reflex-dropdown-obstruction'
+        this.textInputElement = element.querySelector(
+            '.reflex-text-input'
         ) as HTMLElement;
+
+        this.inputElement = element.querySelector('input') as HTMLInputElement;
 
         // Connect events
         let outsideClickListener = (event) => {
@@ -73,13 +72,11 @@ export class DropdownWidget extends WidgetBase {
             document.removeEventListener('click', outsideClickListener);
         };
 
-        obstructionElement.addEventListener('click', () => {
+        this.textInputElement.addEventListener('click', () => {
+            console.log('click');
             showPopup(this.popupElement);
             document.addEventListener('click', outsideClickListener);
         });
-
-        // Initialize the material design component
-        this.mdcTextField = new MDCTextField(element);
 
         return element;
     }
@@ -96,7 +93,7 @@ export class DropdownWidget extends WidgetBase {
 
                 optionElement.addEventListener('click', () => {
                     hidePopup(this.popupElement);
-                    this.mdcTextField.value = optionName;
+                    this.inputElement.value = optionName;
                     this.sendMessageToBackend({
                         name: optionName,
                     });
@@ -105,18 +102,26 @@ export class DropdownWidget extends WidgetBase {
         }
 
         if (deltaState.label !== undefined) {
-            let child = element.querySelector(
-                '.mdc-floating-label'
+            let labelElement = element.querySelector(
+                '.reflex-text-input-label'
             ) as HTMLElement;
-            child.textContent = deltaState.label;
+            labelElement.textContent = deltaState.label;
+
+            // Adapt th minimum height, depending on whether there is a label
+            this.textInputElement.style.minHeight =
+                deltaState.label.length > 0 ? '3.3rem' : '2.3rem';
         }
 
         if (deltaState.selectedName !== undefined) {
-            this.mdcTextField.value = deltaState.selectedName;
+            this.inputElement.value = deltaState.selectedName;
         }
 
-        if (deltaState.is_sensitive !== undefined) {
-            this.mdcTextField.disabled = !deltaState.is_sensitive;
+        if (deltaState.is_sensitive === true) {
+            this.textInputElement.classList.remove(
+                'reflex-text-input-disabled'
+            );
+        } else {
+            this.textInputElement.classList.add('reflex-text-input-disabled');
         }
     }
 }

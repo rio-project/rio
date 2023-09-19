@@ -6,11 +6,9 @@
 @use '@material/ripple';
 @use '@material/slider/styles' as sliderStyles;
 @use '@material/switch/styles' as switchStyles;
-@use '@material/textfield';
 @use 'sass:meta';
 
 @include linear-progress.core-styles;
-@include textfield.core-styles;
 
 // Light / Dark highlight.js themes
 //
@@ -594,31 +592,30 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     align-items: stretch;
 }
 
-.reflex-dropdown > label {
-    position: relative;
-}
-
-.reflex-dropdown-obstruction {
-    pointer-events: auto;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
 .reflex-dropdown > .reflex-popup {
-    top: 0;
+    top: 100%;
     left: 0;
     width: 100%;
 
     background-color: var(--reflex-global-background-color);
     color: var(--reflex-global-text-on-surface-color);
-    border-radius: var(--reflex-global-corner-radius-small);
+    border-radius: 0 0 var(--reflex-global-corner-radius-small)
+        var(--reflex-global-corner-radius-small);
 
     box-shadow: 0 0 var(--reflex-global-shadow-radius)
         var(--reflex-global-shadow-color);
+}
+
+.reflex-dropdown > .reflex-text-input > .reflex-icon-revealer-arrow {
+    pointer-events: none;
+
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 1.3rem;
+    height: 1.3rem;
+
+    transform: translateY(-50%);
 }
 
 .reflex-dropdown-options {
@@ -791,14 +788,12 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     flex-grow: 1;
 }
 
-.reflex-revealer-arrow {
+.reflex-revealer-header > .reflex-icon-revealer-arrow {
     width: 1.3rem;
     height: 1.3rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
 
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.12 9.29 12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"/></svg>');
-    background-size: 100% 100%;
     fill: var(--reflex-local-text-color);
     opacity: 0.7;
 
@@ -806,7 +801,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     transition: transform 0.3s ease-in-out;
 }
 
-.expanded .reflex-revealer-arrow {
+.reflex-revealer-header > .reflex-icon-revealer-arrow .expanded {
     transform: rotate(0deg);
 }
 
@@ -1281,4 +1276,10 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
         0 0,
         calc(var(--checker-size) * -0.5) calc(var(--checker-size) * -0.5),
         calc(var(--checker-size) * 0.5) calc(var(--checker-size) * 0.5);
+}
+
+// SVG Images
+.reflex-icon-revealer-arrow {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.12 9.29 12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"/></svg>');
+    background-size: 100% 100%;
 }

@@ -69,7 +69,7 @@ export class RevealerWidget extends WidgetBase {
         element.innerHTML = `
 <div class="reflex-revealer-header">
     <div class="reflex-revealer-label"></div>
-    <div class="reflex-revealer-arrow"></div>
+    <div class="reflex-icon-revealer-arrow"></div>
 </div>
 <div class="reflex-revealer-content-outer">
     <div class="reflex-revealer-content-inner reflex-single-container"></div>
