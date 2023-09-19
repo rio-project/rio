@@ -529,8 +529,8 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 .reflex-switch .container {
     pointer-events: auto;
     position: relative;
-    width: 3.182rem;
-    height: 1.548rem;
+    width: 3.18rem;
+    height: 1.54rem;
     margin: auto;
     border-radius: 4.3rem;
     background-color: var(--reflex-global-disabled-color-variant);
@@ -556,11 +556,11 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 .reflex-switch .knob {
     z-index: 2;
     position: absolute;
-    top: 0.172rem;
-    left: 0.172rem;
+    top: 0.17rem;
+    left: 0.17rem;
     width: 0.86rem;
     height: 0.43rem;
-    padding: 0.387em 0.172rem;
+    padding: 0.39em 0.17rem;
     background-color: var(--reflex-global-disabled-color);
     border-radius: 50%;
     transition:
@@ -569,16 +569,16 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 .reflex-switch input:active + .knob {
-    width: 1.978rem;
+    width: 1.98rem;
     border-radius: 4.3rem;
 }
 
 .reflex-switch.is-on input:active + .knob {
-    margin-left: -1.118rem;
+    margin-left: -1.12rem;
 }
 
 .reflex-switch.is-on input + .knob {
-    left: 1.806rem;
+    left: 1.8rem;
     background-color: var(--reflex-local-surface-color);
 }
 
