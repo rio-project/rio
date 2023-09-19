@@ -122,7 +122,10 @@ class NumberInput(widget_base.Widget):
         # Format the number
         locale = self.session.preferred_locales[0]
         value_str = f"{self.value:.{self.decimals}f}"
-        int_str, frac_str = value_str.split(".")
+        if self.decimals == 0:
+            int_str, frac_str = value_str, ""
+        else:
+            int_str, frac_str = value_str.split(".")
 
         # Add thousands separators
         groups = []
@@ -142,7 +145,7 @@ class NumberInput(widget_base.Widget):
         # Build the widget
         return rx.TextInput(
             text=value_str,
-            placeholder=self.placeholder,
+            label=self.placeholder,
             prefix_text=self.prefix_text,
             suffix_text=self.suffix_text,
             on_change=self._on_change,
