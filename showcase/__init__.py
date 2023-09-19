@@ -87,14 +87,14 @@ class Sidebar(rx.Widget):
                     rx.Grid(
                         [
                             rx.TextInput(
-                                placeholder="Plain",
+                                label="Plain",
                                 text=Sidebar.search_text,
                                 prefix_text="prefix",
                                 on_change=lambda evt: print("plain-change:", evt.text),
                                 is_sensitive=False,
                             ),
                             rx.TextInput(
-                                placeholder="Secret",
+                                label="Secret",
                                 text=Sidebar.search_text,
                                 is_secret=True,
                                 suffix_text="suffix",
@@ -116,6 +116,12 @@ class Sidebar(rx.Widget):
                                 progress=None,
                             ),
                         ],
+                    ),
+                    rx.Dropdown(
+                        {
+                            "Foo": "bar",
+                            "Baz": "spam",
+                        }
                     ),
                     KeyEventTester(),
                     rx.Row(

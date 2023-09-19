@@ -29,7 +29,7 @@ class TextInputConfirmEvent:
 class TextInput(widget_base.FundamentalWidget):
     text: str = ""
     _: KW_ONLY
-    placeholder: str = ""
+    label: str = ""
     prefix_text: str = ""
     suffix_text: str = ""
     is_secret: bool = False

@@ -43,7 +43,7 @@ class ColorPicker(widget_base.FundamentalWidget):
         # Refresh the session
         await self.session._refresh()
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         return {
             "color": self.color.rgba,
         }

@@ -26,17 +26,58 @@ class DropdownChangeEvent(Generic[T]):
 class Dropdown(widget_base.FundamentalWidget, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
-    selected_value: Optional[T] = None
-    on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
+    label: str
+    selected_value: T
+    on_change: rx.EventHandler[DropdownChangeEvent[T]]
+    is_sensitive: bool = True
 
-    def _custom_serialize(self) -> JsonDoc:
-        if not self.options:
+    def __init__(
+        self,
+        options: Mapping[str, T],
+        *,
+        label: str = "",
+        selected_value: Optional[T] = None,
+        on_change: Optional[rx.EventHandler[DropdownChangeEvent[T]]] = None,
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        if not options:
             raise ValueError("`Dropdown` must have at least one option.")
 
-        # If no value is selected, choose the first one
-        if self.selected_value is None:
-            self.selected_value = next(iter(self.options.values()))
+        super().__init__(
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
 
+        self.options = options
+        self.label = label
+        self.selected_value = (
+            next(iter(options.values())) if selected_value is None else selected_value
+        )
+        self.on_change = on_change
+        self.is_sensitive = True
+
+    def _custom_serialize(self) -> JsonDoc:
         # The value may not be serializable. Get the corresponding name instead.
         for name, value in self.options.items():
             if value == self.selected_value:

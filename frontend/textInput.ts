@@ -4,7 +4,7 @@ import { MDCTextField } from '@material/textfield';
 export type TextInputState = WidgetState & {
     _type_: 'textInput';
     text?: string;
-    placeholder?: string;
+    label?: string;
     prefix_text?: string;
     suffix_text?: string;
     is_secret?: boolean;
@@ -66,11 +66,11 @@ export class TextInputWidget extends WidgetBase {
             this.mdcTextField.value = deltaState.text;
         }
 
-        if (deltaState.placeholder !== undefined) {
+        if (deltaState.label !== undefined) {
             let child = element.querySelector(
                 '.mdc-floating-label'
             ) as HTMLElement;
-            child.textContent = deltaState.placeholder;
+            child.textContent = deltaState.label;
         }
 
         if (deltaState.prefix_text !== undefined) {
