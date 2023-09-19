@@ -1,5 +1,4 @@
 import { WidgetBase, WidgetState } from './widgetBase';
-import { MDCTextField } from '@material/textfield';
 
 export type TextInputState = WidgetState & {
     _type_: 'textInput';
@@ -14,27 +13,20 @@ export type TextInputState = WidgetState & {
 
 export class TextInputWidget extends WidgetBase {
     state: Required<TextInputState>;
-    private mdcTextField: MDCTextField;
 
     createElement(): HTMLElement {
         // Create the element
-        let element = document.createElement('label');
+        let element = document.createElement('div');
         element.classList.add('reflex-text-input');
-        element.classList.add('mdc-text-field');
-        element.classList.add('mdc-text-field--filled');
-        element.style.pointerEvents = 'auto';
+        element.classList.add('mdc-ripple-surface');
 
         element.innerHTML = `
-<span class="mdc-text-field__ripple"></span>
-<span class="mdc-floating-label"></span>
-<span class="mdc-text-field__affix mdc-text-field__affix--prefix"></span>
-<input class="mdc-text-field__input" type="text">
-<span class="mdc-text-field__affix mdc-text-field__affix--suffix"></span>
-<span class="mdc-line-ripple"></span>
-`;
-
-        // Initialize the material design component
-        this.mdcTextField = new MDCTextField(element);
+            <input type="text" style="order: 2" placeholder="">
+            <div class="reflex-text-input-hint-text reflex-text-input-prefix-text" style="order: 1">$</div>
+            <div class="reflex-text-input-hint-text reflex-text-input-suffix-text" style="order: 3">USD</div>
+            <div class="reflex-text-input-label">Amount</div>
+            <div class="reflex-text-input-color-bar"></div>
+        `;
 
         // Detect value changes and send them to the backend
         let inputElement = element.querySelector('input') as HTMLInputElement;
@@ -62,36 +54,56 @@ export class TextInputWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLElement, deltaState: TextInputState): void {
+        let inputElement = element.querySelector('input') as HTMLInputElement;
+
         if (deltaState.text !== undefined) {
-            this.mdcTextField.value = deltaState.text;
+            inputElement.value = deltaState.text;
         }
 
         if (deltaState.label !== undefined) {
-            let child = element.querySelector(
-                '.mdc-floating-label'
+            let labelElement = element.querySelector(
+                '.reflex-text-input-label'
             ) as HTMLElement;
-            child.textContent = deltaState.label;
+            labelElement.textContent = deltaState.label;
+
+            // Adapt th minimum height, depending on whether there is a label
+            element.style.minHeight =
+                deltaState.label.length > 0 ? '3.3rem' : '2.3rem';
         }
 
         if (deltaState.prefix_text !== undefined) {
-            this.mdcTextField.prefixText = deltaState.prefix_text;
+            let prefixElement = element.querySelector(
+                '.reflex-text-input-prefix-text'
+            ) as HTMLElement;
+            prefixElement.textContent = deltaState.prefix_text;
         }
 
         if (deltaState.suffix_text !== undefined) {
-            this.mdcTextField.suffixText = deltaState.suffix_text;
+            let suffixElement = element.querySelector(
+                '.reflex-text-input-suffix-text'
+            ) as HTMLElement;
+            suffixElement.textContent = deltaState.suffix_text;
         }
 
         if (deltaState.is_secret !== undefined) {
-            let input = element.querySelector('input') as HTMLInputElement;
-            input.type = deltaState.is_secret ? 'password' : 'text';
+            inputElement.type = deltaState.is_secret ? 'password' : 'text';
         }
 
-        if (deltaState.is_sensitive !== undefined) {
-            this.mdcTextField.disabled = !deltaState.is_sensitive;
+        if (deltaState.is_sensitive === true) {
+            inputElement.disabled = false;
+            element.classList.remove('reflex-disabled-input');
+        } else if (deltaState.is_sensitive === false) {
+            inputElement.disabled = true;
+            element.classList.add('reflex-disabled-input');
         }
 
-        if (deltaState.is_valid !== undefined) {
-            this.mdcTextField.valid = deltaState.is_valid;
+        if (deltaState.is_valid === false) {
+            element.style.setProperty(
+                '--reflex-local-text-color',
+                'var(--reflex-global-danger-color)'
+            );
+        } else if (deltaState.is_valid === true) {
+            element.style.removeProperty('--reflex-local-text-color');
         }
     }
 }

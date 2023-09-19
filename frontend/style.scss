@@ -397,6 +397,125 @@ code {
         var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
+// Text Input
+.reflex-text-input {
+    pointer-events: auto;
+
+    position: relative;
+    min-width: 6rem;
+    min-height: 2.3rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    padding: 0 0.4rem;
+
+    background-color: var(--reflex-local-surface-contrast-color);
+
+    border-radius: var(--reflex-global-corner-radius-small)
+        var(--reflex-global-corner-radius-small) 0 0;
+    border-bottom: 1px solid var(--reflex-local-text-color);
+
+    transition: border-bottom 0.13s linear;
+}
+
+.reflex-text-input:not(.reflex-disabled-input) {
+    // Ripple
+    overflow: hidden;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.reflex-text-input:focus-within {
+    outline: none;
+    border-bottom: 1px solid var(--reflex-local-accent-color);
+    background-color: var(--reflex-global-surface-active-color);
+}
+
+.reflex-text-input > input {
+    order: 1;
+
+    height: 100%;
+    margin: 0;
+    flex-grow: 1;
+    margin-top: auto;
+
+    background-color: transparent;
+    caret-color: var(--reflex-local-accent-color);
+    padding: 0.5rem;
+    border: none;
+    font-size: 1rem;
+}
+
+.reflex-text-input > input:active {
+    background-color: inherit;
+}
+
+.reflex-text-input > input:focus-visible {
+    outline: none;
+}
+
+.reflex-text-input-hint-text {
+    margin-bottom: 0.5rem;
+
+    color: var(--reflex-local-text-color);
+
+    opacity: 0;
+    transition: all 0.13s linear;
+}
+
+input:not(:placeholder-shown) ~ .reflex-text-input-hint-text,
+.reflex-text-input:focus-within > .reflex-text-input-hint-text {
+    opacity: 0.5;
+}
+
+.reflex-text-input-label {
+    pointer-events: none;
+
+    position: absolute;
+    left: 1.5rem;
+    top: calc(50% - 0.5rem);
+    font-size: 1rem;
+    color: var(--reflex-local-text-color);
+    opacity: 0.5;
+
+    transition: all 0.13s linear;
+}
+
+input:not(:placeholder-shown) ~ .reflex-text-input-label,
+.reflex-text-input:focus-within > .reflex-text-input-label {
+    opacity: 1;
+    top: 0.5rem;
+    bottom: unset;
+    font-size: 0.8rem;
+}
+
+.reflex-text-input:focus-within > .reflex-text-input-label {
+    color: var(--reflex-local-accent-color);
+}
+
+.reflex-text-input-color-bar {
+    position: absolute;
+    bottom: 0;
+    height: 0.12rem;
+
+    background-color: var(--reflex-local-accent-color);
+
+    left: 40%;
+    right: 40%;
+    opacity: 0;
+
+    transition: all 0.13s ease-in-out;
+}
+
+.reflex-text-input:focus-within .reflex-text-input-color-bar {
+    left: 0;
+    right: 0;
+    opacity: 1;
+}
+
 // Stack
 .reflex-stack {
     pointer-events: none;
