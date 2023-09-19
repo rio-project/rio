@@ -8,7 +8,7 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server, color, fills, icon_registry
+from .. import color, fills, icon_registry
 from . import widget_base
 
 __all__ = [
@@ -51,7 +51,7 @@ class Icon(widget_base.FundamentalWidget):
 
         registry.icon_set_archives[set_name] = icon_set_zip_path
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         # Get the icon's SVG
         registry = Icon._get_registry()
         svg_source = registry.get_icon_svg(self.icon)
@@ -59,7 +59,7 @@ class Icon(widget_base.FundamentalWidget):
         # Serialize the fill. This isn't automatically handled because it's a
         # Union.
         if isinstance(self.fill, fills.Fill):
-            fill = self.fill._serialize(server)
+            fill = self.fill._serialize(self.session)
         elif isinstance(self.fill, color.Color):
             fill = self.fill.rgba
         else:

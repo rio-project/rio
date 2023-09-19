@@ -6,7 +6,8 @@ from typing import *  # type: ignore
 from typing_extensions import TypeAlias
 from uniserde import Jsonable
 
-from . import app_server
+from . import session
+from .self_serializing import SelfSerializing
 
 __all__ = [
     "Color",
@@ -14,7 +15,7 @@ __all__ = [
 ]
 
 
-class Color:
+class Color(SelfSerializing):
     _red: float
     _green: float
     _blue: float
@@ -339,6 +340,9 @@ class Color:
     def as_plotly(self) -> str:
         return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {int(round(self.opacity*255))})"
 
+    def _serialize(self, sess: session.Session) -> Jsonable:
+        return self.rgba
+
     def __repr__(self) -> str:
         return f"<Color {self.hex}>"
 
@@ -350,9 +354,6 @@ class Color:
 
     def __hash__(self) -> int:
         return hash(self.rgba)
-
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:
-        return self.rgba
 
     # Greys
     BLACK: ClassVar["Color"]

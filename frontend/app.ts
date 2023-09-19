@@ -36,15 +36,17 @@ const sessionToken = '{session_token}';
 const pingPongIntervalSeconds: number = '{ping_pong_interval}';
 
 // @ts-ignore
-const childAttributeNames: { [id: string]: string[] } =
-    '{child_attribute_names}';
+const childAttributeNames: { [id: string]: string[] } = '{child_attribute_names}';
 
 globalThis.childAttributeNames = childAttributeNames;
 
 // @ts-ignore
 const INITIAL_MESSAGES: Array<object> = '{initial_messages}';
 
-let socket: WebSocket | null = null;
+const widgetTreeRootElement = document.body.firstElementChild as HTMLElement;
+const connectionLostPopup = widgetTreeRootElement.nextElementSibling as HTMLElement;
+
+let websocket: WebSocket | null = null;
 export var pixelsPerEm = 16;
 
 const elementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
@@ -225,13 +227,13 @@ async function processMessage(message: any) {
         } catch (e) {
             response = e.toString();
             responseIsError = true;
-            console.log(`Uncaught exception in \`evaluateJavaScript\`: ${e}`);
+            console.warn(`Uncaught exception in \`evaluateJavaScript\`: ${e}`);
         }
     }
 
     // Upload a file to the server
     else if (message.method == 'requestFileUpload') {
-        await requestFileUpload(message.params);
+        requestFileUpload(message.params);
         response = null;
     }
 
@@ -243,6 +245,16 @@ async function processMessage(message: any) {
                 JSON.stringify(message.params.deltaSettings[key])
             );
         }
+        response = null;
+    }
+
+    else if (message.method == 'registerFont') {
+        let fontFace = new FontFace(
+            message.params.name,
+            `url('${message.params.url}')`
+        );
+        fontFace.load();
+        document.fonts.add(fontFace);
         response = null;
     }
 
@@ -553,8 +565,8 @@ function updateWidgetStates(
     // Replace the root widget if requested
     if (rootWidgetId !== null) {
         let rootElement = getElementByWidgetId(rootWidgetId);
-        document.body.innerHTML = '';
-        document.body.appendChild(rootElement!);
+        widgetTreeRootElement.innerHTML = '';
+        widgetTreeRootElement.appendChild(rootElement);
     }
 
     // Restore the keyboard focus
@@ -764,7 +776,7 @@ function main() {
     document.body.removeChild(measure);
 
     // Listen for URL changes, so the session can switch route
-    document.addEventListener('popstate', (event) => {
+    window.addEventListener('popstate', (event) => {
         console.log(`URL changed to ${window.location.href}`);
         callRemoteMethodDiscardResponse('onUrlChanged', {
             newUrl: window.location.href.toString(),
@@ -780,31 +792,8 @@ function main() {
     });
 
     // Connect to the websocket
-    var url = new URL(
-        `/reflex/ws?sessionToken=${sessionToken}`,
-        window.location.href
-    );
-    url.protocol = url.protocol.replace('http', 'ws');
-    console.log(`Connecting websocket to ${url.href}`);
-    socket = new WebSocket(url.href);
-
-    socket.addEventListener('open', onOpen);
-    socket.addEventListener('message', onMessage);
-    socket.addEventListener('error', onError);
-    socket.addEventListener('close', onClose);
-
-    // Some proxies kill idle websocket connections. Send pings occasionally to
-    // keep the connection alive.
-    //
-    // Make sure to set an ID so the server replies
-    setInterval(() => {
-        sendMessageOverWebsocket({
-            jsonrpc: '2.0',
-            method: 'ping',
-            params: ['ping'],
-            id: `ping-${Date.now()}`,
-        });
-    }, pingPongIntervalSeconds * 1000);
+    let websocket = initWebsocket();
+    websocket.addEventListener('open', sendInitialMessage);
 
     // Process all initial messages
     for (let message of INITIAL_MESSAGES) {
@@ -813,32 +802,41 @@ function main() {
     }
 }
 
-function onOpen() {
-    console.log('Connection opened');
+function initWebsocket(): WebSocket {
+    let url = new URL(
+        `/reflex/ws?sessionToken=${sessionToken}`,
+        window.location.href
+    );
+    url.protocol = url.protocol.replace('http', 'ws');
+    console.log(`Connecting websocket to ${url.href}`);
+    websocket = new WebSocket(url.href);
 
-    // Send the initial message with user information to the server
-    let userSettings = {};
-    for (let key in localStorage) {
-        if (!key.startsWith('reflex:userSetting:')) {
-            continue;
-        }
+    // Some proxies kill idle websocket connections. Send pings occasionally to
+    // keep the connection alive.
+    //
+    // Make sure to set an ID so the server replies
+    let pingPongHandlerId = setInterval(() => {
+        sendMessageOverWebsocket({
+            jsonrpc: '2.0',
+            method: 'ping',
+            params: ['ping'],
+            id: `ping-${Date.now()}`,
+        });
+    }, pingPongIntervalSeconds * 1000);
 
-        try {
-            userSettings[key.slice('reflex:userSetting:'.length)] = JSON.parse(
-                localStorage[key]
-            );
-        } catch (e) {
-            console.log(`Failed to parse user setting ${key}: ${e}`);
-        }
-    }
-
-    sendMessageOverWebsocket({
-        websiteUrl: window.location.href,
-        preferredLanguages: navigator.languages,
-        userSettings: userSettings,
-        windowWidth: window.innerWidth / pixelsPerEm,
-        windowHeight: window.innerHeight / pixelsPerEm,
+    websocket.addEventListener('open', onOpen);
+    websocket.addEventListener('message', onMessage);
+    websocket.addEventListener('error', onError);
+    websocket.addEventListener('close', (event: CloseEvent) => {
+        clearInterval(pingPongHandlerId);
+        onClose(event);
     });
+
+    return websocket;
+}
+
+function onOpen(): void {
+    console.log('Websocket connection opened');
 }
 
 function onMessage(event: any) {
@@ -850,20 +848,21 @@ function onMessage(event: any) {
     processMessage(message);
 }
 
-function onError(event: any) {
-    console.log(`Error: ${event.message}`);
+function onError(event: Event) {
+    console.warn(`Websocket error`);
 }
 
-function onClose(event: any) {
-    console.log(`Connection closed: ${event.reason}`);
+function onClose(event: Event) {
+    console.log(`Websocket connection closed`);
 
-    // Sho the user that the connection was lost
+    // Show the user that the connection was lost
     displayConnectionLostPopup();
+    // tryReconnectWebsocket();
 }
 
 export function sendMessageOverWebsocket(message: object) {
-    if (!socket) {
-        console.log(
+    if (!websocket) {
+        console.error(
             `Attempted to send message, but the websocket is not connected: ${message}`
         );
         return;
@@ -871,7 +870,7 @@ export function sendMessageOverWebsocket(message: object) {
 
     console.log('Sending message: ', message);
 
-    socket.send(JSON.stringify(message));
+    websocket.send(JSON.stringify(message));
 }
 
 export function callRemoteMethodDiscardResponse(
@@ -885,26 +884,70 @@ export function callRemoteMethodDiscardResponse(
     });
 }
 
-function displayConnectionLostPopup() {
-    const popup = document.createElement('div');
-    popup.classList.add('reflex-error-popup');
-    popup.innerHTML = `
-<div>
-    Connection lost. Please refresh the page.
-</div>
-`;
-    document.body.appendChild(popup);
+function displayConnectionLostPopup(): void {
+    connectionLostPopup.style.display = 'block';
 
     // The popup spawns with opacity 0. Fade it in.
     //
     // For some reason `requestAnimationFrame` doesn't work here. Use an actual
     // timeout instead.
     setTimeout(() => {
-        let popupCard = popup.firstElementChild! as HTMLElement;
+        let popupCard = connectionLostPopup.firstElementChild! as HTMLElement;
 
-        popup.style.opacity = '1';
-        popupCard!.style.transform = 'translate(-50%, 0)';
+        connectionLostPopup.style.opacity = '1';
+        popupCard.style.transform = 'translate(-50%, 0)';
     }, 100);
+}
+
+function sendInitialMessage(): void {
+    // Send the initial message with user information to the server
+    let userSettings = {};
+    for (let key in localStorage) {
+        if (!key.startsWith('reflex:userSetting:')) {
+            continue;
+        }
+
+        try {
+            userSettings[key.slice('reflex:userSetting:'.length)] = JSON.parse(
+                localStorage[key]
+            );
+        } catch (e) {
+            console.warn(`Failed to parse user setting ${key}: ${e}`);
+        }
+    }
+
+    sendMessageOverWebsocket({
+        websiteUrl: window.location.href,
+        preferredLanguages: navigator.languages,
+        userSettings: userSettings,
+        windowWidth: window.innerWidth / pixelsPerEm,
+        windowHeight: window.innerHeight / pixelsPerEm,
+    });
+}
+
+function reconnectWebsocket(attempt: number = 1): void {
+    let websocket = initWebsocket();
+
+    websocket.onerror = (event: any) => {
+        // Wait a bit longer before trying again
+        let delay = Math.min(1 * attempt, 15);
+
+        console.log(`Websocket reconnect failed. Retrying in ${delay} seconds`);
+        setTimeout(
+            reconnectWebsocket,
+            delay * 1000,
+            attempt + 1,
+        );
+    };
+
+    websocket.onopen = () => {
+        websocket.onerror = null;
+
+        console.log('Websocket reconnect succeeded');
+
+        connectionLostPopup.style.opacity = '0';
+        connectionLostPopup.style.display = 'none';
+    };
 }
 
 main();

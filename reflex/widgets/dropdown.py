@@ -8,7 +8,6 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server
 from . import widget_base
 
 __all__ = [
@@ -30,7 +29,7 @@ class Dropdown(widget_base.FundamentalWidget, Generic[T]):
     selected_value: Optional[T] = None
     on_change: rx.EventHandler[DropdownChangeEvent[T]] = None
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         if not self.options:
             raise ValueError("`Dropdown` must have at least one option.")
 

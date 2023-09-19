@@ -8,7 +8,6 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server
 from . import widget_base
 
 __all__ = [
@@ -70,7 +69,7 @@ class MouseEventListener(widget_base.FundamentalWidget):
     on_mouse_enter: rx.EventHandler[MouseEnterEvent] = None
     on_mouse_leave: rx.EventHandler[MouseLeaveEvent] = None
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         return {
             "reportMouseDown": self.on_mouse_down is not None,
             "reportMouseUp": self.on_mouse_up is not None,

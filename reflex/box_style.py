@@ -8,7 +8,7 @@ from uniserde import Jsonable
 
 import reflex as rx
 
-from . import app_server, color, self_serializing
+from . import color, self_serializing, session
 
 __all__ = [
     "BoxStyle",
@@ -105,9 +105,9 @@ class BoxStyle(self_serializing.SelfSerializing):
             else shadow_offset_y,
         )
 
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:
+    def _serialize(self, sess: session.Session) -> Jsonable:
         return {
-            "fill": self.fill._serialize(server),
+            "fill": self.fill._serialize(sess),
             "strokeColor": self.stroke_color.rgba,
             "strokeWidth": self.stroke_width,
             "cornerRadius": self.corner_radius,

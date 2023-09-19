@@ -1,28 +1,28 @@
 import { Color, ColorSet, Fill } from './models';
 
-export function applyColorSet(element: HTMLElement, color: ColorSet): void {
+export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
     let switcheroo;
 
     // Is this a color instance?
-    if (typeof color !== 'string') {
+    if (typeof colorSet !== 'string') {
         // Expose the color as CSS variables
         element.style.setProperty(
             '--reflex-local-custom-color',
-            colorToCss(color.color)
+            colorToCss(colorSet.color)
         );
         element.style.setProperty(
             '--reflex-local-custom-color-variant',
-            colorToCss(color.colorVariant)
+            colorToCss(colorSet.colorVariant)
         );
         element.style.setProperty(
             '--reflex-local-custom-color-variant',
-            colorToCss(color.textColor)
+            colorToCss(colorSet.textColor)
         );
 
         // Select the custom switcheroo
         switcheroo = 'custom';
     } else {
-        switcheroo = color;
+        switcheroo = colorSet;
     }
 
     // Remove all switcheroos

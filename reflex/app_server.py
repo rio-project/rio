@@ -122,7 +122,9 @@ def _build_set_theme_variables_message(thm: rx.Theme):
         assert isinstance(style, rx.TextStyle), style
 
         css_prefix = f"--reflex-global-{style_name}"
-        variables[f"{css_prefix}-font-name"] = style.font_name
+        variables[f"{css_prefix}-font-name"] = (
+            style.font if isinstance(style.font, str) else style.font.name
+        )
         variables[f"{css_prefix}-color"] = f"#{style.font_color.hex}"
         variables[f"{css_prefix}-font-size"] = f"{style.font_size}rem"
         variables[f"{css_prefix}-italic"] = "italic" if style.italic else "normal"
@@ -260,15 +262,13 @@ class AppServer(fastapi.FastAPI):
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """
-        Register an asset with this session. The asset will be held weakly,
-        meaning the session will host assets for as long as their corresponding
+        Register an asset with this server. The asset will be held weakly,
+        meaning the server will host assets for as long as their corresponding
         Python objects are alive.
 
         If another asset with the same id is already hosted, it will be
         replaced.
         """
-        # FIXME: This is unsafe. What if first a long lived instance is
-        # assigned, then overwritten by a short-lived one?
         self._assets[asset.secret_id] = asset
 
     def check_and_refresh_session(self, session_token: str) -> rx.Session:
@@ -579,6 +579,39 @@ class AppServer(fastapi.FastAPI):
         # Accept the socket
         await websocket.accept()
 
+        # Check if this is a reconnect
+        if hasattr(sess, "window_width"):
+            init_coro = sess._send_reconnect_message()
+        else:
+            await self._finish_session_initialization(sess, websocket, session_token)
+
+            # Trigger a refresh. This will also send the initial state to the
+            # frontend.
+            init_coro = sess._refresh()
+
+        try:
+            # This is done in a task, because the server is not yet running, so
+            # the method would never receive a response, and thus would hang
+            # indefinitely.
+            sess._create_task(init_coro)
+
+            # Serve the socket
+            await sess.serve()
+
+        # Don't spam the terminal just because a client disconnected
+        except fastapi.WebSocketDisconnect:
+            pass
+
+        finally:
+            # Fire the session end event
+            await common.call_event_handler(self.on_session_end, sess)
+
+    async def _finish_session_initialization(
+        self,
+        sess: session.Session,
+        websocket: fastapi.WebSocket,
+        session_token: str,
+    ) -> None:
         # Create a function for sending messages to the frontend. This function
         # will also pipe the message to the validator if one is present.
         if self.validator_factory is None:
@@ -612,8 +645,13 @@ class AppServer(fastapi.FastAPI):
             sess._receive_message = receive_message
 
         # Upon connecting, the client sends an initial message containing
-        # information about it. Wait for that.
-        initial_message_json: Jsonable = await websocket.receive_json()
+        # information about it. Wait for that, but with a timeout - otherwise
+        # evildoers could overload the server with connections that never send
+        # anything.
+        initial_message_json: Jsonable = await asyncio.wait_for(
+            websocket.receive_json(),
+            timeout=60,
+        )
         initial_message = InitialClientMessage.from_json(initial_message_json)  # type: ignore
 
         sess.window_width = initial_message.window_width
@@ -725,24 +763,5 @@ class AppServer(fastapi.FastAPI):
         ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
 
         # Trigger the `on_session_started` event
+        # TODO: Do we really want to await this?
         await common.call_event_handler(self.on_session_start, sess)
-
-        try:
-            # Trigger a refresh. This will also send the initial state to the
-            # frontend.
-            #
-            # This is done in a task, because the server is not yet running, so
-            # the method would never receive a response, and thus would hang
-            # indefinitely.
-            asyncio.create_task(sess._refresh())
-
-            # Serve the socket
-            await sess.serve()
-
-        # Don't spam the terminal just because a client disconnected
-        except fastapi.WebSocketDisconnect:
-            pass
-
-        finally:
-            # Fire the session end event
-            await common.call_event_handler(self.on_session_end, sess)

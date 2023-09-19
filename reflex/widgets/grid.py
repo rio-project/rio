@@ -7,7 +7,6 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server
 from . import widget_base
 
 __all__ = ["Grid"]
@@ -87,7 +86,7 @@ class Grid(widget_base.FundamentalWidget):
         self._children.append(child)
         self._child_positions.append(GridChildPosition(row, column, width, height))
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         return {
             "_children": [child._id for child in self._children],
             "_child_positions": [vars(pos) for pos in self._child_positions],

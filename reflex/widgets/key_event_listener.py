@@ -610,7 +610,7 @@ class KeyEventListener(widget_base.FundamentalWidget):
     on_key_up: rx.EventHandler[KeyUpEvent] = None
     on_key_press: rx.EventHandler[KeyPressEvent] = None
 
-    def _custom_serialize(self, app_server: object) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> Dict[str, Jsonable]:
         return {
             "reportKeyDown": self.on_key_down is not None,
             "reportKeyUp": self.on_key_up is not None,

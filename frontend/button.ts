@@ -78,10 +78,10 @@ export class ButtonWidget extends WidgetBase {
         let is_sensitive: boolean =
             deltaState.is_sensitive || this.state['is_sensitive'];
 
-        let color = is_sensitive ? deltaState.color : 'disabled';
+        let colorSet = is_sensitive ? deltaState.color : 'disabled';
 
-        if (color !== undefined) {
-            applyColorSet(element, color);
+        if (colorSet !== undefined) {
+            applyColorSet(element, colorSet);
         }
 
         // The slider stores the coordinates of its rectangle. Since reflex

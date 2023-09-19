@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY, dataclass
+from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
 from uniserde import Jsonable

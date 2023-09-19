@@ -7,12 +7,12 @@ import os
 import secrets
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import *  # type: ignore
 
 import aiohttp
 from PIL.Image import Image
 
-from . import app_server
+from . import session
 from .common import URL, ImageLike
 from .self_serializing import SelfSerializing
 
@@ -35,13 +35,46 @@ def _securely_hash_bytes_changes_between_runs(data: bytes) -> bytes:
     return hasher.digest()
 
 
-class Asset(SelfSerializing):
+_ASSETS: Dict[Tuple[Union[bytes, Path, URL], Optional[str]], Asset] = {}
+
+
+class AssetMeta(abc.ABCMeta):
+    def __call__(
+        cls,
+        data: Union[bytes, Path, URL],
+        media_type: Optional[str] = None,
+    ) -> Asset:
+        key = (data, media_type)
+        try:
+            return _ASSETS[key]
+        except KeyError:
+            pass
+
+        if cls is Asset:
+            if isinstance(data, Path):
+                asset_type = PathAsset
+            elif isinstance(data, URL):
+                asset_type = UrlAsset
+            else:
+                asset_type = BytesAsset
+        else:
+            asset_type = cls
+
+        asset = abc.ABCMeta.__call__(asset_type, data, media_type)
+        _ASSETS[key] = asset
+        return asset
+
+
+class Asset(SelfSerializing, metaclass=AssetMeta):
     """
     Base class for assets - i.e. files that the client needs to be able to
     access. Assets can be hosted locally or remotely.
 
-    Do not instantiate this class directly. Instead, use `Asset.new` or one of
-    the alternative constructors.
+    Assets are "singletons", i.e. if you create two assets with the same input,
+    they will be the same object:
+
+        >>> Asset(Path("foo.png")) is Asset(Path("foo.png"))
+        True
 
     To use an asset in a widget, simply store it in the widget's state. The
     asset will automatically register itself with the AppServer (if necessary)
@@ -61,16 +94,11 @@ class Asset(SelfSerializing):
         data: Union[bytes, Path, URL],
         media_type: Optional[str] = None,
     ) -> Asset:
-        if isinstance(data, Path):
-            return PathAsset(data, media_type)
-
-        if isinstance(data, URL):
-            return UrlAsset(data, media_type)
-
-        if isinstance(data, bytes):
-            return BytesAsset(data, media_type)
-
-        raise TypeError(f"Invalid asset data type: {type(data)}")
+        """
+        Alternative constructor that's easier to understand for static type
+        checkers.
+        """
+        return cls(data, media_type)  # type: ignore
 
     @classmethod
     def from_image(
@@ -84,7 +112,7 @@ class Asset(SelfSerializing):
             image = file.getvalue()
             media_type = "image/png"
 
-        return cls.new(image, media_type)
+        return Asset.new(image, media_type)
 
     @abc.abstractmethod
     async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
@@ -110,14 +138,18 @@ class Asset(SelfSerializing):
     def _eq(self, other: Asset) -> bool:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def _serialize(self, sess: session.Session) -> str:
+        raise NotImplementedError
+
 
 class HostedAsset(Asset):
     """
     Base class for assets that are hosted locally.
     """
 
-    def _serialize(self, server: app_server.AppServer) -> str:
-        server.weakly_host_asset(self)
+    def _serialize(self, sess: session.Session) -> str:
+        sess._app_server.weakly_host_asset(self)
         return self.url()
 
     @property
@@ -230,7 +262,7 @@ class UrlAsset(Asset):
 
         self._url = url
 
-    def _serialize(self, server: app_server.AppServer) -> str:
+    def _serialize(self, sess: session.Session) -> str:
         return str(self._url)
 
     def _eq(self, other: UrlAsset) -> bool:

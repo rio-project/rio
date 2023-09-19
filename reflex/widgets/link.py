@@ -6,7 +6,7 @@ from uniserde import JsonDoc
 
 import reflex as rx
 
-from .. import app_server, common
+from .. import common
 from . import widget_base
 
 __all__ = [
@@ -76,7 +76,7 @@ class Link(widget_base.FundamentalWidget):
         target_route = msg["route"]
         self.session.navigate_to(target_route)
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         # Is the link a URL or route?
         if isinstance(self.link, rx.URL):
             link = str(self.link)

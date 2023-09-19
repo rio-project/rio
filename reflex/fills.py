@@ -6,8 +6,7 @@ from typing import Iterable, Literal, Tuple, Union
 
 from uniserde import Jsonable
 
-from . import app_server, self_serializing
-from .assets import Asset
+from . import assets, self_serializing, session
 from .color import Color
 from .common import ImageLike
 
@@ -39,7 +38,7 @@ class Fill(self_serializing.SelfSerializing, ABC):
 class SolidFill(Fill):
     color: Color
 
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:
+    def _serialize(self, sess: session.Session) -> Jsonable:
         return {
             "type": "solid",
             "color": self.color.rgba,
@@ -66,7 +65,7 @@ class LinearGradientFill(Fill):
             angle_degrees=angle_degrees,
         )
 
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:
+    def _serialize(self, sess: session.Session) -> Jsonable:
         return {
             "type": "linearGradient",
             "stops": [(color.rgba, position) for color, position in self.stops],
@@ -81,14 +80,14 @@ class ImageFill(Fill):
         *,
         fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit",
     ):
-        self._image_asset = Asset.from_image(image)
+        self._image_asset = assets.Asset.from_image(image)
         self._fill_mode = fill_mode
 
-    def _serialize(self, server: app_server.AppServer) -> Jsonable:
+    def _serialize(self, sess: session.Session) -> Jsonable:
         return {
             "type": "image",
             "fillMode": self._fill_mode,
-            "imageUrl": self._image_asset._serialize(server),
+            "imageUrl": self._image_asset._serialize(sess),
         }
 
     def __eq__(self, other: object) -> bool:

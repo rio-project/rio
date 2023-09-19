@@ -101,7 +101,7 @@ class SessionAttachments:
 
             # Trigger a resync
             if synchronize:
-                asyncio.create_task(
+                self._session._create_task(
                     value._synchronize_now(self._session),
                     name="write back user settings (entire settings instance changed)",
                 )
@@ -140,6 +140,10 @@ class Session(unicall.Unicall):
         # can use it to agree on what to display.
         self._current_route: Tuple[str, ...] = tuple(initial_route)
 
+        # Keeps track of running asyncio tasks. This is used to make sure that
+        # the tasks are cancelled when the session is closed.
+        self._running_tasks: Set[asyncio.Task] = set()
+
         # Maps all routers to the id of the router one higher up in the widget
         # tree. Root routers are mapped to None. This map is kept up to date by
         # routers themselves.
@@ -161,6 +165,11 @@ class Session(unicall.Unicall):
         self._on_window_resize_callbacks: weakref.WeakKeyDictionary[
             rx.Widget, Callable[[rx.Widget], None]
         ] = weakref.WeakKeyDictionary()
+
+        # All fonts which have been registered with the session. This maps the
+        # name of the font to the font asset, which ensures that the asset is
+        # kept alive until the session is closed.
+        self._registered_font_assets: Dict[str, assets.Asset] = {}
 
         # These are injected by the app server after the session has already been created
         self._root_widget: rx.Widget
@@ -246,6 +255,22 @@ class Session(unicall.Unicall):
         """
         return self._current_route
 
+    def _create_task(self, coro: Coroutine, name: Optional[str] = None) -> asyncio.Task:
+        """
+        Creates an `asyncio.Task` that is cancelled when the session is closed.
+        """
+        task = asyncio.create_task(coro, name=name)
+
+        self._running_tasks.add(task)
+        task.add_done_callback(self._running_tasks.remove)
+
+        return task
+
+    def __del__(self):
+        # Cancel all running tasks
+        for task in self._running_tasks:
+            task.cancel()
+
     def navigate_to(
         self,
         route: str,
@@ -279,7 +304,7 @@ class Session(unicall.Unicall):
                     f"window.location.href = {json.dumps(route)}",
                 )
 
-            asyncio.create_task(history_worker())
+            self._create_task(history_worker())
             return
 
         # Determine the full route to navigate to
@@ -351,7 +376,7 @@ class Session(unicall.Unicall):
         for router in self._routers:
             self._register_dirty_widget(router, include_children_recursively=True)
 
-        asyncio.create_task(self._refresh())
+        self._create_task(self._refresh())
 
         # Update the browser's history
         async def history_worker() -> None:
@@ -360,17 +385,17 @@ class Session(unicall.Unicall):
                 f"window.history.{method}(null, null, {json.dumps(route)})",
             )
 
-        asyncio.create_task(history_worker())
+        self._create_task(history_worker())
 
         # Trigger the `on_route_change` event
         async def event_worker() -> None:
             for widget, callback in self._route_change_callbacks.items():
-                asyncio.create_task(
+                self._create_task(
                     common.call_event_handler(lambda: callback(widget)),
                     name="`on_route_change` event handler",
                 )
 
-        asyncio.create_task(event_worker())
+        self._create_task(event_worker())
 
     def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
         """
@@ -584,25 +609,53 @@ class Session(unicall.Unicall):
             if not visited_widgets:
                 return
 
-            # Initialize all HTML widgets
-            for widget in visited_widgets:
-                if (
-                    not isinstance(widget, widget_base.FundamentalWidget)
-                    or type(widget)._unique_id in self._initialized_html_widgets
-                ):
-                    continue
+            await self._update_widget_states(visited_widgets, delta_states)
 
-                await widget._initialize_on_client(self)
-                self._initialized_html_widgets.add(type(widget)._unique_id)
+    async def _update_widget_states(
+        self, visited_widgets: Set[rx.Widget], delta_states: Dict[int, JsonDoc]
+    ) -> None:
+        # Initialize all HTML widgets
+        for widget in visited_widgets:
+            if (
+                not isinstance(widget, widget_base.FundamentalWidget)
+                or type(widget)._unique_id in self._initialized_html_widgets
+            ):
+                continue
 
-            # Check whether the root widget needs replacing
-            if self._root_widget in visited_widgets:
-                root_widget_id = self._root_widget._id
-            else:
-                root_widget_id = None
+            await widget._initialize_on_client(self)
+            self._initialized_html_widgets.add(type(widget)._unique_id)
 
-            # Send the new state to the client
-            await self._update_widget_states(delta_states, root_widget_id)
+        # Check whether the root widget needs replacing
+        if self._root_widget in visited_widgets:
+            root_widget_id = self._root_widget._id
+        else:
+            root_widget_id = None
+
+        # Send the new state to the client
+        await self._remote_update_widget_states(delta_states, root_widget_id)
+
+    async def _send_reconnect_message(self) -> None:
+        self._initialized_html_widgets.clear()
+
+        # For why this lock is here see its creation in `__init__`
+        async with self._refresh_lock:
+            visited_widgets = set()
+            delta_states = {}
+            to_do = [self._root_widget]
+
+            while to_do:
+                widget = to_do.pop()
+                visited_widgets.add(widget)
+
+                _, cur_serialized = self._serialize_and_host_widget(widget)
+                delta_states[widget._id] = cur_serialized
+
+                if isinstance(widget, widget_base.FundamentalWidget):
+                    to_do += widget._iter_direct_children()
+                else:
+                    to_do.append(self._lookup_widget_data(widget).build_result)
+
+            await self._update_widget_states(visited_widgets, delta_states)
 
     def _serialize_and_host_value(
         self,
@@ -652,14 +705,16 @@ class Session(unicall.Unicall):
                 for v in value
             ]
 
-        # Self-Serializing
-        if isinstance(value, self_serializing.SelfSerializing):
-            return value._serialize(self._app_server)
-
         # ColorSet
+        # Important: This must happen before the SelfSerializing check, because
+        # `value` might be a `Color`
         if origin is Union and set(args) == color._color_spec_args:
             thm = self.attachments[theme.Theme]
             return thm._serialize_colorset(value)
+
+        # Self-Serializing
+        if isinstance(value, self_serializing.SelfSerializing):
+            return value._serialize(self)
 
         # Optional
         if origin is Union and len(args) == 2 and type(None) in args:
@@ -737,7 +792,7 @@ class Session(unicall.Unicall):
         # serialization to overwrite automatically generated values.
         if isinstance(widget, widget_base.FundamentalWidget):
             result["_type_"] = widget._unique_id
-            result.update(widget._custom_serialize(self._app_server))
+            result.update(widget._custom_serialize())
 
         else:
             # Take care to add underscores to any properties here, as the
@@ -1062,6 +1117,26 @@ class Session(unicall.Unicall):
 
             yield old_widget, new_widget
 
+    def _register_font(self, name: str, location: Union[Path, common.URL]) -> None:
+        # Fonts are different from other assets because they need to be
+        # registered under a name, not just a URL. We don't want to re-register
+        # the same font multiple times, so we keep track of all registered
+        # fonts. Every registered font is associated with a font asset, which
+        # will be kept alive until the session is closed.
+        try:
+            existing_font_asset = self._registered_font_assets[name]
+        except KeyError:
+            pass
+        else:
+            # Verify that it's the same font, otherwise we have a name clash
+            pass  # FIXME
+
+        # It's a new font, host it
+        font_asset = assets.Asset.new(location)
+        url = font_asset._serialize(self)  # This will host the asset
+
+        self._create_task(self._remote_register_font(name, url))
+
     @overload
     async def file_chooser(
         self,
@@ -1157,13 +1232,13 @@ class Session(unicall.Unicall):
             )
 
         # Host the asset
-        self._app_server.weakly_host_asset(as_asset)
+        url = as_asset._serialize(self)
 
         # Tell the frontend to download the file
         await self._evaluate_javascript(
             f"""
 const a = document.createElement('a')
-a.href = {json.dumps(as_asset.url(None))}
+a.href = {json.dumps(url)}
 a.download = {json.dumps(file_name)}
 a.target = "_blank"
 document.body.appendChild(a)
@@ -1179,10 +1254,10 @@ document.body.removeChild(a)
             holdonewellgethelp = as_asset
             await asyncio.sleep(60)
 
-        asyncio.create_task(keepaliver())
+        self._create_task(keepaliver())
 
     @unicall.remote(name="updateWidgetStates", parameter_format="dict")
-    async def _update_widget_states(
+    async def _remote_update_widget_states(
         self,
         # Maps widget ids to serialized widgets. The widgets may be partial,
         # i.e. any property may be missing.
@@ -1223,6 +1298,10 @@ document.body.removeChild(a)
         Any keys not present here are still preserved. Thus the function
         effectively behaves like `dict.update`.
         """
+        raise NotImplementedError
+
+    @unicall.remote(name="registerFont")
+    async def _remote_register_font(self, name: str, url: str) -> None:
         raise NotImplementedError
 
     def _try_get_widget_for_message(self, widget_id: int) -> Optional[rx.Widget]:
@@ -1293,7 +1372,7 @@ document.body.removeChild(a)
 
         # Call any registered callbacks
         for widget, callback in self._on_window_resize_callbacks.items():
-            asyncio.create_task(
+            self._create_task(
                 common.call_event_handler(lambda: callback(widget)),
                 name="`on_window_resize` event handler",
             )

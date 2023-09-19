@@ -5,10 +5,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import reflex as rx
-from reflex import app_server
-
-from .. import app_server, text_style
+from .. import text_style
 from . import widget_base
 
 __all__ = [
@@ -25,13 +22,17 @@ class Text(widget_base.FundamentalWidget):
         text_style.TextStyle,
     ] = "text"
 
-    def _custom_serialize(self, server: app_server.AppServer) -> JsonDoc:
+    def _custom_serialize(self) -> JsonDoc:
         # Serialization doesn't handle unions. Hence the custom serialization
         # here
         if isinstance(self.style, str):
             style = self.style
         else:
-            style = self.style._serialize(server)
+            style = self.session._serialize_and_host_value(
+                self.style,
+                text_style.TextStyle,
+                set(),
+            )
 
         return {
             "style": style,

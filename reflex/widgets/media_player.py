@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import mimetypes
 from dataclasses import KW_ONLY
 from pathlib import Path
 from typing import Optional, Union
 
-from ..assets import Asset
+from .. import assets
 from ..common import URL
 from . import widget_base
 
@@ -21,13 +20,10 @@ class MediaPlayer(widget_base.FundamentalWidget):
     controls: bool = True
     muted: bool = False
     volume: float = 1.0
-    _media_asset: Optional[Asset] = None
+    _media_asset: Optional[assets.Asset] = None
 
     def __post_init__(self):
-        if self.media_type is None and not isinstance(self.media, bytes):
-            self.media_type, _ = mimetypes.guess_type(str(self.media))
-
-        self._media_asset = Asset.new(self.media, self.media_type)
+        self._media_asset = assets.Asset.new(self.media, self.media_type)
 
 
 MediaPlayer._unique_id = "MediaPlayer-builtin"
