@@ -443,7 +443,7 @@ class Session(unicall.Unicall):
                 include_children_recursively=True,
             )
 
-    def _refresh_sync(self) -> Tuple[Set[rx.Widget], Dict[int, JsonDoc]]:
+    def _refresh_sync(self) -> Set[rx.Widget]:
         """
         See `refresh` for details on what this function does.
 
@@ -541,31 +541,11 @@ class Session(unicall.Unicall):
             self._root_widget: True,
         }
 
-        alive_set = {
+        return {
             widget
             for widget in visited_widgets
             if widget._is_in_widget_tree(alive_cache)
         }
-
-        # Serialize
-        to_serialize = alive_set.copy()
-        serialized_widgets: Set[rx.Widget] = set()
-        delta_states: Dict[int, JsonDoc] = {}
-
-        # TODO
-
-        while to_serialize:
-            cur: rx.Widget = to_serialize.pop()
-
-            # Serialize it. Since this function already has to walk all of the
-            # widget's children, it also returns all of them.
-            cur_children, cur_serialized = self._serialize_and_host_widget(cur)
-
-            # Add the serialized widget to the result
-            serialized_widgets.add(cur)
-            delta_states[cur._id] = cur_serialized
-
-        return serialized_widgets, delta_states
 
     async def _refresh(self) -> None:
         """
@@ -583,16 +563,17 @@ class Session(unicall.Unicall):
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
             # Refresh and get a set of all widgets which have been visited
-            visited_widgets, delta_states = self._refresh_sync()
-
-            assert len(visited_widgets) == len(delta_states), (
-                visited_widgets,
-                delta_states,
-            )
+            visited_widgets = self._refresh_sync()
 
             # Avoid sending empty messages
             if not visited_widgets:
                 return
+
+            # Serialize all widgets which have been visited
+            delta_states: Dict[int, JsonDoc] = {
+                widget._id: self._serialize_and_host_widget(widget)
+                for widget in visited_widgets
+            }
 
             await self._update_widget_states(visited_widgets, delta_states)
 
@@ -646,7 +627,6 @@ class Session(unicall.Unicall):
         self,
         value: Any,
         type_: Type,
-        visited: Set[rx.Widget],
     ) -> Jsonable:
         """
         Which values are serialized for state depends on the annotated
@@ -656,9 +636,6 @@ class Session(unicall.Unicall):
         This function attempts to serialize the value, or raises a
         `WontSerialize` exception if this value shouldn't be included in the
         state.
-
-        If the result contains any references to widgets, they are added to the
-        `visited` set.
         """
         origin = typing.get_origin(type_)
         args = typing.get_args(type_)
@@ -681,14 +658,7 @@ class Session(unicall.Unicall):
 
         # Sequences of serializable values
         if origin is list:
-            return [
-                self._serialize_and_host_value(
-                    v,
-                    args[0],
-                    visited,
-                )
-                for v in value
-            ]
+            return [self._serialize_and_host_value(v, args[0]) for v in value]
 
         # ColorSet
         # Important: This must happen before the SelfSerializing check, because
@@ -707,15 +677,14 @@ class Session(unicall.Unicall):
                 return None
 
             type_ = next(type_ for type_ in args if type_ is not type(None))
-            return self._serialize_and_host_value(value, type_, visited)
+            return self._serialize_and_host_value(value, type_)
 
         # Literal
         if origin is Literal:
-            return self._serialize_and_host_value(value, type(value), visited)
+            return self._serialize_and_host_value(value, type(value))
 
         # Widgets
         if introspection.safe_is_subclass(type_, rx.Widget):
-            visited.add(value)
             return value._id
 
         # Invalid type
@@ -724,7 +693,7 @@ class Session(unicall.Unicall):
     def _serialize_and_host_widget(
         self,
         widget: rx.Widget,
-    ) -> Tuple[Set[rx.Widget], JsonDoc]:
+    ) -> JsonDoc:
         """
         Serializes the widget, non-recursively. Children are serialized just by
         their `_id`.
@@ -736,7 +705,6 @@ class Session(unicall.Unicall):
         - All widgets which were encountered as children of the given `widget`
         - The serialized widget
         """
-        visited: Set[rx.Widget] = set()
         result: JsonDoc = {
             "_python_type_": type(widget).__name__,
         }
@@ -768,7 +736,6 @@ class Session(unicall.Unicall):
                 result[name] = self._serialize_and_host_value(
                     getattr(widget, name),
                     type_,
-                    visited,
                 )
             except WontSerialize:
                 pass
@@ -785,7 +752,7 @@ class Session(unicall.Unicall):
             result["_type_"] = "Placeholder"
             result["_child_"] = self._lookup_widget_data(widget).build_result._id
 
-        return visited, result
+        return result
 
     def _reconcile_tree(
         self,
@@ -844,7 +811,8 @@ class Session(unicall.Unicall):
                     try:
                         attr_value = reconciled_widgets_new_to_old[attr_value]
                     except KeyError:
-                        # TODO: Comment
+                        # Make sure that any widgets which are now in the tree
+                        # have their builder properly set.
                         if isinstance(parent, widget_base.FundamentalWidget):
                             attr_value._weak_builder_ = parent._weak_builder_
                             attr_value._build_generation_ = parent._build_generation_
@@ -860,7 +828,8 @@ class Session(unicall.Unicall):
                             try:
                                 item = reconciled_widgets_new_to_old[item]
                             except KeyError:
-                                # TODO: Comment
+                                # Make sure that any widgets which are now in
+                                # the tree have their builder properly set.
                                 if isinstance(parent, widget_base.FundamentalWidget):
                                     item._weak_builder_ = parent._weak_builder_
                                     item._build_generation_ = parent._build_generation_
