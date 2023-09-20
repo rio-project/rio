@@ -552,6 +552,8 @@ class Session(unicall.Unicall):
         serialized_widgets: Set[rx.Widget] = set()
         delta_states: Dict[int, JsonDoc] = {}
 
+        # TODO
+
         while to_serialize:
             cur: rx.Widget = to_serialize.pop()
 
@@ -562,31 +564,6 @@ class Session(unicall.Unicall):
             # Add the serialized widget to the result
             serialized_widgets.add(cur)
             delta_states[cur._id] = cur_serialized
-
-            # Any children of this widget are also definitely alive. If they
-            # haven't been found to be alive yet, do so now.
-            if isinstance(cur, widget_base.FundamentalWidget):
-                new_alives = cur_children - alive_set
-            else:
-                new_alives = {self._lookup_widget_data(cur).build_result}
-
-            if new_alives:
-                to_serialize.update(new_alives & visited_widgets.keys())
-                alive_set.update(new_alives)
-
-                cur_builder = cur._weak_builder_()
-
-                # Special case: root widget
-                if cur_builder is None:
-                    continue
-
-                build_generation = self._lookup_widget_data(
-                    cur_builder
-                ).build_generation
-
-                for child in new_alives:
-                    child._weak_builder_ = cur._weak_builder_
-                    child._build_generation_ = build_generation
 
         return serialized_widgets, delta_states
 
@@ -867,7 +844,10 @@ class Session(unicall.Unicall):
                     try:
                         attr_value = reconciled_widgets_new_to_old[attr_value]
                     except KeyError:
-                        pass
+                        # TODO: Comment
+                        if isinstance(parent, widget_base.FundamentalWidget):
+                            attr_value._weak_builder_ = parent._weak_builder_
+                            attr_value._build_generation_ = parent._build_generation_
                     else:
                         parent_vars[attr_name] = attr_value
 
@@ -880,9 +860,13 @@ class Session(unicall.Unicall):
                             try:
                                 item = reconciled_widgets_new_to_old[item]
                             except KeyError:
-                                pass
+                                # TODO: Comment
+                                if isinstance(parent, widget_base.FundamentalWidget):
+                                    item._weak_builder_ = parent._weak_builder_
+                                    item._build_generation_ = parent._build_generation_
+                            else:
+                                attr_value[ii] = item
 
-                            attr_value[ii] = item
                             remap_widgets(item)
 
         remap_widgets(reconciled_build_result)
