@@ -549,7 +549,7 @@ class Session(unicall.Unicall):
 
         # Serialize
         to_serialize = alive_set.copy()
-        seralized_widgets: Set[rx.Widget] = set()
+        serialized_widgets: Set[rx.Widget] = set()
         delta_states: Dict[int, JsonDoc] = {}
 
         while to_serialize:
@@ -560,7 +560,7 @@ class Session(unicall.Unicall):
             cur_children, cur_serialized = self._serialize_and_host_widget(cur)
 
             # Add the serialized widget to the result
-            seralized_widgets.add(cur)
+            serialized_widgets.add(cur)
             delta_states[cur._id] = cur_serialized
 
             # Any children of this widget are also definitely alive. If they
@@ -571,7 +571,7 @@ class Session(unicall.Unicall):
                 new_alives = {self._lookup_widget_data(cur).build_result}
 
             if new_alives:
-                to_serialize.update(new_alives)
+                to_serialize.update(new_alives & visited_widgets.keys())
                 alive_set.update(new_alives)
 
                 cur_builder = cur._weak_builder_()
@@ -588,7 +588,7 @@ class Session(unicall.Unicall):
                     child._weak_builder_ = cur._weak_builder_
                     child._build_generation_ = build_generation
 
-        return seralized_widgets, delta_states
+        return serialized_widgets, delta_states
 
     async def _refresh(self) -> None:
         """

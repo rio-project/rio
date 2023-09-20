@@ -1,3 +1,4 @@
+from dataclasses import field
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -66,6 +67,39 @@ Modifiers: {self.event.modifiers}"""
         )
 
 
+class ExtendoItem(rx.Widget):
+    name: str
+
+    def build(self) -> rx.Widget:
+        return rx.Row(
+            rx.Icon("material/archive"),
+            rx.Text(
+                f"Item Called: {self.name}",
+                width="grow",
+                align_x=1,
+            ),
+            width="grow",
+        )
+
+
+class ExtensibleList(rx.Widget):
+    child_names: List[str] = field(
+        default_factory=lambda: ["Perma 1", "Perma 2"],
+    )
+
+    def on_extend(self, _) -> None:
+        self.child_names = self.child_names + [f"New {len(self.child_names) + 1}"]
+
+    def build(self) -> rx.Widget:
+        return rx.Column(
+            rx.Button("Extend", on_press=self.on_extend),
+            rx.Column(
+                *[ExtendoItem(name) for name in self.child_names],
+                spacing=0.5,
+            ),
+        )
+
+
 class Sidebar(rx.Widget):
     search_text: str = ""
     expanded: bool = False
@@ -124,6 +158,7 @@ class Sidebar(rx.Widget):
                         },
                         label="Dropdown",
                     ),
+                    ExtensibleList(),
                     KeyEventTester(),
                     rx.Row(
                         rx.Icon(
