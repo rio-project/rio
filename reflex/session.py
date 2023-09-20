@@ -567,18 +567,26 @@ class Session(unicall.Unicall):
             # haven't been found to be alive yet, do so now.
             if isinstance(cur, widget_base.FundamentalWidget):
                 new_alives = cur_children - alive_set
+            else:
+                new_alives = {self._lookup_widget_data(cur).build_result}
 
+            if new_alives:
                 to_serialize.update(new_alives)
                 alive_set.update(new_alives)
 
-                for child in new_alives:
-                    cur_builder = cur._weak_builder_()
-                    assert cur_builder is not None
+                cur_builder = cur._weak_builder_()
 
+                # Special case: root widget
+                if cur_builder is None:
+                    continue
+
+                build_generation = self._lookup_widget_data(
+                    cur_builder
+                ).build_generation
+
+                for child in new_alives:
                     child._weak_builder_ = cur._weak_builder_
-                    child._build_generation_ = self._lookup_widget_data(
-                        cur_builder
-                    ).build_generation
+                    child._build_generation_ = build_generation
 
         return seralized_widgets, delta_states
 
