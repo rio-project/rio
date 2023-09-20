@@ -38,34 +38,7 @@ def _securely_hash_bytes_changes_between_runs(data: bytes) -> bytes:
 _ASSETS: Dict[Tuple[Union[bytes, Path, URL], Optional[str]], Asset] = {}
 
 
-class AssetMeta(abc.ABCMeta):
-    def __call__(
-        cls,
-        data: Union[bytes, Path, URL],
-        media_type: Optional[str] = None,
-    ) -> Asset:
-        key = (data, media_type)
-        try:
-            return _ASSETS[key]
-        except KeyError:
-            pass
-
-        if cls is Asset:
-            if isinstance(data, Path):
-                asset_type = PathAsset
-            elif isinstance(data, URL):
-                asset_type = UrlAsset
-            else:
-                asset_type = BytesAsset
-        else:
-            asset_type = cls
-
-        asset = abc.ABCMeta.__call__(asset_type, data, media_type)
-        _ASSETS[key] = asset
-        return asset
-
-
-class Asset(SelfSerializing, metaclass=AssetMeta):
+class Asset(SelfSerializing):
     """
     Base class for assets - i.e. files that the client needs to be able to
     access. Assets can be hosted locally or remotely.
@@ -73,7 +46,7 @@ class Asset(SelfSerializing, metaclass=AssetMeta):
     Assets are "singletons", i.e. if you create two assets with the same input,
     they will be the same object:
 
-        >>> Asset(Path("foo.png")) is Asset(Path("foo.png"))
+        >>> Asset.new(Path("foo.png")) is Asset.new(Path("foo.png"))
         True
 
     To use an asset in a widget, simply store it in the widget's state. The
@@ -85,6 +58,11 @@ class Asset(SelfSerializing, metaclass=AssetMeta):
         self,
         media_type: Optional[str] = None,
     ):
+        if type(self) is __class__:
+            raise Exception(
+                "Cannot instantiate Asset directly; use `Asset.new()` instead"
+            )
+
         # The MIME type of the asset
         self.media_type = media_type
 
@@ -94,11 +72,21 @@ class Asset(SelfSerializing, metaclass=AssetMeta):
         data: Union[bytes, Path, URL],
         media_type: Optional[str] = None,
     ) -> Asset:
-        """
-        Alternative constructor that's easier to understand for static type
-        checkers.
-        """
-        return cls(data, media_type)  # type: ignore
+        key = (data, media_type)
+        try:
+            return _ASSETS[key]
+        except KeyError:
+            pass
+
+        if isinstance(data, Path):
+            asset = PathAsset(data, media_type)
+        elif isinstance(data, URL):
+            asset = UrlAsset(data, media_type)
+        else:
+            asset = BytesAsset(data, media_type)
+
+        _ASSETS[key] = asset
+        return asset
 
     @classmethod
     def from_image(
