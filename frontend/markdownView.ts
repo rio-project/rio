@@ -1,6 +1,11 @@
 import { WidgetBase, WidgetState } from './widgetBase';
 import * as showdown from 'showdown';
-import hljs from 'highlight.js';
+
+// This import decides, which languages are supported by `highlight.js`. See
+// their docs for details:
+//
+// https://github.com/highlightjs/highlight.js#importing-the-library
+import hljs from 'highlight.js/lib/common';
 
 export type MarkdownViewState = WidgetState & {
     _type_: 'MarkdownView-builtin';

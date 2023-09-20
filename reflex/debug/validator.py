@@ -112,7 +112,13 @@ class ClientWidget:
             yield from property_value
 
     def __str__(self) -> str:
-        return f"{self.type} #{self.id}"
+        # For placeholders, include the python type
+        if self.type == "Placeholder":
+            widget_type = f'{self.type} ({self.state["_python_type_"]})'
+        else:
+            widget_type = self.type
+
+        return f"{widget_type} #{self.id}"
 
 
 class ValidationError(Exception):

@@ -408,7 +408,7 @@ code {
     align-items: end;
     padding: 0 0.4rem;
 
-    background-color: var(--reflex-local-surface-contrast-color);
+    background-color: var(--reflex-local-surface-color-variant);
 
     border-radius: var(--reflex-global-corner-radius-small)
         var(--reflex-global-corner-radius-small) 0 0;
@@ -435,12 +435,14 @@ code {
 .reflex-text-input > input {
     order: 1;
 
-    height: 100%;
+    position: relative;
+    top: 0;
+    bottom: 0;
     margin: 0;
     flex-grow: 1;
-    margin-top: auto;
 
     background-color: transparent;
+    color: var(--reflex-local-text-color);
     caret-color: var(--reflex-local-accent-color);
     padding: 0.5rem;
     border: none;
@@ -448,7 +450,7 @@ code {
 }
 
 .reflex-text-input > input:active {
-    background-color: inherit;
+    background-color: transparent;
 }
 
 .reflex-text-input > input:focus-visible {
@@ -590,6 +592,10 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     display: flex;
     flex-direction: column;
     align-items: stretch;
+}
+
+.reflex-dropdown > .reflex-text-input {
+    flex-grow: 1;
 }
 
 .reflex-dropdown > .reflex-popup {

@@ -37,7 +37,8 @@ class Dropdown(widget_base.FundamentalWidget, Generic[T]):
         *,
         label: str = "",
         selected_value: Optional[T] = None,
-        on_change: Optional[rx.EventHandler[DropdownChangeEvent[T]]] = None,
+        on_change: rx.EventHandler[DropdownChangeEvent[T]] = None,
+        is_sensitive: bool = True,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -71,23 +72,42 @@ class Dropdown(widget_base.FundamentalWidget, Generic[T]):
 
         self.options = options
         self.label = label
-        self.selected_value = (
-            next(iter(options.values())) if selected_value is None else selected_value
-        )
         self.on_change = on_change
-        self.is_sensitive = True
+        self.is_sensitive = is_sensitive
+
+        # This is an unsafe assignment, because the value could be `None`. This
+        # will be fixed in `__post_init__`, once the state bindings have been
+        # initialized.
+        self.selected_value = selected_value  # type: ignore
+
+    def __post_init__(self) -> None:
+        # Make sure a value is selected
+        if self.selected_value is None:
+            self.selected_value = next(iter(self.options.values()))
+
+    def _fetch_selected_name(self) -> str:
+        # The frontend works with names, not values. Get the corresponding
+        # name.
+
+        # Avoid hammering a potential state binding
+        selected_value = self.selected_value
+
+        # Fetch the name
+        for name, value in self.options.items():
+            if value == selected_value:
+                return name
+        else:
+            # FIXME: This currently happens because `__post_init__` is not
+            # called
+            return next(iter(self.options.keys()))
+            raise ValueError(
+                f"There is no option with value `{self.selected_value!r}`."
+            )
 
     def _custom_serialize(self) -> JsonDoc:
-        # The value may not be serializable. Get the corresponding name instead.
-        for name, value in self.options.items():
-            if value == self.selected_value:
-                break
-        else:
-            name = None
-
         result = {
             "optionNames": list(self.options.keys()),
-            "selectedName": name,
+            "selectedName": self._fetch_selected_name(),
         }
 
         return result
