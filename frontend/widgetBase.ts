@@ -60,7 +60,7 @@ export abstract class WidgetBase {
 
     /// Update the layout relevant CSS attributes for all of the widget's
     /// children.
-    updateChildLayouts(): void { }
+    updateChildLayouts(): void {}
 
     /// Used by the parent for assigning the layout relevant CSS attributes to
     /// the widget's HTML element. This function keeps track of the assigned
@@ -90,7 +90,7 @@ export abstract class WidgetBase {
     /// `_on_message` method.
     sendMessageToBackend(message: object): void {
         callRemoteMethodDiscardResponse('widgetMessage', {
-            // Remove the leading `reflex-id-` from the element's ID
+            // Remove the leading `rio-id-` from the element's ID
             widgetId: parseInt(this.elementId.substring(10)),
             payload: message,
         });
@@ -114,7 +114,7 @@ export abstract class WidgetBase {
 
         // Notify the backend
         callRemoteMethodDiscardResponse('widgetStateUpdate', {
-            // Remove the leading `reflex-id-` from the element's ID
+            // Remove the leading `rio-id-` from the element's ID
             widgetId: parseInt(this.elementId.substring(10)),
             deltaState: deltaState,
         });

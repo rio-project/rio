@@ -13,7 +13,7 @@ export class LinkWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let containerElement = document.createElement('div');
-        containerElement.classList.add('reflex-link');
+        containerElement.classList.add('rio-link');
 
         // Listen for clicks
         //
@@ -50,8 +50,8 @@ export class LinkWidget extends WidgetBase {
             containerElement.appendChild(linkElement);
 
             // Update the CSS classes
-            containerElement.classList.add('reflex-text-link');
-            containerElement.classList.remove('reflex-single-container');
+            containerElement.classList.add('rio-text-link');
+            containerElement.classList.remove('rio-single-container');
         }
 
         // Child Widget?
@@ -60,8 +60,8 @@ export class LinkWidget extends WidgetBase {
             deltaState.child_widget !== null
         ) {
             replaceOnlyChild(containerElement, deltaState.child_widget);
-            containerElement.classList.add('reflex-single-container');
-            containerElement.classList.remove('reflex-text-link');
+            containerElement.classList.add('rio-single-container');
+            containerElement.classList.remove('rio-text-link');
         }
     }
 }

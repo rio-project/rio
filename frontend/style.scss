@@ -23,7 +23,7 @@ html[data-theme='dark'] {
 
 // Not visible here:
 //
-// JavaScript sets global theming variables, of the form `--reflex-global-...`.
+// JavaScript sets global theming variables, of the form `--rio-global-...`.
 
 // Z-indices for widgets which are expected to show up on top
 $z-index-sticky: 10000;
@@ -34,229 +34,197 @@ $z-index-error-popup: 10002;
 $transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
 // Theme Switcheroos
-.reflex-switcheroo-primary {
+.rio-switcheroo-primary {
     // surface := primary
     //
     // -> All others follow.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-secondary-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-secondary-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-secondary-color);
+    --rio-local-accent-color-variant: var(--rio-global-secondary-color-variant);
 
     // Surface
-    --reflex-local-surface-color: var(--reflex-global-primary-color);
-    --reflex-local-surface-color-variant: var(
-        --reflex-global-primary-color-variant
-    );
+    --rio-local-surface-color: var(--rio-global-primary-color);
+    --rio-local-surface-color-variant: var(--rio-global-primary-color-variant);
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-global-heading-on-primary-color);
-    --reflex-local-text-color: var(--reflex-global-text-on-primary-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-secondary-color
-    );
+    --rio-local-heading-color: var(--rio-global-heading-on-primary-color);
+    --rio-local-text-color: var(--rio-global-text-on-primary-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-secondary-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-secondary {
+.rio-switcheroo-secondary {
     // surface := secondary
     //
     // -> All others follow.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-primary-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-primary-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-primary-color);
+    --rio-local-accent-color-variant: var(--rio-global-primary-color-variant);
 
     // Surface
-    --reflex-local-surface-color: var(--reflex-global-secondary-color);
-    --reflex-local-surface-color-variant: var(
-        --reflex-global-secondary-color-variant
+    --rio-local-surface-color: var(--rio-global-secondary-color);
+    --rio-local-surface-color-variant: var(
+        --rio-global-secondary-color-variant
     );
 
     // Text styles
-    --reflex-local-heading-color: var(
-        --reflex-global-heading-on-secondary-color
-    );
-    --reflex-local-text-color: var(--reflex-global-text-on-secondary-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-primary-color
-    );
+    --rio-local-heading-color: var(--rio-global-heading-on-secondary-color);
+    --rio-local-text-color: var(--rio-global-text-on-secondary-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-primary-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-success {
+.rio-switcheroo-success {
     // accent := success
     //
     // Surface remains unchanged.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-success-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-success-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-success-color);
+    --rio-local-accent-color-variant: var(--rio-global-success-color-variant);
 
     // Text styles
-    // --reflex-local-heading-color: var(--reflex-global-text-on-success-color);
-    // --reflex-local-text-color: var(--reflex-global-text-on-success-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-success-color
-    );
+    // --rio-local-heading-color: var(--rio-global-text-on-success-color);
+    // --rio-local-text-color: var(--rio-global-text-on-success-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-success-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-warning {
+.rio-switcheroo-warning {
     // accent := warning
     //
     // Surface remains unchanged.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-warning-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-warning-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-warning-color);
+    --rio-local-accent-color-variant: var(--rio-global-warning-color-variant);
 
     // Text styles
-    // --reflex-local-heading-color: var(--reflex-global-text-on-warning-color);
-    // --reflex-local-text-color: var(--reflex-global-text-on-warning-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-warning-color
-    );
+    // --rio-local-heading-color: var(--rio-global-text-on-warning-color);
+    // --rio-local-text-color: var(--rio-global-text-on-warning-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-warning-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-danger {
+.rio-switcheroo-danger {
     // accent := danger
     //
     // Surface remains unchanged.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-danger-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-danger-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-danger-color);
+    --rio-local-accent-color-variant: var(--rio-global-danger-color-variant);
 
     // Text styles
-    // --reflex-local-heading-color: var(--reflex-global-text-on-danger-color);
-    // --reflex-local-text-color: var(--reflex-global-text-on-danger-color);
-    --reflex-local-text-on-accent-color: var(
-        --reflex-global-text-on-danger-color
-    );
+    // --rio-local-heading-color: var(--rio-global-text-on-danger-color);
+    // --rio-local-text-color: var(--rio-global-text-on-danger-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-danger-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-text {
+.rio-switcheroo-text {
     // text := accent
     //
     // Useful to change the color of widgets which use the text color, to the
     // current accent color. E.g. Allows to display text or icons as danger.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-local-text-color);
-    --reflex-local-accent-color-variant: var(--reflex-local-text-color);
+    --rio-local-accent-color: var(--rio-local-text-color);
+    --rio-local-accent-color-variant: var(--rio-local-text-color);
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-local-text-color);
-    --reflex-local-text-color: var(--reflex-local-text-color);
+    --rio-local-heading-color: var(--rio-local-text-color);
+    --rio-local-text-color: var(--rio-local-text-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-default {
+.rio-switcheroo-default {
     // surface := surface
     // accent := primary
     //
     // This is simply the default arrangement.
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-secondary-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-secondary-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-secondary-color);
+    --rio-local-accent-color-variant: var(--rio-global-secondary-color-variant);
 
     // Surface
-    --reflex-local-surface-color: var(--reflex-global-surface-color);
-    --reflex-local-surface-color-variant: var(
-        --reflex-global-surface-color-variant
-    );
+    --rio-local-surface-color: var(--rio-global-surface-color);
+    --rio-local-surface-color-variant: var(--rio-global-surface-color-variant);
 
     // Text styles
-    --reflex-local-heading-color: var(--reflex-global-heading-on-surface-color);
-    --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
+    --rio-local-heading-color: var(--rio-global-heading-on-surface-color);
+    --rio-local-text-color: var(--rio-global-text-on-surface-color);
 
     // Material Design Web
-    --mdc-theme-primary: var(--reflex-global-secondary-color);
-    --mdc-theme-secondary: var(--reflex-global-secondary-color-variant);
-    --mdc-theme-surface: var(--reflex-global-surface-color);
-    --mdc-theme-background: var(--reflex-global-background-color);
+    --mdc-theme-primary: var(--rio-global-secondary-color);
+    --mdc-theme-secondary: var(--rio-global-secondary-color-variant);
+    --mdc-theme-surface: var(--rio-global-surface-color);
+    --mdc-theme-background: var(--rio-global-background-color);
 
-    --mdc-theme-on-primary: var(--reflex-global-text-on-surface-color);
-    --mdc-theme-on-secondary: var(--reflex-global-text-on-surface-color);
-    --mdc-theme-on-surface: var(--reflex-global-text-on-surface-color);
+    --mdc-theme-on-primary: var(--rio-global-text-on-surface-color);
+    --mdc-theme-on-secondary: var(--rio-global-text-on-surface-color);
+    --mdc-theme-on-surface: var(--rio-global-text-on-surface-color);
 }
 
-.reflex-switcheroo-disabled {
+.rio-switcheroo-disabled {
     // accent := disabled
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-global-disabled-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-global-disabled-color-variant
-    );
+    --rio-local-accent-color: var(--rio-global-disabled-color);
+    --rio-local-accent-color-variant: var(--rio-global-disabled-color-variant);
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-global-text-on-surface-color);
+    --rio-local-text-color: var(--rio-global-text-on-surface-color);
 
     // Material Design Web
     // TODO
 }
 
-.reflex-switcheroo-custom {
+.rio-switcheroo-custom {
     // accent := custom (read from CSS variables)
 
     // Theme colors
-    --reflex-local-accent-color: var(--reflex-local-custom-color);
-    --reflex-local-accent-color-variant: var(
-        --reflex-local-custom-color-variant
-    );
+    --rio-local-accent-color: var(--rio-local-custom-color);
+    --rio-local-accent-color-variant: var(--rio-local-custom-color-variant);
 
     // Text styles
-    --reflex-local-text-color: var(--reflex-local-custom-text-color);
+    --rio-local-text-color: var(--rio-local-custom-text-color);
 
     // Material Design Web
     // TODO
 }
 
 // General
-.reflex-single-container {
+.rio-single-container {
     display: flex;
     align-items: stretch;
 }
 
-.reflex-single-container > * {
+.rio-single-container > * {
     flex-grow: 1;
 }
 
 html {
-    background: var(--reflex-global-background-color);
+    background: var(--rio-global-background-color);
 }
 
 a {
-    color: var(--reflex-local-accent-color);
+    color: var(--rio-local-accent-color);
 }
 
 body {
@@ -271,24 +239,24 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
-.reflex-widget {
+.rio-widget {
     box-sizing: border-box;
 }
 
 // Align
-.reflex-align > * {
+.rio-align > * {
     pointer-events: none;
     position: relative;
 }
 
 // Margin
-.reflex-margin {
+.rio-margin {
     pointer-events: none;
 }
 
 // Column
-.reflex-column,
-.reflex-column > div.reflex-undefined-space + div {
+.rio-column,
+.rio-column > div.rio-undefined-space + div {
     pointer-events: none;
 
     display: flex;
@@ -297,8 +265,8 @@ code {
 }
 
 // Row
-.reflex-row,
-.reflex-row > div.reflex-undefined-space + div {
+.rio-row,
+.rio-row > div.rio-undefined-space + div {
     pointer-events: none;
 
     display: flex;
@@ -317,42 +285,42 @@ code {
     }
 }
 
-.reflex-undefined-space {
+.rio-undefined-space {
     pointer-events: auto;
     flex-grow: 1;
 
     background-image: linear-gradient(
         -45deg,
         black 25%,
-        var(--reflex-global-warning-color) 25%,
-        var(--reflex-global-warning-color) 50%,
+        var(--rio-global-warning-color) 25%,
+        var(--rio-global-warning-color) 50%,
         black 50%,
         black 75%,
-        var(--reflex-global-warning-color) 75%,
-        var(--reflex-global-warning-color)
+        var(--rio-global-warning-color) 75%,
+        var(--rio-global-warning-color)
     );
     background-size: 2rem 2rem;
     animation: barber-pole 0.7s linear infinite;
 }
 
 // Grid
-.reflex-grid {
+.rio-grid {
     pointer-events: none;
     display: grid;
 }
 
 // Text
-.reflex-text {
+.rio-text {
     pointer-events: auto;
     display: flex;
     align-items: center;
     justify-content: center;
 
-    color: var(--reflex-local-text-color);
+    color: var(--rio-local-text-color);
 }
 
 // Rectangle
-.reflex-rectangle {
+.rio-rectangle {
     pointer-events: auto;
     border-style: solid;
 
@@ -374,7 +342,7 @@ code {
         var(--rectangle-shadow-color);
 }
 
-.reflex-rectangle-ripple {
+.rio-rectangle-ripple {
     overflow: hidden;
 
     @include ripple.surface;
@@ -382,7 +350,7 @@ code {
     @include ripple.states;
 }
 
-.reflex-rectangle-hover:hover {
+.rio-rectangle-hover:hover {
     background: var(--rectangle-background-hover);
     border-color: var(--rectangle-stroke-color-hover);
     border-width: var(--rectangle-stroke-width-hover);
@@ -396,7 +364,7 @@ code {
 }
 
 // Text Input
-.reflex-text-input {
+.rio-text-input {
     pointer-events: auto;
 
     position: relative;
@@ -408,16 +376,16 @@ code {
     align-items: end;
     padding: 0 0.4rem;
 
-    background-color: var(--reflex-local-surface-color-variant);
+    background-color: var(--rio-local-surface-color-variant);
 
-    border-radius: var(--reflex-global-corner-radius-small)
-        var(--reflex-global-corner-radius-small) 0 0;
-    border-bottom: 1px solid var(--reflex-local-text-color);
+    border-radius: var(--rio-global-corner-radius-small)
+        var(--rio-global-corner-radius-small) 0 0;
+    border-bottom: 1px solid var(--rio-local-text-color);
 
     transition: border-bottom 0.13s linear;
 }
 
-.reflex-text-input:not(.reflex-disabled-input) {
+.rio-text-input:not(.rio-disabled-input) {
     // Ripple
     overflow: hidden;
 
@@ -426,13 +394,13 @@ code {
     @include ripple.states;
 }
 
-.reflex-text-input:focus-within {
+.rio-text-input:focus-within {
     outline: none;
-    border-bottom: 1px solid var(--reflex-local-accent-color);
-    background-color: var(--reflex-global-surface-active-color);
+    border-bottom: 1px solid var(--rio-local-accent-color);
+    background-color: var(--rio-global-surface-active-color);
 }
 
-.reflex-text-input > input {
+.rio-text-input > input {
     order: 1;
 
     position: relative;
@@ -442,66 +410,66 @@ code {
     flex-grow: 1;
 
     background-color: transparent;
-    color: var(--reflex-local-text-color);
-    caret-color: var(--reflex-local-accent-color);
+    color: var(--rio-local-text-color);
+    caret-color: var(--rio-local-accent-color);
     padding: 0.5rem;
     border: none;
     font-size: 1rem;
 }
 
-.reflex-text-input > input:active {
+.rio-text-input > input:active {
     background-color: transparent;
 }
 
-.reflex-text-input > input:focus-visible {
+.rio-text-input > input:focus-visible {
     outline: none;
 }
 
-.reflex-text-input-hint-text {
+.rio-text-input-hint-text {
     margin-bottom: 0.5rem;
 
-    color: var(--reflex-local-text-color);
+    color: var(--rio-local-text-color);
 
     opacity: 0;
     transition: all 0.13s linear;
 }
 
-input:not(:placeholder-shown) ~ .reflex-text-input-hint-text,
-.reflex-text-input:focus-within > .reflex-text-input-hint-text {
+input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
+.rio-text-input:focus-within > .rio-text-input-hint-text {
     opacity: 0.5;
 }
 
-.reflex-text-input-label {
+.rio-text-input-label {
     pointer-events: none;
 
     position: absolute;
     left: 1.5rem;
     top: calc(50% - 0.5rem);
     font-size: 1rem;
-    color: var(--reflex-local-text-color);
+    color: var(--rio-local-text-color);
     opacity: 0.5;
 
     transition: all 0.13s linear;
 }
 
-input:not(:placeholder-shown) ~ .reflex-text-input-label,
-.reflex-text-input:focus-within > .reflex-text-input-label {
+input:not(:placeholder-shown) ~ .rio-text-input-label,
+.rio-text-input:focus-within > .rio-text-input-label {
     opacity: 1;
     top: 0.5rem;
     bottom: unset;
     font-size: 0.8rem;
 }
 
-.reflex-text-input:focus-within > .reflex-text-input-label {
-    color: var(--reflex-local-accent-color);
+.rio-text-input:focus-within > .rio-text-input-label {
+    color: var(--rio-local-accent-color);
 }
 
-.reflex-text-input-color-bar {
+.rio-text-input-color-bar {
     position: absolute;
     bottom: 0;
     height: 0.12rem;
 
-    background-color: var(--reflex-local-accent-color);
+    background-color: var(--rio-local-accent-color);
 
     left: 40%;
     right: 40%;
@@ -510,41 +478,41 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     transition: all 0.13s ease-in-out;
 }
 
-.reflex-text-input:focus-within .reflex-text-input-color-bar {
+.rio-text-input:focus-within .rio-text-input-color-bar {
     left: 0;
     right: 0;
     opacity: 1;
 }
 
 // Stack
-.reflex-stack {
+.rio-stack {
     pointer-events: none;
     display: grid;
 }
 
-.reflex-stack > * {
+.rio-stack > * {
     grid-column-start: 1;
     grid-row-start: 1;
 }
 
 // Switch
-.reflex-switch .container {
+.rio-switch .container {
     pointer-events: auto;
     position: relative;
     width: 3.18rem;
     height: 1.54rem;
     margin: auto;
     border-radius: 4.3rem;
-    background-color: var(--reflex-global-disabled-color-variant);
+    background-color: var(--rio-global-disabled-color-variant);
     transition: 0.3s ease all;
     z-index: 1;
 }
 
-.reflex-switch.is-on .container {
-    background-color: var(--reflex-local-accent-color);
+.rio-switch.is-on .container {
+    background-color: var(--rio-local-accent-color);
 }
 
-.reflex-switch input {
+.rio-switch input {
     position: relative;
     width: 100%;
     height: 100%;
@@ -555,7 +523,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     z-index: 3;
 }
 
-.reflex-switch .knob {
+.rio-switch .knob {
     z-index: 2;
     position: absolute;
     top: 0.17rem;
@@ -563,29 +531,29 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     width: 0.86rem;
     height: 0.43rem;
     padding: 0.39em 0.17rem;
-    background-color: var(--reflex-global-disabled-color);
+    background-color: var(--rio-global-disabled-color);
     border-radius: 50%;
     transition:
         0.3s ease all,
         left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
 }
 
-.reflex-switch input:active + .knob {
+.rio-switch input:active + .knob {
     width: 1.98rem;
     border-radius: 4.3rem;
 }
 
-.reflex-switch.is-on input:active + .knob {
+.rio-switch.is-on input:active + .knob {
     margin-left: -1.12rem;
 }
 
-.reflex-switch.is-on input + .knob {
+.rio-switch.is-on input + .knob {
     left: 1.8rem;
-    background-color: var(--reflex-local-surface-color);
+    background-color: var(--rio-local-surface-color);
 }
 
 // Dropdown
-.reflex-dropdown {
+.rio-dropdown {
     pointer-events: auto;
 
     position: relative;
@@ -594,25 +562,25 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     align-items: stretch;
 }
 
-.reflex-dropdown > .reflex-text-input {
+.rio-dropdown > .rio-text-input {
     flex-grow: 1;
 }
 
-.reflex-dropdown > .reflex-popup {
+.rio-dropdown > .rio-popup {
     top: 100%;
     left: 0;
     width: 100%;
 
-    background-color: var(--reflex-global-background-color);
-    color: var(--reflex-global-text-on-surface-color);
-    border-radius: 0 0 var(--reflex-global-corner-radius-small)
-        var(--reflex-global-corner-radius-small);
+    background-color: var(--rio-global-background-color);
+    color: var(--rio-global-text-on-surface-color);
+    border-radius: 0 0 var(--rio-global-corner-radius-small)
+        var(--rio-global-corner-radius-small);
 
-    box-shadow: 0 0 var(--reflex-global-shadow-radius)
-        var(--reflex-global-shadow-color);
+    box-shadow: 0 0 var(--rio-global-shadow-radius)
+        var(--rio-global-shadow-color);
 }
 
-.reflex-dropdown > .reflex-text-input > .reflex-icon-revealer-arrow {
+.rio-dropdown > .rio-text-input > .rio-icon-revealer-arrow {
     pointer-events: none;
 
     position: absolute;
@@ -624,7 +592,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     transform: translateY(-50%);
 }
 
-.reflex-dropdown-options {
+.rio-dropdown-options {
     flex-grow: 1;
 
     display: flex;
@@ -633,22 +601,22 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     cursor: pointer;
 }
 
-.reflex-dropdown-options > * {
+.rio-dropdown-options > * {
     padding: 1rem 1rem;
     transition: background-color 0.1s ease-in-out;
 }
 
-.reflex-dropdown-options > *:hover {
-    background-color: var(--reflex-global-surface-active-color);
+.rio-dropdown-options > *:hover {
+    background-color: var(--rio-global-surface-active-color);
 }
 
-.reflex-dropdown-options > * + * {
-    border-top: 1px solid var(--reflex-global-text-on-surface-color);
+.rio-dropdown-options > * + * {
+    border-top: 1px solid var(--rio-global-text-on-surface-color);
 }
 
 // Popup (also used by other widgets which have popping-up components, such as
 // the Dropdown)
-.reflex-popup {
+.rio-popup {
     position: absolute;
     display: flex;
     align-items: stretch;
@@ -661,17 +629,17 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Progress Circle
-.reflex-progress-circle {
+.rio-progress-circle {
     pointer-events: auto;
     width: 0;
     height: 0;
-    stroke: var(--reflex-local-accent-color);
+    stroke: var(--rio-local-accent-color);
 }
 
-.reflex-progress-circle circle {
+.rio-progress-circle circle {
     fill: none;
     stroke-width: 3.5;
-    color: var(--reflex-local-accent-color);
+    color: var(--rio-local-accent-color);
 }
 
 .spinning svg {
@@ -690,13 +658,13 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     stroke: none;
 }
 
-.reflex-progress-circle:not(.spinning) .progress {
+.rio-progress-circle:not(.spinning) .progress {
     stroke-dashoffset: -94.25;
     stroke-dasharray: var(--dasharray);
     transition: stroke-dasharray 0.5s ease;
 }
 
-.reflex-progress-circle:not(.spinning) .background {
+.rio-progress-circle:not(.spinning) .background {
     stroke: var(--background-color);
 }
 
@@ -723,7 +691,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Button
-.reflex-button {
+.rio-button {
     pointer-events: auto;
     transition:
         background-color 0.1s ease-in-out,
@@ -733,53 +701,53 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     overflow: hidden; // Needed for the ripple effect
 }
 
-.reflex-button:not(.reflex-switcheroo-disabled) {
+.rio-button:not(.rio-switcheroo-disabled) {
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
 }
 
-.reflex-buttonstyle-major {
-    background: var(--reflex-local-accent-color);
+.rio-buttonstyle-major {
+    background: var(--rio-local-accent-color);
     font-weight: bold;
-    --reflex-local-text-color: var(--reflex-local-text-on-accent-color);
+    --rio-local-text-color: var(--rio-local-text-on-accent-color);
 }
 
-.reflex-buttonstyle-major:hover:not(.reflex-switcheroo-disabled) {
-    background: var(--reflex-local-accent-color);
+.rio-buttonstyle-major:hover:not(.rio-switcheroo-disabled) {
+    background: var(--rio-local-accent-color);
     cursor: pointer;
 }
 
-.reflex-buttonstyle-minor {
-    outline: 0.1em solid var(--reflex-local-accent-color);
-    --reflex-local-text-color: var(--reflex-local-accent-color);
+.rio-buttonstyle-minor {
+    outline: 0.1em solid var(--rio-local-accent-color);
+    --rio-local-text-color: var(--rio-local-accent-color);
 }
 
-.reflex-buttonstyle-minor:hover:not(.reflex-switcheroo-disabled) {
-    background: var(--reflex-local-accent-color);
-    --reflex-local-text-color: var(--reflex-local-text-on-accent-color);
+.rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
+    background: var(--rio-local-accent-color);
+    --rio-local-text-color: var(--rio-local-text-on-accent-color);
     cursor: pointer;
 }
 
 // Shapes
-.reflex-shape-pill {
+.rio-shape-pill {
     border-radius: 99999px;
 }
 
-.reflex-shape-rounded {
-    border-radius: var(--reflex-global-corner-radius-small);
+.rio-shape-rounded {
+    border-radius: var(--rio-global-corner-radius-small);
 }
 
-.reflex-shape-rectangle {
+.rio-shape-rectangle {
     border-radius: 0; // Not necessary, just for consistency
 }
 
-.reflex-shape-circle {
+.rio-shape-circle {
     border-radius: 50%;
 }
 
 // Revealer
-.reflex-revealer-header {
+.rio-revealer-header {
     pointer-events: auto;
     cursor: pointer;
     padding: 0.8rem;
@@ -787,36 +755,36 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     text-align: left;
     display: flex;
     flex-direction: row;
-    color: var(--reflex-local-text-color);
+    color: var(--rio-local-text-color);
 }
 
-.reflex-revealer-label {
+.rio-revealer-label {
     flex-grow: 1;
 }
 
-.reflex-revealer-header > .reflex-icon-revealer-arrow {
+.rio-revealer-header > .rio-icon-revealer-arrow {
     width: 1.3rem;
     height: 1.3rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
 
-    fill: var(--reflex-local-text-color);
+    fill: var(--rio-local-text-color);
     opacity: 0.7;
 
     transform: rotate(90deg);
     transition: transform 0.3s ease-in-out;
 }
 
-.reflex-revealer-header > .reflex-icon-revealer-arrow .expanded {
+.rio-revealer-header > .rio-icon-revealer-arrow .expanded {
     transform: rotate(0deg);
 }
 
-.reflex-revealer-content-outer {
+.rio-revealer-content-outer {
     overflow: hidden;
     transition: max-height 0.15s ease-in-out;
 }
 
-.reflex-revealer-content-inner {
+.rio-revealer-content-inner {
     padding: 0.8rem;
     transition:
         opacity 0.3s ease-in-out,
@@ -824,7 +792,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Icon
-.reflex-icon {
+.rio-icon {
     pointer-events: auto;
     display: flex;
     align-items: center;
@@ -832,7 +800,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Error popup
-.reflex-error-popup {
+.rio-error-popup {
     pointer-events: none;
     z-index: $z-index-error-popup;
     position: fixed;
@@ -848,20 +816,20 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     transition: opacity 0.7s ease-in;
 }
 
-.reflex-error-popup > div {
+.rio-error-popup > div {
     pointer-events: auto;
     position: fixed;
     top: 2rem;
     left: 50%;
     width: unset;
     height: unset;
-    background: var(--reflex-global-surface-color-variant);
-    color: var(--reflex-global-danger-color);
+    background: var(--rio-global-surface-color-variant);
+    color: var(--rio-global-danger-color);
     font-weight: bold;
     padding: 1.5rem;
     border-radius: 99999px;
-    box-shadow: 0 0 var(--reflex-global-shadow-radius)
-        var(--reflex-global-shadow-color);
+    box-shadow: 0 0 var(--rio-global-shadow-radius)
+        var(--rio-global-shadow-color);
 
     // This is immediately changed by JavaScript to effect a fade-in
     transform: translate(-50%, -200%);
@@ -871,7 +839,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Slideshow
-.reflex-slideshow {
+.rio-slideshow {
     pointer-events: auto;
     position: relative;
     overflow: hidden;
@@ -904,11 +872,11 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 
     width: 100%;
     height: 0.3rem;
-    background-color: var(--reflex-local-accent-color);
+    background-color: var(--rio-local-accent-color);
 }
 
 // Sticky
-.reflex-sticky {
+.rio-sticky {
     pointer-events: none;
     position: fixed;
     top: 0;
@@ -919,12 +887,12 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Sticky
-.reflex-spacer {
+.rio-spacer {
     pointer-events: none;
 }
 
 // MediaPlayer
-.reflex-media-player {
+.rio-media-player {
     pointer-events: auto;
 
     // Videos are weird. For some reason, they can grow larger than their parent
@@ -947,16 +915,16 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // Markdown
-.reflex-markdown-view {
+.rio-markdown-view {
     pointer-events: auto;
     width: 100%;
     height: 100%;
 
-    --reflex-padding: calc(0.5rem + var(--reflex-global-corner-radius-small));
+    --rio-padding: calc(0.5rem + var(--rio-global-corner-radius-small));
 }
 
-.reflex-markdown-view {
-    color: var(--reflex-local-text-color);
+.rio-markdown-view {
+    color: var(--rio-local-text-color);
 
     ul {
         margin: 0;
@@ -975,36 +943,36 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 
     p > code {
         font-family: 'Roboto Mono', monospace;
-        background: var(--reflex-local-surface-color-variant);
-        border-radius: var(--reflex-global-corner-radius-small);
+        background: var(--rio-local-surface-color-variant);
+        border-radius: var(--rio-global-corner-radius-small);
         padding: 0.1em 0.3em;
     }
 }
 
-.reflex-markdown-code-block {
-    background: var(--reflex-local-surface-color-variant);
-    border-radius: var(--reflex-global-corner-radius-small);
+.rio-markdown-code-block {
+    background: var(--rio-local-surface-color-variant);
+    border-radius: var(--rio-global-corner-radius-small);
 }
 
-.reflex-markdown-code-block-header {
+.rio-markdown-code-block-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    color: var(--reflex-local-text-color);
+    color: var(--rio-local-text-color);
 }
 
-.reflex-markdown-code-block-header > * {
-    padding: var(--reflex-padding);
+.rio-markdown-code-block-header > * {
+    padding: var(--rio-padding);
 }
 
-.reflex-markdown-code-block-language {
+.rio-markdown-code-block-language {
     font-family: Roboto, sans-serif;
     font-size: 0.8rem;
     font-weight: bold;
     opacity: 0.4;
 }
 
-.reflex-markdown-code-block-copy-button {
+.rio-markdown-code-block-copy-button {
     min-width: 6rem;
     min-height: 2.3rem;
     cursor: pointer;
@@ -1012,9 +980,9 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     font-size: 0.8rem;
     border: none;
     background: none;
-    border-radius: var(--reflex-global-corner-radius-small);
+    border-radius: var(--rio-global-corner-radius-small);
     margin: 0;
-    color: var(--reflex-local-text-color);
+    color: var(--rio-local-text-color);
     font-weight: bold;
     opacity: 0.4;
 
@@ -1023,26 +991,26 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
         opacity 0.2s ease-in-out;
 }
 
-.reflex-markdown-code-block-copy-button:hover {
-    color: var(--reflex-local-accent-color);
+.rio-markdown-code-block-copy-button:hover {
+    color: var(--rio-local-accent-color);
     opacity: 1;
 }
 
-.reflex-markdown-code-block > code {
+.rio-markdown-code-block > code {
     font-size: 1rem;
     display: block;
-    padding: 0 var(--reflex-padding) var(--reflex-padding) var(--reflex-padding);
+    padding: 0 var(--rio-padding) var(--rio-padding) var(--rio-padding);
 }
 
-.reflex-markdown-view {
+.rio-markdown-view {
     h1 {
-        font-family: var(--reflex-global-heading1-font-name);
-        color: var(--reflex-local-heading-color);
-        font-size: var(--reflex-global-heading1-font-size);
-        font-style: var(--reflex-global-heading1-italic);
-        font-weight: var(--reflex-global-heading1-font-weight);
-        text-decoration: var(--reflex-global-heading1-underlined);
-        text-transform: var(--reflex-global-heading1-all-caps);
+        font-family: var(--rio-global-heading1-font-name);
+        color: var(--rio-local-heading-color);
+        font-size: var(--rio-global-heading1-font-size);
+        font-style: var(--rio-global-heading1-italic);
+        font-weight: var(--rio-global-heading1-font-weight);
+        text-decoration: var(--rio-global-heading1-underlined);
+        text-transform: var(--rio-global-heading1-all-caps);
 
         margin-top: 0;
 
@@ -1052,13 +1020,13 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     }
 
     h2 {
-        font-family: var(--reflex-global-heading2-font-name);
-        color: var(--reflex-local-heading-color);
-        font-size: var(--reflex-global-heading2-font-size);
-        font-style: var(--reflex-global-heading2-italic);
-        font-weight: var(--reflex-global-heading2-font-weight);
-        text-decoration: var(--reflex-global-heading2-underlined);
-        text-transform: var(--reflex-global-heading2-all-caps);
+        font-family: var(--rio-global-heading2-font-name);
+        color: var(--rio-local-heading-color);
+        font-size: var(--rio-global-heading2-font-size);
+        font-style: var(--rio-global-heading2-italic);
+        font-weight: var(--rio-global-heading2-font-weight);
+        text-decoration: var(--rio-global-heading2-underlined);
+        text-transform: var(--rio-global-heading2-all-caps);
 
         margin-top: 0;
 
@@ -1068,13 +1036,13 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     }
 
     h3 {
-        font-family: var(--reflex-global-heading3-font-name);
-        color: var(--reflex-local-heading-color);
-        font-size: var(--reflex-global-heading3-font-size);
-        font-style: var(--reflex-global-heading3-italic);
-        font-weight: var(--reflex-global-heading3-font-weight);
-        text-decoration: var(--reflex-global-heading3-underlined);
-        text-transform: var(--reflex-global-heading3-all-caps);
+        font-family: var(--rio-global-heading3-font-name);
+        color: var(--rio-local-heading-color);
+        font-size: var(--rio-global-heading3-font-size);
+        font-style: var(--rio-global-heading3-italic);
+        font-weight: var(--rio-global-heading3-font-weight);
+        text-decoration: var(--rio-global-heading3-underlined);
+        text-transform: var(--rio-global-heading3-all-caps);
 
         margin-top: 0;
 
@@ -1084,33 +1052,33 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     }
 
     p {
-        font-family: var(--reflex-global-text-font-name);
-        color: var(--reflex-local-text-color);
-        font-size: var(--reflex-global-text-font-size);
-        font-style: var(--reflex-global-text-italic);
-        font-weight: var(--reflex-global-text-font-weight);
-        text-decoration: var(--reflex-global-text-underlined);
-        text-transform: var(--reflex-global-text-all-caps);
+        font-family: var(--rio-global-text-font-name);
+        color: var(--rio-local-text-color);
+        font-size: var(--rio-global-text-font-size);
+        font-style: var(--rio-global-text-italic);
+        font-weight: var(--rio-global-text-font-weight);
+        text-decoration: var(--rio-global-text-underlined);
+        text-transform: var(--rio-global-text-all-caps);
     }
 }
 
 // Link
-.reflex-link {
+.rio-link {
     pointer-events: auto;
 }
 
-.reflex-text-link {
-    color: var(--reflex-local-accent-color);
+.rio-text-link {
+    color: var(--rio-local-accent-color);
     cursor: pointer;
 }
 
 // ScrollContainer
-.reflex-scroll-container {
+.rio-scroll-container {
     pointer-events: auto; // Needs pointer events so that the scrollbar can be interacted with
 }
 
 // Color Picker
-.reflex-color-picker {
+.rio-color-picker {
     pointer-events: none;
 
     min-width: 10rem;
@@ -1119,7 +1087,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     align-items: stretch;
 }
 
-.reflex-color-picker-color-square {
+.rio-color-picker-color-square {
     pointer-events: auto;
 
     position: relative;
@@ -1130,20 +1098,20 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     flex-grow: 1;
 }
 
-.reflex-color-picker-slider-outer {
+.rio-color-picker-slider-outer {
     pointer-events: auto;
 
     position: relative;
     padding: 0.7rem 0;
 }
 
-.reflex-color-slider-inner {
+.rio-color-slider-inner {
     height: 0.9rem;
     cursor: crosshair;
     border-radius: 99rem;
 }
 
-.reflex-color-picker-knob {
+.rio-color-picker-knob {
     width: 1.4rem;
     height: 1.4rem;
     border-radius: 50%;
@@ -1158,7 +1126,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     cursor: crosshair;
 }
 
-.reflex-color-picker-slider-outer > .reflex-color-picker-knob {
+.rio-color-picker-slider-outer > .rio-color-picker-knob {
     top: 50%;
 }
 
@@ -1166,7 +1134,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     border-radius: 99rem;
 }
 
-.reflex-color-picker-hue-bar > .reflex-color-slider-inner {
+.rio-color-picker-hue-bar > .rio-color-slider-inner {
     background: linear-gradient(
         to right,
         red,
@@ -1179,8 +1147,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     );
 }
 
-.reflex-color-picker-opacity-bar
-    > .reflex-color-slider-inner:not(.reflex-checkered) {
+.rio-color-picker-opacity-bar > .rio-color-slider-inner:not(.rio-checkered) {
     position: absolute;
     top: 0.7rem;
     left: 0;
@@ -1194,7 +1161,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     );
 }
 
-.reflex-color-picker-result-container {
+.rio-color-picker-result-container {
     margin-top: 0.5rem;
     margin-left: auto;
     margin-right: auto;
@@ -1204,19 +1171,19 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     gap: 0.8rem;
 }
 
-.reflex-color-picker-selected-color-circle {
+.rio-color-picker-selected-color-circle {
     position: relative;
     width: 2.5rem;
     height: 2.5rem;
 }
 
-.reflex-color-picker-selected-color-circle > * {
+.rio-color-picker-selected-color-circle > * {
     width: 100%;
     height: 100%;
     border-radius: 50%;
 }
 
-.reflex-color-picker-selected-color-circle > div:first-child {
+.rio-color-picker-selected-color-circle > div:first-child {
     position: absolute;
     top: 0;
     left: 0;
@@ -1226,11 +1193,11 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
     background: var(--chosen-color-transparent);
 }
 
-.reflex-color-picker-selected-color-circle-color {
+.rio-color-picker-selected-color-circle-color {
     background: var(--chosen-color-transparent);
 }
 
-.reflex-color-picker-selected-color-label {
+.rio-color-picker-selected-color-label {
     pointer-events: auto;
     opacity: 0.25;
 
@@ -1255,15 +1222,15 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
         background-color 0.1s ease-in-out;
 }
 
-.reflex-color-picker-selected-color-label:focus {
+.rio-color-picker-selected-color-label:focus {
     outline: none;
 
     opacity: 1;
-    color: var(--reflex-local-accent-color);
-    background: var(--reflex-local-surface-color-variant);
+    color: var(--rio-local-accent-color);
+    background: var(--rio-local-surface-color-variant);
 }
 
-.reflex-checkered {
+.rio-checkered {
     --checker-color: #888;
     --checker-size: 0.9rem;
 
@@ -1285,7 +1252,7 @@ input:not(:placeholder-shown) ~ .reflex-text-input-label,
 }
 
 // SVG Images
-.reflex-icon-revealer-arrow {
+.rio-icon-revealer-arrow {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.12 9.29 12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"/></svg>');
     background-size: 100% 100%;
 }

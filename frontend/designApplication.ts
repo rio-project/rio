@@ -7,15 +7,15 @@ export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
     if (typeof colorSet !== 'string') {
         // Expose the color as CSS variables
         element.style.setProperty(
-            '--reflex-local-custom-color',
+            '--rio-local-custom-color',
             colorToCss(colorSet.color)
         );
         element.style.setProperty(
-            '--reflex-local-custom-color-variant',
+            '--rio-local-custom-color-variant',
             colorToCss(colorSet.colorVariant)
         );
         element.style.setProperty(
-            '--reflex-local-custom-color-variant',
+            '--rio-local-custom-color-variant',
             colorToCss(colorSet.textColor)
         );
 
@@ -27,19 +27,19 @@ export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
 
     // Remove all switcheroos
     element.classList.remove(
-        'reflex-switcheroo-primary',
-        'reflex-switcheroo-secondary',
-        'reflex-switcheroo-success',
-        'reflex-switcheroo-warning',
-        'reflex-switcheroo-danger',
-        'reflex-switcheroo-custom',
-        'reflex-switcheroo-disabled',
-        'reflex-switcheroo-text',
-        'reflex-switcheroo-default'
+        'rio-switcheroo-primary',
+        'rio-switcheroo-secondary',
+        'rio-switcheroo-success',
+        'rio-switcheroo-warning',
+        'rio-switcheroo-danger',
+        'rio-switcheroo-custom',
+        'rio-switcheroo-disabled',
+        'rio-switcheroo-text',
+        'rio-switcheroo-default'
     );
 
     // Add the new switcheroo
-    element.classList.add(`reflex-switcheroo-${switcheroo}`);
+    element.classList.add(`rio-switcheroo-${switcheroo}`);
 }
 
 export function colorToCss(color: Color): string {

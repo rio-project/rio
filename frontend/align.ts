@@ -13,7 +13,7 @@ export class AlignWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-align');
+        element.classList.add('rio-align');
         return element;
     }
 

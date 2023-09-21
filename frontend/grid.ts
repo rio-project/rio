@@ -1,14 +1,12 @@
 import { getElementByWidgetId, replaceChildren } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
-
 type GridChildPosition = {
     row: number;
     column: number;
     width: number;
     height: number;
-}
-
+};
 
 export type GridState = WidgetState & {
     _type_: 'Grid';
@@ -18,13 +16,12 @@ export type GridState = WidgetState & {
     column_spacing?: number;
 };
 
-
 export class GridWidget extends WidgetBase {
     state: Required<GridState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-grid');
+        element.classList.add('rio-grid');
         return element;
     }
 
@@ -46,10 +43,14 @@ export class GridWidget extends WidgetBase {
             let childElement = getElementByWidgetId(childId);
 
             childElement.style.gridRowStart = `${childPosition.row + 1}`;
-            childElement.style.gridRowEnd = `${childPosition.row + 1 + childPosition.height}`;
+            childElement.style.gridRowEnd = `${
+                childPosition.row + 1 + childPosition.height
+            }`;
 
             childElement.style.gridColumnStart = `${childPosition.column + 1}`;
-            childElement.style.gridColumnEnd = `${childPosition.column + 1 + childPosition.width}`;
+            childElement.style.gridColumnEnd = `${
+                childPosition.column + 1 + childPosition.width
+            }`;
         });
     }
 }

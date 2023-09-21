@@ -1,4 +1,4 @@
-import reflex as rx
+import rio as rx
 
 
 async def test_refresh_with_nothing_to_do(create_mockapp):

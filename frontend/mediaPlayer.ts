@@ -14,19 +14,23 @@ export class MediaPlayerWidget extends WidgetBase {
     state: Required<MediaPlayerState>;
 
     private mediaElement: HTMLVideoElement;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-media-player')
+        element.classList.add('rio-media-player');
 
         this.mediaElement = document.createElement('video');
-        this.mediaElement.textContent = 'Your browser does not support video/audio playback.';
-        element.appendChild(this.mediaElement)
+        this.mediaElement.textContent =
+            'Your browser does not support video/audio playback.';
+        element.appendChild(this.mediaElement);
 
         return element;
     }
 
-    updateElement(element: HTMLMediaElement, deltaState: MediaPlayerState): void {
+    updateElement(
+        element: HTMLMediaElement,
+        deltaState: MediaPlayerState
+    ): void {
         if (deltaState._media_asset !== undefined) {
             this.mediaElement.src = deltaState._media_asset;
         }

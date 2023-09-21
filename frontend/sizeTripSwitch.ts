@@ -49,7 +49,7 @@ export class SizeTripSwitchWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('reflex-single-container');
+        element.classList.add('rio-single-container');
 
         // Watch for size changes
         watchWidget(element, this.processSize.bind(this));

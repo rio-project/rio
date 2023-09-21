@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-import reflex as rx
-import reflex.debug
+import rio as rx
+import rio.debug
 
 from . import components as comps
 from . import theme, views
@@ -63,7 +63,7 @@ class AppRoot(rx.Widget):
 
 
 rx_app = rx.App(
-    name="Reflex",
+    name="Rio",
     build=AppRoot,
     default_attachments=[
         theme.THEME,
@@ -77,10 +77,10 @@ if __name__ == "__main__":
         port=8001,
         external_url_override="http://localhost:8001",
         quiet=False,
-        _validator_factory=reflex.debug.Validator,
+        _validator_factory=rio.debug.Validator,
     )
 else:
     app = rx_app.as_fastapi(
         external_url_override="http://localhost:8001",
-        _validator_factory=reflex.debug.Validator,
+        _validator_factory=rio.debug.Validator,
     )

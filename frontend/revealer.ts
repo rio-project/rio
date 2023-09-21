@@ -11,7 +11,7 @@ export type RevealerState = WidgetState & {
 function expandRevealer(elem: HTMLElement): void {
     let header = elem.firstElementChild as HTMLElement;
     let contentOuter = elem.querySelector(
-        '.reflex-revealer-content-outer'
+        '.rio-revealer-content-outer'
     ) as HTMLElement;
     let contentInner = contentOuter.firstElementChild as HTMLElement;
 
@@ -40,7 +40,7 @@ function expandRevealer(elem: HTMLElement): void {
 
 function collapseRevealer(elem: HTMLElement): void {
     let contentOuter = elem.querySelector(
-        '.reflex-revealer-content-outer'
+        '.rio-revealer-content-outer'
     ) as HTMLElement;
     let contentInner = contentOuter.firstElementChild as HTMLElement;
 
@@ -64,19 +64,19 @@ export class RevealerWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('reflex-revealer');
+        element.classList.add('rio-revealer');
 
         element.innerHTML = `
-<div class="reflex-revealer-header">
-    <div class="reflex-revealer-label"></div>
-    <div class="reflex-icon-revealer-arrow"></div>
+<div class="rio-revealer-header">
+    <div class="rio-revealer-label"></div>
+    <div class="rio-icon-revealer-arrow"></div>
 </div>
-<div class="reflex-revealer-content-outer">
-    <div class="reflex-revealer-content-inner reflex-single-container"></div>
+<div class="rio-revealer-content-outer">
+    <div class="rio-revealer-content-inner rio-single-container"></div>
 </div>
 `;
         let header = element.querySelector(
-            '.reflex-revealer-header'
+            '.rio-revealer-header'
         ) as HTMLElement;
 
         // Listen for presses
@@ -110,7 +110,7 @@ export class RevealerWidget extends WidgetBase {
         // Update the label
         if (deltaState.label !== undefined) {
             let label = element.querySelector(
-                '.reflex-revealer-label'
+                '.rio-revealer-label'
             ) as HTMLElement;
 
             label.innerText = deltaState.label;
@@ -118,7 +118,7 @@ export class RevealerWidget extends WidgetBase {
 
         // Update the child
         let contentInner = element.querySelector(
-            '.reflex-revealer-content-inner'
+            '.rio-revealer-content-inner'
         ) as HTMLElement;
         replaceOnlyChild(contentInner, deltaState.child);
 

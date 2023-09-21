@@ -6,9 +6,9 @@ import babel
 import pytest
 from uniserde import Jsonable, JsonDoc
 
-import reflex as rx
-import reflex.global_state
-from reflex.app_server import AppServer
+import rio as rx
+import rio.global_state
+from rio.app_server import AppServer
 
 
 def _fake_build_function() -> rx.Widget:
@@ -49,12 +49,12 @@ def _enable_widget_instantiation(
     session._send_message = send_message
     session._receive_message = receive_message
 
-    reflex.global_state.currently_building_session = session
+    rio.global_state.currently_building_session = session
 
     try:
         yield session
     finally:
-        reflex.global_state.currently_building_session = None
+        rio.global_state.currently_building_session = None
 
 
 @pytest.fixture()
@@ -104,7 +104,7 @@ class _MockApp:
     async def refresh(self) -> None:
         await self._session._refresh()
 
-        reflex.global_state.currently_building_session = self._session
+        rio.global_state.currently_building_session = self._session
 
 
 @pytest.fixture

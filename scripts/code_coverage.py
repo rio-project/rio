@@ -5,7 +5,7 @@ from pathlib import Path
 import coverage
 import pytest
 
-cov = coverage.Coverage(branch=True, source=["reflex"])
+cov = coverage.Coverage(branch=True, source=["rio"])
 cov.start()
 
 pytest.main(["tests"])

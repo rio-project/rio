@@ -2,8 +2,8 @@ from dataclasses import field
 from pathlib import Path
 from typing import *  # type: ignore
 
-import reflex as rx
-import reflex.debug
+import rio as rx
+import rio.debug
 
 theme = rx.Theme()
 
@@ -109,7 +109,7 @@ class Sidebar(rx.Widget):
             child=rx.ScrollContainer(
                 rx.Column(
                     rx.Text(
-                        "Reflex UI",
+                        "Rio UI",
                         style="heading1",
                         margin_top=1.0,
                     ),
@@ -313,16 +313,16 @@ class WidgetShowcase(rx.Widget):
         )
 
 
-def validator_factory(sess: rx.Session) -> reflex.debug.Validator:
-    return reflex.debug.Validator(
+def validator_factory(sess: rx.Session) -> rio.debug.Validator:
+    return rio.debug.Validator(
         sess,
-        dump_directory_path=reflex.common.GENERATED_DIR,
+        dump_directory_path=rio.common.GENERATED_DIR,
     )
 
 
 rx_app = rx.App(
     WidgetShowcase,
-    name="Reflex Showcase",
+    name="Rio Showcase",
     on_session_start=lambda sess: print("Session Started"),
     on_session_end=lambda sess: print("Session Ended"),
     default_attachments=[

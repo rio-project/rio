@@ -26,10 +26,10 @@ export type MouseEventListenerState = WidgetState & {
 
 export class MouseEventListenerWidget extends WidgetBase {
     state: Required<MouseEventListenerState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-single-container');
+        element.classList.add('rio-single-container');
         return element;
     }
 

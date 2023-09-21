@@ -8,10 +8,10 @@ export type PlaceholderState = WidgetState & {
 
 export class PlaceholderWidget extends WidgetBase {
     state: Required<PlaceholderState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-single-container');
+        element.classList.add('rio-single-container');
         return element;
     }
 

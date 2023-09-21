@@ -1,7 +1,6 @@
 import { getInstanceByWidgetId, replaceOnlyChild } from './app';
 import { WidgetBase, WidgetState } from './widgetBase';
 
-
 export type ScrollContainerState = WidgetState & {
     _type_: 'ScrollContainer-builtin';
     child?: number | string;
@@ -9,24 +8,25 @@ export type ScrollContainerState = WidgetState & {
     scroll_y?: 'never' | 'auto' | 'always';
 };
 
-
 const SCROLL_TO_OVERFLOW = {
-    'never': 'hidden',
-    'auto': 'auto',
-    'always': 'scroll',
-}
-
+    never: 'hidden',
+    auto: 'auto',
+    always: 'scroll',
+};
 
 export class ScrollContainerWidget extends WidgetBase {
     state: Required<ScrollContainerState>;
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-scroll-container', 'reflex-single-container');
+        element.classList.add('rio-scroll-container', 'rio-single-container');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ScrollContainerState): void {
+    updateElement(
+        element: HTMLElement,
+        deltaState: ScrollContainerState
+    ): void {
         replaceOnlyChild(element, deltaState.child);
 
         if (deltaState.scroll_x !== undefined) {
@@ -46,4 +46,3 @@ export class ScrollContainerWidget extends WidgetBase {
         }
     }
 }
-

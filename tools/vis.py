@@ -3,7 +3,7 @@ from typing import *  # type: ignore
 
 from stream_tui import *  # type: ignore
 
-import reflex.debug.crawl_tree as ct
+import rio.debug.crawl_tree as ct
 
 root_widget: ct.Widget
 tree: ct.TreeDump

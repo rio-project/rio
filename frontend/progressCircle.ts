@@ -21,7 +21,7 @@ export class ProgressCircleWidget extends WidgetBase {
                 <circle class="progress" cx="50" cy="50" r="20"></circle>
             </svg>
         `;
-        element.classList.add('reflex-progress-circle');
+        element.classList.add('rio-progress-circle');
         return element;
     }
 

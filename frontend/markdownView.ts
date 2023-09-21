@@ -115,18 +115,18 @@ function convertMarkdown(
         // Wrap the code block. This outer element will hold additional
         // widgets and styling.
         let codeBlockOuter = document.createElement('div');
-        codeBlockOuter.classList.add('reflex-markdown-code-block');
+        codeBlockOuter.classList.add('rio-markdown-code-block');
 
-        codeBlockOuter.innerHTML = `<div class="reflex-markdown-code-block-header"><div class="reflex-markdown-code-block-language">${
+        codeBlockOuter.innerHTML = `<div class="rio-markdown-code-block-header"><div class="rio-markdown-code-block-language">${
             languageNiceName === undefined ? '' : languageNiceName
-        }</div><button class="reflex-markdown-code-block-copy-button">Copy code</button></div>`;
+        }</div><button class="rio-markdown-code-block-copy-button">Copy code</button></div>`;
 
         codeBlockInner.parentNode!.insertBefore(codeBlockOuter, codeBlockInner);
         codeBlockOuter.appendChild(codeBlockInner);
 
         // Create a copy button
         let copyButton = codeBlockOuter.querySelector(
-            '.reflex-markdown-code-block-copy-button'
+            '.rio-markdown-code-block-copy-button'
         ) as HTMLButtonElement;
 
         copyButton.addEventListener('click', () => {
@@ -169,7 +169,7 @@ export class MarkdownViewWidget extends WidgetBase {
 
     createElement() {
         const element = document.createElement('div');
-        element.classList.add('reflex-markdown-view');
+        element.classList.add('rio-markdown-view');
         return element;
     }
 

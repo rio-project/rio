@@ -18,12 +18,12 @@ class LinearContainer extends WidgetBase {
         let element = document.createElement('div');
 
         this.grower1 = document.createElement('div');
-        this.grower1.classList.add('reflex-undefined-space');
+        this.grower1.classList.add('rio-undefined-space');
 
         this.childContainer = document.createElement('div');
 
         this.grower2 = document.createElement('div');
-        this.grower2.classList.add('reflex-undefined-space');
+        this.grower2.classList.add('rio-undefined-space');
 
         // The growers are placed in a a separate container so that they don't
         // caus additional spacing at the start and end of the
@@ -70,7 +70,7 @@ class LinearContainer extends WidgetBase {
 export class ColumnWidget extends LinearContainer {
     createElement(): HTMLElement {
         let element = super.createElement();
-        element.classList.add('reflex-column');
+        element.classList.add('rio-column');
 
         return element;
     }
@@ -83,7 +83,7 @@ export class ColumnWidget extends LinearContainer {
 export class RowWidget extends LinearContainer {
     createElement(): HTMLElement {
         let element = super.createElement();
-        element.classList.add('reflex-row');
+        element.classList.add('rio-row');
 
         return element;
     }

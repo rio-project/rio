@@ -20,8 +20,8 @@ export class ButtonWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('reflex-button');
-        element.classList.add('reflex-single-container');
+        element.classList.add('rio-button');
+        element.classList.add('rio-single-container');
         element.classList.add('mdc-ripple-surface');
 
         // Add a material ripple effect
@@ -53,24 +53,24 @@ export class ButtonWidget extends WidgetBase {
         // Set the shape
         if (deltaState.shape !== undefined) {
             element.classList.remove(
-                'reflex-shape-pill',
-                'reflex-shape-rounded',
-                'reflex-shape-rectangle',
-                'reflex-shape-circle'
+                'rio-shape-pill',
+                'rio-shape-rounded',
+                'rio-shape-rectangle',
+                'rio-shape-circle'
             );
 
-            let className = 'reflex-shape-' + deltaState.shape;
+            let className = 'rio-shape-' + deltaState.shape;
             element.classList.add(className);
         }
 
         // Set the style
         if (deltaState.style !== undefined) {
             element.classList.remove(
-                'reflex-buttonstyle-major',
-                'reflex-buttonstyle-minor'
+                'rio-buttonstyle-major',
+                'rio-buttonstyle-minor'
             );
 
-            let className = 'reflex-buttonstyle-' + deltaState.style;
+            let className = 'rio-buttonstyle-' + deltaState.style;
             element.classList.add(className);
         }
 
@@ -84,7 +84,7 @@ export class ButtonWidget extends WidgetBase {
             applyColorSet(element, colorSet);
         }
 
-        // The slider stores the coordinates of its rectangle. Since reflex
+        // The slider stores the coordinates of its rectangle. Since rio
         // likes to resize and move around widgets, the rectangle must be
         // updated appropriately.
         //

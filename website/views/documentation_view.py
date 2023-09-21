@@ -1,7 +1,7 @@
 from typing import *  # type: ignore
 
-import reflex as rx
-import reflex_docs
+import rio as rx
+import rio_docs
 
 from .. import components as comps
 from .. import theme
@@ -283,7 +283,7 @@ class DocumentationView(rx.Widget):
                         lambda: rx.Column(
                             FlatCard(
                                 comps.ClassApiDocsView(
-                                    reflex_docs.ClassDocs.parse(rx.Column)
+                                    rio_docs.ClassDocs.parse(rx.Column)
                                 ),
                             ),
                             FlatCard(

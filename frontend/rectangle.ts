@@ -75,15 +75,15 @@ function setBoxStyleVariables(
 
 export class RectangleWidget extends WidgetBase {
     state: Required<RectangleState>;
-    
+
     // If this rectangle has a ripple effect, this is the ripple instance.
     // `null` otherwise.
     private mdcRipple: MDCRipple | null = null;
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-rectangle');
-        element.classList.add('reflex-single-container');
+        element.classList.add('rio-rectangle');
+        element.classList.add('rio-single-container');
         return element;
     }
 
@@ -97,9 +97,9 @@ export class RectangleWidget extends WidgetBase {
         }
 
         if (deltaState.hover_style === null) {
-            element.classList.remove('reflex-rectangle-hover');
+            element.classList.remove('rio-rectangle-hover');
         } else if (deltaState.hover_style !== undefined) {
-            element.classList.add('reflex-rectangle-hover');
+            element.classList.add('rio-rectangle-hover');
             setBoxStyleVariables(
                 element,
                 deltaState.hover_style,
@@ -121,7 +121,7 @@ export class RectangleWidget extends WidgetBase {
                 this.mdcRipple = new MDCRipple(element);
 
                 element.classList.add('mdc-ripple-surface');
-                element.classList.add('reflex-rectangle-ripple');
+                element.classList.add('rio-rectangle-ripple');
             }
         } else if (deltaState.ripple === false) {
             if (this.mdcRipple !== null) {
@@ -129,12 +129,12 @@ export class RectangleWidget extends WidgetBase {
                 this.mdcRipple = null;
 
                 element.classList.remove('mdc-ripple-surface');
-                element.classList.remove('reflex-rectangle-ripple');
+                element.classList.remove('rio-rectangle-ripple');
             }
         }
 
         // The ripple effect stores the coordinates of its rectangle. Since
-        // reflex likes to resize and move around widgets, the rectangle must be
+        // rio likes to resize and move around widgets, the rectangle must be
         // updated appropriately.
         //
         // Really, this should be done when the widget is resized or moved, but

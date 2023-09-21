@@ -17,7 +17,7 @@ export class SliderWidget extends WidgetBase {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('mdc-slider');
-        element.classList.add('reflex-slider');
+        element.classList.add('rio-slider');
         element.style.pointerEvents = 'auto';
 
         element.innerHTML = `
@@ -67,7 +67,7 @@ export class SliderWidget extends WidgetBase {
             this.mdcSlider.setDisabled(!deltaState.is_sensitive);
         }
 
-        // The slider stores the coordinates of its rectangle. Since reflex
+        // The slider stores the coordinates of its rectangle. Since rio
         // likes to resize and move around widgets, the rectangle must be
         // updated appropriately.
         //

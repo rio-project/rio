@@ -27,33 +27,31 @@ export class DropdownWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
-        element.classList.add('reflex-dropdown');
+        element.classList.add('rio-dropdown');
         element.classList.add('mdc-ripple-surface');
 
         element.innerHTML = `
-        <div class="reflex-text-input">
+        <div class="rio-text-input">
             <input type="text" placeholder="" style="pointer-events: none" disabled>
-            <div class="reflex-text-input-label"></div>
-            <div class="reflex-text-input-color-bar"></div>
-            <div class="reflex-icon-revealer-arrow"></div>
+            <div class="rio-text-input-label"></div>
+            <div class="rio-text-input-color-bar"></div>
+            <div class="rio-icon-revealer-arrow"></div>
         </div>
 
-        <div class='reflex-popup'>
-            <div class="reflex-dropdown-options"></div>
+        <div class='rio-popup'>
+            <div class="rio-dropdown-options"></div>
         </div>
 `;
 
         // Expose them as properties
-        this.popupElement = element.querySelector(
-            '.reflex-popup'
-        ) as HTMLElement;
+        this.popupElement = element.querySelector('.rio-popup') as HTMLElement;
 
         this.optionsElement = element.querySelector(
-            '.reflex-dropdown-options'
+            '.rio-dropdown-options'
         ) as HTMLElement;
 
         this.textInputElement = element.querySelector(
-            '.reflex-text-input'
+            '.rio-text-input'
         ) as HTMLElement;
 
         this.inputElement = element.querySelector('input') as HTMLInputElement;
@@ -87,7 +85,7 @@ export class DropdownWidget extends WidgetBase {
 
             for (let optionName of deltaState.optionNames) {
                 let optionElement = document.createElement('div');
-                optionElement.classList.add('reflex-dropdown-option');
+                optionElement.classList.add('rio-dropdown-option');
                 optionElement.textContent = optionName;
                 this.optionsElement.appendChild(optionElement);
 
@@ -103,7 +101,7 @@ export class DropdownWidget extends WidgetBase {
 
         if (deltaState.label !== undefined) {
             let labelElement = element.querySelector(
-                '.reflex-text-input-label'
+                '.rio-text-input-label'
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
@@ -118,11 +116,9 @@ export class DropdownWidget extends WidgetBase {
         }
 
         if (deltaState.is_sensitive === true) {
-            this.textInputElement.classList.remove(
-                'reflex-text-input-disabled'
-            );
+            this.textInputElement.classList.remove('rio-text-input-disabled');
         } else {
-            this.textInputElement.classList.add('reflex-text-input-disabled');
+            this.textInputElement.classList.add('rio-text-input-disabled');
         }
     }
 }

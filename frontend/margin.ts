@@ -15,8 +15,8 @@ export class MarginWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-margin');
-        element.classList.add('reflex-single-container');
+        element.classList.add('rio-margin');
+        element.classList.add('rio-single-container');
         return element;
     }
 

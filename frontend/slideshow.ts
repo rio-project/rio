@@ -31,7 +31,7 @@ export class SlideshowWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
-        element.classList.add('reflex-slideshow');
+        element.classList.add('rio-slideshow');
 
         element.innerHTML = `
 <div class="slideshow-child-container">
@@ -123,10 +123,12 @@ export class SlideshowWidget extends WidgetBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${-100 * offset
-                }%)`;
-            this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)
-                }%)`;
+            this.outgoingChild.style.transform = `translateX(${
+                -100 * offset
+            }%)`;
+            this.incomingChild.style.transform = `translateX(${
+                -100 * (offset - 1)
+            }%)`;
 
             // Update the progress bar's opacity
             this.progressBarOpacity = Math.max(

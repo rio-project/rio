@@ -1,6 +1,6 @@
 """
 This file reads all materials icons/symbols from their github repository and
-packs them into a zip file that can be used by reflex as icon set.
+packs them into a zip file that can be used by rio as icon set.
 """
 
 import re
@@ -12,7 +12,7 @@ from xml.etree import ElementTree as ET
 
 from stream_tui import *  # type: ignore
 
-import reflex as rx
+import rio as rx
 
 # Configure: The name the resulting icon set will have
 SET_NAME = "material"
@@ -35,7 +35,7 @@ INPUT_NAME_PATTERN = r"(.+).svg"
 
 # Configure: (.+).svg"The output file will be written into this directory as
 # <SET_NAME>.zip
-OUTPUT_DIR = rx.common.REFLEX_ASSETS_DIR / "compressed-icon-sets"
+OUTPUT_DIR = rx.common.RIO_ASSETS_DIR / "compressed-icon-sets"
 
 # For debugging: Stop after processing this many icons. Set to `None` for no
 # limit

@@ -1,7 +1,7 @@
 import random
 from dataclasses import field
 
-import reflex as rx
+import rio as rx
 
 from .. import common, theme
 
@@ -71,7 +71,7 @@ class NavigationBar(rx.Widget):
                         fill=theme.THEME.primary_color,
                     ),
                     rx.Text(
-                        "reflex",
+                        "rio",
                         style=rx.TextStyle(
                             font_size=1.5,
                             font_weight="bold",

@@ -11,7 +11,7 @@ export class StackWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-stack');
+        element.classList.add('rio-stack');
         return element;
     }
 
@@ -23,8 +23,8 @@ export class StackWidget extends WidgetBase {
         let zIndex = 0;
         for (let childId of this.state.children) {
             let child = getInstanceByWidgetId(childId);
-            
-            child.replaceLayoutCssProperties({zIndex: `${zIndex}`});
+
+            child.replaceLayoutCssProperties({ zIndex: `${zIndex}` });
             zIndex += 1;
         }
     }

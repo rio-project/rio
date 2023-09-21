@@ -30,62 +30,62 @@ export class ColorPickerWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the elements
         let containerElement = document.createElement('div');
-        containerElement.classList.add('reflex-color-picker');
+        containerElement.classList.add('rio-color-picker');
 
         containerElement.innerHTML = `
-        <div class="reflex-color-picker-color-square">
-            <div class="reflex-color-picker-knob"></div>
+        <div class="rio-color-picker-color-square">
+            <div class="rio-color-picker-knob"></div>
         </div>
 
-        <div class="reflex-color-picker-hue-bar reflex-color-picker-slider-outer">
-            <div class="reflex-color-slider-inner"></div>
-            <div class="reflex-color-picker-knob"></div>
+        <div class="rio-color-picker-hue-bar rio-color-picker-slider-outer">
+            <div class="rio-color-slider-inner"></div>
+            <div class="rio-color-picker-knob"></div>
         </div>
 
-        <div class="reflex-color-picker-opacity-bar reflex-color-picker-slider-outer">
-            <div class="reflex-color-slider-inner"></div>
-            <div class="reflex-color-slider-inner reflex-checkered"></div>
-            <div class="reflex-color-picker-knob"></div>
+        <div class="rio-color-picker-opacity-bar rio-color-picker-slider-outer">
+            <div class="rio-color-slider-inner"></div>
+            <div class="rio-color-slider-inner rio-checkered"></div>
+            <div class="rio-color-picker-knob"></div>
         </div>
 
-        <div class="reflex-color-picker-result-container">
-            <div class="reflex-color-picker-selected-color-circle">
+        <div class="rio-color-picker-result-container">
+            <div class="rio-color-picker-selected-color-circle">
                 <div></div>
-                <div class="reflex-checkered"></div>
+                <div class="rio-checkered"></div>
             </div>
-            <input type='text' class="reflex-color-picker-selected-color-label" value="dummy" />
+            <input type='text' class="rio-color-picker-selected-color-label" value="dummy" />
         </div>`;
 
         // Expose them as properties
         this.colorSquare = containerElement.querySelector(
-            '.reflex-color-picker-color-square'
+            '.rio-color-picker-color-square'
         )!;
         this.squareKnob = this.colorSquare.querySelector(
-            '.reflex-color-picker-knob'
+            '.rio-color-picker-knob'
         )!;
 
         this.hueBarOuter = containerElement.querySelector(
-            '.reflex-color-picker-hue-bar'
+            '.rio-color-picker-hue-bar'
         )!;
         this.hueBarInner = this.hueBarOuter.querySelector(
-            '.reflex-color-slider-inner'
+            '.rio-color-slider-inner'
         )!;
         this.hueIndicator = this.hueBarOuter.querySelector(
-            '.reflex-color-picker-knob'
+            '.rio-color-picker-knob'
         )!;
 
         this.opacityBarOuter = containerElement.querySelector(
-            '.reflex-color-picker-opacity-bar'
+            '.rio-color-picker-opacity-bar'
         )!;
         this.opacityBarInner = this.opacityBarOuter.querySelector(
-            '.reflex-color-slider-inner'
+            '.rio-color-slider-inner'
         )!;
         this.opacityIndicator = this.opacityBarOuter.querySelector(
-            '.reflex-color-picker-knob'
+            '.rio-color-picker-knob'
         )!;
 
         this.selectedColorLabel = containerElement.querySelector(
-            '.reflex-color-picker-selected-color-label'
+            '.rio-color-picker-selected-color-label'
         )!;
 
         // Subscribe to mouse down events. The other events will be subscribed

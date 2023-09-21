@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "reflex-ui"
+name = "rio-ui"
 version = "0.2.1"
 description = ""
 authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>", "Paul Pinterits"]
 readme = "README.md"
-packages = [{ include = "reflex" }]
-include = ["reflex/generated/index.html"]
+packages = [{ include = "rio" }]
+include = ["rio/generated/index.html"]
 
 [tool.poetry.dependencies]
 python = "^3.10"

@@ -11,7 +11,7 @@ function loadPlotly(callback) {
     if (typeof Plotly === 'undefined') {
         console.log('Fetching plotly.js');
         let script = document.createElement('script');
-        script.src = '/reflex/asset/plotly.min.js';
+        script.src = '/rio/asset/plotly.min.js';
         script.onload = callback;
         document.head.appendChild(script);
     } else {
@@ -31,7 +31,7 @@ function applyStyle(element: HTMLElement, style: any) {
 
 export class PlotWidget extends WidgetBase {
     state: Required<PlotState>;
-    
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.style.display = 'inline-block';

@@ -11,7 +11,7 @@ export class SwitchWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-switch');
+        element.classList.add('rio-switch');
 
         let containerElement = document.createElement('div');
         containerElement.classList.add('container');
@@ -52,11 +52,11 @@ export class SwitchWidget extends WidgetBase {
         }
 
         if (deltaState.is_sensitive === true) {
-            element.classList.remove('reflex-switcheroo-disabled');
+            element.classList.remove('rio-switcheroo-disabled');
             let checkbox = element.querySelector('input');
             checkbox!.disabled = false;
         } else if (deltaState.is_sensitive === false) {
-            element.classList.add('reflex-switcheroo-disabled');
+            element.classList.add('rio-switcheroo-disabled');
             let checkbox = element.querySelector('input');
             checkbox!.disabled = true;
         }

@@ -25,7 +25,7 @@ export class ClassContainerWidget extends WidgetBase {
             });
 
             // Add all new values
-            element.classList.add('reflex-single-container');
+            element.classList.add('rio-single-container');
             deltaState.classes.forEach((className) => {
                 element.classList.add(className);
             });

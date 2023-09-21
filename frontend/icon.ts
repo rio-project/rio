@@ -19,7 +19,7 @@ function createSVGPath(
 
     // If the fill is a string apply the appropriate theme color.
     if (typeof fill === 'string') {
-        svgRoot.style.fill = 'var(--reflex-local-text-color)';
+        svgRoot.style.fill = 'var(--rio-local-text-color)';
         return;
     }
 
@@ -42,7 +42,7 @@ export class IconWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('reflex-icon');
+        element.classList.add('rio-icon');
         return element;
     }
 

@@ -18,10 +18,10 @@ function getTextStyleValues(
         let textOrHeading = style === 'text' ? 'text' : 'heading';
 
         // Local values
-        result['color'] = `var(--reflex-local-${textOrHeading}-color)`;
+        result['color'] = `var(--rio-local-${textOrHeading}-color)`;
 
         // Global values
-        let cssPrefix = `var(--reflex-global-${style}-`;
+        let cssPrefix = `var(--rio-global-${style}-`;
         result['font-family'] = cssPrefix + 'font-name)';
         result['font-size'] = cssPrefix + 'font-size)';
         result['font-weight'] = cssPrefix + 'font-weight)';
@@ -49,7 +49,7 @@ export class TextWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let containerElement = document.createElement('div');
-        containerElement.classList.add('reflex-text');
+        containerElement.classList.add('rio-text');
 
         let textElement = document.createElement('div');
         containerElement.appendChild(textElement);

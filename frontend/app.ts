@@ -36,7 +36,8 @@ const sessionToken = '{session_token}';
 const pingPongIntervalSeconds: number = '{ping_pong_interval}';
 
 // @ts-ignore
-const childAttributeNames: { [id: string]: string[] } = '{child_attribute_names}';
+const childAttributeNames: { [id: string]: string[] } =
+    '{child_attribute_names}';
 
 globalThis.childAttributeNames = childAttributeNames;
 
@@ -44,7 +45,8 @@ globalThis.childAttributeNames = childAttributeNames;
 const INITIAL_MESSAGES: Array<object> = '{initial_messages}';
 
 const widgetTreeRootElement = document.body.firstElementChild as HTMLElement;
-const connectionLostPopup = widgetTreeRootElement.nextElementSibling as HTMLElement;
+const connectionLostPopup =
+    widgetTreeRootElement.nextElementSibling as HTMLElement;
 
 let websocket: WebSocket | null = null;
 export var pixelsPerEm = 16;
@@ -105,7 +107,7 @@ export function fillToCss(fill: Fill): string {
 }
 
 export function getElementByWidgetId(id: number | string): HTMLElement {
-    let element = document.getElementById(`reflex-id-${id}`);
+    let element = document.getElementById(`rio-id-${id}`);
 
     if (element === null) {
         throw `Could not find html element with id ${id}`;
@@ -132,7 +134,7 @@ export function getParentWidgetElementIncludingInjected(
     let curElement = element.parentElement;
 
     while (curElement !== null) {
-        if (curElement.id.startsWith('reflex-id-')) {
+        if (curElement.id.startsWith('rio-id-')) {
             return curElement;
         }
 
@@ -154,7 +156,7 @@ export function getParentWidgetElementExcludingInjected(
             return null;
         }
 
-        if (curElement.id.match(/reflex-id-\d+$/)) {
+        if (curElement.id.match(/rio-id-\d+$/)) {
             return curElement;
         }
     }
@@ -241,14 +243,12 @@ async function processMessage(message: any) {
     else if (message.method == 'setUserSettings') {
         for (let key in message.params.deltaSettings) {
             localStorage.setItem(
-                `reflex:userSetting:${key}`,
+                `rio:userSetting:${key}`,
                 JSON.stringify(message.params.deltaSettings[key])
             );
         }
         response = null;
-    }
-
-    else if (message.method == 'registerFont') {
+    } else if (message.method == 'registerFont') {
         let fontFace = new FontFace(
             message.params.name,
             `url('${message.params.url}')`
@@ -287,7 +287,7 @@ function getCurrentWidgetState(
     id: number | string,
     deltaState: WidgetState
 ): WidgetState {
-    let parentElement = document.getElementById(`reflex-id-${id}`);
+    let parentElement = document.getElementById(`rio-id-${id}`);
 
     if (parentElement === null) {
         return deltaState;
@@ -433,7 +433,7 @@ function preprocessMessage(
         }
 
         // The parent isn't contained in the message. Find and add it.
-        let childElement = document.getElementById(`reflex-id-${widgetId}`);
+        let childElement = document.getElementById(`rio-id-${widgetId}`);
         if (childElement === null) {
             continue;
         }
@@ -449,7 +449,7 @@ function preprocessMessage(
             throw `Parent widget with id ${parentElement} not found`;
         }
 
-        let parentId = parentElement.id.slice('reflex-id-'.length);
+        let parentId = parentElement.id.slice('rio-id-'.length);
         let newParentState = { ...parentInstance.state };
         replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
         message[parentId] = newParentState;
@@ -473,7 +473,7 @@ function updateWidgetStates(
     // Create a HTML element to hold all latent widgets, so they aren't
     // garbage collected while updating the DOM.
     let latentWidgets = document.createElement('div');
-    latentWidgets.id = 'reflex-latent-widgets';
+    latentWidgets.id = 'rio-latent-widgets';
     latentWidgets.style.display = 'none';
     document.body.appendChild(latentWidgets);
 
@@ -481,7 +481,7 @@ function updateWidgetStates(
     // element
     for (let widgetId in message) {
         let deltaState = message[widgetId];
-        let elementId = `reflex-id-${widgetId}`;
+        let elementId = `rio-id-${widgetId}`;
         let element = document.getElementById(elementId);
 
         // This is a reused element, no need to instantiate a new one
@@ -503,7 +503,7 @@ function updateWidgetStates(
         // Build the widget
         element = instance.createElement();
         element.id = elementId;
-        element.classList.add('reflex-widget');
+        element.classList.add('rio-widget');
 
         // Store the widget's class name in the element. Used for debugging.
         element.setAttribute('dbg-py-class', deltaState._python_type_!);
@@ -616,13 +616,13 @@ export function replaceOnlyChild(
     if (currentChildElement !== null) {
         // Don't reparent the child if not necessary. This way things like
         // keyboard focus are preserved
-        if (currentChildElement.id === `reflex-id-${childId}`) {
+        if (currentChildElement.id === `rio-id-${childId}`) {
             return;
         }
 
         // Move the child element to a latent container, so it isn't garbage
         // collected
-        let latentWidgets = document.getElementById('reflex-latent-widgets');
+        let latentWidgets = document.getElementById('rio-latent-widgets');
         latentWidgets?.appendChild(currentChildElement);
     }
 
@@ -640,7 +640,7 @@ export function replaceChildren(
     if (childIds === undefined) {
         return;
     }
-    let latentWidgets = document.getElementById('reflex-latent-widgets')!;
+    let latentWidgets = document.getElementById('rio-latent-widgets')!;
 
     let curElement = parentElement.firstElementChild;
     let curIdIndex = 0;
@@ -686,7 +686,7 @@ export function replaceChildren(
 
         // This element is the correct element, move on
         let curId = childIds[curIdIndex];
-        if (unwrap(curElement).id === `reflex-id-${curId}`) {
+        if (unwrap(curElement).id === `rio-id-${curId}`) {
             curElement = curElement.nextElementSibling;
             curIdIndex++;
             continue;
@@ -804,7 +804,7 @@ function main() {
 
 function initWebsocket(): WebSocket {
     let url = new URL(
-        `/reflex/ws?sessionToken=${sessionToken}`,
+        `/rio/ws?sessionToken=${sessionToken}`,
         window.location.href
     );
     url.protocol = url.protocol.replace('http', 'ws');
@@ -903,12 +903,12 @@ function sendInitialMessage(): void {
     // Send the initial message with user information to the server
     let userSettings = {};
     for (let key in localStorage) {
-        if (!key.startsWith('reflex:userSetting:')) {
+        if (!key.startsWith('rio:userSetting:')) {
             continue;
         }
 
         try {
-            userSettings[key.slice('reflex:userSetting:'.length)] = JSON.parse(
+            userSettings[key.slice('rio:userSetting:'.length)] = JSON.parse(
                 localStorage[key]
             );
         } catch (e) {
@@ -933,11 +933,7 @@ function reconnectWebsocket(attempt: number = 1): void {
         let delay = Math.min(1 * attempt, 15);
 
         console.log(`Websocket reconnect failed. Retrying in ${delay} seconds`);
-        setTimeout(
-            reconnectWebsocket,
-            delay * 1000,
-            attempt + 1,
-        );
+        setTimeout(reconnectWebsocket, delay * 1000, attempt + 1);
     };
 
     websocket.onopen = () => {

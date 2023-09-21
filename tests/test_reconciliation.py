@@ -1,6 +1,6 @@
 from typing import Tuple
 
-import reflex as rx
+import rio as rx
 
 
 async def test_default_values_arent_considered_explicitly_set(create_mockapp):

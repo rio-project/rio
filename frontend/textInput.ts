@@ -17,15 +17,15 @@ export class TextInputWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('reflex-text-input');
+        element.classList.add('rio-text-input');
         element.classList.add('mdc-ripple-surface');
 
         element.innerHTML = `
             <input type="text" style="order: 2" placeholder="">
-            <div class="reflex-text-input-hint-text reflex-text-input-prefix-text" style="order: 1"></div>
-            <div class="reflex-text-input-hint-text reflex-text-input-suffix-text" style="order: 3"></div>
-            <div class="reflex-text-input-label"></div>
-            <div class="reflex-text-input-color-bar"></div>
+            <div class="rio-text-input-hint-text rio-text-input-prefix-text" style="order: 1"></div>
+            <div class="rio-text-input-hint-text rio-text-input-suffix-text" style="order: 3"></div>
+            <div class="rio-text-input-label"></div>
+            <div class="rio-text-input-color-bar"></div>
         `;
 
         // Detect value changes and send them to the backend
@@ -62,7 +62,7 @@ export class TextInputWidget extends WidgetBase {
 
         if (deltaState.label !== undefined) {
             let labelElement = element.querySelector(
-                '.reflex-text-input-label'
+                '.rio-text-input-label'
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
@@ -73,14 +73,14 @@ export class TextInputWidget extends WidgetBase {
 
         if (deltaState.prefix_text !== undefined) {
             let prefixElement = element.querySelector(
-                '.reflex-text-input-prefix-text'
+                '.rio-text-input-prefix-text'
             ) as HTMLElement;
             prefixElement.textContent = deltaState.prefix_text;
         }
 
         if (deltaState.suffix_text !== undefined) {
             let suffixElement = element.querySelector(
-                '.reflex-text-input-suffix-text'
+                '.rio-text-input-suffix-text'
             ) as HTMLElement;
             suffixElement.textContent = deltaState.suffix_text;
         }
@@ -91,19 +91,19 @@ export class TextInputWidget extends WidgetBase {
 
         if (deltaState.is_sensitive === true) {
             inputElement.disabled = false;
-            element.classList.remove('reflex-disabled-input');
+            element.classList.remove('rio-disabled-input');
         } else if (deltaState.is_sensitive === false) {
             inputElement.disabled = true;
-            element.classList.add('reflex-disabled-input');
+            element.classList.add('rio-disabled-input');
         }
 
         if (deltaState.is_valid === false) {
             element.style.setProperty(
-                '--reflex-local-text-color',
-                'var(--reflex-global-danger-color)'
+                '--rio-local-text-color',
+                'var(--rio-global-danger-color)'
             );
         } else if (deltaState.is_valid === true) {
-            element.style.removeProperty('--reflex-local-text-color');
+            element.style.removeProperty('--rio-local-text-color');
         }
     }
 }
