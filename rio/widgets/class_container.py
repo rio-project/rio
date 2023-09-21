@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -21,7 +21,7 @@ class ClassContainer(widget_base.FundamentalWidget):
     API.
     """
 
-    child: Optional[rx.Widget]
+    child: Optional[rio.Widget]
     classes: List[str]
 
 

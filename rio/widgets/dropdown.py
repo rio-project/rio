@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -28,7 +28,7 @@ class Dropdown(widget_base.FundamentalWidget, Generic[T]):
     _: KW_ONLY
     label: str
     selected_value: T
-    on_change: rx.EventHandler[DropdownChangeEvent[T]]
+    on_change: rio.EventHandler[DropdownChangeEvent[T]]
     is_sensitive: bool = True
 
     def __init__(
@@ -37,7 +37,7 @@ class Dropdown(widget_base.FundamentalWidget, Generic[T]):
         *,
         label: str = "",
         selected_value: Optional[T] = None,
-        on_change: rx.EventHandler[DropdownChangeEvent[T]] = None,
+        on_change: rio.EventHandler[DropdownChangeEvent[T]] = None,
         is_sensitive: bool = True,
         key: Optional[str] = None,
         margin: Optional[float] = None,

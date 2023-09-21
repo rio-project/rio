@@ -1,6 +1,6 @@
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 import rio_docs.models as docmodels
 from rio import escape_markdown as es
 from rio import escape_markdown_code as esc
@@ -66,10 +66,10 @@ def _str_function_signature(
     return "".join(parts)
 
 
-class ClassApiDocsView(rx.Widget):
+class ClassApiDocsView(rio.Widget):
     docs: docmodels.ClassDocs
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         parts = []
 
         # Header
@@ -128,7 +128,7 @@ class ClassApiDocsView(rx.Widget):
         # Events
         # TODO
 
-        return rx.MarkdownView(
+        return rio.MarkdownView(
             "".join(parts),
             default_language="python",
         )

@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -63,11 +63,11 @@ class MouseLeaveEvent(_MousePositionedEvent):
 class MouseEventListener(widget_base.FundamentalWidget):
     child: widget_base.Widget
     _: KW_ONLY
-    on_mouse_down: rx.EventHandler[MouseDownEvent] = None
-    on_mouse_up: rx.EventHandler[MouseUpEvent] = None
-    on_mouse_move: rx.EventHandler[MouseMoveEvent] = None
-    on_mouse_enter: rx.EventHandler[MouseEnterEvent] = None
-    on_mouse_leave: rx.EventHandler[MouseLeaveEvent] = None
+    on_mouse_down: rio.EventHandler[MouseDownEvent] = None
+    on_mouse_up: rio.EventHandler[MouseUpEvent] = None
+    on_mouse_move: rio.EventHandler[MouseMoveEvent] = None
+    on_mouse_enter: rio.EventHandler[MouseEnterEvent] = None
+    on_mouse_leave: rio.EventHandler[MouseLeaveEvent] = None
 
     def _custom_serialize(self) -> JsonDoc:
         return {

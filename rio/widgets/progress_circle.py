@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -15,13 +15,13 @@ __all__ = [
 class ProgressCircle(widget_base.FundamentalWidget):
     _: KW_ONLY
     progress: Optional[float]
-    color: rx.ColorSet
+    color: rio.ColorSet
 
     def __init__(
         self,
         *,
         progress: Optional[float] = None,
-        color: rx.ColorSet = "primary",
+        color: rio.ColorSet = "primary",
         size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,

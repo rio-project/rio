@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -15,7 +15,7 @@ class Column(widget_base.FundamentalWidget):
 
     def __init__(
         self,
-        *children: rx.Widget,
+        *children: rio.Widget,
         spacing: float = 0.0,
         key: Optional[str] = None,
         margin: Optional[float] = None,

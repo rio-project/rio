@@ -1,27 +1,27 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from .. import components as comps
 from .. import theme
 
 
-def make_slideshow_placeholder(variant: int) -> rx.Widget:
+def make_slideshow_placeholder(variant: int) -> rio.Widget:
     colors = [
-        rx.Color.RED,
-        rx.Color.GREEN,
-        rx.Color.BLUE,
-        rx.Color.YELLOW,
-        rx.Color.PURPLE,
-        rx.Color.MAGENTA,
+        rio.Color.RED,
+        rio.Color.GREEN,
+        rio.Color.BLUE,
+        rio.Color.YELLOW,
+        rio.Color.PURPLE,
+        rio.Color.MAGENTA,
     ]
 
-    return rx.Rectangle(
-        child=rx.Text(
+    return rio.Rectangle(
+        child=rio.Text(
             f"Slideshow Page {variant}",
         ),
-        style=rx.BoxStyle(
+        style=rio.BoxStyle(
             fill=colors[variant % len(colors)],
         ),
         width="grow",
@@ -30,19 +30,19 @@ def make_slideshow_placeholder(variant: int) -> rx.Widget:
 
 
 def make_slide(
-    foreground: rx.Widget,
-    background: rx.ImageLike,
-) -> rx.Widget:
-    return rx.Rectangle(
-        child=rx.Container(
+    foreground: rio.Widget,
+    background: rio.ImageLike,
+) -> rio.Widget:
+    return rio.Rectangle(
+        child=rio.Container(
             child=foreground,
             width=theme.CENTER_COLUMN_WIDTH,
             align_x=0.5,
             margin_top=6,
             margin_bottom=5,
         ),
-        style=rx.BoxStyle(
-            fill=rx.ImageFill(
+        style=rio.BoxStyle(
+            fill=rio.ImageFill(
                 background,
                 fill_mode="zoom",
             ),
@@ -52,20 +52,20 @@ def make_slide(
     )
 
 
-class HomeView(rx.Widget):
-    def build(self) -> rx.Widget:
-        return rx.Column(
-            rx.Stack(
+class HomeView(rio.Widget):
+    def build(self) -> rio.Widget:
+        return rio.Column(
+            rio.Stack(
                 # Slideshow
-                rx.Column(
-                    rx.Slideshow(
+                rio.Column(
+                    rio.Slideshow(
                         make_slide(
-                            rx.Text(
+                            rio.Text(
                                 "Beautiful\nby Default",
                                 align_y=0,
                                 align_x=0,
-                                style=rx.TextStyle(
-                                    font_color=rx.Color.BLACK,
+                                style=rio.TextStyle(
+                                    font_color=rio.Color.BLACK,
                                     font_size=7,
                                     font_weight="bold",
                                 ),
@@ -84,8 +84,8 @@ class HomeView(rx.Widget):
                         linger_time=10,
                         height=45,
                     ),
-                    rx.Rectangle(
-                        style=rx.BoxStyle(fill=theme.THEME.surface_color),
+                    rio.Rectangle(
+                        style=rio.BoxStyle(fill=theme.THEME.surface_color),
                         height=7,
                     ),
                 ),

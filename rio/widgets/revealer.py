@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -27,7 +27,7 @@ class Revealer(widget_base.FundamentalWidget):
     child: widget_base.Widget
     _: KW_ONLY
     is_expanded: bool = False
-    on_change: rx.EventHandler[RevealerChangeEvent] = None
+    on_change: rio.EventHandler[RevealerChangeEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event

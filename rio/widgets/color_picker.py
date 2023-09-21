@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from .. import app_server, color
 from . import widget_base
@@ -25,7 +25,7 @@ class ColorPicker(widget_base.FundamentalWidget):
     color: color.Color
     _: KW_ONLY
     pick_opacity: bool = False
-    on_change: rx.EventHandler[ColorChangeEvent] = None
+    on_change: rio.EventHandler[ColorChangeEvent] = None
 
     async def _on_message(self, msg: Any) -> None:
         # Parse the message

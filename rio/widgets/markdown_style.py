@@ -3,7 +3,7 @@ from typing import Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
-import rio as rx
+import rio
 
 __all__ = [
     "MarkdownStyle",
@@ -13,46 +13,46 @@ __all__ = [
 @dataclass(frozen=True)
 class MarkdownStyle:
     # Headers
-    header_1_style: rx.TextStyle = rx.TextStyle(
+    header_1_style: rio.TextStyle = rio.TextStyle(
         font_size=1.5,
-        font_color=rx.Color.BLACK,
+        font_color=rio.Color.BLACK,
     )
-    header_2_style: rx.TextStyle = header_1_style.replace(
+    header_2_style: rio.TextStyle = header_1_style.replace(
         font_size=1.35,
     )
-    header_3_style: rx.TextStyle = header_1_style.replace(
+    header_3_style: rio.TextStyle = header_1_style.replace(
         font_size=1.25,
     )
-    header_4_style: rx.TextStyle = header_1_style.replace(
+    header_4_style: rio.TextStyle = header_1_style.replace(
         font_size=1.15,
         font_weight="bold",
     )
-    header_5_style: rx.TextStyle = header_1_style.replace(
+    header_5_style: rio.TextStyle = header_1_style.replace(
         font_size=1.05,
         font_weight="bold",
     )
-    header_6_style: rx.TextStyle = header_1_style.replace(
+    header_6_style: rio.TextStyle = header_1_style.replace(
         font_size=1.0,
         font_weight="bold",
     )
 
-    text_body_style: rx.TextStyle = rx.TextStyle()
+    text_body_style: rio.TextStyle = rio.TextStyle()
 
-    hyperlink_style: rx.TextStyle = rx.TextStyle(
-        font_color=rx.Color.BLUE,
+    hyperlink_style: rio.TextStyle = rio.TextStyle(
+        font_color=rio.Color.BLUE,
     )
 
     def replace(
         self,
         *,
-        header_1_style: Optional[rx.TextStyle] = None,
-        header_2_style: Optional[rx.TextStyle] = None,
-        header_3_style: Optional[rx.TextStyle] = None,
-        header_4_style: Optional[rx.TextStyle] = None,
-        header_5_style: Optional[rx.TextStyle] = None,
-        header_6_style: Optional[rx.TextStyle] = None,
-        text_body_style: Optional[rx.TextStyle] = None,
-        hyperlink_style: Optional[rx.TextStyle] = None,
+        header_1_style: Optional[rio.TextStyle] = None,
+        header_2_style: Optional[rio.TextStyle] = None,
+        header_3_style: Optional[rio.TextStyle] = None,
+        header_4_style: Optional[rio.TextStyle] = None,
+        header_5_style: Optional[rio.TextStyle] = None,
+        header_6_style: Optional[rio.TextStyle] = None,
+        text_body_style: Optional[rio.TextStyle] = None,
+        hyperlink_style: Optional[rio.TextStyle] = None,
     ) -> Self:
         return MarkdownStyle(
             header_1_style=self.header_1_style

@@ -1,6 +1,6 @@
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 import rio_docs
 
 from .. import components as comps
@@ -199,15 +199,15 @@ website](https://www.typescriptlang.org/).
 """
 
 
-class FlatCard(rx.Widget):
-    child: rx.Widget
+class FlatCard(rio.Widget):
+    child: rio.Widget
     corner_radius: Union[
         float, Tuple[float, float, float, float]
     ] = theme.THEME.corner_radius_large
 
-    def build(self) -> rx.Widget:
-        return rx.Card(
-            rx.Container(
+    def build(self) -> rio.Widget:
+        return rio.Card(
+            rio.Container(
                 self.child,
                 margin=2,
             ),
@@ -217,30 +217,30 @@ class FlatCard(rx.Widget):
         )
 
 
-class Outliner(rx.Widget):
-    def build(self) -> rx.Widget:
+class Outliner(rio.Widget):
+    def build(self) -> rio.Widget:
         chapter_expanders = []
 
         for section in OUTLINE:
             if section is None:
-                chapter_expanders.append(rx.Spacer(height=3))
+                chapter_expanders.append(rio.Spacer(height=3))
                 continue
 
             title, subsections = section
 
             buttons = [
-                rx.Button(
+                rio.Button(
                     section,
-                    color=rx.Color.TRANSPARENT,
+                    color=rio.Color.TRANSPARENT,
                     on_press=lambda _: self.session.navigate_to(f"./{section}"),
                 )
                 for section in subsections
             ]
 
             chapter_expanders.append(
-                rx.Revealer(
+                rio.Revealer(
                     title,
-                    rx.Column(
+                    rio.Column(
                         *buttons,
                         spacing=theme.THEME.base_spacing,
                     ),
@@ -248,7 +248,7 @@ class Outliner(rx.Widget):
             )
 
         return FlatCard(
-            child=rx.Column(
+            child=rio.Column(
                 *chapter_expanders,
                 width=13,
                 align_y=0,
@@ -263,31 +263,31 @@ class Outliner(rx.Widget):
         )
 
 
-class DocumentationView(rx.Widget):
-    def build(self) -> rx.Widget:
-        return rx.Column(
-            rx.Sticky(
+class DocumentationView(rio.Widget):
+    def build(self) -> rio.Widget:
+        return rio.Column(
+            rio.Sticky(
                 Outliner(
                     align_x=0,
                     align_y=0.4,
                 ),
             ),
-            rx.Stack(
+            rio.Stack(
                 comps.NavigationBarDeadSpace(
                     height=22,
                     align_y=0,
                 ),
-                rx.Router(
-                    rx.Route(
+                rio.Router(
+                    rio.Route(
                         "",
-                        lambda: rx.Column(
+                        lambda: rio.Column(
                             FlatCard(
                                 comps.ClassApiDocsView(
-                                    rio_docs.ClassDocs.parse(rx.Column)
+                                    rio_docs.ClassDocs.parse(rio.Column)
                                 ),
                             ),
                             FlatCard(
-                                rx.MarkdownView(text=DOCS_STR),
+                                rio.MarkdownView(text=DOCS_STR),
                             ),
                             margin_left=23,
                             margin_bottom=4,

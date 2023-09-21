@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -35,8 +35,8 @@ class TextInput(widget_base.FundamentalWidget):
     is_secret: bool = False
     is_sensitive: bool = True
     is_valid: bool = True
-    on_change: rx.EventHandler[TextInputChangeEvent] = None
-    on_confirm: rx.EventHandler[TextInputConfirmEvent] = None
+    on_change: rio.EventHandler[TextInputChangeEvent] = None
+    on_confirm: rio.EventHandler[TextInputConfirmEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event

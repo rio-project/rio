@@ -1,5 +1,5 @@
-import rio as rx
+import rio
 
 
-class ThemePicker(rx.Widget):
+class ThemePicker(rio.Widget):
     pass

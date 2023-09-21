@@ -14,7 +14,7 @@ import __main__
 import fastapi
 import uvicorn
 
-import rio as rx
+import rio
 
 from . import app_server, assets, debug
 from .common import ImageLike
@@ -32,12 +32,12 @@ __all__ = ["App"]
 class App:
     def __init__(
         self,
-        build: Callable[[], rx.Widget],
+        build: Callable[[], rio.Widget],
         *,
         name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
-        on_session_start: rx.EventHandler[rx.Session] = None,
-        on_session_end: rx.EventHandler[rx.Session] = None,
+        on_session_start: rio.EventHandler[rio.Session] = None,
+        on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
@@ -69,7 +69,7 @@ class App:
         *,
         external_url_override: Optional[str] = None,
         _running_in_window: bool = False,
-        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
+        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
     ) -> fastapi.FastAPI:
         return app_server.AppServer(
             self,
@@ -85,7 +85,7 @@ class App:
         self,
         *,
         external_url_override: Optional[str] = None,
-        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
+        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
     ):
         return self._as_fastapi(
             external_url_override=external_url_override,
@@ -99,7 +99,7 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
+        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
         _on_startup: Optional[Callable[[], Awaitable[None]]] = None,
     ) -> None:
         port = _ensure_valid_port(host, port)
@@ -142,7 +142,7 @@ class App:
         host: str = "localhost",
         port: Optional[int] = None,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
+        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
     ):
         port = _ensure_valid_port(host, port)
 
@@ -161,7 +161,7 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[rx.Session], debug.Validator]] = None,
+        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
     ):
         if webview is None:
             raise Exception(

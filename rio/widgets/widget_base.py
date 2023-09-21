@@ -16,7 +16,7 @@ import introspection
 from typing_extensions import dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
-import rio as rx
+import rio
 
 from .. import common, global_state, inspection
 
@@ -257,7 +257,7 @@ class Widget(metaclass=WidgetMeta):
     _build_generation_: int = dataclasses.field(default=-1, init=False)
 
     # Injected by the session when the widget is refreshed
-    _session_: Optional["rx.Session"] = dataclasses.field(default=None, init=False)
+    _session_: Optional["rio.Session"] = dataclasses.field(default=None, init=False)
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
@@ -557,7 +557,7 @@ class Widget(metaclass=WidgetMeta):
             return super().__getattribute__(attr_name)
 
     @property
-    def session(self) -> "rx.Session":
+    def session(self) -> "rio.Session":
         """
         Return the session this widget is part of.
 
@@ -623,7 +623,7 @@ class Widget(metaclass=WidgetMeta):
     async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
-    def _is_in_widget_tree(self, cache: Dict[rx.Widget, bool]) -> bool:
+    def _is_in_widget_tree(self, cache: Dict[rio.Widget, bool]) -> bool:
         """
         Returns whether this widget is directly or indirectly connected to the
         widget tree of a session.
@@ -670,21 +670,21 @@ class Widget(metaclass=WidgetMeta):
     @typing.overload
     async def _call_event_handler(
         self,
-        handler: rx.EventHandler[[]],
+        handler: rio.EventHandler[[]],
     ) -> None:
         ...
 
     @typing.overload
     async def _call_event_handler(
         self,
-        handler: rx.EventHandler[[T]],
+        handler: rio.EventHandler[[T]],
         event_data: T,
     ) -> None:
         ...
 
     async def _call_event_handler(  # type: ignore
         self,
-        handler: rx.EventHandler[P],
+        handler: rio.EventHandler[P],
         *event_data: T,  # type: ignore
     ) -> None:
         """
@@ -755,11 +755,11 @@ class FundamentalWidget(Widget):
         raise RuntimeError(f"Attempted to call `build` on `FundamentalWidget` {self}")
 
     @classmethod
-    def build_javascript_source(cls, sess: rx.Session) -> str:
+    def build_javascript_source(cls, sess: rio.Session) -> str:
         return ""
 
     @classmethod
-    def build_css_source(cls, sess: rx.Session) -> str:
+    def build_css_source(cls, sess: rio.Session) -> str:
         return ""
 
     def __init_subclass__(cls):
@@ -777,7 +777,7 @@ class FundamentalWidget(Widget):
         super().__init_subclass__()
 
     @classmethod
-    async def _initialize_on_client(cls, sess: rx.Session) -> None:
+    async def _initialize_on_client(cls, sess: rio.Session) -> None:
         message_source = ""
 
         javascript_source = cls.build_javascript_source(sess)

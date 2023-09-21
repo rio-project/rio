@@ -31,7 +31,6 @@ class Text(widget_base.FundamentalWidget):
             style = self.session._serialize_and_host_value(
                 self.style,
                 text_style.TextStyle,
-                set(),
             )
 
         return {

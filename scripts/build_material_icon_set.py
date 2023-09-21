@@ -12,7 +12,7 @@ from xml.etree import ElementTree as ET
 
 from stream_tui import *  # type: ignore
 
-import rio as rx
+import rio
 
 # Configure: The name the resulting icon set will have
 SET_NAME = "material"
@@ -21,7 +21,7 @@ SET_NAME = "material"
 #
 # Repo URL: https://github.com/marella/material-symbols
 INPUT_DIR = (
-    rx.common.PROJECT_ROOT_DIR
+    rio.common.PROJECT_ROOT_DIR
     / "thirdparty"
     / "material-symbols"
     / "svg"
@@ -35,7 +35,7 @@ INPUT_NAME_PATTERN = r"(.+).svg"
 
 # Configure: (.+).svg"The output file will be written into this directory as
 # <SET_NAME>.zip
-OUTPUT_DIR = rx.common.RIO_ASSETS_DIR / "compressed-icon-sets"
+OUTPUT_DIR = rio.common.RIO_ASSETS_DIR / "compressed-icon-sets"
 
 # For debugging: Stop after processing this many icons. Set to `None` for no
 # limit

@@ -2,12 +2,12 @@ from dataclasses import field
 from pathlib import Path
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 import rio.debug
 
-theme = rx.Theme()
+theme = rio.Theme()
 
-CARD_STYLE = rx.BoxStyle(
+CARD_STYLE = rio.BoxStyle(
     fill=theme.surface_color,
     corner_radius=theme.corner_radius_small,
     # shadow_color=theme.active_color.replace(opacity=0.1),
@@ -19,12 +19,12 @@ CARD_STYLE_HOVER = CARD_STYLE.replace(
 )
 
 
-class Card(rx.Widget):
-    child: rx.Widget
+class Card(rio.Widget):
+    child: rio.Widget
 
-    def build(self) -> rx.Widget:
-        return rx.Rectangle(
-            child=rx.Container(
+    def build(self) -> rio.Widget:
+        return rio.Rectangle(
+            child=rio.Container(
                 self.child,
                 margin=1.0,
             ),
@@ -34,30 +34,30 @@ class Card(rx.Widget):
         )
 
 
-class ShowcaseCard(rx.Widget):
+class ShowcaseCard(rio.Widget):
     title: str
     description: str
-    child: rx.Widget
+    child: rio.Widget
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         return Card(
-            rx.Column(
-                rx.Text(self.title, multiline=True),
-                rx.Text(self.description, multiline=True),
+            rio.Column(
+                rio.Text(self.title, multiline=True),
+                rio.Text(self.description, multiline=True),
                 self.child,
             )
         )
 
 
-class KeyEventTester(rx.Widget):
-    event: rx.KeyDownEvent = rx.KeyDownEvent("unknown", "unknown", "", frozenset())
+class KeyEventTester(rio.Widget):
+    event: rio.KeyDownEvent = rio.KeyDownEvent("unknown", "unknown", "", frozenset())
 
-    def on_key_down(self, event: rx.KeyDownEvent) -> None:
+    def on_key_down(self, event: rio.KeyDownEvent) -> None:
         self.event = event
 
-    def build(self) -> rx.Widget:
-        return rx.KeyEventListener(
-            rx.Text(
+    def build(self) -> rio.Widget:
+        return rio.KeyEventListener(
+            rio.Text(
                 f"""Hardware key: {self.event.hardware_key}
 Software key: {self.event.software_key}
 Input text: {self.event.text}
@@ -67,13 +67,13 @@ Modifiers: {self.event.modifiers}"""
         )
 
 
-class ExtendoItem(rx.Widget):
+class ExtendoItem(rio.Widget):
     name: str
 
-    def build(self) -> rx.Widget:
-        return rx.Row(
-            rx.Icon("material/archive"),
-            rx.Text(
+    def build(self) -> rio.Widget:
+        return rio.Row(
+            rio.Icon("material/archive"),
+            rio.Text(
                 f"Item Called: {self.name}",
                 width="grow",
                 align_x=1,
@@ -82,7 +82,7 @@ class ExtendoItem(rx.Widget):
         )
 
 
-class ExtensibleList(rx.Widget):
+class ExtensibleList(rio.Widget):
     child_names: List[str] = field(
         default_factory=lambda: ["Perma 1", "Perma 2"],
     )
@@ -90,44 +90,44 @@ class ExtensibleList(rx.Widget):
     def on_extend(self, _) -> None:
         self.child_names = self.child_names + [f"New {len(self.child_names) + 1}"]
 
-    def build(self) -> rx.Widget:
-        return rx.Column(
-            rx.Button("Extend", on_press=self.on_extend),
-            rx.Column(
+    def build(self) -> rio.Widget:
+        return rio.Column(
+            rio.Button("Extend", on_press=self.on_extend),
+            rio.Column(
                 *[ExtendoItem(name) for name in self.child_names],
                 spacing=0.5,
             ),
         )
 
 
-class Sidebar(rx.Widget):
+class Sidebar(rio.Widget):
     search_text: str = ""
     expanded: bool = False
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         return Card(
-            child=rx.ScrollContainer(
-                rx.Column(
-                    rx.Text(
+            child=rio.ScrollContainer(
+                rio.Column(
+                    rio.Text(
                         "Rio UI",
                         style="heading1",
                         margin_top=1.0,
                     ),
-                    rx.Text(
+                    rio.Text(
                         "The reactive UI library for Python",
                         style="heading2",
                         margin_top=0.6,
                     ),
-                    rx.Grid(
+                    rio.Grid(
                         [
-                            rx.TextInput(
+                            rio.TextInput(
                                 label="Plain",
                                 text=Sidebar.search_text,
                                 prefix_text="prefix",
                                 on_change=lambda evt: print("plain-change:", evt.text),
                                 is_sensitive=False,
                             ),
-                            rx.TextInput(
+                            rio.TextInput(
                                 label="Secret",
                                 text=Sidebar.search_text,
                                 is_secret=True,
@@ -138,20 +138,20 @@ class Sidebar(rx.Widget):
                             ),
                         ],
                         [
-                            rx.Button(
+                            rio.Button(
                                 "Button",
                                 # icon="bootstrap/zoom-out",
                                 is_sensitive=bool(self.search_text),
-                                color=rx.Color.BLACK
+                                color=rio.Color.BLACK
                                 if bool(self.search_text)
-                                else rx.Color.RED,
+                                else rio.Color.RED,
                             ),
-                            rx.ProgressCircle(
+                            rio.ProgressCircle(
                                 progress=None,
                             ),
                         ],
                     ),
-                    rx.Dropdown(
+                    rio.Dropdown(
                         {
                             "Foo": "bar",
                             "Baz": "spam",
@@ -160,26 +160,26 @@ class Sidebar(rx.Widget):
                     ),
                     ExtensibleList(),
                     KeyEventTester(),
-                    rx.Row(
-                        rx.Icon(
+                    rio.Row(
+                        rio.Icon(
                             "archive",
-                            fill=rx.Color.BLUE,
+                            fill=rio.Color.BLUE,
                             width=3.0,
                             height=3.0,
                         ),
-                        rx.Icon(
+                        rio.Icon(
                             "material/archive/fill",
-                            fill=rx.LinearGradientFill(
-                                (rx.Color.RED, 0),
-                                (rx.Color.BLUE, 1),
+                            fill=rio.LinearGradientFill(
+                                (rio.Color.RED, 0),
+                                (rio.Color.BLUE, 1),
                                 angle_degrees=20,
                             ),
                             width=3.0,
                             height=3.0,
                         ),
-                        rx.Icon(
+                        rio.Icon(
                             "material/castle",
-                            fill=rx.ImageFill(
+                            fill=rio.ImageFill(
                                 Path(__file__).parent / "test.png",
                             ),
                             width=3.0,
@@ -188,18 +188,18 @@ class Sidebar(rx.Widget):
                         align_x=0.5,
                         spacing=1,
                     ),
-                    rx.Row(
-                        rx.Text("⇇ Undef space ⇉"),
+                    rio.Row(
+                        rio.Text("⇇ Undef space ⇉"),
                     ),
-                    rx.Slider(value=0.1),
-                    rx.Button(
+                    rio.Slider(value=0.1),
+                    rio.Button(
                         "Foo",
                         on_press=lambda _: print("Button Pressed"),
                         shape="pill",
                         style="major",
                         is_loading=True,
                     ),
-                    rx.Button(
+                    rio.Button(
                         "Bar",
                         icon="material/castle/fill",
                         shape="rounded",
@@ -207,77 +207,77 @@ class Sidebar(rx.Widget):
                         color="danger",
                         # is_sensitive=False,
                     ),
-                    rx.Button(
+                    rio.Button(
                         "Baz",
                         icon="material/archive/fill",
                         shape="rectangle",
                         color="warning",
                     ),
-                    rx.Button(
+                    rio.Button(
                         "Spam",
                         shape="circle",
-                        color=rx.Color.CYAN,
+                        color=rio.Color.CYAN,
                         width=3,
                         height=3,
                         align_x=0.5,
                     ),
-                    rx.ProgressBar(0.4),
-                    rx.ProgressBar(None),
-                    rx.ColorPicker(
-                        rx.Color.RED,
+                    rio.ProgressBar(0.4),
+                    rio.ProgressBar(None),
+                    rio.ColorPicker(
+                        rio.Color.RED,
                         on_change=lambda evt: print("RGB Color Changed:", evt.color),
                     ),
-                    rx.ColorPicker(
-                        rx.Color.GREEN,
+                    rio.ColorPicker(
+                        rio.Color.GREEN,
                         pick_opacity=True,
                         on_change=lambda evt: print("RGBA Color Changed:", evt.color),
                     ),
-                    rx.Switch(
+                    rio.Switch(
                         on_change=lambda _: print("Switch 1 Changed"),
                     ),
-                    rx.Switch(
+                    rio.Switch(
                         is_sensitive=False,
                         on_change=lambda _: print("Switch 2 Changed"),
                     ),
-                    rx.NumberInput(
+                    rio.NumberInput(
                         3.0,
                         placeholder="Number",
                         prefix_text="$",
                         decimals=2,
                     ),
-                    rx.Text("I ❤️ U 🏎️"),
-                    rx.Revealer(
+                    rio.Text("I ❤️ U 🏎️"),
+                    rio.Revealer(
                         "Revealer",
-                        rx.Text("Hello World"),
+                        rio.Text("Hello World"),
                         on_change=lambda evt: print(
                             "Revealer Changed:", evt.is_expanded
                         ),
                         is_expanded=Sidebar.expanded,
                     ),
-                    rx.ScrollTarget(
+                    rio.ScrollTarget(
                         "scroll-target",
-                        rx.Switch(
+                        rio.Switch(
                             is_on=Sidebar.expanded,
                         ),
                     ),
-                    rx.Stack(
-                        rx.Rectangle(
-                            style=rx.BoxStyle(fill=rx.Color.RED),
+                    rio.Stack(
+                        rio.Rectangle(
+                            style=rio.BoxStyle(fill=rio.Color.RED),
                             ripple=True,
                             width=7,
                             height=7,
                             align_x=0,
                             align_y=0,
                         ),
-                        rx.Rectangle(
-                            style=rx.BoxStyle(fill=rx.Color.YELLOW),
+                        rio.Rectangle(
+                            style=rio.BoxStyle(fill=rio.Color.YELLOW),
                             ripple=True,
                             width=5,
                             height=10,
                             align_x=0,
                         ),
-                        rx.Rectangle(
-                            style=rx.BoxStyle(fill=rx.Color.GREEN),
+                        rio.Rectangle(
+                            style=rio.BoxStyle(fill=rio.Color.GREEN),
                             ripple=True,
                             width=10,
                             height=5,
@@ -292,19 +292,19 @@ class Sidebar(rx.Widget):
         )
 
 
-class WidgetShowcase(rx.Widget):
-    def build(self) -> rx.Widget:
-        return rx.Row(
+class WidgetShowcase(rio.Widget):
+    def build(self) -> rio.Widget:
+        return rio.Row(
             Sidebar(
                 width=30,
             ),
             ShowcaseCard(
                 "Hello Worlds",
                 "Much hello!",
-                rx.Column(
-                    rx.Text("Hello World"),
-                    rx.Text("Hello World"),
-                    rx.Text("Hello World"),
+                rio.Column(
+                    rio.Text("Hello World"),
+                    rio.Text("Hello World"),
+                    rio.Text("Hello World"),
                 ),
                 margin_x=4,
                 align_y=0.2,
@@ -313,14 +313,14 @@ class WidgetShowcase(rx.Widget):
         )
 
 
-def validator_factory(sess: rx.Session) -> rio.debug.Validator:
+def validator_factory(sess: rio.Session) -> rio.debug.Validator:
     return rio.debug.Validator(
         sess,
         dump_directory_path=rio.common.GENERATED_DIR,
     )
 
 
-rx_app = rx.App(
+rx_app = rio.App(
     WidgetShowcase,
     name="Rio Showcase",
     on_session_start=lambda sess: print("Session Started"),

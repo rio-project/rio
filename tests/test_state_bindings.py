@@ -1,17 +1,17 @@
-import rio as rx
+import rio
 
-StateBinding = rx.widget_base.StateBinding
-StateProperty = rx.widget_base.StateProperty
+StateBinding = rio.widget_base.StateBinding
+StateProperty = rio.widget_base.StateProperty
 
 
-class Parent(rx.Widget):
+class Parent(rio.Widget):
     text: str = ""
 
     def build(self):
-        return rx.Text(Parent.text)
+        return rio.Text(Parent.text)
 
 
-class Grandparent(rx.Widget):
+class Grandparent(rio.Widget):
     text: str = ""
 
     def build(self):
@@ -21,20 +21,20 @@ class Grandparent(rx.Widget):
 async def test_bindings_arent_created_too_early(create_mockapp):
     # There was a time when state bindings were created in `Widget.__init__`.
     # Make sure they're created after *all* `__init__`s have run.
-    class IHaveACustomInit(rx.Widget):
+    class IHaveACustomInit(rio.Widget):
         text: str
 
         def __init__(self, *args, text: str, **kwargs):
             super().__init__(*args, **kwargs)
             self.text = text
 
-        def build(self) -> rx.Widget:
-            return rx.Text(self.text)
+        def build(self) -> rio.Widget:
+            return rio.Text(self.text)
 
-    class Container(rx.Widget):
+    class Container(rio.Widget):
         text: str
 
-        def build(self) -> rx.Widget:
+        def build(self) -> rio.Widget:
             return IHaveACustomInit(text=Container.text)
 
     root_widget = Container("hi")
@@ -53,19 +53,19 @@ async def test_init_receives_state_properties_as_input(create_mockapp):
     # into `__init__`. But ultimately we decided against it, because some
     # widgets may want to use state properties/bindings in their __init__. So
     # make sure the `__init__` actually receives a `StateProperty` as input.
-    class Square(rx.Widget):
+    class Square(rio.Widget):
         def __init__(self, size: float):
             assert isinstance(size, StateProperty), size
 
             super().__init__(width=size, height=size)
 
-        def build(self) -> rx.Widget:
-            return rx.Text("hi", width=self.width, height=self.height)
+        def build(self) -> rio.Widget:
+            return rio.Text("hi", width=self.width, height=self.height)
 
-    class Container(rx.Widget):
+    class Container(rio.Widget):
         size: float
 
-        def build(self) -> rx.Widget:
+        def build(self) -> rio.Widget:
             return Square(Container.size)
 
     root_widget = Container(7)
@@ -76,7 +76,7 @@ async def test_init_receives_state_properties_as_input(create_mockapp):
 async def test_binding_assignment_on_child(create_mockapp):
     root_widget = Parent()
     async with create_mockapp(root_widget) as app:
-        text_widget: rx.Text = app.get_build_output(root_widget)
+        text_widget: rio.Text = app.get_build_output(root_widget)
 
         assert not app.dirty_widgets
 
@@ -90,7 +90,7 @@ async def test_binding_assignment_on_child(create_mockapp):
 async def test_binding_assignment_on_parent(create_mockapp):
     root_widget = Parent()
     async with create_mockapp(root_widget) as app:
-        text_widget: rx.Text = app.get_build_output(root_widget)
+        text_widget: rio.Text = app.get_build_output(root_widget)
 
         assert not app.dirty_widgets
 
@@ -102,13 +102,13 @@ async def test_binding_assignment_on_parent(create_mockapp):
 
 
 async def test_binding_assignment_on_sibling(create_mockapp):
-    class Root(rx.Widget):
+    class Root(rio.Widget):
         text: str = ""
 
         def build(self):
-            return rx.Column(
-                rx.Text(Root.text),
-                rx.Text(Root.text),
+            return rio.Column(
+                rio.Text(Root.text),
+                rio.Text(Root.text),
             )
 
     root_widget = Root()
@@ -129,7 +129,7 @@ async def test_binding_assignment_on_grandchild(create_mockapp):
     root_widget = Grandparent()
     async with create_mockapp(root_widget) as app:
         parent: Parent = app.get_build_output(root_widget)
-        text_widget: rx.Text = app.get_build_output(parent)
+        text_widget: rio.Text = app.get_build_output(parent)
 
         assert not app.dirty_widgets
 
@@ -145,7 +145,7 @@ async def test_binding_assignment_on_middle(create_mockapp):
     root_widget = Grandparent()
     async with create_mockapp(root_widget) as app:
         parent: Parent = app.get_build_output(root_widget)
-        text_widget: rx.Text = app.get_build_output(parent)
+        text_widget: rio.Text = app.get_build_output(parent)
 
         assert not app.dirty_widgets
 
@@ -160,7 +160,7 @@ async def test_binding_assignment_on_middle(create_mockapp):
 async def test_binding_assignment_on_child_after_reconciliation(create_mockapp):
     root_widget = Parent()
     async with create_mockapp(root_widget) as app:
-        text_widget: rx.Text = app.get_build_output(root_widget)
+        text_widget: rio.Text = app.get_build_output(root_widget)
 
         assert not app.dirty_widgets
 
@@ -177,7 +177,7 @@ async def test_binding_assignment_on_child_after_reconciliation(create_mockapp):
 async def test_binding_assignment_on_parent_after_reconciliation(create_mockapp):
     root_widget = Parent()
     async with create_mockapp(root_widget) as app:
-        text_widget: rx.Text = app.get_build_output(root_widget)
+        text_widget: rio.Text = app.get_build_output(root_widget)
 
         assert not app.dirty_widgets
 
@@ -192,13 +192,13 @@ async def test_binding_assignment_on_parent_after_reconciliation(create_mockapp)
 
 
 async def test_binding_assignment_on_sibling_after_reconciliation(create_mockapp):
-    class Root(rx.Widget):
+    class Root(rio.Widget):
         text: str = ""
 
         def build(self):
-            return rx.Column(
-                rx.Text(Root.text),
-                rx.Text(Root.text),
+            return rio.Column(
+                rio.Text(Root.text),
+                rio.Text(Root.text),
             )
 
     root_widget = Root()
@@ -222,7 +222,7 @@ async def test_binding_assignment_on_grandchild_after_reconciliation(create_mock
     root_widget = Grandparent()
     async with create_mockapp(root_widget) as app:
         parent: Parent = app.get_build_output(root_widget)
-        text_widget: rx.Text = app.get_build_output(parent)
+        text_widget: rio.Text = app.get_build_output(parent)
 
         assert not app.dirty_widgets
 
@@ -241,7 +241,7 @@ async def test_binding_assignment_on_middle_after_reconciliation(create_mockapp)
     root_widget = Grandparent()
     async with create_mockapp(root_widget) as app:
         parent: Parent = app.get_build_output(root_widget)
-        text_widget: rx.Text = app.get_build_output(parent)
+        text_widget: rio.Text = app.get_build_output(parent)
 
         assert not app.dirty_widgets
 

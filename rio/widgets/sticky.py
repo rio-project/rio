@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import class_container, widget_base
 
@@ -14,7 +14,7 @@ __all__ = [
 class Sticky(widget_base.Widget):
     def __init__(
         self,
-        child: rx.Widget,
+        child: rio.Widget,
         *,
         key: Optional[str] = None,
         margin: Optional[float] = None,
@@ -57,17 +57,17 @@ class Sticky(widget_base.Widget):
 
         self.child = child
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         # Outer: This container absorbs any CSS attributes assigned by the
         # layouting system, so that they don't interfere with the `Sticky`
         # element.
-        return rx.Container(
+        return rio.Container(
             # Sticky: This is the actual sticky element. It spans the entire
             # screen and doesn't scroll.
             class_container.ClassContainer(
                 # Inner: This container is used to apply any layouting
                 # attributes passed to the `Sticky` widget.
-                rx.Container(
+                rio.Container(
                     margin=self._passthrough_margin,
                     margin_x=self._passthrough_margin_x,
                     margin_y=self._passthrough_margin_y,
@@ -79,7 +79,7 @@ class Sticky(widget_base.Widget):
                     height=self._passthrough_height,  # type: ignore
                     align_x=self._passthrough_align_x,
                     align_y=self._passthrough_align_y,
-                    child=rx.Container(
+                    child=rio.Container(
                         child=self.child,
                     ),
                 ),

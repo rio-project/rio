@@ -20,7 +20,7 @@ import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc
 
-import rio as rx
+import rio
 
 from . import (
     app_server,
@@ -44,7 +44,7 @@ T = typing.TypeVar("T")
 
 @dataclass
 class WidgetData:
-    build_result: rx.Widget
+    build_result: rio.Widget
 
     # Keep track of how often this widget has been built. This is used by
     # widgets to determine whether they are still part of their parent's current
@@ -126,7 +126,7 @@ class Session(unicall.Unicall):
     def __init__(
         self,
         app_server_: app_server.AppServer,
-        base_url: rx.URL,
+        base_url: rio.URL,
         initial_route: Iterable[str],
     ):
         super().__init__(
@@ -148,7 +148,7 @@ class Session(unicall.Unicall):
         # tree. Root routers are mapped to None. This map is kept up to date by
         # routers themselves.
         self._routers: weakref.WeakKeyDictionary[
-            rx.Router, Optional[int]
+            rio.Router, Optional[int]
         ] = weakref.WeakKeyDictionary()
 
         # All widgets / methods which should be called when the session's route
@@ -157,13 +157,13 @@ class Session(unicall.Unicall):
         # The methods don't have the widget bound yet, so they don't unduly
         # prevent the widget from being garbage collected.
         self._route_change_callbacks: weakref.WeakKeyDictionary[
-            rx.Widget, Callable[[rx.Widget], None]
+            rio.Widget, Callable[[rio.Widget], None]
         ] = weakref.WeakKeyDictionary()
 
         # All widgets / methods which should be called when the session's window
         # size has changed.
         self._on_window_resize_callbacks: weakref.WeakKeyDictionary[
-            rx.Widget, Callable[[rx.Widget], None]
+            rio.Widget, Callable[[rio.Widget], None]
         ] = weakref.WeakKeyDictionary()
 
         # All fonts which have been registered with the session. This maps the
@@ -172,7 +172,7 @@ class Session(unicall.Unicall):
         self._registered_font_assets: Dict[str, assets.Asset] = {}
 
         # These are injected by the app server after the session has already been created
-        self._root_widget: rx.Widget
+        self._root_widget: rio.Widget
         self.external_url: Optional[str]  # None if running in a window
         self.preferred_locales: Tuple[
             babel.Locale, ...
@@ -192,11 +192,11 @@ class Session(unicall.Unicall):
         # - `lookup_widget`
         # - `lookup_widget_data`
         self._weak_widgets_by_id: weakref.WeakValueDictionary[
-            int, rx.Widget
+            int, rio.Widget
         ] = weakref.WeakValueDictionary()
 
         self._weak_widget_data_by_widget: weakref.WeakKeyDictionary[
-            rx.Widget, WidgetData
+            rio.Widget, WidgetData
         ] = weakref.WeakKeyDictionary()
 
         # Keep track of all dirty widgets, once again, weakly.
@@ -206,7 +206,7 @@ class Session(unicall.Unicall):
         # dirty.
         #
         # Use `register_dirty_widget` to add a widget to this set.
-        self._dirty_widgets: weakref.WeakSet[rx.Widget] = weakref.WeakSet()
+        self._dirty_widgets: weakref.WeakSet[rio.Widget] = weakref.WeakSet()
 
         # HTML widgets have source code which must be evaluated by the client
         # exactly once. Keep track of which widgets have already sent their
@@ -397,7 +397,7 @@ class Session(unicall.Unicall):
 
         self._create_task(event_worker())
 
-    def _lookup_widget_data(self, widget: rx.Widget) -> WidgetData:
+    def _lookup_widget_data(self, widget: rio.Widget) -> WidgetData:
         """
         Returns the widget data for the given widget. Raises `KeyError` if no
         data is present for the widget.
@@ -407,7 +407,7 @@ class Session(unicall.Unicall):
         except KeyError:
             raise KeyError(widget) from None
 
-    def _lookup_widget(self, widget_id: int) -> rx.Widget:
+    def _lookup_widget(self, widget_id: int) -> rio.Widget:
         """
         Returns the widget and its data for the given widget ID. Raises
         `KeyError` if no widget is present for the ID.
@@ -416,7 +416,7 @@ class Session(unicall.Unicall):
 
     def _register_dirty_widget(
         self,
-        widget: rx.Widget,
+        widget: rio.Widget,
         *,
         include_children_recursively: bool,
     ) -> None:
@@ -443,7 +443,7 @@ class Session(unicall.Unicall):
                 include_children_recursively=True,
             )
 
-    def _refresh_sync(self) -> Set[rx.Widget]:
+    def _refresh_sync(self) -> Set[rio.Widget]:
         """
         See `refresh` for details on what this function does.
 
@@ -459,7 +459,7 @@ class Session(unicall.Unicall):
 
         # Keep track of all widgets which are visited. Only they will be sent to
         # the client.
-        visited_widgets: collections.Counter[rx.Widget] = collections.Counter()
+        visited_widgets: collections.Counter[rio.Widget] = collections.Counter()
 
         # Build all dirty widgets
         while self._dirty_widgets:
@@ -537,7 +537,7 @@ class Session(unicall.Unicall):
 
         # Determine which widgets are alive, to avoid sending references to dead
         # widgets to the frontend.
-        alive_cache: Dict[rx.Widget, bool] = {
+        alive_cache: Dict[rio.Widget, bool] = {
             self._root_widget: True,
         }
 
@@ -578,7 +578,7 @@ class Session(unicall.Unicall):
             await self._update_widget_states(visited_widgets, delta_states)
 
     async def _update_widget_states(
-        self, visited_widgets: Set[rx.Widget], delta_states: Dict[int, JsonDoc]
+        self, visited_widgets: Set[rio.Widget], delta_states: Dict[int, JsonDoc]
     ) -> None:
         # Initialize all HTML widgets
         for widget in visited_widgets:
@@ -684,7 +684,7 @@ class Session(unicall.Unicall):
             return self._serialize_and_host_value(value, type(value))
 
         # Widgets
-        if introspection.safe_is_subclass(type_, rx.Widget):
+        if introspection.safe_is_subclass(type_, rio.Widget):
             return value._id
 
         # Invalid type
@@ -692,7 +692,7 @@ class Session(unicall.Unicall):
 
     def _serialize_and_host_widget(
         self,
-        widget: rx.Widget,
+        widget: rio.Widget,
     ) -> JsonDoc:
         """
         Serializes the widget, non-recursively. Children are serialized just by
@@ -756,9 +756,9 @@ class Session(unicall.Unicall):
 
     def _reconcile_tree(
         self,
-        builder: rx.Widget,
+        builder: rio.Widget,
         old_build_data: WidgetData,
-        new_build: rx.Widget,
+        new_build: rio.Widget,
     ) -> None:
         # Find all pairs of widgets which should be reconciled
         matched_pairs = list(
@@ -771,7 +771,7 @@ class Session(unicall.Unicall):
         # widgets are being reconciled.
         #
         # -> Collect them into a set first.
-        reconciled_widgets_new_to_old: Dict[rx.Widget, rx.Widget] = {
+        reconciled_widgets_new_to_old: Dict[rio.Widget, rio.Widget] = {
             new_widget: old_widget for old_widget, new_widget in matched_pairs
         }
 
@@ -798,7 +798,7 @@ class Session(unicall.Unicall):
             old_build_data.build_result = new_build
 
         # Replace any references to new reconciled widgets to old ones instead
-        def remap_widgets(parent: rx.Widget) -> None:
+        def remap_widgets(parent: rio.Widget) -> None:
             parent_vars = vars(parent)
 
             for attr_name in inspection.get_child_widget_containing_attribute_names(
@@ -807,7 +807,7 @@ class Session(unicall.Unicall):
                 attr_value = parent_vars[attr_name]
 
                 # Just a widget
-                if isinstance(attr_value, rx.Widget):
+                if isinstance(attr_value, rio.Widget):
                     try:
                         attr_value = reconciled_widgets_new_to_old[attr_value]
                     except KeyError:
@@ -824,7 +824,7 @@ class Session(unicall.Unicall):
                 # List / Collection
                 elif isinstance(attr_value, list):
                     for ii, item in enumerate(attr_value):
-                        if isinstance(item, rx.Widget):
+                        if isinstance(item, rio.Widget):
                             try:
                                 item = reconciled_widgets_new_to_old[item]
                             except KeyError:
@@ -842,9 +842,9 @@ class Session(unicall.Unicall):
 
     def _reconcile_widget(
         self,
-        old_widget: rx.Widget,
-        new_widget: rx.Widget,
-        reconciled_widgets_new_to_old: Dict[rx.Widget, rx.Widget],
+        old_widget: rio.Widget,
+        new_widget: rio.Widget,
+        reconciled_widgets_new_to_old: Dict[rio.Widget, rio.Widget],
     ) -> None:
         """
         Given two widgets of the same type, reconcile them. Specifically:
@@ -913,7 +913,7 @@ class Session(unicall.Unicall):
             """
             # Widgets are a special case. Widget attributes are dirty iff the
             # widget isn't reconciled, i.e. it is a new widget
-            if isinstance(new, rx.Widget):
+            if isinstance(new, rio.Widget):
                 return old is new or old is reconciled_widgets_new_to_old.get(new, None)
 
             if isinstance(new, list):
@@ -960,9 +960,9 @@ class Session(unicall.Unicall):
 
     def _find_widgets_for_reconciliation(
         self,
-        old_build: rx.Widget,
-        new_build: rx.Widget,
-    ) -> Iterable[Tuple[rx.Widget, rx.Widget]]:
+        old_build: rio.Widget,
+        new_build: rio.Widget,
+    ) -> Iterable[Tuple[rio.Widget, rio.Widget]]:
         """
         Given two widget trees, find pairs of widgets which can be
         reconciled, i.e. which represent the "same" widget. When exactly
@@ -974,16 +974,16 @@ class Session(unicall.Unicall):
         in the old tree.
         """
 
-        old_widgets_by_key: Dict[str, rx.Widget] = {}
-        new_widgets_by_key: Dict[str, rx.Widget] = {}
+        old_widgets_by_key: Dict[str, rio.Widget] = {}
+        new_widgets_by_key: Dict[str, rio.Widget] = {}
 
-        matches_by_topology: List[Tuple[rx.Widget, rx.Widget]] = []
+        matches_by_topology: List[Tuple[rio.Widget, rio.Widget]] = []
 
         # First scan all widgets for topological matches, and also keep track of
         # each widget by its key
         def register_widget_by_key(
-            widgets_by_key: Dict[str, rx.Widget],
-            widget: rx.Widget,
+            widgets_by_key: Dict[str, rio.Widget],
+            widget: rio.Widget,
         ) -> None:
             if widget.key is None:
                 return
@@ -996,8 +996,8 @@ class Session(unicall.Unicall):
             widgets_by_key[widget.key] = widget
 
         def key_scan(
-            widgets_by_key: Dict[str, rx.Widget],
-            widget: rx.Widget,
+            widgets_by_key: Dict[str, rio.Widget],
+            widget: rio.Widget,
             include_self: bool = True,
         ) -> None:
             for child in widget._iter_direct_and_indirect_children(
@@ -1007,15 +1007,15 @@ class Session(unicall.Unicall):
                 register_widget_by_key(widgets_by_key, child)
 
         def chain_to_children(
-            old_widget: rx.Widget,
-            new_widget: rx.Widget,
+            old_widget: rio.Widget,
+            new_widget: rio.Widget,
         ) -> None:
-            def _extract_widgets(attr: object) -> List[rx.Widget]:
-                if isinstance(attr, rx.Widget):
+            def _extract_widgets(attr: object) -> List[rio.Widget]:
+                if isinstance(attr, rio.Widget):
                     return [attr]
 
                 if isinstance(attr, list):
-                    return [item for item in attr if isinstance(item, rx.Widget)]
+                    return [item for item in attr if isinstance(item, rio.Widget)]
 
                 return []
 
@@ -1042,7 +1042,7 @@ class Session(unicall.Unicall):
                 for new_child in new_widgets[common:]:
                     key_scan(new_widgets_by_key, new_child, include_self=True)
 
-        def worker(old_widget: rx.Widget, new_widget: rx.Widget) -> None:
+        def worker(old_widget: rio.Widget, new_widget: rio.Widget) -> None:
             # Register the widget by key
             register_widget_by_key(old_widgets_by_key, old_widget)
             register_widget_by_key(new_widgets_by_key, new_widget)
@@ -1265,7 +1265,7 @@ document.body.removeChild(a)
     async def _remote_register_font(self, name: str, url: str) -> None:
         raise NotImplementedError
 
-    def _try_get_widget_for_message(self, widget_id: int) -> Optional[rx.Widget]:
+    def _try_get_widget_for_message(self, widget_id: int) -> Optional[rio.Widget]:
         """
         Attempts to get the widget referenced by `widget_id`. Returns `None` if
         there is no such widget. This can happen during normal opration, e.g.

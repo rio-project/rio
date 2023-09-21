@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 from typing_extensions import Self
 from uniserde import Jsonable
 
-import rio as rx
+import rio
 
 from . import color, self_serializing, session
 
@@ -17,11 +17,11 @@ __all__ = [
 
 @dataclass(frozen=True)
 class BoxStyle(self_serializing.SelfSerializing):
-    fill: rx.Fill
-    stroke_color: rx.Color
+    fill: rio.Fill
+    stroke_color: rio.Color
     stroke_width: float
     corner_radius: Tuple[float, float, float, float]
-    shadow_color: rx.Color
+    shadow_color: rio.Color
     shadow_radius: float
     shadow_offset_x: float
     shadow_offset_y: float
@@ -29,16 +29,16 @@ class BoxStyle(self_serializing.SelfSerializing):
     def __init__(
         self,
         *,
-        fill: rx.FillLike,
-        stroke_color: rx.Color = color.Color.BLACK,
+        fill: rio.FillLike,
+        stroke_color: rio.Color = color.Color.BLACK,
         stroke_width: float = 0.0,
         corner_radius: Union[float, Tuple[float, float, float, float]] = 0.0,
-        shadow_color: rx.Color = color.Color.BLACK,
+        shadow_color: rio.Color = color.Color.BLACK,
         shadow_radius: float = 0.0,
         shadow_offset_x: float = 0.0,
         shadow_offset_y: float = 0.0,
     ):
-        fill = rx.Fill._try_from(fill)
+        fill = rio.Fill._try_from(fill)
 
         if isinstance(corner_radius, (int, float)):
             corner_radius = (
@@ -62,17 +62,17 @@ class BoxStyle(self_serializing.SelfSerializing):
     def replace(
         self,
         *,
-        fill: Optional[rx.FillLike] = None,
-        stroke_color: Optional[rx.Color] = None,
+        fill: Optional[rio.FillLike] = None,
+        stroke_color: Optional[rio.Color] = None,
         stroke_width: Optional[float] = None,
         corner_radius: Optional[Union[float, Tuple[float, float, float, float]]] = None,
-        shadow_color: Optional[rx.Color] = None,
+        shadow_color: Optional[rio.Color] = None,
         shadow_radius: Optional[float] = None,
         shadow_offset_x: Optional[float] = None,
         shadow_offset_y: Optional[float] = None,
     ) -> Self:
         if fill is not None:
-            fill = rx.Fill._try_from(fill)
+            fill = rio.Fill._try_from(fill)
 
         if isinstance(corner_radius, (int, float)):
             corner_radius = (
@@ -84,7 +84,7 @@ class BoxStyle(self_serializing.SelfSerializing):
 
         return BoxStyle(
             fill=fill if fill is not None else self.fill,
-            # Stroke rx.Color
+            # Stroke rio.Color
             stroke_color=self.stroke_color if stroke_color is None else stroke_color,
             # Stroke Width
             stroke_width=self.stroke_width if stroke_width is None else stroke_width,

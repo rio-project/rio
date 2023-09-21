@@ -1,10 +1,10 @@
 from typing import Tuple
 
-import rio as rx
+import rio
 
 
 async def test_default_values_arent_considered_explicitly_set(create_mockapp):
-    class SquareWidget(rx.Widget):
+    class SquareWidget(rio.Widget):
         label: str
 
         def __init__(self, label, size=5):
@@ -13,10 +13,10 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
             self.label = label
 
         def build(self):
-            return rx.Text(self.label, width=self.width, height=self.height)
+            return rio.Text(self.label, width=self.width, height=self.height)
 
     square_widget = SquareWidget("Hello", size=10)
-    root_widget = rx.Container(square_widget)
+    root_widget = rio.Container(square_widget)
 
     async with create_mockapp(root_widget) as app:
         assert not app.dirty_widgets
@@ -33,7 +33,7 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
 
 
 async def test_reconcile_same_widget_instance(create_mockapp):
-    root_widget = rx.Container(rx.Text("Hello"))
+    root_widget = rio.Container(rio.Text("Hello"))
 
     async with create_mockapp(root_widget) as app:
         app.outgoing_messages.clear()
@@ -59,19 +59,19 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
     # The end result is that there is a new widget (the child of
     # LowLevelContainer), whose builder (HighLevelWidget2) is not "dirty". Make
     # sure the new widget is initialized correctly despite this.
-    class HighLevelWidget1(rx.Widget):
+    class HighLevelWidget1(rio.Widget):
         switch: bool = False
 
         def build(self):
             if self.switch:
-                child = rx.Switch()
+                child = rio.Switch()
             else:
-                child = rx.Text("hi")
+                child = rio.Text("hi")
 
-            return HighLevelWidget2(rx.Column(child))
+            return HighLevelWidget2(rio.Column(child))
 
-    class HighLevelWidget2(rx.Widget):
-        child: rx.Widget
+    class HighLevelWidget2(rio.Widget):
+        child: rio.Widget
 
         def build(self):
             return self.child
@@ -82,27 +82,29 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
         root_widget.switch = True
         await app.refresh()
 
-        assert any(isinstance(widget, rx.Switch) for widget in app.last_updated_widgets)
+        assert any(
+            isinstance(widget, rio.Switch) for widget in app.last_updated_widgets
+        )
 
 
 async def test_reconcile_unusual_types(create_mockapp):
-    class Container(rx.Widget):
-        def build(self) -> rx.Widget:
+    class Container(rio.Widget):
+        def build(self) -> rio.Widget:
             return CustomWidget(
                 integer=4,
                 text="bar",
-                tuple=(2.0, rx.Text("baz")),
+                tuple=(2.0, rio.Text("baz")),
                 byte_array=bytearray(b"foo"),
             )
 
-    class CustomWidget(rx.Widget):
+    class CustomWidget(rio.Widget):
         integer: int
         text: str
-        tuple: Tuple[float, rx.Widget]
+        tuple: Tuple[float, rio.Widget]
         byte_array: bytearray
 
         def build(self):
-            return rx.Text(self.text)
+            return rio.Text(self.text)
 
     root_widget = Container()
     async with create_mockapp(root_widget) as mock_app:

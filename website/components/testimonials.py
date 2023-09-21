@@ -1,35 +1,35 @@
-import rio as rx
+import rio
 
 from .. import theme
 
 
-class Testimonial(rx.Widget):
+class Testimonial(rio.Widget):
     text: str
     icon: str
     company_name: str
     # company_logo: str  # TODO
     # image: str  # TODO
 
-    def build(self) -> rx.Widget:
-        return rx.Card(
-            rx.Row(
-                rx.Icon(
+    def build(self) -> rio.Widget:
+        return rio.Card(
+            rio.Row(
+                rio.Icon(
                     self.icon,
                     width=5.0,
                     height=5.0,
                     margin=3,
                 ),
-                rx.Column(
-                    rx.Text(
+                rio.Column(
+                    rio.Text(
                         self.text,
-                        style=rx.TextStyle(
+                        style=rio.TextStyle(
                             font_size=1.2,
                             font_weight="bold",
                         ),
                     ),
-                    rx.Text(
+                    rio.Text(
                         f"— {self.company_name}",
-                        style=rx.TextStyle(
+                        style=rio.TextStyle(
                             font_size=1.0,
                             font_weight="bold",
                             font_color=theme.THEME.text_color_for(
@@ -50,9 +50,9 @@ class Testimonial(rx.Widget):
         )
 
 
-class Testimonials(rx.Widget):
-    def build(self) -> rx.Widget:
-        grid = rx.Grid(
+class Testimonials(rio.Widget):
+    def build(self) -> rio.Widget:
+        grid = rio.Grid(
             width=theme.CENTER_COLUMN_WIDTH,
             row_spacing=4,
             column_spacing=9,

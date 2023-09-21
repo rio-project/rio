@@ -4,7 +4,7 @@ from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 from typing import Optional
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -44,8 +44,8 @@ class NumberInput(widget_base.Widget):
     minimum: Optional[float] = None
     maximum: Optional[float] = None
     decimals: int = 2
-    on_change: rx.EventHandler[NumberInputChangeEvent] = None
-    on_confirm: rx.EventHandler[NumberInputConfirmEvent] = None
+    on_change: rio.EventHandler[NumberInputChangeEvent] = None
+    on_confirm: rio.EventHandler[NumberInputConfirmEvent] = None
 
     def _try_set_value(self, raw_value: str) -> bool:
         """
@@ -100,7 +100,7 @@ class NumberInput(widget_base.Widget):
         self.value = value
         return True
 
-    async def _on_change(self, ev: rx.TextInputChangeEvent) -> None:
+    async def _on_change(self, ev: rio.TextInputChangeEvent) -> None:
         was_updated = self._try_set_value(ev.text)
 
         if was_updated:
@@ -109,7 +109,7 @@ class NumberInput(widget_base.Widget):
                 NumberInputChangeEvent(self.value),
             )
 
-    async def _on_confirm(self, ev: rx.TextInputConfirmEvent) -> None:
+    async def _on_confirm(self, ev: rio.TextInputConfirmEvent) -> None:
         was_updated = self._try_set_value(ev.text)
 
         if was_updated:
@@ -118,7 +118,7 @@ class NumberInput(widget_base.Widget):
                 NumberInputConfirmEvent(self.value),
             )
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         # Format the number
         locale = self.session.preferred_locales[0]
         value_str = f"{self.value:.{self.decimals}f}"
@@ -143,7 +143,7 @@ class NumberInput(widget_base.Widget):
             value_str = int_str + locale.number_symbols["decimal"] + frac_str
 
         # Build the widget
-        return rx.TextInput(
+        return rio.TextInput(
             text=value_str,
             label=self.placeholder,
             prefix_text=self.prefix_text,

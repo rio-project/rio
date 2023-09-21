@@ -1,32 +1,32 @@
-import rio as rx
+import rio
 
 from .. import theme
 
 
-class HoverCard(rx.Widget):
+class HoverCard(rio.Widget):
     alignment: float
 
     _is_hovered: bool = False
 
-    def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
+    def _on_mouse_enter(self, event: rio.MouseEnterEvent) -> None:
         self._is_hovered = True
 
-    def _on_mouse_leave(self, event: rx.MouseLeaveEvent) -> None:
+    def _on_mouse_leave(self, event: rio.MouseLeaveEvent) -> None:
         self._is_hovered = False
 
-    def build(self) -> rx.Widget:
-        return rx.Stack(
+    def build(self) -> rio.Widget:
+        return rio.Stack(
             # Hidden background
-            rx.Rectangle(
-                style=rx.BoxStyle(
-                    fill=rx.Color.RED,
+            rio.Rectangle(
+                style=rio.BoxStyle(
+                    fill=rio.Color.RED,
                 ),
             ),
             # Cover, hides the background unless hovered
-            rx.MouseEventListener(
-                rx.Rectangle(
-                    style=rx.BoxStyle(
-                        fill=rx.Color.TRANSPARENT
+            rio.MouseEventListener(
+                rio.Rectangle(
+                    style=rio.BoxStyle(
+                        fill=rio.Color.TRANSPARENT
                         if self._is_hovered
                         else theme.THEME.surface_color,
                     ),
@@ -37,9 +37,9 @@ class HoverCard(rx.Widget):
                 height=20,
             ),
             # Content Card
-            rx.Rectangle(
-                child=rx.Text("Sample Text"),
-                style=rx.BoxStyle(
+            rio.Rectangle(
+                child=rio.Text("Sample Text"),
+                style=rio.BoxStyle(
                     fill=theme.THEME.surface_color,
                     corner_radius=theme.THEME.corner_radius_large,
                     shadow_color=theme.THEME.shadow_color,

@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from .. import color, fills, icon_registry
 from . import widget_base
@@ -19,7 +19,7 @@ __all__ = [
 class Icon(widget_base.FundamentalWidget):
     icon: str
     _: KW_ONLY
-    fill: Union[rx.FillLike, color.ColorSet] = "default"
+    fill: Union[rio.FillLike, color.ColorSet] = "default"
 
     @staticmethod
     def _get_registry() -> icon_registry.IconRegistry:

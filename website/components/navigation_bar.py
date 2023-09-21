@@ -1,7 +1,7 @@
 import random
 from dataclasses import field
 
-import rio as rx
+import rio
 
 from .. import common, theme
 
@@ -13,18 +13,18 @@ IMAGES = (
 )
 
 
-class NavigationButton(rx.Widget):
+class NavigationButton(rio.Widget):
     text: str
     route: str
     active_route: str
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         if self.route == self.active_route:
             color = theme.THEME.primary_color.replace(opacity=0.3)
         else:
-            color = rx.Color.TRANSPARENT
+            color = rio.Color.TRANSPARENT
 
-        return rx.Button(
+        return rio.Button(
             self.text,
             color=color,
             width=5,
@@ -33,7 +33,7 @@ class NavigationButton(rx.Widget):
         )
 
 
-class NavigationBar(rx.Widget):
+class NavigationBar(rio.Widget):
     active_route: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -45,7 +45,7 @@ class NavigationBar(rx.Widget):
         except IndexError:
             self.active_route = ""
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         surface_color = theme.THEME.surface_color
         text_color = theme.THEME.text_color_for(surface_color)
 
@@ -60,19 +60,19 @@ class NavigationBar(rx.Widget):
             bar_width = "grow"
             bar_align_x = None
 
-        return rx.Rectangle(
-            child=rx.Row(
-                rx.Row(
-                    rx.Icon(
+        return rio.Rectangle(
+            child=rio.Row(
+                rio.Row(
+                    rio.Icon(
                         "star",
                         width=3.0,
                         height=3.0,
                         margin_left=2,
                         fill=theme.THEME.primary_color,
                     ),
-                    rx.Text(
+                    rio.Text(
                         "rio",
-                        style=rx.TextStyle(
+                        style=rio.TextStyle(
                             font_size=1.5,
                             font_weight="bold",
                             font_color=text_color,
@@ -80,8 +80,8 @@ class NavigationBar(rx.Widget):
                     ),
                     spacing=0.7,
                 ),
-                rx.Spacer(),
-                rx.Row(
+                rio.Spacer(),
+                rio.Row(
                     NavigationButton(
                         "Home",
                         "",
@@ -111,7 +111,7 @@ class NavigationBar(rx.Widget):
                     margin_right=4.0,
                 ),
             ),
-            style=rx.BoxStyle(
+            style=rio.BoxStyle(
                 fill=surface_color,
                 corner_radius=(
                     0,
@@ -128,7 +128,7 @@ class NavigationBar(rx.Widget):
         )
 
 
-class NavigationBarDeadSpace(rx.Widget):
+class NavigationBarDeadSpace(rio.Widget):
     """
     The Navigation Bar hovers above other content, necessitating a spacer to
     prevent real content from being obscured.
@@ -139,10 +139,10 @@ class NavigationBarDeadSpace(rx.Widget):
 
     height: float = 8
 
-    def build(self) -> rx.Widget:
-        return rx.Rectangle(
-            style=rx.BoxStyle(
-                fill=rx.ImageFill(
+    def build(self) -> rio.Widget:
+        return rio.Rectangle(
+            style=rio.BoxStyle(
+                fill=rio.ImageFill(
                     random.choice(IMAGES),
                     fill_mode="zoom",
                 ),

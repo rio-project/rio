@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -36,13 +36,13 @@ class Plot(widget_base.FundamentalWidget):
 
     figure: plotly.graph_objects.Figure
     _: KW_ONLY
-    style: Optional[rx.BoxStyle] = None
+    style: Optional[rio.BoxStyle] = None
 
     def _custom_serialize(self) -> JsonDoc:
         # Determine a style
         if self.style is None:
-            thm = self.session.attachments[rx.Theme]
-            box_style = rx.BoxStyle(
+            thm = self.session.attachments[rio.Theme]
+            box_style = rio.BoxStyle(
                 fill=thm.surface_color_variant,
                 corner_radius=thm.corner_radius_small,
             )

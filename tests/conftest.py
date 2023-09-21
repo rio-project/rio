@@ -6,12 +6,12 @@ import babel
 import pytest
 from uniserde import Jsonable, JsonDoc
 
-import rio as rx
+import rio
 import rio.global_state
 from rio.app_server import AppServer
 
 
-def _fake_build_function() -> rx.Widget:
+def _fake_build_function() -> rio.Widget:
     assert False, "This function should never be called"
 
 
@@ -29,7 +29,7 @@ def _enable_widget_instantiation(
     send_message=_fake_send_message,
     receive_message=_fake_receive_message,
 ):
-    app = rx.App(_fake_build_function)
+    app = rio.App(_fake_build_function)
     app_server = AppServer(
         app,
         external_url_override="https://unit.test",
@@ -39,9 +39,9 @@ def _enable_widget_instantiation(
         default_attachments=tuple(),
         validator_factory=None,
     )
-    session = rx.Session(
+    session = rio.Session(
         app_server,
-        rx.URL("https://unit.test"),
+        rio.URL("https://unit.test"),
         (),
     )
     session.external_url = None
@@ -64,7 +64,7 @@ def enable_widget_instantiation():
 
 
 class _MockApp:
-    _session: rx.Session
+    _session: rio.Session
 
     def __init__(self):
         self.outgoing_messages: List[JsonDoc] = []
@@ -84,11 +84,11 @@ class _MockApp:
         return await self._responses.get()
 
     @property
-    def dirty_widgets(self) -> Container[rx.Widget]:
+    def dirty_widgets(self) -> Container[rio.Widget]:
         return set(self._session._dirty_widgets)
 
     @property
-    def last_updated_widgets(self) -> Set[rx.Widget]:
+    def last_updated_widgets(self) -> Set[rio.Widget]:
         for message in reversed(self.outgoing_messages):
             if message["method"] == "updateWidgetStates":
                 return {
@@ -98,7 +98,7 @@ class _MockApp:
 
         return set()
 
-    def get_build_output(self, widget: rx.Widget) -> rx.Widget:
+    def get_build_output(self, widget: rio.Widget) -> rio.Widget:
         return self._session._weak_widget_data_by_widget[widget].build_result
 
     async def refresh(self) -> None:
@@ -114,7 +114,9 @@ def create_mockapp():
     # must pretend that a build function is running. To do this, we need to
     # create a Session and set it as the "currently active session".
     @contextlib.asynccontextmanager
-    async def _create_mockapp(root_widget: rx.Widget) -> AsyncGenerator[_MockApp, None]:
+    async def _create_mockapp(
+        root_widget: rio.Widget,
+    ) -> AsyncGenerator[_MockApp, None]:
         session._root_widget = root_widget
 
         # Start a task that processes outgoing websocket/unicall messages

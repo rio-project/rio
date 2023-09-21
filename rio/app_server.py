@@ -19,7 +19,7 @@ import yarl
 from PIL import Image
 from uniserde import Jsonable
 
-import rio as rx
+import rio
 
 from . import (
     app,
@@ -58,7 +58,7 @@ class InitialClientMessage(uniserde.Serde):
     window_height: float
 
 
-def _build_set_theme_variables_message(thm: rx.Theme):
+def _build_set_theme_variables_message(thm: rio.Theme):
     """
     Build a message which, when sent to the client, sets the root element's CSS
     theme variables.
@@ -106,7 +106,7 @@ def _build_set_theme_variables_message(thm: rx.Theme):
     for py_color_name in color_names:
         css_color_name = f'--rio-global-{py_color_name.replace("_", "-")}'
         color = getattr(thm, py_color_name)
-        assert isinstance(color, rx.Color), color
+        assert isinstance(color, rio.Color), color
         variables[css_color_name] = f"#{color.hex}"
 
     # Text styles
@@ -119,7 +119,7 @@ def _build_set_theme_variables_message(thm: rx.Theme):
 
     for style_name in style_names:
         style = getattr(thm, f"{style_name}_style")
-        assert isinstance(style, rx.TextStyle), style
+        assert isinstance(style, rio.TextStyle), style
 
         css_prefix = f"--rio-global-{style_name}"
         variables[f"{css_prefix}-font-name"] = (
@@ -192,10 +192,10 @@ class AppServer(fastapi.FastAPI):
         app_: app.App,
         running_in_window: bool,
         external_url_override: Optional[str],
-        on_session_start: rx.EventHandler[rx.Session],
-        on_session_end: rx.EventHandler[rx.Session],
+        on_session_start: rio.EventHandler[rio.Session],
+        on_session_end: rio.EventHandler[rio.Session],
         default_attachments: Tuple[Any, ...],
-        validator_factory: Optional[Callable[[rx.Session], debug.Validator]],
+        validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
     ):
         super().__init__()
 
@@ -219,7 +219,7 @@ class AppServer(fastapi.FastAPI):
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
         # connection.
-        self._active_session_tokens = timer_dict.TimerDict[str, rx.Session](
+        self._active_session_tokens = timer_dict.TimerDict[str, rio.Session](
             default_duration=timedelta(minutes=9999999 if running_in_window else 60),
         )
 
@@ -271,7 +271,7 @@ class AppServer(fastapi.FastAPI):
         """
         self._assets[asset.secret_id] = asset
 
-    def check_and_refresh_session(self, session_token: str) -> rx.Session:
+    def check_and_refresh_session(self, session_token: str) -> rio.Session:
         """
         Look up the session token. If it is valid the session's duration
         is refreshed so it doesn't expire. If the token is not valid,
@@ -300,7 +300,7 @@ class AppServer(fastapi.FastAPI):
         """
 
         # Determine the initial route
-        route_url = rx.URL(initial_route_str)
+        route_url = rio.URL(initial_route_str)
         initial_route = route_url.path.strip("/").split("/")
 
         # Create a session instance to hold all of this state in an organized
@@ -312,7 +312,7 @@ class AppServer(fastapi.FastAPI):
         session_token = secrets.token_urlsafe()
         sess = session.Session(
             app_server_=self,
-            base_url=rx.URL(str(request.base_url)),
+            base_url=rio.URL(str(request.base_url)),
             initial_route=initial_route,
         )
 
@@ -327,11 +327,11 @@ class AppServer(fastapi.FastAPI):
             sess.attachments.add(copy.deepcopy(attachment))
 
         # Make sure a theme is attached
-        if rx.Theme not in sess.attachments:
-            thm = rx.Theme()
+        if rio.Theme not in sess.attachments:
+            thm = rio.Theme()
             sess.attachments.add(thm)
         else:
-            thm = sess.attachments[rx.Theme]
+            thm = sess.attachments[rio.Theme]
 
         # Create a list of initial messages for the client to process
         initial_messages = [
@@ -759,7 +759,7 @@ class AppServer(fastapi.FastAPI):
             global_state.currently_building_session = None
 
         assert isinstance(
-            sess._root_widget, rx.Widget
+            sess._root_widget, rio.Widget
         ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
 
         # Trigger the `on_session_started` event.

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import button, widget_base
 
@@ -14,17 +14,17 @@ __all__ = [
 
 class CustomButton(widget_base.Widget):
     text: str
-    on_press: rx.EventHandler[button.ButtonPressEvent] = None
+    on_press: rio.EventHandler[button.ButtonPressEvent] = None
     _: KW_ONLY
     is_sensitive: bool = True
-    style_default: rx.BoxStyle
-    style_hover: rx.BoxStyle
-    style_press: rx.BoxStyle
-    style_insensitive: rx.BoxStyle
-    text_style_default: rx.TextStyle
-    text_style_hover: rx.TextStyle
-    text_style_press: rx.TextStyle
-    text_style_insensitive: rx.TextStyle
+    style_default: rio.BoxStyle
+    style_hover: rio.BoxStyle
+    style_press: rio.BoxStyle
+    style_insensitive: rio.BoxStyle
+    text_style_default: rio.TextStyle
+    text_style_hover: rio.TextStyle
+    text_style_press: rio.TextStyle
+    text_style_insensitive: rio.TextStyle
     transition_speed: float
     ripple: bool = True
 
@@ -32,22 +32,22 @@ class CustomButton(widget_base.Widget):
     _is_pressed: bool = field(init=False, default=False)
     _is_entered: bool = field(init=False, default=False)
 
-    def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
+    def _on_mouse_enter(self, event: rio.MouseEnterEvent) -> None:
         self._is_entered = True
 
-    def _on_mouse_leave(self, event: rx.MouseLeaveEvent) -> None:
+    def _on_mouse_leave(self, event: rio.MouseLeaveEvent) -> None:
         self._is_entered = False
 
-    def _on_mouse_down(self, event: rx.MouseDownEvent) -> None:
+    def _on_mouse_down(self, event: rio.MouseDownEvent) -> None:
         # Only react to left mouse button
-        if event.button != rx.MouseButton.LEFT:
+        if event.button != rio.MouseButton.LEFT:
             return
 
         self._is_pressed = True
 
-    async def _on_mouse_up(self, event: rx.MouseUpEvent) -> None:
+    async def _on_mouse_up(self, event: rio.MouseUpEvent) -> None:
         # Only react to left mouse button, and only if sensitive
-        if event.button != rx.MouseButton.LEFT or not self.is_sensitive:
+        if event.button != rio.MouseButton.LEFT or not self.is_sensitive:
             return
 
         await self._call_event_handler(
@@ -57,7 +57,7 @@ class CustomButton(widget_base.Widget):
 
         self._is_pressed = False
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         # If not sensitive, use the insensitive style
         if not self.is_sensitive:
             style = self.style_insensitive
@@ -79,21 +79,21 @@ class CustomButton(widget_base.Widget):
             )
 
         # Prepare the child
-        child = rx.Text(
+        child = rio.Text(
             self.text,
             style=text_style,
             margin=0.3,
         )
 
-        return rx.MouseEventListener(
-            rx.Rectangle(
+        return rio.MouseEventListener(
+            rio.Rectangle(
                 child=child,
                 style=style,
                 hover_style=hover_style,
                 transition_time=self.transition_speed,
-                cursor=rx.CursorStyle.POINTER
+                cursor=rio.CursorStyle.POINTER
                 if self.is_sensitive
-                else rx.CursorStyle.DEFAULT,
+                else rio.CursorStyle.DEFAULT,
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

@@ -4,7 +4,7 @@ import enum
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from .. import inspection
 from . import button, notification_bar, number_input, switch, text, widget_base
@@ -57,25 +57,25 @@ class AutoForm(widget_base.Widget):
         self,
         text: str,
         level: Literal["info", "warning", "error"],
-    ) -> rx.Widget:
+    ) -> rio.Widget:
         return notification_bar.NotificationBar(
             text=text,
             level=level,
         )
 
-    def make_switch(self, is_on: bool) -> rx.Widget:
+    def make_switch(self, is_on: bool) -> rio.Widget:
         return switch.Switch(is_on=is_on)
 
     def make_button(
         self,
         *,
         text: str,
-        on_press: rx.EventHandler[button.ButtonPressEvent],
+        on_press: rio.EventHandler[button.ButtonPressEvent],
         is_sensitive: bool,
         is_loading: bool,
         is_major: bool,
-    ) -> rx.Widget:
-        return rx.Button(
+    ) -> rio.Widget:
+        return rio.Button(
             text=text,
             style="major" if is_major else "minor",
             on_press=on_press,
@@ -87,7 +87,7 @@ class AutoForm(widget_base.Widget):
         self,
         field_name: str,
         field_type: Type,
-    ) -> rx.Widget:
+    ) -> rio.Widget:
         # Get sensible type information
         origin = get_origin(field_type)
         field_args = get_args(field_type)
@@ -118,7 +118,7 @@ class AutoForm(widget_base.Widget):
 
         # `str` -> `TextInput`
         if field_type is str:
-            return rx.TextInput(
+            return rio.TextInput(
                 text=field_instance,
             )
 
@@ -129,7 +129,7 @@ class AutoForm(widget_base.Widget):
             else:
                 mapping = {prettify_name(f.name): f.value for f in field_type}
 
-            return rx.Dropdown(
+            return rio.Dropdown(
                 mapping,
                 selected_value=field_instance,
             )
@@ -137,8 +137,8 @@ class AutoForm(widget_base.Widget):
         # Unsupported type
         raise TypeError(f"AutoForm does not support fields of type `{field_type}`")
 
-    def build(self) -> rx.Widget:
-        rows: List[rx.Widget] = []
+    def build(self) -> rio.Widget:
+        rows: List[rio.Widget] = []
 
         # Look for errors
         error_message = (
@@ -159,7 +159,7 @@ class AutoForm(widget_base.Widget):
             type(self)
         ).items():
             rows.append(
-                rx.Row(
+                rio.Row(
                     text.Text(
                         prettify_name(field_name),
                         width=self.label_width,
@@ -181,7 +181,7 @@ class AutoForm(widget_base.Widget):
         )
 
         # Wrap everything in one container
-        return rx.Column(
+        return rio.Column(
             *rows,
             spacing=self.spacing,
         )

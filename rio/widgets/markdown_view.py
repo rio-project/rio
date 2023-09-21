@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import widget_base
 

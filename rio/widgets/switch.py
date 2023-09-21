@@ -4,7 +4,7 @@ from dataclasses import KW_ONLY, dataclass
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -23,7 +23,7 @@ class Switch(widget_base.FundamentalWidget):
     is_on: bool = False
     _: KW_ONLY
     is_sensitive: bool = True
-    on_change: rx.EventHandler[SwitchChangeEvent] = None
+    on_change: rio.EventHandler[SwitchChangeEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event

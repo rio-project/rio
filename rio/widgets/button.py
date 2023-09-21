@@ -4,7 +4,7 @@ from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 from typing import Optional
 
-import rio as rx
+import rio
 
 from . import progress_circle, widget_base
 
@@ -22,16 +22,16 @@ class ButtonPressEvent:
 class Button(widget_base.Widget):
     text: str = ""
     _: KW_ONLY
-    on_press: rx.EventHandler[ButtonPressEvent] = None
+    on_press: rio.EventHandler[ButtonPressEvent] = None
     icon: Optional[str] = None
-    child: Optional[rx.Widget] = None
+    child: Optional[rio.Widget] = None
     shape: Literal["pill", "rounded", "rectangle", "circle"] = "pill"
     style: Literal["major", "minor"] = "major"
-    color: rx.ColorSet = "primary"
+    color: rio.ColorSet = "primary"
     is_sensitive: bool = True
     is_loading: bool = False
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         # Prepare the child
         if self.is_loading:
             child = progress_circle.ProgressCircle(
@@ -45,7 +45,7 @@ class Button(widget_base.Widget):
 
             if self.icon is not None:
                 children.append(
-                    rx.Icon(
+                    rio.Icon(
                         self.icon,
                         height=1.2,
                         width=1.2,
@@ -55,7 +55,7 @@ class Button(widget_base.Widget):
             stripped_text = self.text.strip()
             if stripped_text:
                 children.append(
-                    rx.Text(
+                    rio.Text(
                         stripped_text,
                         height=1.5,
                         width="grow",
@@ -65,7 +65,7 @@ class Button(widget_base.Widget):
             if self.child is not None:
                 children.append(self.child)
 
-            child = rx.Row(
+            child = rio.Row(
                 *children,
                 spacing=0.6,
                 margin=0.3,
@@ -90,11 +90,11 @@ class Button(widget_base.Widget):
 
 class _ButtonInternal(widget_base.FundamentalWidget):
     _: KW_ONLY
-    on_press: rx.EventHandler[ButtonPressEvent]
-    child: rx.Widget
+    on_press: rio.EventHandler[ButtonPressEvent]
+    child: rio.Widget
     shape: Literal["pill", "rounded", "rectangle", "circle"]
     style: Literal["major", "minor"]
-    color: rx.ColorSet
+    color: rio.ColorSet
     is_sensitive: bool
 
     async def _on_message(self, msg: Any) -> None:

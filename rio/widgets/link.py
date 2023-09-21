@@ -4,7 +4,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from .. import common
 from . import widget_base
@@ -19,14 +19,14 @@ class Link(widget_base.FundamentalWidget):
     child_text: Optional[str]
     child_widget: Optional[widget_base.Widget]
 
-    link: Union[str, rx.URL]
+    link: Union[str, rio.URL]
 
     # The serializer can't handle Union types. Override the constructor, so it
     # splits the child into two values
     def __init__(
         self,
-        child: Union[str, rx.Widget],
-        link: Union[str, rx.URL],
+        child: Union[str, rio.Widget],
+        link: Union[str, rio.URL],
         *,
         spacing: float = 0.0,
         key: Optional[str] = None,
@@ -78,7 +78,7 @@ class Link(widget_base.FundamentalWidget):
 
     def _custom_serialize(self) -> JsonDoc:
         # Is the link a URL or route?
-        if isinstance(self.link, rx.URL):
+        if isinstance(self.link, rio.URL):
             link = str(self.link)
             is_route = False
         elif self.link.startswith(("/", "./", "../")):

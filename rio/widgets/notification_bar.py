@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from .. import theme
 from . import text, widget_base
@@ -21,13 +21,13 @@ class NotificationBar(widget_base.Widget):
 
     multiline: bool = False
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         # Early out: Nothing to show
         if self.text is None:
-            return rx.Column()
+            return rio.Column()
 
         # Determine the color
-        thm = self.session.attachments[rx.Theme]
+        thm = self.session.attachments[rio.Theme]
 
         if self.level == "success":
             background_color = thm.success_color
@@ -45,7 +45,7 @@ class NotificationBar(widget_base.Widget):
             raise ValueError(f"Invalid level: {self.level!r}")
 
         # Build the result
-        return rx.Rectangle(
+        return rio.Rectangle(
             child=text.Text(
                 self.text,
                 margin=thm.base_spacing,
@@ -54,7 +54,7 @@ class NotificationBar(widget_base.Widget):
                     font_color=text_color,
                 ),
             ),
-            style=rx.BoxStyle(
+            style=rio.BoxStyle(
                 fill=background_color,
                 corner_radius=thm.corner_radius_small,
             ),

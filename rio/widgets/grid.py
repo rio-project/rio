@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -27,11 +27,11 @@ class Grid(widget_base.FundamentalWidget):
 
     # This must be annotated, otherwise rio won't understand that grids have
     # child widgets
-    _children: List[rx.Widget]
+    _children: List[rio.Widget]
 
     def __init__(
         self,
-        *children: Iterable[rx.Widget],
+        *children: Iterable[rio.Widget],
         row_spacing: float = 0.0,
         column_spacing: float = 0.0,
         key: Optional[str] = None,
@@ -67,7 +67,7 @@ class Grid(widget_base.FundamentalWidget):
 
         # JS can only work with lists of Widgets, so we'll store the widgets and
         # their positions separately
-        _children: List[rx.Widget] = []
+        _children: List[rio.Widget] = []
         _child_positions: List[GridChildPosition] = []
 
         for row_nr, row_widgets in enumerate(children):
@@ -84,7 +84,7 @@ class Grid(widget_base.FundamentalWidget):
         self._child_positions = _child_positions
 
     def add_child(
-        self, child: rx.Widget, row: int, column: int, width: int = 1, height: int = 1
+        self, child: rio.Widget, row: int, column: int, width: int = 1, height: int = 1
     ) -> None:
         self._children.append(child)
         self._child_positions.append(GridChildPosition(row, column, width, height))

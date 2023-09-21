@@ -1,8 +1,8 @@
-import rio as rx
+import rio
 
 
 async def test_refresh_with_nothing_to_do(create_mockapp):
-    root_widget = rx.Text("Hello")
+    root_widget = rio.Text("Hello")
 
     async with create_mockapp(root_widget) as app:
         app.outgoing_messages.clear()
@@ -13,8 +13,8 @@ async def test_refresh_with_nothing_to_do(create_mockapp):
 
 
 async def test_refresh_with_clean_root_widget(create_mockapp):
-    text_widget = rx.Text("Hello")
-    root_widget = rx.Container(text_widget)
+    text_widget = rio.Text("Hello")
+    root_widget = rio.Container(text_widget)
 
     async with create_mockapp(root_widget) as app:
         text_widget.text = "World"
@@ -25,21 +25,21 @@ async def test_refresh_with_clean_root_widget(create_mockapp):
 
 
 async def test_rebuild_widget_with_dead_parent(create_mockapp):
-    class WidgetWithState(rx.Widget):
+    class WidgetWithState(rio.Widget):
         state: str
 
-        def build(self) -> rx.Widget:
-            return rx.Text(self.state)
+        def build(self) -> rio.Widget:
+            return rio.Text(self.state)
 
     widget = WidgetWithState("Hello")
-    root_widget = rx.Container(rx.Container(widget))
+    root_widget = rio.Container(rio.Container(widget))
 
     async with create_mockapp(root_widget) as app:
         assert not app.dirty_widgets
 
         # Change the widget's state, but also remove its parent from the widget tree
         widget.state = "World"
-        root_widget.child = rx.Text("Goodbye")
+        root_widget.child = rio.Text("Goodbye")
 
         await app.refresh()
 

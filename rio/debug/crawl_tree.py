@@ -6,11 +6,11 @@ from typing import *  # type: ignore
 import uniserde
 from uniserde import Jsonable
 
-import rio as rx
+import rio
 import rio.inspection
 from rio.widgets.widget_base import FundamentalWidget
 
-DUMP_PATH = rx.common.PROJECT_ROOT_DIR / "tree-dump.json"
+DUMP_PATH = rio.common.PROJECT_ROOT_DIR / "tree-dump.json"
 
 
 __all__ = [
@@ -48,7 +48,7 @@ class TreeDump(uniserde.Serde):
 #     if prop.name in child_containing_attribute_names:
 #         if attr_value is None:
 #             attr_children = []
-#         elif isinstance(attr_value, rx.Widget):
+#         elif isinstance(attr_value, rio.Widget):
 #             attr_children = [attr_value]
 #         elif isinstance(attr_value, (list, tuple)):
 #             attr_children = attr_value
@@ -65,8 +65,8 @@ class TreeDump(uniserde.Serde):
 
 
 def _dump_worker(
-    sess: rx.Session,
-    widget: rx.Widget,
+    sess: rio.Session,
+    widget: rio.Widget,
     parent: Optional[int],
     builder: Optional[int],
 ) -> Iterable[Widget]:
@@ -118,7 +118,7 @@ def _dump_worker(
     )
 
 
-def dump_tree(sess: rx.Session) -> TreeDump:
+def dump_tree(sess: rio.Session) -> TreeDump:
     # Make sure there are no pending changes
     sess._refresh_sync()
 

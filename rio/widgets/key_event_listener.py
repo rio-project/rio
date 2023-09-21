@@ -5,7 +5,7 @@ from typing import Any, Dict, FrozenSet, Literal
 
 from uniserde import Jsonable
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -606,9 +606,9 @@ class KeyEventListener(widget_base.FundamentalWidget):
 
     child: widget_base.Widget
     _: KW_ONLY
-    on_key_down: rx.EventHandler[KeyDownEvent] = None
-    on_key_up: rx.EventHandler[KeyUpEvent] = None
-    on_key_press: rx.EventHandler[KeyPressEvent] = None
+    on_key_down: rio.EventHandler[KeyDownEvent] = None
+    on_key_up: rio.EventHandler[KeyUpEvent] = None
+    on_key_press: rio.EventHandler[KeyPressEvent] = None
 
     def _custom_serialize(self) -> Dict[str, Jsonable]:
         return {

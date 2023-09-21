@@ -1,21 +1,21 @@
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from .. import theme
 
 
-class FooterColumn(rx.Widget):
-    entries: List[Tuple[str, Union[str, rx.URL]]]
+class FooterColumn(rio.Widget):
+    entries: List[Tuple[str, Union[str, rio.URL]]]
 
-    def build(self) -> rx.Widget:
-        text_style = rx.TextStyle(
+    def build(self) -> rio.Widget:
+        text_style = rio.TextStyle(
             font_color=theme.THEME.text_color_on_dark,
         )
 
-        return rx.Column(
+        return rio.Column(
             *[
-                rx.Link(
+                rio.Link(
                     child=entry[0],
                     link=entry[1],
                     # style=text_style,
@@ -26,18 +26,18 @@ class FooterColumn(rx.Widget):
         )
 
 
-class Footer(rx.Widget):
-    def build(self) -> rx.Widget:
-        return rx.Rectangle(
-            child=rx.Column(
-                rx.Text(
+class Footer(rio.Widget):
+    def build(self) -> rio.Widget:
+        return rio.Rectangle(
+            child=rio.Column(
+                rio.Text(
                     "Made with ❤️ in Vienna",
-                    style=rx.TextStyle(
-                        font_color=rx.Color.WHITE,
+                    style=rio.TextStyle(
+                        font_color=rio.Color.WHITE,
                     ),
                     margin_bottom=2,
                 ),
-                rx.Row(
+                rio.Row(
                     FooterColumn(
                         entries=[
                             ("About", "#"),
@@ -54,7 +54,7 @@ class Footer(rx.Widget):
                     ),
                     FooterColumn(
                         entries=[
-                            ("Privacy", rx.URL("http://google.com")),
+                            ("Privacy", rio.URL("http://google.com")),
                             ("Terms", "ddg.gg"),
                             ("Docs", "/documentation"),
                         ],
@@ -64,7 +64,7 @@ class Footer(rx.Widget):
                 ),
                 margin=2,
             ),
-            style=rx.BoxStyle(
+            style=rio.BoxStyle(
                 fill=theme.THEME.surface_color.darker(0.4),
             ),
         )

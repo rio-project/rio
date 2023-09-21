@@ -1,7 +1,7 @@
-import rio as rx
+import rio
 
-THEME = rx.Theme(
-    # primary_color=rx.Color.from_rgb(0.9, 0.7, 0),
+THEME = rio.Theme(
+    # primary_color=rio.Color.from_rgb(0.9, 0.7, 0),
     # light=False,
 )
 

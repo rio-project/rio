@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from .. import theme
 from . import widget_base
@@ -14,8 +14,8 @@ __all__ = [
 
 
 def calculate_shadow_for_height(
-    thm: rx.Theme, hover_height: float
-) -> Tuple[rx.Color, float]:
+    thm: rio.Theme, hover_height: float
+) -> Tuple[rio.Color, float]:
     """
     Given a hover height, calculate the shadow color and radius.
     """
@@ -33,20 +33,20 @@ def calculate_shadow_for_height(
 
 
 class Card(widget_base.Widget):
-    child: rx.Widget
+    child: rio.Widget
     _: KW_ONLY
     corner_radius: Union[None, float, Tuple[float, float, float, float]] = None
     hover_height: float = 1.0
     elevate_on_hover: float = 0.0
     _is_hovered: bool = False
 
-    def _on_mouse_enter(self, event: rx.MouseEnterEvent) -> None:
+    def _on_mouse_enter(self, event: rio.MouseEnterEvent) -> None:
         self._is_hovered = True
 
-    def _on_mouse_leave(self, event: rx.MouseLeaveEvent) -> None:
+    def _on_mouse_leave(self, event: rio.MouseLeaveEvent) -> None:
         self._is_hovered = False
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         thm = self.session.attachments[theme.Theme]
 
         # Prepare the regular style
@@ -61,7 +61,7 @@ class Card(widget_base.Widget):
             self.hover_height,
         )
 
-        style = rx.BoxStyle(
+        style = rio.BoxStyle(
             fill=thm.surface_color,
             corner_radius=corner_radius,
             shadow_color=shadow_color,
@@ -80,8 +80,8 @@ class Card(widget_base.Widget):
         )
 
         # Build the card
-        return rx.Rectangle(
-            child=rx.Container(
+        return rio.Rectangle(
+            child=rio.Container(
                 self.child,
                 margin=thm.base_spacing * 1.5,
             ),

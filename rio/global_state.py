@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 __all__ = [
     "currently_building_widget",
@@ -14,14 +14,14 @@ __all__ = [
 #
 # - `Widget`: The widget that is currently being built
 # - `None`: The app's build method is currently being called
-currently_building_widget: Optional[rx.Widget] = None
+currently_building_widget: Optional[rio.Widget] = None
 
 
 # Same as `currently_building_widget`, but holding that widget's session.
 #
 # - `Session`: The session that owns the currently building widget
 # - `None`: No build is currently in progress
-currently_building_session: Optional[rx.Session] = None
+currently_building_session: Optional[rio.Session] = None
 
 
 # This counter is increased each time a widget is built. It can thus be used to

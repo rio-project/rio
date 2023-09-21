@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 
 from . import widget_base
 
@@ -16,15 +16,15 @@ __all__ = [
 @dataclass(frozen=True)
 class Route:
     fragment_name: str
-    build_function: Callable[[], rx.Widget]
+    build_function: Callable[[], rio.Widget]
     _: KW_ONLY
-    guard: Callable[[rx.Session], Optional[str]] = lambda _: None
+    guard: Callable[[rio.Session], Optional[str]] = lambda _: None
 
 
 FALLBACK_ROUTE = Route(
     fragment_name="",
     # TODO: build a nice error page
-    build_function=lambda: rx.Text(
+    build_function=lambda: rio.Text(
         "The page you requested could not be found.",
         height=4,
         width=12,
@@ -149,7 +149,7 @@ class Router(widget_base.Widget):
 
         return level
 
-    def build(self) -> rx.Widget:
+    def build(self) -> rio.Widget:
         # Look up the parent router
         level = self._find_router_level_and_track_in_session()
 

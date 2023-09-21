@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-import rio as rx
+import rio
 import rio.debug
 
 from . import components as comps
@@ -11,21 +11,21 @@ PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
 
 
-def make_slideshow_placeholder(variant: int) -> rx.Widget:
+def make_slideshow_placeholder(variant: int) -> rio.Widget:
     colors = [
-        rx.Color.RED,
-        rx.Color.GREEN,
-        rx.Color.BLUE,
-        rx.Color.YELLOW,
-        rx.Color.PURPLE,
-        rx.Color.MAGENTA,
+        rio.Color.RED,
+        rio.Color.GREEN,
+        rio.Color.BLUE,
+        rio.Color.YELLOW,
+        rio.Color.PURPLE,
+        rio.Color.MAGENTA,
     ]
 
-    return rx.Rectangle(
-        child=rx.Text(
+    return rio.Rectangle(
+        child=rio.Text(
             f"Slideshow Page {variant}",
         ),
-        style=rx.BoxStyle(
+        style=rio.BoxStyle(
             fill=colors[variant % len(colors)],
         ),
         width="grow",
@@ -33,11 +33,11 @@ def make_slideshow_placeholder(variant: int) -> rx.Widget:
     )
 
 
-class AppRoot(rx.Widget):
-    def build(self) -> rx.Widget:
-        return rx.Column(
+class AppRoot(rio.Widget):
+    def build(self) -> rio.Widget:
+        return rio.Column(
             # Navbar (sticky)
-            rx.Sticky(
+            rio.Sticky(
                 comps.NavigationBar(
                     height=4,
                     width="grow",
@@ -45,12 +45,12 @@ class AppRoot(rx.Widget):
                 ),
             ),
             # Router
-            rx.Router(
-                rx.Route(
+            rio.Router(
+                rio.Route(
                     "",
                     views.HomeView,
                 ),
-                rx.Route(
+                rio.Route(
                     "documentation",
                     views.DocumentationView,
                 ),
@@ -62,7 +62,7 @@ class AppRoot(rx.Widget):
         )
 
 
-rx_app = rx.App(
+rx_app = rio.App(
     name="Rio",
     build=AppRoot,
     default_attachments=[
