@@ -762,6 +762,8 @@ class AppServer(fastapi.FastAPI):
             sess._root_widget, rx.Widget
         ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
 
-        # Trigger the `on_session_started` event
-        # TODO: Do we really want to await this?
+        # Trigger the `on_session_started` event.
+        #
+        # Note: Since this event is often used for initialization, like adding
+        # attachments, we actually wait for it to finish before continuing.
         await common.call_event_handler(self.on_session_start, sess)

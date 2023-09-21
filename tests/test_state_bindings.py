@@ -1,5 +1,8 @@
 import reflex as rx
 
+StateBinding = rx.widget_base.StateBinding
+StateProperty = rx.widget_base.StateProperty
+
 
 class Parent(rx.Widget):
     text: str = ""
@@ -13,6 +16,61 @@ class Grandparent(rx.Widget):
 
     def build(self):
         return Parent(Grandparent.text)
+
+
+async def test_bindings_arent_created_too_early(create_mockapp):
+    # There was a time when state bindings were created in `Widget.__init__`.
+    # Make sure they're created after *all* `__init__`s have run.
+    class IHaveACustomInit(rx.Widget):
+        text: str
+
+        def __init__(self, *args, text: str, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.text = text
+
+        def build(self) -> rx.Widget:
+            return rx.Text(self.text)
+
+    class Container(rx.Widget):
+        text: str
+
+        def build(self) -> rx.Widget:
+            return IHaveACustomInit(text=Container.text)
+
+    root_widget = Container("hi")
+    async with create_mockapp(root_widget) as app:
+        child_widget: IHaveACustomInit = app.get_build_output(root_widget)
+
+        assert child_widget.text == "hi"
+
+        root_widget.text = "bye"
+        assert child_widget.text == "bye"
+
+
+async def test_init_receives_state_properties_as_input(create_mockapp):
+    # For a while we considered initializing state bindings before calling a
+    # widget's `__init__` and passing the values of the bindings as arguments
+    # into `__init__`. But ultimately we decided against it, because some
+    # widgets may want to use state properties/bindings in their __init__. So
+    # make sure the `__init__` actually receives a `StateProperty` as input.
+    class Square(rx.Widget):
+        def __init__(self, size: float):
+            assert isinstance(size, StateProperty), size
+
+            super().__init__(width=size, height=size)
+
+        def build(self) -> rx.Widget:
+            return rx.Text("hi", width=self.width, height=self.height)
+
+    class Container(rx.Widget):
+        size: float
+
+        def build(self) -> rx.Widget:
+            return Square(Container.size)
+
+    root_widget = Container(7)
+    async with create_mockapp(root_widget):
+        pass
 
 
 async def test_binding_assignment_on_child(create_mockapp):

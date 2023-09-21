@@ -172,7 +172,6 @@ class App:
         # tricky. We'll have to banish uvicorn to a background thread, and shut
         # it down when the window is closed.
 
-        # TODO: How to choose a free port?
         host = "localhost"
         port = _ensure_valid_port(host, None)
         url = f"http://{host}:{port}"

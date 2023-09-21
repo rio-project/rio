@@ -52,6 +52,7 @@ def get_attributes_to_serialize(cls: Type[widget_base.Widget]) -> Mapping[str, T
             "_session_",
             "_state_properties_",
             "_weak_builder_",
+            "_state_bindings_initialized",
             "align_x",
             "align_y",
             "grow_x",

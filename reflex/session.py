@@ -869,14 +869,14 @@ class Session(unicall.Unicall):
         old_widget_dict = vars(old_widget)
         new_widget_dict = vars(new_widget)
 
-        for prop in new_widget._state_properties_:
+        for prop_name in new_widget._state_properties_:
             # Should the value be overridden?
-            if prop.name not in new_widget._explicitly_set_properties_:
+            if prop_name not in new_widget._explicitly_set_properties_:
                 continue
 
             # Take care to keep state bindings up to date
-            old_value = old_widget_dict[prop.name]
-            new_value = new_widget_dict[prop.name]
+            old_value = old_widget_dict[prop_name]
+            new_value = new_widget_dict[prop_name]
             old_is_binding = isinstance(old_value, widget_base.StateBinding)
             new_is_binding = isinstance(new_value, widget_base.StateBinding)
 
@@ -903,7 +903,7 @@ class Session(unicall.Unicall):
                 # Save the binding's value in case this is the root binding
                 new_value.value = old_value.value
 
-            overridden_values[prop.name] = new_value
+            overridden_values[prop_name] = new_value
 
         # If the widget has changed mark it as dirty
         def values_equal(old: object, new: object) -> bool:

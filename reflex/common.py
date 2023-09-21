@@ -32,6 +32,8 @@ else:
 
 REFLEX_CACHE_DIR = USER_CACHE_DIR / "reflex"
 
+RUNNING_IN_DEV_MODE = __debug__
+
 
 _READONLY = object()
 T = TypeVar("T")
@@ -41,7 +43,7 @@ Readonly = Annotated[T, _READONLY]
 ImageLike = Union[Path, Image, URL, bytes]
 
 MARKDOWN_ESCAPE = re.compile(r"([\\`\*_\{\}\[\]\(\)#\+\-.!])")
-MAKRDOWN_CODE_ESCAPE = re.compile(r"([\\`])")
+MARKDOWN_CODE_ESCAPE = re.compile(r"([\\`])")
 
 
 def secure_string_hash(*values: str, hash_length: int = 32) -> str:
@@ -196,4 +198,4 @@ def escape_markdown_code(text: str) -> str:
     markdown code block, will display the same text.
     """
     # TODO: Find a proper function for this. The current one is a total hack.
-    return re.sub(MAKRDOWN_CODE_ESCAPE, r"\\\1", text)
+    return re.sub(MARKDOWN_CODE_ESCAPE, r"\\\1", text)

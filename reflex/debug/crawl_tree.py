@@ -76,7 +76,7 @@ def _dump_worker(
     #     reflex.inspection.get_child_widget_containing_attribute_names(type(widget))
     # )
 
-    for prop in widget._state_properties_:
+    for prop in type(widget)._state_properties_.values():
         raw_attr_value = prop.__get__(widget, None)
 
         attributes.append(

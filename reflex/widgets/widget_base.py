@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import dataclasses
 import inspect
 import json
@@ -9,6 +10,7 @@ import weakref
 from abc import ABC, abstractmethod
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
+from typing import Any
 
 import introspection
 from typing_extensions import dataclass_transform
@@ -16,7 +18,7 @@ from uniserde import Jsonable, JsonDoc
 
 import reflex as rx
 
-from .. import app_server, common, global_state, inspection
+from .. import common, global_state, inspection
 
 __all__ = ["Widget"]
 
@@ -207,9 +209,16 @@ class StateProperty:
         return f"<{type(self).__name__} {self.name}>"
 
 
+class WidgetMeta(abc.ABCMeta):
+    def __call__(cls, *args, **kwargs):
+        widget = super().__call__(*args, **kwargs)
+        widget._create_state_bindings()
+        return widget
+
+
 @dataclass_transform(eq_default=False)
 @dataclass(eq=False, repr=False)
-class Widget(ABC):
+class Widget(metaclass=WidgetMeta):
     _: KW_ONLY
     key: Optional[str] = None
 
@@ -257,11 +266,16 @@ class Widget(ABC):
     )
 
     # Cache for the set of all `StateProperty` instances in this class
-    _state_properties_: ClassVar[Set["StateProperty"]]
+    _state_properties_: ClassVar[Dict[str, "StateProperty"]]
 
     # Maps event tags to the methods that handle them. The methods aren't bound
     # to the instance yet, so make sure to pass `self` when calling them
     _reflex_event_handlers_: ClassVar[Dict[str, Callable]]
+
+    # This flag indicates whether state bindings for this widget have already
+    # been initialized. Used by `__getattribute__` to check if it should throw
+    # an error.
+    _state_bindings_initialized_: bool = dataclasses.field(default=False, init=False)
 
     @classmethod
     def _preprocess_dataclass_fields(cls):
@@ -312,7 +326,7 @@ class Widget(ABC):
         self._explicitly_set_properties_.update(bound_args.arguments)
 
     @staticmethod
-    def _init_wrapper(
+    def _init_widget(
         original_init,
         self: "Widget",
         *args,
@@ -325,8 +339,9 @@ class Widget(ABC):
         if global_state.currently_building_session is None:
             raise RuntimeError("Widgets can only be created inside of `build` methods.")
 
-        self._session_ = global_state.currently_building_session
-        self._session_._register_dirty_widget(
+        session = global_state.currently_building_session
+        self._session_ = session
+        session._register_dirty_widget(
             self,
             include_children_recursively=False,
         )
@@ -335,33 +350,34 @@ class Widget(ABC):
         #
         # Widgets must be known by their id, so any messages addressed to
         # them can be passed on correctly.
-        self._session_._weak_widgets_by_id[self._id] = self
+        session._weak_widgets_by_id[self._id] = self
 
         # Some events need support from the session. Register them
         for event_tag, event_handler in self._reflex_event_handlers_.items():
             if event_tag == "on_route_change":
-                self._session_._route_change_callbacks[self] = event_handler
-
-        # Chain up to the original `__init__`
-        original_init(self, *args, **kwargs)
+                session._route_change_callbacks[self] = event_handler
 
         # Initialize the margins
-        def elvis(*args):
-            for arg in args:
-                if arg is not None:
-                    return arg
+        def elvis(*param_names):
+            for param_name in param_names:
+                value = kwargs.get(param_name)
 
-            assert False  # pragma: no cover
+                if value is not None:
+                    return value
 
-        self.margin_left = elvis(self.margin_left, self.margin_x, self.margin, 0)
-        self.margin_top = elvis(self.margin_top, self.margin_y, self.margin, 0)
-        self.margin_right = elvis(self.margin_right, self.margin_x, self.margin, 0)
-        self.margin_bottom = elvis(self.margin_bottom, self.margin_y, self.margin, 0)
+            return 0
 
-        # Initialize any state bindings
-        self._create_state_bindings()
+        self.margin_left = elvis("margin_left", "margin_x", "margin")
+        self.margin_top = elvis("margin_top", "margin_y", "margin")
+        self.margin_right = elvis("margin_right", "margin_x", "margin")
+        self.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
+
+        # Call the `__init__` created by `@dataclass`
+        original_init(self, *args, **kwargs)
 
     def _create_state_bindings(self) -> None:
+        self._state_bindings_initialized_ = True
+
         creator = global_state.currently_building_widget
 
         # The creator can be `None` if this widget was created by the app's
@@ -373,13 +389,13 @@ class Widget(ABC):
         creator_vars = vars(creator)
         self_vars = vars(self)
 
-        for state_property in self._state_properties_:
+        for prop_name, state_property in self._state_properties_.items():
             # The dataclass constructor doesn't actually assign default values
             # as instance attributes. In that case we get a KeyError here. But
             # default values can't be state bindings, so just skip this
             # attribute
             try:
-                value = self_vars[state_property.name]
+                value = self_vars[prop_name]
             except KeyError:
                 continue
 
@@ -412,12 +428,21 @@ class Widget(ABC):
                 children=weakref.WeakSet(),
             )
             parent_binding.children.add(child_binding)
-            self_vars[state_property.name] = child_binding
+            self_vars[prop_name] = child_binding
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        has_custom_init = "__init__" in vars(cls)
+        cls_vars = vars(cls)
+        has_custom_init = "__init__" in cls_vars
+
+        # If it exists, rename the `__post_init__` method, so that the dataclass
+        # `__init__` doesn't automatically call it. We will call it manually
+        # once the widget's state bindings have been created.
+        if "__post_init__" in cls_vars:
+            cls._reflex_post_init = cls.__post_init__  # type: ignore
+            del cls.__post_init__  # type: ignore
+            # FIXME
 
         # Apply the dataclass transform
         cls._preprocess_dataclass_fields()
@@ -436,13 +461,13 @@ class Widget(ABC):
         # calls our initialization code.
         if not has_custom_init:
             introspection.wrap_method(
-                cls._init_wrapper,
+                cls._init_widget,
                 cls,
                 "__init__",
             )
 
         # Replace all properties with custom state properties
-        all_parent_state_properties = set()
+        all_parent_state_properties: Dict[str, StateProperty] = {}
 
         for base in cls.__bases__:
             if not issubclass(base, Widget):
@@ -463,7 +488,7 @@ class Widget(ABC):
     @classmethod
     def _initialize_state_properties(
         cls,
-        parent_state_properties: Set["StateProperty"],
+        parent_state_properties: Dict[str, "StateProperty"],
     ) -> None:
         """
         Spawn `StateProperty` instances for all annotated properties in this
@@ -494,6 +519,7 @@ class Widget(ABC):
                 "_init_signature_",
                 "_session_",
                 "_weak_builder_",
+                "_state_bindings_initialized_",
                 "margin_x",
                 "margin_y",
                 "margin",
@@ -507,7 +533,28 @@ class Widget(ABC):
             setattr(cls, attr_name, state_property)
 
             # Add it to the set of all state properties for rapid lookup
-            cls._state_properties_.add(state_property)
+            cls._state_properties_[attr_name] = state_property
+
+    # When running in development mode, make sure that no widget `__init__`
+    # tries to read a state property. This would be incorrect because state
+    # bindings are not yet initialized at that point.
+    if common.RUNNING_IN_DEV_MODE:
+
+        def __getattribute__(self, attr_name: str):
+            # fmt: off
+            if (
+                attr_name in type(self)._state_properties_ and
+                not super().__getattribute__("_state_bindings_initialized_")
+            ):
+                # fmt: on
+                raise Exception(
+                    "You have attempted to read a state property in a widget's"
+                    " `__init__` method. This is not allowed because state"
+                    " bindings are not yet initialized at that point. Please"
+                    " move this code into the `on_create` method."
+                )
+
+            return super().__getattribute__(attr_name)
 
     @property
     def session(self) -> "rx.Session":
@@ -519,7 +566,8 @@ class Widget(ABC):
         """
         if self._session_ is None:
             raise RuntimeError(
-                "The session is only accessible once the build method which constructed this widget has returned."
+                "The session is only accessible once the build method which"
+                " constructed this widget has returned."
             )
 
         return self._session_
@@ -540,11 +588,6 @@ class Widget(ABC):
             try:
                 value = getattr(self, name)
             except AttributeError:
-                continue
-
-            # Skip strings. They're technically iterable, but comparing them
-            # element by element is slow and pointless
-            if isinstance(value, str):
                 continue
 
             if isinstance(value, Widget):
@@ -695,9 +738,9 @@ class Widget(ABC):
 # Most classes have their state properties initialized in
 # `Widget.__init_subclass__`. However, since `Widget` isn't a subclass of
 # itself this needs to be done manually.
-Widget._initialize_state_properties(set())
+Widget._initialize_state_properties({})
 introspection.wrap_method(
-    Widget._init_wrapper,
+    Widget._init_widget,
     Widget,
     "__init__",
 )
