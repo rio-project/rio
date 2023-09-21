@@ -118,12 +118,28 @@ export class ColorPickerWidget extends WidgetBase {
         deltaState: ColorPickerState
     ): void {
         // Color
+        //
+        // Many combination of HSV values correspond to the same RGB color.
+        // For example, every HSV value with V=0 is black.
+        //
+        // This needs consideration, because even if the backend sets the
+        // color to the same one as before, the knobs might jump around.
+        // Avoid this, by only updating the selected color if the color
+        // actually changed.
+
         if (deltaState.color !== undefined) {
-            this.selectedHsv = rgbToHsv(
-                deltaState.color[0],
-                deltaState.color[1],
-                deltaState.color[2]
-            );
+            let rgbChanged =
+                deltaState.color[0] !== this.state.color[0] ||
+                deltaState.color[1] !== this.state.color[1] ||
+                deltaState.color[2] !== this.state.color[2];
+
+            if (rgbChanged) {
+                this.selectedHsv = rgbToHsv(
+                    deltaState.color[0],
+                    deltaState.color[1],
+                    deltaState.color[2]
+                );
+            }
         }
 
         // Pick Opacity
