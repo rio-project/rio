@@ -62,7 +62,7 @@ class AppRoot(rio.Widget):
         )
 
 
-rx_app = rio.App(
+rio_app = rio.App(
     name="Rio",
     build=AppRoot,
     default_attachments=[
@@ -73,14 +73,14 @@ rx_app = rio.App(
 
 
 if __name__ == "__main__":
-    rx_app.run_as_web_server(
+    rio_app.run_as_web_server(
         port=8001,
         external_url_override="http://localhost:8001",
         quiet=False,
         _validator_factory=rio.debug.Validator,
     )
 else:
-    app = rx_app.as_fastapi(
+    app = rio_app.as_fastapi(
         external_url_override="http://localhost:8001",
         _validator_factory=rio.debug.Validator,
     )

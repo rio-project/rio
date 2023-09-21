@@ -264,23 +264,23 @@ class Sidebar(rio.Widget):
                         rio.Rectangle(
                             style=rio.BoxStyle(fill=rio.Color.RED),
                             ripple=True,
-                            width=7,
-                            height=7,
+                            width=5,
+                            height=5,
                             align_x=0,
                             align_y=0,
                         ),
                         rio.Rectangle(
                             style=rio.BoxStyle(fill=rio.Color.YELLOW),
                             ripple=True,
-                            width=5,
-                            height=10,
+                            width=3,
+                            height=7,
                             align_x=0,
                         ),
                         rio.Rectangle(
                             style=rio.BoxStyle(fill=rio.Color.GREEN),
                             ripple=True,
-                            width=10,
-                            height=5,
+                            width=7,
+                            height=3,
                             align_y=0,
                         ),
                     ),
@@ -305,6 +305,11 @@ class WidgetShowcase(rio.Widget):
                     rio.Text("Hello World"),
                     rio.Text("Hello World"),
                     rio.Text("Hello World"),
+                    rio.ScrollContainer(
+                        rio.Rectangle(
+                            width=5, height=50, style=rio.BoxStyle(fill=rio.Color.RED)
+                        ),
+                    ),
                 ),
                 margin_x=4,
                 align_y=0.2,
@@ -320,7 +325,7 @@ def validator_factory(sess: rio.Session) -> rio.debug.Validator:
     )
 
 
-rx_app = rio.App(
+rio_app = rio.App(
     WidgetShowcase,
     name="Rio Showcase",
     on_session_start=lambda sess: print("Session Started"),
@@ -332,14 +337,14 @@ rx_app = rio.App(
 
 
 if __name__ == "__main__":
-    rx_app.run_as_web_server(
+    rio_app.run_as_web_server(
         port=8001,
         external_url_override="http://localhost:8001",
         quiet=False,
         _validator_factory=validator_factory,
     )
 else:
-    app = rx_app._as_fastapi(
+    app = rio_app._as_fastapi(
         external_url_override="http://localhost:8001",
         _validator_factory=validator_factory,
     )
