@@ -3,21 +3,30 @@ __pycache__
 *.pyc
 *.pyo
 
+# Code coverage data
+/.coverage
+/htmlcov
 
 # Poetry
-.venv
-poetry.lock
+/.venv
+/poetry.lock
+/dist
 
+# Generated files
+/rio/generated/*
+
+# Pytest
+/.pytest_cache
 
 # Editor Files
 .vscode
 
-
 # JavaScript
 /node_modules
 package-lock.json
-package.json
-
 
 # Unknown
 /.cache
+
+# Thirdparty files, such as icons
+/thirdparty

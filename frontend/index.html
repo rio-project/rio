@@ -1,18 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 
 <head>
     <title>{title}</title>
+    <link rel="icon" type="image/x-icon" href="/rio/favicon.ico" />
 
-    <style>
-        /*{style}*/
-    </style>
+    <!--
+        FIXME / TODO
+
+        Including fonts like this isn't legal in the EU. Host the font
+        ourselves.
+    -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+    <!-- <link rel="stylesheet" type="text/css" href="/rio/asset/highlightjs-default-light.css"> -->
+    <link rel="stylesheet" href="style.scss">
+
+    <script src="app.ts" type="module"></script>
 </head>
 
-<body>
-    <script>
-        /*{script}*/
-    </script>
+<body class="rio-single-container rio-switcheroo-default">
+    <div class="widget-root rio-single-container"></div>
+    <div class="rio-error-popup" style="display: none;">
+        <div>
+            Connection lost. Please refresh the page.
+        </div>
+    </div>
 </body>
 
 </html>

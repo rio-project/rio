@@ -1,34 +1,48 @@
-import { JsonMouseEventListener } from './models';
-import { buildWidget, pixelsPerEm, sendEvent } from './app';
+import { getInstanceByWidgetId, pixelsPerEm, replaceOnlyChild } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
-function eventMouseButtonToString(event: any): object {
+function eventMouseButtonToString(event: MouseEvent): object {
     return {
         button: ['left', 'middle', 'right'][event.button],
     };
 }
 
-function eventMousePositionToString(event: any): object {
+function eventMousePositionToString(event: MouseEvent): object {
     return {
         x: event.clientX / pixelsPerEm,
         y: event.clientY / pixelsPerEm,
     };
 }
 
-export class MouseEventListener {
-    static build(data: JsonMouseEventListener): HTMLElement {
+export type MouseEventListenerState = WidgetState & {
+    _type_: 'mouseEventListener';
+    child?: number | string;
+    reportMouseDown: boolean;
+    reportMouseUp: boolean;
+    reportMouseMove: boolean;
+    reportMouseEnter: boolean;
+    reportMouseLeave: boolean;
+};
+
+export class MouseEventListenerWidget extends WidgetBase {
+    state: Required<MouseEventListenerState>;
+
+    createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-mouse-event-listener');
-        element.appendChild(buildWidget(data.child));
+        element.classList.add('rio-single-container');
         return element;
     }
 
-    static update(
+    updateElement(
         element: HTMLElement,
-        deltaState: JsonMouseEventListener
+        deltaState: MouseEventListenerState
     ): void {
+        replaceOnlyChild(element, deltaState.child);
+
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
-                sendEvent(element, 'mouseDownEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseDown',
                     ...eventMouseButtonToString(e),
                     ...eventMousePositionToString(e),
                 });
@@ -39,7 +53,8 @@ export class MouseEventListener {
 
         if (deltaState.reportMouseUp) {
             element.onmouseup = (e) => {
-                sendEvent(element, 'mouseUpEvent', {
+                this.sendMessageToBackend({
+                    type: 'mouseUp',
                     ...eventMouseButtonToString(e),
                     ...eventMousePositionToString(e),
                 });
@@ -48,6 +63,43 @@ export class MouseEventListener {
             element.onmouseup = null;
         }
 
-        // TODO
+        if (deltaState.reportMouseMove) {
+            element.onmousemove = (e) => {
+                this.sendMessageToBackend({
+                    type: 'mouseMove',
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            element.onmousemove = null;
+        }
+
+        if (deltaState.reportMouseEnter) {
+            element.onmouseenter = (e) => {
+                this.sendMessageToBackend({
+                    type: 'mouseEnter',
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            element.onmouseenter = null;
+        }
+
+        if (deltaState.reportMouseLeave) {
+            element.onmouseleave = (e) => {
+                this.sendMessageToBackend({
+                    type: 'mouseLeave',
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            element.onmouseleave = null;
+        }
+    }
+
+    updateChildLayouts(): void {
+        getInstanceByWidgetId(this.state['child']).replaceLayoutCssProperties(
+            {}
+        );
     }
 }

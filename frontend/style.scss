@@ -1,0 +1,1253 @@
+@use '@material/circular-progress';
+@use '@material/floating-label/mdc-floating-label';
+@use '@material/line-ripple/mdc-line-ripple';
+@use '@material/linear-progress';
+@use '@material/notched-outline/mdc-notched-outline';
+@use '@material/ripple';
+@use '@material/slider/styles' as sliderStyles;
+@use '@material/switch/styles' as switchStyles;
+@use 'sass:meta';
+
+@include linear-progress.core-styles;
+
+// Light / Dark highlight.js themes
+//
+// Switch between these by setting the `data-theme` attribute on the `html`
+html[data-theme='light'] {
+    @include meta.load-css('highlightjs-default-light.css');
+}
+
+html[data-theme='dark'] {
+    @include meta.load-css('highlightjs-default-dark.css');
+}
+
+// Not visible here:
+//
+// JavaScript sets global theming variables, of the form `--rio-global-...`.
+
+// Z-indices for widgets which are expected to show up on top
+$z-index-sticky: 10000;
+$z-index-popup: 10001;
+$z-index-error-popup: 10002;
+
+// Nonstandard transition timing function
+$transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+// Theme Switcheroos
+.rio-switcheroo-primary {
+    // surface := primary
+    //
+    // -> All others follow.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-secondary-color);
+    --rio-local-accent-color-variant: var(--rio-global-secondary-color-variant);
+
+    // Surface
+    --rio-local-surface-color: var(--rio-global-primary-color);
+    --rio-local-surface-color-variant: var(--rio-global-primary-color-variant);
+
+    // Text styles
+    --rio-local-heading-color: var(--rio-global-heading-on-primary-color);
+    --rio-local-text-color: var(--rio-global-text-on-primary-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-secondary-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-secondary {
+    // surface := secondary
+    //
+    // -> All others follow.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-primary-color);
+    --rio-local-accent-color-variant: var(--rio-global-primary-color-variant);
+
+    // Surface
+    --rio-local-surface-color: var(--rio-global-secondary-color);
+    --rio-local-surface-color-variant: var(--rio-global-secondary-color-variant);
+
+    // Text styles
+    --rio-local-heading-color: var(--rio-global-heading-on-secondary-color);
+    --rio-local-text-color: var(--rio-global-text-on-secondary-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-primary-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-success {
+    // accent := success
+    //
+    // Surface remains unchanged.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-success-color);
+    --rio-local-accent-color-variant: var(--rio-global-success-color-variant);
+
+    // Text styles
+    // --rio-local-heading-color: var(--rio-global-text-on-success-color);
+    // --rio-local-text-color: var(--rio-global-text-on-success-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-success-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-warning {
+    // accent := warning
+    //
+    // Surface remains unchanged.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-warning-color);
+    --rio-local-accent-color-variant: var(--rio-global-warning-color-variant);
+
+    // Text styles
+    // --rio-local-heading-color: var(--rio-global-text-on-warning-color);
+    // --rio-local-text-color: var(--rio-global-text-on-warning-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-warning-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-danger {
+    // accent := danger
+    //
+    // Surface remains unchanged.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-danger-color);
+    --rio-local-accent-color-variant: var(--rio-global-danger-color-variant);
+
+    // Text styles
+    // --rio-local-heading-color: var(--rio-global-text-on-danger-color);
+    // --rio-local-text-color: var(--rio-global-text-on-danger-color);
+    --rio-local-text-on-accent-color: var(--rio-global-text-on-danger-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-text {
+    // text := accent
+    //
+    // Useful to change the color of widgets which use the text color, to the
+    // current accent color. E.g. Allows to display text or icons as danger.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-local-text-color);
+    --rio-local-accent-color-variant: var(--rio-local-text-color);
+
+    // Text styles
+    --rio-local-heading-color: var(--rio-local-text-color);
+    --rio-local-text-color: var(--rio-local-text-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-default {
+    // surface := surface
+    // accent := primary
+    //
+    // This is simply the default arrangement.
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-secondary-color);
+    --rio-local-accent-color-variant: var(--rio-global-secondary-color-variant);
+
+    // Surface
+    --rio-local-surface-color: var(--rio-global-surface-color);
+    --rio-local-surface-color-variant: var(--rio-global-surface-color-variant);
+
+    // Text styles
+    --rio-local-heading-color: var(--rio-global-heading-on-surface-color);
+    --rio-local-text-color: var(--rio-global-text-on-surface-color);
+
+    // Material Design Web
+    --mdc-theme-primary: var(--rio-global-secondary-color);
+    --mdc-theme-secondary: var(--rio-global-secondary-color-variant);
+    --mdc-theme-surface: var(--rio-global-surface-color);
+    --mdc-theme-background: var(--rio-global-background-color);
+
+    --mdc-theme-on-primary: var(--rio-global-text-on-surface-color);
+    --mdc-theme-on-secondary: var(--rio-global-text-on-surface-color);
+    --mdc-theme-on-surface: var(--rio-global-text-on-surface-color);
+}
+
+.rio-switcheroo-disabled {
+    // accent := disabled
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-global-disabled-color);
+    --rio-local-accent-color-variant: var(--rio-global-disabled-color-variant);
+
+    // Text styles
+    --rio-local-text-color: var(--rio-global-text-on-surface-color);
+
+    // Material Design Web
+    // TODO
+}
+
+.rio-switcheroo-custom {
+    // accent := custom (read from CSS variables)
+
+    // Theme colors
+    --rio-local-accent-color: var(--rio-local-custom-color);
+    --rio-local-accent-color-variant: var(--rio-local-custom-color-variant);
+
+    // Text styles
+    --rio-local-text-color: var(--rio-local-custom-text-color);
+
+    // Material Design Web
+    // TODO
+}
+
+// General
+.rio-single-container {
+    display: flex;
+    align-items: stretch;
+}
+
+.rio-single-container>* {
+    flex-grow: 1;
+}
+
+html {
+    background: var(--rio-global-background-color);
+}
+
+a {
+    color: var(--rio-local-accent-color);
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: Roboto, sans-serif;
+}
+
+code {
+    font-family: 'Roboto Mono', monospace;
+}
+
+.widget-root {
+    overflow: auto;
+}
+
+.rio-widget {
+    box-sizing: border-box;
+}
+
+// Align
+.rio-align>* {
+    pointer-events: none;
+    position: relative;
+}
+
+// Margin
+.rio-margin {
+    pointer-events: none;
+}
+
+// Column
+.rio-column,
+.rio-column>div.rio-undefined-space+div {
+    pointer-events: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+// Row
+.rio-row,
+.rio-row>div.rio-undefined-space+div {
+    pointer-events: none;
+
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+// Undefined Space Highlight
+@keyframes barber-pole {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 2rem 0rem;
+    }
+}
+
+.rio-undefined-space {
+    pointer-events: auto;
+    flex-grow: 1;
+
+    background-image: linear-gradient(-45deg,
+            black 25%,
+            var(--rio-global-warning-color) 25%,
+            var(--rio-global-warning-color) 50%,
+            black 50%,
+            black 75%,
+            var(--rio-global-warning-color) 75%,
+            var(--rio-global-warning-color));
+    background-size: 2rem 2rem;
+    animation: barber-pole 0.7s linear infinite;
+}
+
+// Grid
+.rio-grid {
+    pointer-events: none;
+    display: grid;
+}
+
+// Text
+.rio-text {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--rio-local-text-color);
+}
+
+// Rectangle
+.rio-rectangle {
+    pointer-events: auto;
+    border-style: solid;
+
+    transition-timing-function: ease; // The transition time is set via JS
+
+    /*
+    The following attributes are controlled via variables, to allow JavaScript
+    to change them, even on pseudo-classes.
+    */
+    background: var(--rectangle-background);
+    border-color: var(--rectangle-stroke-color);
+    border-width: var(--rectangle-stroke-width);
+    border-radius: var(--rectangle-corner-radius-top-left) var(--rectangle-corner-radius-top-right) var(--rectangle-corner-radius-bottom-right) var(--rectangle-corner-radius-bottom-left);
+    box-shadow: var(--rectangle-shadow-offset-x) var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius) var(--rectangle-shadow-color);
+}
+
+.rio-rectangle-ripple {
+    overflow: hidden;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.rio-rectangle-hover:hover {
+    background: var(--rectangle-background-hover);
+    border-color: var(--rectangle-stroke-color-hover);
+    border-width: var(--rectangle-stroke-width-hover);
+    border-radius: var(--rectangle-corner-radius-top-left-hover) var(--rectangle-corner-radius-top-right-hover) var(--rectangle-corner-radius-bottom-right-hover) var(--rectangle-corner-radius-bottom-left-hover);
+    box-shadow: var(--rectangle-shadow-offset-x-hover) var(--rectangle-shadow-offset-y-hover) var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
+}
+
+// Text Input
+.rio-text-input {
+    pointer-events: auto;
+
+    position: relative;
+    min-width: 6rem;
+    min-height: 2.3rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    padding: 0 0.4rem;
+
+    background-color: var(--rio-local-surface-color-variant);
+
+    border-radius: var(--rio-global-corner-radius-small) var(--rio-global-corner-radius-small) 0 0;
+    border-bottom: 1px solid var(--rio-local-text-color);
+
+    transition: border-bottom 0.13s linear;
+}
+
+.rio-text-input:not(.rio-disabled-input) {
+    // Ripple
+    overflow: hidden;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.rio-text-input:focus-within {
+    outline: none;
+    border-bottom: 1px solid var(--rio-local-accent-color);
+    background-color: var(--rio-global-surface-active-color);
+}
+
+.rio-text-input>input {
+    order: 1;
+
+    position: relative;
+    top: 0;
+    bottom: 0;
+    margin: 0;
+    flex-grow: 1;
+
+    background-color: transparent;
+    color: var(--rio-local-text-color);
+    caret-color: var(--rio-local-accent-color);
+    padding: 0.5rem;
+    border: none;
+    font-size: 1rem;
+}
+
+.rio-text-input>input:active {
+    background-color: transparent;
+}
+
+.rio-text-input>input:focus-visible {
+    outline: none;
+}
+
+.rio-text-input-hint-text {
+    margin-bottom: 0.5rem;
+
+    color: var(--rio-local-text-color);
+
+    opacity: 0;
+    transition: all 0.13s linear;
+}
+
+input:not(:placeholder-shown)~.rio-text-input-hint-text,
+.rio-text-input:focus-within>.rio-text-input-hint-text {
+    opacity: 0.5;
+}
+
+.rio-text-input-label {
+    pointer-events: none;
+
+    position: absolute;
+    left: 1.5rem;
+    top: calc(50% - 0.5rem);
+    font-size: 1rem;
+    color: var(--rio-local-text-color);
+    opacity: 0.5;
+
+    transition: all 0.13s linear;
+}
+
+input:not(:placeholder-shown)~.rio-text-input-label,
+.rio-text-input:focus-within>.rio-text-input-label {
+    opacity: 1;
+    top: 0.5rem;
+    bottom: unset;
+    font-size: 0.8rem;
+}
+
+.rio-text-input:focus-within>.rio-text-input-label {
+    color: var(--rio-local-accent-color);
+}
+
+.rio-text-input-color-bar {
+    position: absolute;
+    bottom: 0;
+    height: 0.12rem;
+
+    background-color: var(--rio-local-accent-color);
+
+    left: 40%;
+    right: 40%;
+    opacity: 0;
+
+    transition: all 0.13s ease-in-out;
+}
+
+.rio-text-input:focus-within .rio-text-input-color-bar {
+    left: 0;
+    right: 0;
+    opacity: 1;
+}
+
+// Stack
+.rio-stack {
+    pointer-events: none;
+    display: grid;
+}
+
+.rio-stack>* {
+    grid-column-start: 1;
+    grid-row-start: 1;
+}
+
+// Switch
+.rio-switch .container {
+    pointer-events: auto;
+    position: relative;
+    width: 3.18rem;
+    height: 1.54rem;
+    margin: auto;
+    border-radius: 4.3rem;
+    background-color: var(--rio-global-disabled-color-variant);
+    transition: 0.3s ease all;
+    z-index: 1;
+}
+
+.rio-switch.is-on .container {
+    background-color: var(--rio-local-accent-color);
+}
+
+.rio-switch input {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.rio-switch .knob {
+    z-index: 2;
+    position: absolute;
+    top: 0.17rem;
+    left: 0.17rem;
+    width: 0.86rem;
+    height: 0.43rem;
+    padding: 0.39em 0.17rem;
+    background-color: var(--rio-global-disabled-color);
+    border-radius: 50%;
+    transition:
+        0.3s ease all,
+        left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
+}
+
+.rio-switch input:active+.knob {
+    width: 1.98rem;
+    border-radius: 4.3rem;
+}
+
+.rio-switch.is-on input:active+.knob {
+    margin-left: -1.12rem;
+}
+
+.rio-switch.is-on input+.knob {
+    left: 1.8rem;
+    background-color: var(--rio-local-surface-color);
+}
+
+// Dropdown
+.rio-dropdown {
+    pointer-events: auto;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.rio-dropdown>.rio-text-input {
+    flex-grow: 1;
+}
+
+.rio-dropdown>.rio-popup {
+    top: 100%;
+    left: 0;
+    width: 100%;
+
+    background-color: var(--rio-global-background-color);
+    color: var(--rio-global-text-on-surface-color);
+    border-radius: 0 0 var(--rio-global-corner-radius-small) var(--rio-global-corner-radius-small);
+
+    box-shadow: 0 0 var(--rio-global-shadow-radius) var(--rio-global-shadow-color);
+}
+
+.rio-dropdown>.rio-text-input>.rio-icon-revealer-arrow {
+    pointer-events: none;
+
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 1.3rem;
+    height: 1.3rem;
+
+    transform: translateY(-50%);
+}
+
+.rio-dropdown-options {
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    cursor: pointer;
+}
+
+.rio-dropdown-options>* {
+    padding: 1rem 1rem;
+    transition: background-color 0.1s ease-in-out;
+}
+
+.rio-dropdown-options>*:hover {
+    background-color: var(--rio-global-surface-active-color);
+}
+
+.rio-dropdown-options>*+* {
+    border-top: 1px solid var(--rio-global-text-on-surface-color);
+}
+
+// Popup (also used by other widgets which have popping-up components, such as
+// the Dropdown)
+.rio-popup {
+    position: absolute;
+    display: flex;
+    align-items: stretch;
+    z-index: $z-index-popup;
+
+    overflow: hidden;
+
+    max-height: 0;
+    transition: max-height 0.14s ease-out;
+}
+
+// Progress Circle
+.rio-progress-circle {
+    pointer-events: auto;
+    width: 0;
+    height: 0;
+    stroke: var(--rio-local-accent-color);
+
+    // Since the svg inside is rotating, the corners of its bounding box will
+    // stick out. This can cause frequent re-layouting. To prevent this, we
+    // hide the overflow.
+    overflow: hidden;
+
+    // The svg is always a square, so make sure it's centered inside of us
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.rio-progress-circle svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.rio-progress-circle circle {
+    fill: none;
+    stroke-width: 3.5;
+    color: var(--rio-local-accent-color);
+}
+
+.spinning svg {
+    transform-origin: center;
+    animation: rotate 2s linear infinite;
+}
+
+.spinning .progress {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+.spinning .background {
+    stroke: none;
+}
+
+.rio-progress-circle:not(.spinning) .progress {
+    stroke-dashoffset: -94.25;
+    stroke-dasharray: var(--dasharray);
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.rio-progress-circle:not(.spinning) .background {
+    stroke: var(--background-color);
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90, 200;
+        stroke-dashoffset: -35px;
+    }
+
+    100% {
+        stroke-dashoffset: -125px;
+    }
+}
+
+// Button
+.rio-button {
+    pointer-events: auto;
+    transition:
+        background-color 0.1s ease-in-out,
+        color 0.1s ease-in-out,
+        border-color 0.1s ease-in-out;
+
+    overflow: hidden; // Needed for the ripple effect
+}
+
+.rio-button:not(.rio-switcheroo-disabled) {
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.rio-buttonstyle-major {
+    background: var(--rio-local-accent-color);
+    font-weight: bold;
+    --rio-local-text-color: var(--rio-local-text-on-accent-color);
+}
+
+.rio-buttonstyle-major:hover:not(.rio-switcheroo-disabled) {
+    background: var(--rio-local-accent-color);
+    cursor: pointer;
+}
+
+.rio-buttonstyle-minor {
+    outline: 0.1em solid var(--rio-local-accent-color);
+    --rio-local-text-color: var(--rio-local-accent-color);
+}
+
+.rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
+    background: var(--rio-local-accent-color);
+    --rio-local-text-color: var(--rio-local-text-on-accent-color);
+    cursor: pointer;
+}
+
+// Shapes
+.rio-shape-pill {
+    border-radius: 99999px;
+}
+
+.rio-shape-rounded {
+    border-radius: var(--rio-global-corner-radius-small);
+}
+
+.rio-shape-rectangle {
+    border-radius: 0; // Not necessary, just for consistency
+}
+
+.rio-shape-circle {
+    border-radius: 50%;
+}
+
+// Revealer
+.rio-revealer-header {
+    pointer-events: auto;
+    cursor: pointer;
+    padding: 0.8rem;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: row;
+    color: var(--rio-local-text-color);
+}
+
+.rio-revealer-label {
+    flex-grow: 1;
+}
+
+.rio-revealer-header>.rio-icon-revealer-arrow {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+
+    fill: var(--rio-local-text-color);
+    opacity: 0.7;
+
+    transform: rotate(90deg);
+    transition: transform 0.3s ease-in-out;
+}
+
+.rio-revealer-header>.rio-icon-revealer-arrow .expanded {
+    transform: rotate(0deg);
+}
+
+.rio-revealer-content-outer {
+    overflow: hidden;
+    transition: max-height 0.15s ease-in-out;
+}
+
+.rio-revealer-content-inner {
+    padding: 0.8rem;
+    transition:
+        opacity 0.3s ease-in-out,
+        transform 0.3s ease;
+}
+
+// Icon
+.rio-icon {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// Error popup
+.rio-error-popup {
+    pointer-events: none;
+    z-index: $z-index-error-popup;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    // This is immediately changed by JavaScript to effect a fade-in
+    opacity: 0;
+
+    transition: opacity 0.7s ease-in;
+}
+
+.rio-error-popup>div {
+    pointer-events: auto;
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    width: unset;
+    height: unset;
+    background: var(--rio-global-surface-color-variant);
+    color: var(--rio-global-danger-color);
+    font-weight: bold;
+    padding: 1.5rem;
+    border-radius: 99999px;
+    box-shadow: 0 0 var(--rio-global-shadow-radius) var(--rio-global-shadow-color);
+
+    // This is immediately changed by JavaScript to effect a fade-in
+    transform: translate(-50%, -200%);
+
+    transition: transform 0.4s $transition-timing-overshoot;
+    transition-delay: transform 0.2s;
+}
+
+// Slideshow
+.rio-slideshow {
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.slideshow-child-container {
+    position: relative;
+    display: grid;
+    width: 100%;
+    height: 100%;
+}
+
+.slideshow-child-container>div {
+    grid-column-start: 1;
+    grid-row-start: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.slideshow-child-container>div>* {
+    grid-column-start: 1;
+    grid-row-start: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.slideshow-progress {
+    position: absolute;
+    bottom: 0;
+
+    width: 100%;
+    height: 0.3rem;
+    background-color: var(--rio-local-accent-color);
+}
+
+// Sticky
+.rio-sticky {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: $z-index-sticky;
+}
+
+// Sticky
+.rio-spacer {
+    pointer-events: none;
+}
+
+// MediaPlayer
+.rio-media-player {
+    pointer-events: auto;
+
+    // Videos are weird. For some reason, they can grow larger than their parent
+    // element. Ripping them out of the document flow is the easiest way to make
+    // them behave.
+    // Note: This forces the video to take the size of its parent element, which
+    // means the video has no minimum/natural size. It cannot "push" other
+    // widgets out of the way; it can only ever use up the space it is given.
+    // But I believe that is in line with how other media (like images) work.
+    // TODO: Set a minimum size? Since we've robbed videos of their intrinsic
+    // size, they might sometimes end up 0x0 pixels small. A minimum size would
+    // ensure that the video can't completely disappear.
+    position: relative;
+
+    video {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// Markdown
+.rio-markdown-view {
+    pointer-events: auto;
+    width: 100%;
+    height: 100%;
+
+    --rio-padding: calc(0.5rem + var(--rio-global-corner-radius-small));
+}
+
+.rio-markdown-view {
+    color: var(--rio-local-text-color);
+
+    ul {
+        margin: 0;
+        padding-left: 1em;
+        list-style-type: none;
+    }
+
+    ul>li {
+        margin-bottom: 0.4em;
+    }
+
+    ul>li:before {
+        content: '- ';
+        font-weight: bold;
+    }
+
+    p>code {
+        font-family: 'Roboto Mono', monospace;
+        background: var(--rio-local-surface-color-variant);
+        border-radius: var(--rio-global-corner-radius-small);
+        padding: 0.1em 0.3em;
+    }
+}
+
+.rio-markdown-code-block {
+    background: var(--rio-local-surface-color-variant);
+    border-radius: var(--rio-global-corner-radius-small);
+}
+
+.rio-markdown-code-block-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: var(--rio-local-text-color);
+}
+
+.rio-markdown-code-block-header>* {
+    padding: var(--rio-padding);
+}
+
+.rio-markdown-code-block-language {
+    font-family: Roboto, sans-serif;
+    font-size: 0.8rem;
+    font-weight: bold;
+    opacity: 0.4;
+}
+
+.rio-markdown-code-block-copy-button {
+    min-width: 6rem;
+    min-height: 2.3rem;
+    cursor: pointer;
+    font-family: Roboto, sans-serif;
+    font-size: 0.8rem;
+    border: none;
+    background: none;
+    border-radius: var(--rio-global-corner-radius-small);
+    margin: 0;
+    color: var(--rio-local-text-color);
+    font-weight: bold;
+    opacity: 0.4;
+
+    transition:
+        color 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
+}
+
+.rio-markdown-code-block-copy-button:hover {
+    color: var(--rio-local-accent-color);
+    opacity: 1;
+}
+
+.rio-markdown-code-block>code {
+    font-size: 1rem;
+    display: block;
+    padding: 0 var(--rio-padding) var(--rio-padding) var(--rio-padding);
+}
+
+.rio-markdown-view {
+    h1 {
+        font-family: var(--rio-global-heading1-font-name);
+        color: var(--rio-local-heading-color);
+        font-size: var(--rio-global-heading1-font-size);
+        font-style: var(--rio-global-heading1-italic);
+        font-weight: var(--rio-global-heading1-font-weight);
+        text-decoration: var(--rio-global-heading1-underlined);
+        text-transform: var(--rio-global-heading1-all-caps);
+
+        margin-top: 0;
+
+        :not(:first-child) {
+            margin-top: 2em;
+        }
+    }
+
+    h2 {
+        font-family: var(--rio-global-heading2-font-name);
+        color: var(--rio-local-heading-color);
+        font-size: var(--rio-global-heading2-font-size);
+        font-style: var(--rio-global-heading2-italic);
+        font-weight: var(--rio-global-heading2-font-weight);
+        text-decoration: var(--rio-global-heading2-underlined);
+        text-transform: var(--rio-global-heading2-all-caps);
+
+        margin-top: 0;
+
+        :not(:first-child) {
+            margin-top: 1.5em;
+        }
+    }
+
+    h3 {
+        font-family: var(--rio-global-heading3-font-name);
+        color: var(--rio-local-heading-color);
+        font-size: var(--rio-global-heading3-font-size);
+        font-style: var(--rio-global-heading3-italic);
+        font-weight: var(--rio-global-heading3-font-weight);
+        text-decoration: var(--rio-global-heading3-underlined);
+        text-transform: var(--rio-global-heading3-all-caps);
+
+        margin-top: 0;
+
+        :not(:first-child) {
+            margin-top: 1em;
+        }
+    }
+
+    p {
+        font-family: var(--rio-global-text-font-name);
+        color: var(--rio-local-text-color);
+        font-size: var(--rio-global-text-font-size);
+        font-style: var(--rio-global-text-italic);
+        font-weight: var(--rio-global-text-font-weight);
+        text-decoration: var(--rio-global-text-underlined);
+        text-transform: var(--rio-global-text-all-caps);
+    }
+}
+
+// Link
+.rio-link {
+    pointer-events: auto;
+}
+
+.rio-text-link {
+    color: var(--rio-local-accent-color);
+    cursor: pointer;
+}
+
+// ScrollContainer
+.rio-scroll-container {
+    pointer-events: auto; // Needs pointer events so that the scrollbar can be interacted with
+}
+
+// Color Picker
+.rio-color-picker {
+    pointer-events: none;
+
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.rio-color-picker-color-square {
+    pointer-events: auto;
+
+    position: relative;
+    min-height: 6rem;
+    cursor: crosshair;
+    margin-bottom: 0.7rem;
+    border-radius: 0.45rem;
+    flex-grow: 1;
+}
+
+.rio-color-picker-slider-outer {
+    pointer-events: auto;
+
+    position: relative;
+    padding: 0.7rem 0;
+}
+
+.rio-color-slider-inner {
+    height: 0.9rem;
+    cursor: crosshair;
+    border-radius: 99rem;
+}
+
+.rio-color-picker-knob {
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    border: 0.2rem solid white;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    background: var(--chosen-color-opaque);
+
+    /* Allow clicking through the knob */
+    pointer-events: none;
+    cursor: crosshair;
+}
+
+.rio-color-picker-slider-outer>.rio-color-picker-knob {
+    top: 50%;
+}
+
+.color-slider-checkers {
+    border-radius: 99rem;
+}
+
+.rio-color-picker-hue-bar>.rio-color-slider-inner {
+    background: linear-gradient(to right,
+            red,
+            yellow,
+            lime,
+            aqua,
+            blue,
+            magenta,
+            red);
+}
+
+.rio-color-picker-opacity-bar>.rio-color-slider-inner:not(.rio-checkered) {
+    position: absolute;
+    top: 0.7rem;
+    left: 0;
+    right: 0;
+    bottom: 0.7rem;
+
+    background: linear-gradient(to right,
+            transparent,
+            var(--chosen-color-opaque));
+}
+
+.rio-color-picker-result-container {
+    margin-top: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.rio-color-picker-selected-color-circle {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.rio-color-picker-selected-color-circle>* {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.rio-color-picker-selected-color-circle>div:first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background: var(--chosen-color-transparent);
+}
+
+.rio-color-picker-selected-color-circle-color {
+    background: var(--chosen-color-transparent);
+}
+
+.rio-color-picker-selected-color-label {
+    pointer-events: auto;
+    opacity: 0.25;
+
+    /* Fixed width to avoid movement when the value changes */
+    width: 5rem;
+
+    /* Text style */
+    font-family: Roboto;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: bold;
+
+    /* Override the default styling */
+    background: transparent;
+    border: none;
+    padding: 0.3rem;
+    border-radius: 0.5rem;
+
+    transition:
+        opacity 0.1s ease-in-out,
+        color 0.1s ease-in-out,
+        background-color 0.1s ease-in-out;
+}
+
+.rio-color-picker-selected-color-label:focus {
+    outline: none;
+
+    opacity: 1;
+    color: var(--rio-local-accent-color);
+    background: var(--rio-local-surface-color-variant);
+}
+
+.rio-checkered {
+    --checker-color: #888;
+    --checker-size: 0.9rem;
+
+    background-image: linear-gradient(45deg,
+            var(--checker-color) 25%,
+            transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
+        linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
+        linear-gradient(45deg, var(--checker-color) 25%, transparent 25%);
+
+    background-size: var(--checker-size) var(--checker-size);
+    background-position:
+        0 0,
+        0 0,
+        calc(var(--checker-size) * -0.5) calc(var(--checker-size) * -0.5),
+        calc(var(--checker-size) * 0.5) calc(var(--checker-size) * 0.5);
+}
+
+// SVG Images
+.rio-icon-revealer-arrow {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.12 9.29 12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"/></svg>');
+    background-size: 100% 100%;
+}

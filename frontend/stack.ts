@@ -1,20 +1,31 @@
-import { buildWidget } from "./app";
-import { JsonStack } from "./models";
+import { getInstanceByWidgetId, replaceChildren } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
-export class StackWidget {
-    static build(data: JsonStack): HTMLElement {
+export type StackState = WidgetState & {
+    _type_: 'stack';
+    children?: number[];
+};
+
+export class StackWidget extends WidgetBase {
+    state: Required<StackState>;
+
+    createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('pygui-stack');
-
-        for (let ii = 0; ii < data.children.length; ii++) {
-            const childElement = buildWidget(data.children[ii]);
-            childElement.style.zIndex = `${ii + 1}`;
-            element.appendChild(childElement);
-        }
-
+        element.classList.add('rio-stack');
         return element;
     }
 
-    static update(element: HTMLElement, deltaState: JsonStack): void { }
+    updateElement(element: HTMLElement, deltaState: StackState): void {
+        replaceChildren(element, deltaState.children);
+    }
 
+    updateChildLayouts(): void {
+        let zIndex = 0;
+        for (let childId of this.state.children) {
+            let child = getInstanceByWidgetId(childId);
+
+            child.replaceLayoutCssProperties({ zIndex: `${zIndex}` });
+            zIndex += 1;
+        }
+    }
 }

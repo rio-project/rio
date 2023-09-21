@@ -1,28 +1,48 @@
-import { buildWidget } from './app';
-import { JsonMargin } from './models';
+import { getInstanceByWidgetId, replaceOnlyChild } from './app';
+import { WidgetBase, WidgetState } from './widgetBase';
 
-export class MarginWidget {
-    static build(widget: JsonMargin): HTMLElement {
+export type MarginState = WidgetState & {
+    _type_: 'Margin-builtin';
+    child?: number | string;
+    margin_left?: number;
+    margin_top?: number;
+    margin_right?: number;
+    margin_bottom?: number;
+};
+
+export class MarginWidget extends WidgetBase {
+    state: Required<MarginState>;
+
+    createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.appendChild(buildWidget(widget.child));
+        element.classList.add('rio-margin');
+        element.classList.add('rio-single-container');
         return element;
     }
 
-    static update(element: HTMLElement, state: JsonMargin): void {
-        if (state.margin_left !== undefined) {
-            element.style.marginLeft = `${state.margin_left}em`;
+    updateElement(element: HTMLElement, deltaState: MarginState): void {
+        replaceOnlyChild(element, deltaState.child);
+
+        if (deltaState.margin_left !== undefined) {
+            element.style.paddingLeft = `${deltaState.margin_left}em`;
         }
 
-        if (state.margin_top !== undefined) {
-            element.style.marginTop = `${state.margin_top}em`;
+        if (deltaState.margin_top !== undefined) {
+            element.style.paddingTop = `${deltaState.margin_top}em`;
         }
 
-        if (state.margin_right !== undefined) {
-            element.style.marginRight = `${state.margin_right}em`;
+        if (deltaState.margin_right !== undefined) {
+            element.style.paddingRight = `${deltaState.margin_right}em`;
         }
 
-        if (state.margin_bottom !== undefined) {
-            element.style.marginBottom = `${state.margin_bottom}em`;
+        if (deltaState.margin_bottom !== undefined) {
+            element.style.paddingBottom = `${deltaState.margin_bottom}em`;
         }
+    }
+
+    updateChildLayouts(): void {
+        getInstanceByWidgetId(this.state['child']).replaceLayoutCssProperties(
+            {}
+        );
     }
 }
