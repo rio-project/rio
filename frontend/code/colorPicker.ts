@@ -257,23 +257,35 @@ export class ColorPickerWidget extends WidgetBase {
 
         // Subscribe to other events and keep track of them
         this.bindHandler('mousemove', this.onHueWheelMouseMove);
-        this.bindHandler('mouseup', this.selectionFinished);
+        this.bindHandler('mouseup', this.onSelectionFinished);
+
+        // Eat the event
+        event.preventDefault();
     }
 
     onHueWheelMouseMove(event) {
         this.updateSaturationBrightness(event.clientX, event.clientY);
+
+        // Eat the event
+        event.preventDefault();
     }
 
     onHueBarMouseDown(event) {
         this.updateHue(event.clientX);
 
         // Subscribe to other events and keep track of them
-        this.bindHandler('mousemove', this.onhueBarMouseMove);
-        this.bindHandler('mouseup', this.selectionFinished);
+        this.bindHandler('mousemove', this.onHueBarMouseMove);
+        this.bindHandler('mouseup', this.onSelectionFinished);
+
+        // Eat the event
+        event.preventDefault();
     }
 
-    onhueBarMouseMove(event) {
+    onHueBarMouseMove(event) {
         this.updateHue(event.clientX);
+
+        // Eat the event
+        event.preventDefault();
     }
 
     onOpacityBarMouseDown(event) {
@@ -281,14 +293,20 @@ export class ColorPickerWidget extends WidgetBase {
 
         // Subscribe to other events and keep track of them
         this.bindHandler('mousemove', this.onOpacityBarMouseMove);
-        this.bindHandler('mouseup', this.selectionFinished);
+        this.bindHandler('mouseup', this.onSelectionFinished);
+
+        // Eat the event
+        event.preventDefault();
     }
 
     onOpacityBarMouseMove(event) {
         this.updateOpacity(event.clientX);
+
+        // Eat the event
+        event.preventDefault();
     }
 
-    selectionFinished() {
+    onSelectionFinished(event) {
         // Send the final color to the frontend
         this.sendMessageToBackend({
             color: this.state.color,
@@ -301,6 +319,9 @@ export class ColorPickerWidget extends WidgetBase {
         }
 
         this.latentEventHandlers = [];
+
+        // Eat the event
+        event.preventDefault();
     }
 
     lenientlyParseColorHex(hex) {

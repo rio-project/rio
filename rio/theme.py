@@ -82,7 +82,7 @@ class Theme:
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
         corner_radius_small: float = 0.6,
-        corner_radius_large: float = 3.0,
+        corner_radius_large: float = 2.5,
         base_spacing: float = 0.5,
         light: bool = True,
     ) -> None:

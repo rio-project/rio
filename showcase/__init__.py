@@ -227,10 +227,19 @@ class Sidebar(rio.Widget):
                         rio.Color.RED,
                         on_change=lambda evt: print("RGB Color Changed:", evt.color),
                     ),
-                    rio.ColorPicker(
-                        rio.Color.GREEN,
-                        pick_opacity=True,
-                        on_change=lambda evt: print("RGBA Color Changed:", evt.color),
+                    rio.Drawer(
+                        rio.Text("There's a colorpicker in here!"),
+                        rio.ColorPicker(
+                            rio.Color.GREEN,
+                            pick_opacity=True,
+                            on_change=lambda evt: print(
+                                "RGBA Color Changed:", evt.color
+                            ),
+                            width=15,
+                        ),
+                        is_open=False,
+                        side="right",
+                        height=20,
                     ),
                     rio.Switch(
                         on_change=lambda _: print("Switch 1 Changed"),

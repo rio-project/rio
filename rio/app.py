@@ -8,7 +8,7 @@ import threading
 import webbrowser
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterable, Optional, Union
+from typing import *  # type: ignore
 
 import __main__
 import fastapi
@@ -55,6 +55,7 @@ class App:
         *,
         name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
+        routes: rio.Routes = {},
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
@@ -69,6 +70,7 @@ class App:
         self.name = name
         self.build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
+        self.routes = routes
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)

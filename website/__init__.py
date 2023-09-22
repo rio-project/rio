@@ -64,12 +64,39 @@ class AppRoot(rio.Widget):
 
 rio_app = rio.App(
     name="Rio",
-    build=AppRoot,
+    route=rio.Route(
+        "",
+        AppRoot,
+        children=[
+            rio.Route(
+                "",
+                views.HomeView,
+            ),
+            rio.Route(
+                "documentation",
+                views.DocumentationView,
+            ),
+        ],
+    ),
+    routes={
+        "/": rio.Route(
+            AppRoot,
+        ),
+        "/documentation": rio.Route(
+            "documentation",
+            views.DocumentationView,
+        ),
+    },
     default_attachments=[
         theme.THEME,
     ],
     assets_dir=Path(__file__).parent / "assets",
 )
+
+
+@rio_app.route("/slideshow")
+def slideshow() -> rio.Widget:
+    pass
 
 
 if __name__ == "__main__":
