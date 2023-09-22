@@ -251,10 +251,15 @@ async function processMessage(message: any) {
     } else if (message.method == 'registerFont') {
         let fontFace = new FontFace(
             message.params.name,
-            `url('${message.params.url}')`
+            `url(${message.params.url})`,
         );
-        fontFace.load();
-        document.fonts.add(fontFace);
+        fontFace.load().then(() => {
+            document.fonts.add(fontFace);
+            console.log(`Successfully registered font ${message.params.name}`);
+        }).catch((error) => {
+            console.warn(`Failed to load font ${message.params.name}: ${error}`);
+        });
+
         response = null;
     }
 
@@ -394,15 +399,9 @@ function replaceChildrenWithLayoutWidgets(
     }
 }
 
-function preprocessMessage(
-    message: { [id: string]: WidgetState },
-    rootWidgetId: string | number | null
-): string | number | null {
-    // Make sure the rootWidgetId is not a number, but a string. This ensures
-    // that there are no false negatives when compared to an id in the message.
-    if (typeof rootWidgetId === 'number') {
-        rootWidgetId = rootWidgetId.toString();
-    }
+function preprocessDeltaStates(message: { [id: string]: WidgetState }): void {
+    // Fortunately the root widget is created internally by the server, so we
+    // don't need to worry about it having a margin or alignment.
 
     let originalWidgetIds = Object.keys(message);
 
@@ -420,15 +419,6 @@ function preprocessMessage(
     for (let widgetId of originalWidgetIds) {
         // Child of another widget in the message
         if (childIds.has(widgetId)) {
-            continue;
-        }
-
-        if (widgetId === rootWidgetId) {
-            rootWidgetId = createLayoutWidgetStates(
-                widgetId,
-                message[widgetId],
-                message
-            );
             continue;
         }
 
@@ -454,8 +444,6 @@ function preprocessMessage(
         replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
         message[parentId] = newParentState;
     }
-
-    return rootWidgetId;
 }
 
 function updateWidgetStates(
@@ -464,7 +452,7 @@ function updateWidgetStates(
 ): void {
     // Preprocess the message. This converts `_align_` and `_margin_` properties
     // into actual widgets, amongst other things.
-    rootWidgetId = preprocessMessage(message, rootWidgetId);
+    preprocessDeltaStates(message);
 
     // Modifying the DOM makes the keyboard focus get lost. Remember which
     // element had focus, so we can restore it later.

@@ -80,7 +80,7 @@ if __name__ == "__main__":
         _validator_factory=rio.debug.Validator,
     )
 else:
-    app = rio_app.as_fastapi(
+    app = rio_app._as_fastapi(
         external_url_override="http://localhost:8001",
         _validator_factory=rio.debug.Validator,
     )

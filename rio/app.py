@@ -21,12 +21,31 @@ from .common import ImageLike
 
 # Only available with the `window` extra
 try:
-    import webview  # type: ignore
+    import webview
 except ImportError:
     webview = None
 
 
 __all__ = ["App"]
+
+
+def _validate_build_function(
+    build_function: Callable[[], rio.Widget]
+) -> Callable[[], rio.Widget]:
+    assert callable(
+        build_function
+    ), f"The App requires a function that returns a widget, not {build_function!r}"
+
+    def wrapper():
+        widget = build_function()
+
+        assert isinstance(
+            widget, rio.Widget
+        ), f"The `build` function passed to the App must return a `Widget` instance, not {widget!r}."
+
+        return widget
+
+    return wrapper
 
 
 class App:
@@ -42,17 +61,13 @@ class App:
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
     ):
-        assert callable(
-            build
-        ), "The `build` argument must be a function that returns a Widget"
-
         main_file = _get_main_file()
 
         if name is None:
             name = _get_default_app_name(main_file)
 
         self.name = name
-        self.build = build
+        self.build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
@@ -85,12 +100,8 @@ class App:
         self,
         *,
         external_url_override: Optional[str] = None,
-        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
     ):
-        return self._as_fastapi(
-            external_url_override=external_url_override,
-            _validator_factory=_validator_factory,
-        )
+        return self._as_fastapi(external_url_override=external_url_override)
 
     def run_as_web_server(
         self,

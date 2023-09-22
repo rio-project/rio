@@ -7,6 +7,7 @@ import io
 import json
 import logging
 import secrets
+import time
 import weakref
 from datetime import timedelta
 from typing import *  # type: ignore
@@ -15,7 +16,6 @@ import babel
 import fastapi
 import timer_dict
 import uniserde.case_convert
-import yarl
 from PIL import Image
 from uniserde import Jsonable
 
@@ -30,10 +30,11 @@ from . import (
     inspection,
     session,
     user_settings_module,
+    widgets,
 )
 
 try:
-    import plotly  # type: ignore
+    import plotly
 except ImportError:
     plotly = None
 
@@ -186,6 +187,28 @@ document.documentElement.setAttribute("data-theme", "{theme_variant}");
     }
 
 
+async def _periodically_clean_up_expired_sessions(
+    app_server_ref: weakref.ReferenceType[AppServer],
+):
+    LOOP_INTERVAL = 60 * 15
+    SESSION_LIFETIME = 60 * 60
+
+    while True:
+        await asyncio.sleep(LOOP_INTERVAL)
+
+        app_server = app_server_ref()
+        if app_server is None:
+            return
+
+        now = time.monotonic()
+        cutoff = now - SESSION_LIFETIME
+
+        for session_token, session in list(app_server._active_session_tokens.items()):
+            if session._last_interaction_timestamp < cutoff:
+                del app_server._active_session_tokens[session_token]
+                session._close()
+
+
 class AppServer(fastapi.FastAPI):
     def __init__(
         self,
@@ -219,9 +242,14 @@ class AppServer(fastapi.FastAPI):
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
         # connection.
-        self._active_session_tokens = timer_dict.TimerDict[str, rio.Session](
-            default_duration=timedelta(minutes=9999999 if running_in_window else 60),
-        )
+
+        self._active_session_tokens: Dict[str, rio.Session] = {}
+        if not running_in_window:
+            assert type(self) is AppServer  # Shut up pyright
+
+            asyncio.create_task(
+                _periodically_clean_up_expired_sessions(weakref.ref(self))
+            )
 
         # All assets that have been registered with this session. They are held
         # weakly, meaning the session will host assets for as long as their
@@ -593,7 +621,7 @@ class AppServer(fastapi.FastAPI):
             # This is done in a task, because the server is not yet running, so
             # the method would never receive a response, and thus would hang
             # indefinitely.
-            sess._create_task(init_coro)
+            sess._create_task(init_coro, name=f"Session {sess} init")
 
             # Serve the socket
             await sess.serve()
@@ -615,7 +643,6 @@ class AppServer(fastapi.FastAPI):
         # Create a function for sending messages to the frontend. This function
         # will also pipe the message to the validator if one is present.
         if self.validator_factory is None:
-            sess._send_message = websocket.send_json  # type: ignore
 
             async def receive_message() -> uniserde.Jsonable:
                 # Refresh the session's duration
@@ -623,6 +650,9 @@ class AppServer(fastapi.FastAPI):
 
                 # Fetch a message
                 return await websocket.receive_json()
+
+            sess._send_message = websocket.send_json  # type: ignore
+            sess._receive_message = receive_message
 
         else:
 
@@ -749,21 +779,30 @@ class AppServer(fastapi.FastAPI):
             None if self.validator_factory is None else self.validator_factory(sess)
         )
 
-        # Build the root widget
+        # Create the root widget. The root widget is a non-fundamental widget,
+        # because that has many advantages:
+        # 1. Every widget except for the root widget itself has a valid builder
+        # 2. The JS code is simpler because the root widget can't have an
+        #    alignment or margin
+        # 3. Children of non-fundamental widgets are automatically initialized
+        #    correctly, so we don't need to duplicate that logic here
         global_state.currently_building_widget = None
         global_state.currently_building_session = sess
 
         try:
-            sess._root_widget = self.app.build()
+            sess._root_widget = RootContainer(self.app.build)
         finally:
             global_state.currently_building_session = None
-
-        assert isinstance(
-            sess._root_widget, rio.Widget
-        ), f"The `build` function passed to the App must return a `Widget` instance, not {sess._root_widget!r}."
 
         # Trigger the `on_session_started` event.
         #
         # Note: Since this event is often used for initialization, like adding
         # attachments, we actually wait for it to finish before continuing.
         await common.call_event_handler(self.on_session_start, sess)
+
+
+class RootContainer(widgets.Widget):
+    build_function: Callable[[], widgets.Widget]
+
+    def build(self) -> rio.Widget:
+        return self.build_function()
