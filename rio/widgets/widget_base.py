@@ -240,11 +240,8 @@ class Widget(metaclass=WidgetMeta):
 
     _id: int = dataclasses.field(init=False)
 
-    # Weak reference to the widget whose `build` method returned this widget.
-    #
-    # TODO: What exactly does this mean? Is the builder the widget in which
-    # build() this widget was created? Or the one that has actually added this
-    # child into the widget tree?
+    # Weak reference to the widget's builder. Used to check if the widget is
+    # still part of the widget tree.
     _weak_builder_: Callable[[], Optional[Widget]] = dataclasses.field(
         # Dataclasses seem to unintentionally turn this function into a method.
         # Make sure it works whether or not `self` is passed.
@@ -358,7 +355,11 @@ class Widget(metaclass=WidgetMeta):
             if event_tag == "on_route_change":
                 session._route_change_callbacks[self] = event_handler
 
-        # Initialize the margins
+        # Call the `__init__` created by `@dataclass`
+        original_init(self, *args, **kwargs)
+
+        # Initialize the margins. This has to happen after the dataclass
+        # `__init__`, because it would overwrite our values.
         def elvis(*param_names):
             for param_name in param_names:
                 value = kwargs.get(param_name)
@@ -372,9 +373,6 @@ class Widget(metaclass=WidgetMeta):
         self.margin_top = elvis("margin_top", "margin_y", "margin")
         self.margin_right = elvis("margin_right", "margin_x", "margin")
         self.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
-
-        # Call the `__init__` created by `@dataclass`
-        original_init(self, *args, **kwargs)
 
     def on_created(self) -> None:
         """

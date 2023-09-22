@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import copy
 import functools
 import io
@@ -220,7 +221,7 @@ class AppServer(fastapi.FastAPI):
         default_attachments: Tuple[Any, ...],
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
     ):
-        super().__init__()
+        super().__init__(lifespan=__class__._lifespan)
 
         # TODO: Maybe parse the url and remove the backslash? Document this?
         # Something?
@@ -242,14 +243,7 @@ class AppServer(fastapi.FastAPI):
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
         # connection.
-
         self._active_session_tokens: Dict[str, rio.Session] = {}
-        if not running_in_window:
-            assert type(self) is AppServer  # Shut up pyright
-
-            asyncio.create_task(
-                _periodically_clean_up_expired_sessions(weakref.ref(self))
-            )
 
         # All assets that have been registered with this session. They are held
         # weakly, meaning the session will host assets for as long as their
@@ -287,6 +281,18 @@ class AppServer(fastapi.FastAPI):
         self.add_api_route(
             "/{initial_route_str:path}", self._serve_index, methods=["GET"]
         )
+
+    @contextlib.asynccontextmanager
+    async def _lifespan(self):
+        # If running as a server, periodically clean up expired sessions
+        if not self.running_in_window:
+            assert type(self) is AppServer  # Shut up pyright
+
+            asyncio.create_task(
+                _periodically_clean_up_expired_sessions(weakref.ref(self))
+            )
+
+        yield
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """

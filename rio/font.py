@@ -1,14 +1,3 @@
-from pathlib import Path
-from typing import *  # type: ignore
+from .text_style import ROBOTO
 
-__all__ = [
-    "Font",
-]
-
-
-class Font:
-    def __init__(
-        self,
-        name: str,
-    ) -> None:
-        self.name = name
+__all__ = ["ROBOTO"]
