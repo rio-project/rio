@@ -7,6 +7,7 @@ import inspect
 import json
 import logging
 import secrets
+import time
 import traceback
 import typing
 import weakref
@@ -135,6 +136,10 @@ class Session(unicall.Unicall):
         )
 
         self._app_server = app_server_
+
+        # Keep track of the last time we successfully communicated with the
+        # client. After a while with no communication we close the session.
+        self._last_interaction_timestamp = time.monotonic()
 
         # The current route. This isn't used by the session itself, but routers
         # can use it to agree on what to display.
@@ -266,7 +271,7 @@ class Session(unicall.Unicall):
 
         return task
 
-    def __del__(self):
+    def _close(self):
         # Cancel all running tasks
         for task in self._running_tasks:
             task.cancel()
@@ -304,7 +309,7 @@ class Session(unicall.Unicall):
                     f"window.location.href = {json.dumps(route)}",
                 )
 
-            self._create_task(history_worker())
+            self._create_task(history_worker(), name="history worker")
             return
 
         # Determine the full route to navigate to
@@ -424,8 +429,8 @@ class Session(unicall.Unicall):
         Add the widget to the set of dirty widgets. The widget is only held
         weakly by the session.
 
-        If `include_fundamental_children_recursively` is true, all children of
-        the widget are also added.
+        If `include_children_recursively` is true, all children of the widget
+        are also added.
 
         The children of non-fundamental widgets are not added, since they will
         be added after the parent is built anyway.

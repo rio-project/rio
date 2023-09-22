@@ -213,6 +213,7 @@ class WidgetMeta(abc.ABCMeta):
     def __call__(cls, *args, **kwargs):
         widget = super().__call__(*args, **kwargs)
         widget._create_state_bindings()
+        widget.on_created()
         return widget
 
 
@@ -374,6 +375,13 @@ class Widget(metaclass=WidgetMeta):
 
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)
+
+    def on_created(self) -> None:
+        """
+        Called after the `__init__` method has finished executing and the
+        widget's state bindings have been created.
+        """
+        pass
 
     def _create_state_bindings(self) -> None:
         self._state_bindings_initialized_ = True

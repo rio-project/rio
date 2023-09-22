@@ -29,6 +29,9 @@ def _enable_widget_instantiation(
     send_message=_fake_send_message,
     receive_message=_fake_receive_message,
 ):
+    # FIXME: Make this more similar to the real implementation. Some of our
+    # tests are pointless at the moment because they're effectively testing our
+    # fake code here.
     app = rio.App(_fake_build_function)
     app_server = AppServer(
         app,
@@ -118,6 +121,8 @@ def create_mockapp():
         root_widget: rio.Widget,
     ) -> AsyncGenerator[_MockApp, None]:
         session._root_widget = root_widget
+
+        session._register_dirty_widget(root_widget, include_children_recursively=True)
 
         # Start a task that processes outgoing websocket/unicall messages
         task = asyncio.create_task(session.serve())
