@@ -110,7 +110,6 @@ export class DropdownWidget extends WidgetBase {
                 deltaState.label.length > 0 ? '3.3rem' : '2.3rem';
         }
 
-        console.log('SELECTED', deltaState);
         if (deltaState.selectedName !== undefined) {
             this.inputElement.value = deltaState.selectedName;
         }

@@ -29,6 +29,7 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
+import { DrawerWidget } from './drawer';
 
 const sessionToken = '{session_token}';
 
@@ -77,9 +78,9 @@ export function fillToCss(fill: Fill): string {
             stopStrings.push(`${colorToCss(color)} ${position * 100}%`);
         }
 
-        return `linear-gradient(${fill.angleDegrees}deg, ${stopStrings.join(
-            ', '
-        )})`;
+        return `linear-gradient(${
+            90 - fill.angleDegrees
+        }deg, ${stopStrings.join(', ')})`;
     }
 
     // Image
@@ -168,6 +169,7 @@ const widgetClasses = {
     'ClassContainer-builtin': ClassContainerWidget,
     'ColorPicker-builtin': ColorPickerWidget,
     'Column-builtin': ColumnWidget,
+    'Drawer-builtin': DrawerWidget,
     'Dropdown-builtin': DropdownWidget,
     'Grid-builtin': GridWidget,
     'Icon-builtin': IconWidget,

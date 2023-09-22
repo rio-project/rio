@@ -1,5 +1,4 @@
-# URLs are used as an important datatype within rio. Re-export them for easy
-# use.
+# Re-export important external datatypes
 from dataclasses import KW_ONLY, field
 
 from yarl import URL
@@ -11,6 +10,8 @@ from .common import EventHandler, ImageLike, escape_markdown, escape_markdown_co
 from .cursor_style import CursorStyle
 from .errors import *
 from .fills import *
+from .route import *
+from .route import Route
 from .session import *
 from .text_style import *
 from .theme import *

@@ -15,14 +15,14 @@ __all__ = [
 
 @dataclass(frozen=True)
 class Route:
-    fragment_name: str
+    segment_name: str
     build_function: Callable[[], rio.Widget]
     _: KW_ONLY
     guard: Callable[[rio.Session], Optional[str]] = lambda _: None
 
 
 FALLBACK_ROUTE = Route(
-    fragment_name="",
+    segment_name="",
     # TODO: build a nice error page
     build_function=lambda: rio.Text(
         "The page you requested could not be found.",
@@ -92,17 +92,17 @@ class Router(widget_base.Widget):
         # Convert the routes to a form that facilitates lookup. This is also a
         # good time for sanity checks
         for route in routes:
-            if "/" in route.fragment_name:
+            if "/" in route.segment_name:
                 raise ValueError(
-                    f"Route names cannot contain slashes: {route.fragment_name}",
+                    f"Route names cannot contain slashes: {route.segment_name}",
                 )
 
-            if route.fragment_name in self.routes:
+            if route.segment_name in self.routes:
                 raise ValueError(
-                    f'Multiple routes share the same name "{route.fragment_name}"',
+                    f'Multiple routes share the same name "{route.segment_name}"',
                 )
 
-            self.routes[route.fragment_name] = route
+            self.routes[route.segment_name] = route
 
     def _find_router_level_and_track_in_session(self) -> int:
         """
@@ -153,15 +153,15 @@ class Router(widget_base.Widget):
         # Look up the parent router
         level = self._find_router_level_and_track_in_session()
 
-        # Determine the route fragment
+        # Determine the route segment
         try:
-            new_route_fragment = self.session._current_route[level]
+            new_route_segment = self.session._current_route[level]
         except IndexError:
-            new_route_fragment = ""
+            new_route_segment = ""
 
         # Fetch the route instance
         try:
-            route = self.routes[new_route_fragment]
+            route = self.routes[new_route_segment]
         except KeyError:
             if self.fallback_route is None:
                 route = FALLBACK_ROUTE
