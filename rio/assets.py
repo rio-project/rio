@@ -66,6 +66,21 @@ class Asset(SelfSerializing):
         # The MIME type of the asset
         self.media_type = media_type
 
+    @overload
+    @classmethod
+    def new(cls, data: bytes, media_type: Optional[str] = None) -> BytesAsset:
+        ...
+
+    @overload
+    @classmethod
+    def new(cls, data: Path, media_type: Optional[str] = None) -> PathAsset:
+        ...
+
+    @overload
+    @classmethod
+    def new(cls, data: URL, media_type: Optional[str] = None) -> UrlAsset:
+        ...
+
     @classmethod
     def new(
         cls,
@@ -82,8 +97,10 @@ class Asset(SelfSerializing):
             asset = PathAsset(data, media_type)
         elif isinstance(data, URL):
             asset = UrlAsset(data, media_type)
-        else:
+        elif isinstance(data, (bytes, bytearray)):
             asset = BytesAsset(data, media_type)
+        else:
+            raise TypeError(f"Cannot create asset from input {data!r}")
 
         _ASSETS[key] = asset
         return asset

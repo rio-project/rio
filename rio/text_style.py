@@ -7,9 +7,8 @@ from typing import *  # type: ignore
 from typing_extensions import Self
 from uniserde import JsonDoc
 
-from . import self_serializing, session
+from . import common, self_serializing, session
 from .color import Color
-from .common import URL
 
 __all__ = [
     "Font",
@@ -20,17 +19,26 @@ __all__ = [
 @dataclass(frozen=True)
 class Font(self_serializing.SelfSerializing):
     name: str
-    location: Union[Path, URL]
+    regular: Path
+    bold: Optional[Path] = None
+    italic: Optional[Path] = None
+    bold_italic: Optional[Path] = None
 
     def _serialize(self, sess: session.Session) -> str:
-        sess._register_font(self.name, self.location)
+        sess._register_font(self)
         return self.name
+
+
+ROBOTO = Font(
+    "Roboto",
+    regular=common.HOSTED_ASSETS_DIR / "fonts/Roboto-Regular.ttf",  # FIXME
+)
 
 
 @dataclass(frozen=True)
 class TextStyle(self_serializing.SelfSerializing):
     _: KW_ONLY
-    font: Union[str, Font] = "Roboto"
+    font: Font = ROBOTO
     font_color: Color = Color.BLACK
     font_size: float = 1.0
     italic: bool = False
@@ -41,7 +49,7 @@ class TextStyle(self_serializing.SelfSerializing):
     def replace(
         self,
         *,
-        font: Union[str, Font, None] = None,
+        font: Optional[Font] = None,
         font_color: Optional[Color] = None,
         font_size: Optional[float] = None,
         italic: Optional[bool] = None,
@@ -63,7 +71,7 @@ class TextStyle(self_serializing.SelfSerializing):
         if isinstance(self.font, str):
             font_name = self.font
         else:
-            font_name = self.font.name
+            font_name = self.font._serialize(sess)
 
         return {
             "fontName": font_name,

@@ -32,6 +32,7 @@ from . import (
     global_state,
     inspection,
     self_serializing,
+    text_style,
     theme,
     user_settings_module,
 )
@@ -172,9 +173,9 @@ class Session(unicall.Unicall):
         ] = weakref.WeakKeyDictionary()
 
         # All fonts which have been registered with the session. This maps the
-        # name of the font to the font asset, which ensures that the asset is
-        # kept alive until the session is closed.
-        self._registered_font_assets: Dict[str, assets.Asset] = {}
+        # name of the font to the font's assets, which ensures that the assets
+        # are kept alive until the session is closed.
+        self._registered_font_assets: Dict[str, List[assets.Asset]] = {}
 
         # These are injected by the app server after the session has already been created
         self._root_widget: rio.Widget
@@ -1083,25 +1084,33 @@ class Session(unicall.Unicall):
 
             yield old_widget, new_widget
 
-    def _register_font(self, name: str, location: Union[Path, common.URL]) -> None:
+    def _register_font(self, font: text_style.Font) -> None:
         # Fonts are different from other assets because they need to be
         # registered under a name, not just a URL. We don't want to re-register
         # the same font multiple times, so we keep track of all registered
-        # fonts. Every registered font is associated with a font asset, which
-        # will be kept alive until the session is closed.
-        try:
-            existing_font_asset = self._registered_font_assets[name]
-        except KeyError:
-            pass
-        else:
-            # Verify that it's the same font, otherwise we have a name clash
-            pass  # FIXME
+        # fonts. Every registered font is associated with all its assets
+        # (regular, bold, italic, ...), which will be kept alive until the
+        # session is closed.
+        if font.name in self._registered_font_assets:
+            return
 
-        # It's a new font, host it
-        font_asset = assets.Asset.new(location)
-        url = font_asset._serialize(self)  # This will host the asset
+        # It's a new font, register it
+        font_assets: List[assets.Asset] = []
 
-        self._create_task(self._remote_register_font(name, url))
+        for location in (font.regular, font.bold, font.italic, font.bold_italic):
+            if location is None:
+                continue
+
+            asset = assets.Asset.new(location)
+
+            # On the client side, each font face (regular, bold, italic, ...)
+            # has to be registered separately.
+            url = asset._serialize(self)  # This will host the asset
+            self._create_task(self._remote_register_font(font.name, url))
+
+            font_assets.append(asset)
+
+        self._registered_font_assets[font.name] = font_assets
 
     @overload
     async def file_chooser(
