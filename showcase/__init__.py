@@ -103,6 +103,10 @@ class ExtensibleList(rio.Widget):
 class Sidebar(rio.Widget):
     search_text: str = ""
     expanded: bool = False
+    popup_visible: bool = False
+
+    def _on_toggle_popup(self, _) -> None:
+        self.popup_visible = not self.popup_visible
 
     def build(self) -> rio.Widget:
         return Card(
@@ -240,6 +244,18 @@ class Sidebar(rio.Widget):
                         is_open=False,
                         side="right",
                         height=20,
+                    ),
+                    rio.Popup(
+                        rio.Button(
+                            "And a Popup!",
+                            on_press=self._on_toggle_popup,
+                        ),
+                        rio.Text(
+                            "Notice me!",
+                            width=15,
+                            height=10,
+                        ),
+                        is_open=Sidebar.popup_visible,
                     ),
                     rio.Switch(
                         on_change=lambda _: print("Switch 1 Changed"),

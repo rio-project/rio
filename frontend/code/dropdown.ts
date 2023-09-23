@@ -38,13 +38,13 @@ export class DropdownWidget extends WidgetBase {
             <div class="rio-icon-revealer-arrow"></div>
         </div>
 
-        <div class='rio-popup'>
+        <div class='rio-dropdown-popup'>
             <div class="rio-dropdown-options"></div>
         </div>
 `;
 
         // Expose them as properties
-        this.popupElement = element.querySelector('.rio-popup') as HTMLElement;
+        this.popupElement = element.querySelector('.rio-dropdown-popup') as HTMLElement;
 
         this.optionsElement = element.querySelector(
             '.rio-dropdown-options'

@@ -4,6 +4,7 @@ import { ClassContainerWidget } from './classContainer';
 import { Color, Fill } from './models';
 import { ColorPickerWidget } from './colorPicker';
 import { ColumnWidget, RowWidget } from './linearContainers';
+import { DrawerWidget } from './drawer';
 import { DropdownWidget } from './dropdown';
 import { GridWidget } from './grid';
 import { IconWidget } from './icon';
@@ -15,6 +16,7 @@ import { MediaPlayerWidget } from './mediaPlayer';
 import { MouseEventListenerWidget } from './mouseEventListener';
 import { PlaceholderWidget } from './placeholder';
 import { PlotWidget } from './plot';
+import { PopupWidget } from './popup';
 import { ProgressBarWidget } from './progressBar';
 import { ProgressCircleWidget } from './progressCircle';
 import { RectangleWidget } from './rectangle';
@@ -29,7 +31,6 @@ import { SwitchWidget } from './switch';
 import { TextInputWidget } from './textInput';
 import { TextWidget } from './text';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { DrawerWidget } from './drawer';
 
 const sessionToken = '{session_token}';
 
@@ -181,6 +182,7 @@ const widgetClasses = {
     'MediaPlayer-builtin': MediaPlayerWidget,
     'MouseEventListener-builtin': MouseEventListenerWidget,
     'Plot-builtin': PlotWidget,
+    'Popup-builtin': PopupWidget,
     'ProgressBar-builtin': ProgressBarWidget,
     'ProgressCircle-builtin': ProgressCircleWidget,
     'Rectangle-builtin': RectangleWidget,
