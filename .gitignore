@@ -30,3 +30,6 @@ package-lock.json
 
 # Thirdparty files, such as icons
 /thirdparty
+
+# Project-level __init__.py
+/__init__.py

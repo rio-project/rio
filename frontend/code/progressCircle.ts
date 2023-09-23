@@ -15,6 +15,7 @@ export class ProgressCircleWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
+
         element.innerHTML = `
             <svg viewBox="25 25 50 50">
                 <circle class="background" cx="50" cy="50" r="20"></circle>
@@ -46,8 +47,7 @@ export class ProgressCircleWidget extends WidgetBase {
                 let fullCircle = 40 * Math.PI;
                 element.style.setProperty(
                     '--dasharray',
-                    `${deltaState.progress * fullCircle}, ${
-                        (1 - deltaState.progress) * fullCircle
+                    `${deltaState.progress * fullCircle}, ${(1 - deltaState.progress) * fullCircle
                     }`
                 );
             }
