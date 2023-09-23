@@ -8,6 +8,7 @@ import { DrawerWidget } from './drawer';
 import { DropdownWidget } from './dropdown';
 import { GridWidget } from './grid';
 import { IconWidget } from './icon';
+import { ImageWidget } from './image';
 import { KeyEventListenerWidget } from './keyEventListener';
 import { LinkWidget } from './link';
 import { MarginWidget } from './margin';
@@ -80,9 +81,8 @@ export function fillToCss(fill: Fill): string {
             stopStrings.push(`${colorToCss(color)} ${position * 100}%`);
         }
 
-        return `linear-gradient(${
-            90 - fill.angleDegrees
-        }deg, ${stopStrings.join(', ')})`;
+        return `linear-gradient(${90 - fill.angleDegrees
+            }deg, ${stopStrings.join(', ')})`;
     }
 
     // Image
@@ -175,6 +175,7 @@ const widgetClasses = {
     'Dropdown-builtin': DropdownWidget,
     'Grid-builtin': GridWidget,
     'Icon-builtin': IconWidget,
+    'Image-builtin': ImageWidget,
     'KeyEventListener-builtin': KeyEventListenerWidget,
     'Link-builtin': LinkWidget,
     'Margin-builtin': MarginWidget,

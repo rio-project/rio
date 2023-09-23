@@ -99,6 +99,11 @@ class Asset(SelfSerializing):
             asset = UrlAsset(data, media_type)
         elif isinstance(data, (bytes, bytearray)):
             asset = BytesAsset(data, media_type)
+        elif isinstance(data, str):
+            raise TypeError(
+                f"Cannot create asset from input {data!r}. Perhaps you meant to"
+                f" pass a `pathlib.Path` or `rio.URL`?"
+            )
         else:
             raise TypeError(f"Cannot create asset from input {data!r}")
 

@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
-from typing import AsyncGenerator, Container, List, Set
+import types
+from typing import *  # noqa
 
 import babel
 import pytest
@@ -24,14 +25,8 @@ async def _fake_receive_message() -> Jsonable:
         await asyncio.sleep(100000)
 
 
-@contextlib.contextmanager
-def _enable_widget_instantiation(
-    send_message=_fake_send_message,
-    receive_message=_fake_receive_message,
-):
-    # FIXME: Make this more similar to the real implementation. Some of our
-    # tests are pointless at the moment because they're effectively testing our
-    # fake code here.
+@pytest.fixture()
+def enable_widget_instantiation():
     app = rio.App(_fake_build_function)
     app_server = AppServer(
         app,
@@ -49,8 +44,8 @@ def _enable_widget_instantiation(
     )
     session.external_url = None
     session.preferred_locales = (babel.Locale.parse("en_US"),)
-    session._send_message = send_message
-    session._receive_message = receive_message
+    session._send_message = _fake_send_message
+    session._receive_message = _fake_receive_message
 
     rio.global_state.currently_building_session = session
 
@@ -58,12 +53,6 @@ def _enable_widget_instantiation(
         yield session
     finally:
         rio.global_state.currently_building_session = None
-
-
-@pytest.fixture()
-def enable_widget_instantiation():
-    with _enable_widget_instantiation():
-        yield
 
 
 class _MockApp:
@@ -110,34 +99,40 @@ class _MockApp:
         rio.global_state.currently_building_session = self._session
 
 
-@pytest.fixture
-def create_mockapp():
+@contextlib.asynccontextmanager
+async def _create_mockapp(
+    root_widget: rio.Widget,
+) -> AsyncGenerator[_MockApp, None]:
     # Tests often operate on widget instances - mutating them, refreshing them,
     # etc. But widget's can only be instantiated in `build` functions, so we
     # must pretend that a build function is running. To do this, we need to
     # create a Session and set it as the "currently active session".
-    @contextlib.asynccontextmanager
-    async def _create_mockapp(
-        root_widget: rio.Widget,
-    ) -> AsyncGenerator[_MockApp, None]:
-        session._root_widget = root_widget
+    app = rio.App(lambda: root_widget)
+    app_server = AppServer(
+        app,
+        external_url_override="https://unit.test",
+        running_in_window=False,
+        on_session_start=None,
+        on_session_end=None,
+        default_attachments=tuple(),
+        validator_factory=None,
+    )
 
-        session._register_dirty_widget(root_widget, include_children_recursively=True)
+    # Emulate the process of creating a session as closely as possible
+    fake_request: Any = types.SimpleNamespace(base_url="https://unit.test")
+    await app_server._serve_index(fake_request, "")
 
-        # Start a task that processes outgoing websocket/unicall messages
-        task = asyncio.create_task(session.serve())
-        await mock_app.refresh()
-
-        try:
-            yield mock_app
-        finally:
-            task.cancel()
-
+    [[session_token, session]] = app_server._active_session_tokens.items()
     mock_app = _MockApp()
+    session._send_message = mock_app._send_message  # type: ignore
+    session._receive_message = mock_app._receive_message
 
-    with _enable_widget_instantiation(
-        mock_app._send_message, mock_app._receive_message
-    ) as session:
-        mock_app._session = session
+    fake_websocket: Any = types.SimpleNamespace()
+    await app_server._serve_websocket(fake_websocket, session_token)
 
-        yield _create_mockapp
+    yield mock_app
+
+
+@pytest.fixture
+def create_mockapp():
+    yield _create_mockapp

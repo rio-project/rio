@@ -19,7 +19,10 @@ export class ScrollContainerWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-scroll-container', 'rio-single-container');
+
+        // Do *NOT* add `rio-single-container` here!
+        element.classList.add('rio-scroll-container');
+
         return element;
     }
 

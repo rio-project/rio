@@ -105,9 +105,8 @@ export class DrawerWidget extends WidgetBase {
 
         // Move the drawer far enough to hide the shadow
         let closedFraction = 1 - this.openFraction;
-        this.contentContainer.style.transform = `translate${axis}(calc(0rem ${negate} ${
-            closedFraction * 100
-        }% ${negate} ${closedFraction * 1}em))`;
+        this.contentContainer.style.transform = `translate${axis}(calc(0rem ${negate} ${closedFraction * 100
+            }% ${negate} ${closedFraction * 1}em))`;
 
         // Apply shade, if modal
         let element = this.element();
@@ -189,14 +188,14 @@ export class DrawerWidget extends WidgetBase {
             thresholdMax = Math.max(
                 drawerRect.left + handleSizeIfClosed,
                 drawerRect.left +
-                    this.contentContainer.scrollWidth * this.openFraction
+                this.contentContainer.scrollWidth * this.openFraction
             );
         } else if (this.state.side === 'right') {
             relevantClickCoordinate = event.clientX;
             thresholdMin = Math.min(
                 drawerRect.right - handleSizeIfClosed,
                 drawerRect.right -
-                    this.contentContainer.scrollWidth * this.openFraction
+                this.contentContainer.scrollWidth * this.openFraction
             );
             thresholdMax = drawerRect.right;
         } else if (this.state.side === 'top') {
@@ -205,14 +204,14 @@ export class DrawerWidget extends WidgetBase {
             thresholdMax = Math.max(
                 drawerRect.top + handleSizeIfClosed,
                 drawerRect.top +
-                    this.contentContainer.scrollHeight * this.openFraction
+                this.contentContainer.scrollHeight * this.openFraction
             );
         } else if (this.state.side === 'bottom') {
             relevantClickCoordinate = event.clientY;
             thresholdMin = Math.min(
                 drawerRect.bottom - handleSizeIfClosed,
                 drawerRect.bottom -
-                    this.contentContainer.scrollHeight * this.openFraction
+                this.contentContainer.scrollHeight * this.openFraction
             );
             thresholdMax = drawerRect.bottom;
         }
