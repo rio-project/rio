@@ -19,10 +19,10 @@ __all__ = [
 @dataclass(frozen=True)
 class Font(self_serializing.SelfSerializing):
     name: str
-    regular: Path
-    bold: Optional[Path] = None
-    italic: Optional[Path] = None
-    bold_italic: Optional[Path] = None
+    regular: Union[Path, bytes]
+    bold: Union[Path, bytes, None] = None
+    italic: Union[Path, bytes, None] = None
+    bold_italic: Union[Path, bytes, None] = None
 
     def _serialize(self, sess: session.Session) -> str:
         sess._register_font(self)
