@@ -29,6 +29,7 @@ from . import (
     color,
     common,
     errors,
+    font,
     global_state,
     inspection,
     self_serializing,
@@ -175,7 +176,10 @@ class Session(unicall.Unicall):
         # All fonts which have been registered with the session. This maps the
         # name of the font to the font's assets, which ensures that the assets
         # are kept alive until the session is closed.
-        self._registered_font_assets: Dict[str, List[assets.Asset]] = {}
+        self._registered_font_assets: Dict[str, List[assets.Asset]] = {
+            font.ROBOTO.name: [],
+            font.ROBOTO_MONO.name: [],
+        }
 
         # These are injected by the app server after the session has already been created
         self._root_widget: rio.Widget
@@ -1096,19 +1100,21 @@ class Session(unicall.Unicall):
 
         # It's a new font, register it
         font_assets: List[assets.Asset] = []
+        urls: List[Optional[str]] = [None] * 4
 
-        for location in (font.regular, font.bold, font.italic, font.bold_italic):
+        for i, location in enumerate(
+            (font.regular, font.bold, font.italic, font.bold_italic)
+        ):
             if location is None:
                 continue
 
+            # Host the font file as an asset
             asset = assets.Asset.new(location)
-
-            # On the client side, each font face (regular, bold, italic, ...)
-            # has to be registered separately.
-            url = asset._serialize(self)  # This will host the asset
-            self._create_task(self._remote_register_font(font.name, url))
+            urls[i] = asset._serialize(self)
 
             font_assets.append(asset)
+
+        self._create_task(self._remote_register_font(font.name, urls))
 
         self._registered_font_assets[font.name] = font_assets
 
@@ -1276,7 +1282,7 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(name="registerFont")
-    async def _remote_register_font(self, name: str, url: str) -> None:
+    async def _remote_register_font(self, name: str, urls: List[Optional[str]]) -> None:
         raise NotImplementedError
 
     def _try_get_widget_for_message(self, widget_id: int) -> Optional[rio.Widget]:

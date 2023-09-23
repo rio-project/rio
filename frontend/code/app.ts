@@ -54,6 +54,7 @@ export var pixelsPerEm = 16;
 
 const elementsToInstances = new WeakMap<HTMLElement, WidgetBase>();
 
+
 export function colorToCss(color: Color): string {
     const [r, g, b, a] = color;
     return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
@@ -251,17 +252,7 @@ async function processMessage(message: any) {
         }
         response = null;
     } else if (message.method == 'registerFont') {
-        let fontFace = new FontFace(
-            message.params.name,
-            `url(${message.params.url})`,
-        );
-        fontFace.load().then(() => {
-            document.fonts.add(fontFace);
-            console.log(`Successfully registered font ${message.params.name}`);
-        }).catch((error) => {
-            console.warn(`Failed to load font ${message.params.name}: ${error}`);
-        });
-
+        await registerFont(message.params.name, message.params.urls);
         response = null;
     }
 
@@ -287,6 +278,55 @@ async function processMessage(message: any) {
         }
 
         await sendMessageOverWebsocket(rpcResponse);
+    }
+}
+
+async function registerFont(name: string, urls: (string | null)[]): Promise<void> {
+    const VARIATIONS = [
+        { weight: 'normal', style: 'normal' },
+        { weight: 'bold', style: 'normal' },
+        { weight: 'normal', style: 'italic' },
+        { weight: 'bold', style: 'italic' },
+    ];
+
+    let promises = new Map<string, Promise<FontFace>>();
+
+    for (let [i, url] of urls.entries()) {
+        if (url === null) {
+            continue;
+        }
+
+        let fontFace = new FontFace(
+            name,
+            `url(${url})`,
+            VARIATIONS[i],
+        );
+        promises.set(url, fontFace.load());
+    }
+
+    let numSuccesses = 0;
+    let numFailures = 0;
+
+    for (let [url, promise] of promises.entries()) {
+        let fontFace: FontFace;
+        try {
+            fontFace = await promise;
+        } catch (error) {
+            numFailures++;
+            console.warn(`Failed to load font file ${url}: ${error}`);
+            continue;
+        }
+
+        numSuccesses++;
+        document.fonts.add(fontFace);
+    }
+
+    if (numFailures === 0) {
+        console.log(`Successfully registered all ${numSuccesses} variations of font ${name}`);
+    } else if (numSuccesses === 0) {
+        console.warn(`Failed to register all ${numFailures} variations of font ${name}`);
+    } else {
+        console.warn(`Successfully registered ${numSuccesses} variations of font ${name}, but failed to register ${numFailures} variations`);
     }
 }
 

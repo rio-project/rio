@@ -31,7 +31,19 @@ class Font(self_serializing.SelfSerializing):
 
 ROBOTO = Font(
     "Roboto",
-    regular=common.HOSTED_ASSETS_DIR / "fonts/Roboto-Regular.ttf",  # FIXME
+    regular=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-Regular.ttf",
+    bold=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-Bold.ttf",
+    italic=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-Italic.ttf",
+    bold_italic=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-BoldItalic.ttf",
+)
+
+ROBOTO_MONO = Font(
+    "Roboto Mono",
+    regular=common.HOSTED_ASSETS_DIR / "fonts/Roboto Mono/RobotoMono-Regular.ttf",
+    bold=common.HOSTED_ASSETS_DIR / "fonts/Roboto Mono/RobotoMono-Bold.ttf",
+    italic=common.HOSTED_ASSETS_DIR / "fonts/Roboto Mono/RobotoMono-Italic.ttf",
+    bold_italic=common.HOSTED_ASSETS_DIR
+    / "fonts/Roboto Mono/RobotoMono-BoldItalic.ttf",
 )
 
 

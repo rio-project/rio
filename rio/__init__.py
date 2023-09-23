@@ -1,8 +1,11 @@
-# Re-export important external datatypes
+# Re-export dataclass stuff for easy use.
 from dataclasses import KW_ONLY, field
 
+# URLs are used as an important datatype within rio. Re-export them for easy
+# use.
 from yarl import URL
 
+from . import font
 from .app import *
 from .box_style import *
 from .color import *
