@@ -483,12 +483,12 @@ class AppServer(fastapi.FastAPI):
         if not asset_id.startswith("temp-"):
             # Construct the path to the target file
             asset_file_path = common.HOSTED_ASSETS_DIR / asset_id
-            asset_file_path = asset_file_path.resolve()
 
             # Make sure the path is inside the hosted assets directory
             #
             # TODO: Is this safe? Would this allow the client to break out from
             # the directory using tricks such as "../", links, etc?
+            asset_file_path = asset_file_path.resolve()
             if common.HOSTED_ASSETS_DIR not in asset_file_path.parents:
                 logging.warning(
                     f'Client requested asset "{asset_id}" which is not located inside the hosted assets directory. Somebody might be trying to break out of the assets directory!'
