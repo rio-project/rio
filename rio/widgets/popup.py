@@ -10,24 +10,24 @@ import rio
 from . import widget_base
 
 __all__ = [
-    "Drawer",
+    "Popup",
 ]
 
 
 @dataclass
-class DrawerOpenOrCloseEvent:
+class PopupOpenOrCloseEvent:
     is_open: bool
 
 
-class Drawer(widget_base.FundamentalWidget):
+class Popup(widget_base.FundamentalWidget):
     anchor: rio.Widget
     content: rio.Widget
     _: KW_ONLY
-    on_open_or_close: rio.EventHandler[DrawerOpenOrCloseEvent] = None
-    side: Literal["left", "right", "top", "bottom"] = "left"
-    is_modal: bool = True
+    direction: Literal["left", "top", "right", "bottom", "center"] = "center"
+    alignment: float = 0.5
+    gap: float = 0.0
     is_open: bool = False
-    is_user_openable: bool = True
+    on_open_or_close: rio.EventHandler[PopupOpenOrCloseEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_open_or_close event
@@ -39,11 +39,11 @@ class Drawer(widget_base.FundamentalWidget):
             assert isinstance(new_value, bool), new_value
             await self._call_event_handler(
                 self.on_open_or_close,
-                DrawerOpenOrCloseEvent(new_value),
+                PopupOpenOrCloseEvent(new_value),
             )
 
         # Chain up
         await super()._on_state_update(delta_state)
 
 
-Drawer._unique_id = "Drawer-builtin"
+Popup._unique_id = "Popup-builtin"

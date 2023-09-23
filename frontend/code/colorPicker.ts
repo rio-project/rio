@@ -260,14 +260,14 @@ export class ColorPickerWidget extends WidgetBase {
         this.bindHandler('mouseup', this.onSelectionFinished);
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     onHueWheelMouseMove(event) {
         this.updateSaturationBrightness(event.clientX, event.clientY);
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     onHueBarMouseDown(event) {
@@ -278,14 +278,14 @@ export class ColorPickerWidget extends WidgetBase {
         this.bindHandler('mouseup', this.onSelectionFinished);
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     onHueBarMouseMove(event) {
         this.updateHue(event.clientX);
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     onOpacityBarMouseDown(event) {
@@ -296,14 +296,14 @@ export class ColorPickerWidget extends WidgetBase {
         this.bindHandler('mouseup', this.onSelectionFinished);
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     onOpacityBarMouseMove(event) {
         this.updateOpacity(event.clientX);
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     onSelectionFinished(event) {
@@ -321,7 +321,7 @@ export class ColorPickerWidget extends WidgetBase {
         this.latentEventHandlers = [];
 
         // Eat the event
-        event.preventDefault();
+        event.stopPropagation();
     }
 
     lenientlyParseColorHex(hex) {

@@ -42,8 +42,6 @@ export class DrawerWidget extends WidgetBase {
     }
 
     updateElement(element: HTMLElement, deltaState: DrawerState): void {
-        console.log('UPDATE', this.isFirstUpdate, this.state, deltaState);
-        
         // Update the children
         replaceOnlyChild(this.anchorContainer, deltaState.anchor);
         replaceOnlyChild(this.contentContainer, deltaState.content);
@@ -57,7 +55,7 @@ export class DrawerWidget extends WidgetBase {
             element.classList.add(`rio-drawer-${deltaState.side}`);
         }
 
-        // Is open?
+        // Open?
         if (deltaState.is_open === true) {
             this.openFraction = 1;
         } else if (deltaState.is_open === false) {
@@ -236,7 +234,7 @@ export class DrawerWidget extends WidgetBase {
             window.addEventListener('mouseup', endHandler);
 
             // Eat the event
-            event.preventDefault();
+            event.stopPropagation();
         }
 
         // The anchor was clicked. Collapse the drawer if modal
@@ -244,7 +242,7 @@ export class DrawerWidget extends WidgetBase {
             this.closeDrawer();
 
             // Eat the event
-            event.preventDefault();
+            event.stopPropagation();
         }
     }
 

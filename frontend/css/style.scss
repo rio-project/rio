@@ -34,7 +34,7 @@ $z-index-popup: 10001;
 $z-index-error-popup: 10002;
 
 // Nonstandard transition timing function
-$transition-timing-overshoot: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+$transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.25, 1.3);
 
 // Theme Switcheroos
 .rio-switcheroo-primary {
@@ -573,7 +573,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     flex-grow: 1;
 }
 
-.rio-dropdown > .rio-popup {
+.rio-dropdown-popup {
     top: 100%;
     left: 0;
     width: 100%;
@@ -621,9 +621,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     border-top: 1px solid var(--rio-global-text-on-surface-color);
 }
 
-// Popup (also used by other widgets which have popping-up components, such as
-// the Dropdown)
-.rio-popup {
+.rio-dropdown-popup {
     position: absolute;
     display: flex;
     align-items: stretch;
@@ -1300,11 +1298,13 @@ $drawer-side-margin: 0.7rem;
     transition: transform 0.5s ease-out;
 }
 
-.rio-drawer-left, .rio-drawer-right {
+.rio-drawer-left,
+.rio-drawer-right {
     min-height: 8rem;
 }
 
-.rio-drawer-top, .rio-drawer-bottom {
+.rio-drawer-top,
+.rio-drawer-bottom {
     min-width: 8rem;
 }
 
@@ -1354,6 +1354,39 @@ $drawer-side-margin: 0.7rem;
 
 .rio-drawer-no-transition > * {
     transition: none !important;
+}
+
+// Popup
+.rio-popup {
+    z-index: $z-index-popup;
+}
+
+.rio-popup-content {
+    position: fixed;
+
+    width: min-content;
+    height: min-content;
+
+    background-color: var(--rio-local-surface-color);
+    border-radius: var(--rio-global-corner-radius-small);
+    box-shadow: 0 0 var(--rio-global-shadow-radius)
+        var(--rio-global-shadow-color);
+
+    transform: scale(0);
+    opacity: 0;
+
+    transition:
+        transform 0.2s linear,
+        opacity 0.1s ease-in-out;
+}
+
+.rio-popup-open > .rio-popup-content {
+    transform: scale(1);
+    opacity: 1;
+
+    transition:
+        transform 0.2s $transition-timing-overshoot,
+        opacity 0.1s ease-in-out;
 }
 
 // SVG Images
