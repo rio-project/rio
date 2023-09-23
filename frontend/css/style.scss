@@ -8,7 +8,10 @@
 @use '@material/switch/styles' as switchStyles;
 @use 'sass:meta';
 
+@use 'fonts.scss';
+
 @include linear-progress.core-styles;
+
 
 // Light / Dark highlight.js themes
 //

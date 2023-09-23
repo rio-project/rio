@@ -3,6 +3,11 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 
 
 export default defineConfig({
+	build: {
+		rollupOptions: {
+			external: [/^\/assets\/.*/],
+		},
+	},
 	plugins: [
 		viteSingleFile(),
 	],
