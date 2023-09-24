@@ -17,7 +17,7 @@ class FooterColumn(rio.Widget):
             *[
                 rio.Link(
                     child=entry[0],
-                    link=entry[1],
+                    target_url=entry[1],
                     # style=text_style,
                 )
                 for entry in self.entries

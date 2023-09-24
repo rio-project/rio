@@ -19,16 +19,15 @@ class Link(widget_base.FundamentalWidget):
     child_text: Optional[str]
     child_widget: Optional[widget_base.Widget]
 
-    link: Union[str, rio.URL]
+    target_url: Union[rio.URL, str]
 
     # The serializer can't handle Union types. Override the constructor, so it
     # splits the child into two values
     def __init__(
         self,
         child: Union[str, rio.Widget],
-        link: Union[str, rio.URL],
+        target_url: Union[str, rio.URL],
         *,
-        spacing: float = 0.0,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -64,7 +63,7 @@ class Link(widget_base.FundamentalWidget):
             self.child_text = None
             self.child_widget = child
 
-        self.link = link
+        self.target_url = target_url
 
     async def _on_message(self, msg: Any) -> None:
         assert isinstance(msg, dict), msg
@@ -77,21 +76,26 @@ class Link(widget_base.FundamentalWidget):
         self.session.navigate_to(target_route)
 
     def _custom_serialize(self) -> JsonDoc:
+        # Get the full URL to navigate to
+        target_url_absolute = self.session.active_route.join(rio.URL(self.target_url))
+
         # Is the link a URL or route?
-        if isinstance(self.link, rio.URL):
-            link = str(self.link)
+        #
+        # The URL is a route, if it starts with the session's base URL
+        try:
+            common.make_url_relative(
+                self.session._base_url,
+                target_url_absolute,
+            )
+        except ValueError:
             is_route = False
-        elif self.link.startswith(("/", "./", "../")):
-            full_route = common.join_routes(self.session.current_route, self.link)
-            link = "/" + "/".join(full_route)
-            is_route = True
         else:
-            link = self.link
             is_route = True
 
+        # Serialize everything
         return {
-            "link": link,
-            "is_route": is_route,
+            "targetUrl": str(target_url_absolute),
+            "isRoute": is_route,
         }
 
 

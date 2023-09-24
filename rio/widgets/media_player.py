@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from uniserde import JsonDoc
+from yarl import URL
 
 from .. import assets
 from ..common import URL, EventHandler

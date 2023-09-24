@@ -4,8 +4,8 @@ import { WidgetBase, WidgetState } from './widgetBase';
 export type LinkState = WidgetState & {
     child_text?: string | null;
     child_widget?: number | string | null;
-    link: string;
-    is_route: boolean;
+    targetUrl: string;
+    isRoute: boolean;
 };
 
 export class LinkWidget extends WidgetBase {
@@ -20,9 +20,9 @@ export class LinkWidget extends WidgetBase {
         // This only needs to handle routes, since regular links will be handled
         // by the browser.
         containerElement.addEventListener('click', (event) => {
-            if (this.state.is_route) {
+            if (this.state.isRoute) {
                 this.sendMessageToBackend({
-                    route: this.state.link,
+                    route: this.state.targetUrl,
                 });
             }
         });
@@ -42,8 +42,8 @@ export class LinkWidget extends WidgetBase {
             // Add a link element
             let linkElement = document.createElement('a');
 
-            if (!deltaState.is_route) {
-                linkElement.href = deltaState.link;
+            if (!deltaState.isRoute) {
+                linkElement.href = deltaState.targetUrl;
             }
 
             linkElement.innerText = deltaState.child_text;

@@ -51,7 +51,7 @@ class Card(widget_base.Widget):
 
         # Prepare the regular style
         corner_radius = (
-            thm.corner_radius_small
+            thm.corner_radius_medium
             if self.corner_radius is None
             else self.corner_radius
         )
@@ -83,7 +83,7 @@ class Card(widget_base.Widget):
         return rio.Rectangle(
             child=rio.Container(
                 self.child,
-                margin=thm.base_spacing * 1.5,
+                margin=thm.base_spacing * 1.7,
             ),
             style=style,
             hover_style=hover_style,

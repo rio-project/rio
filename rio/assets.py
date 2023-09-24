@@ -11,9 +11,10 @@ from typing import *  # type: ignore
 
 import aiohttp
 from PIL.Image import Image
+from yarl import URL
 
 from . import session
-from .common import URL, ImageLike
+from .common import ImageLike
 from .self_serializing import SelfSerializing
 
 # Random bytes added during hashing to make any internal values extremely

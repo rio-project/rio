@@ -16,10 +16,19 @@ IMAGES = (
 class NavigationButton(rio.Widget):
     text: str
     route: str
-    active_route: str
+    is_active: bool = False
+
+    def on_create(self) -> None:
+        self.on_route_change()
+
+    def on_route_change(self) -> None:
+        try:
+            self.is_active = self.session.active_route.parts[1] == self.route
+        except IndexError:
+            self.is_active = False
 
     def build(self) -> rio.Widget:
-        if self.route == self.active_route:
+        if self.is_active:
             color = theme.THEME.primary_color.replace(opacity=0.3)
         else:
             color = rio.Color.TRANSPARENT
@@ -34,17 +43,6 @@ class NavigationButton(rio.Widget):
 
 
 class NavigationBar(rio.Widget):
-    active_route: str = field(init=False)
-
-    def __post_init__(self) -> None:
-        self.on_route_change()
-
-    def on_route_change(self) -> None:
-        try:
-            self.active_route = self.session.current_route[0]
-        except IndexError:
-            self.active_route = ""
-
     def build(self) -> rio.Widget:
         surface_color = theme.THEME.surface_color
         text_color = theme.THEME.text_color_for(surface_color)
@@ -85,27 +83,22 @@ class NavigationBar(rio.Widget):
                     NavigationButton(
                         "Home",
                         "",
-                        self.active_route,
                     ),
                     NavigationButton(
                         "News",
                         "posts",
-                        self.active_route,
                     ),
                     NavigationButton(
                         "Docs",
                         "documentation",
-                        self.active_route,
                     ),
                     NavigationButton(
                         "Tools",
                         "tools",
-                        self.active_route,
                     ),
                     NavigationButton(
                         "About Us",
                         "about",
-                        self.active_route,
                     ),
                     spacing=1.5,
                     margin_right=4.0,
