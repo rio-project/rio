@@ -19,7 +19,7 @@ __all__ = [
 class Icon(widget_base.FundamentalWidget):
     icon: str
     _: KW_ONLY
-    fill: Union[rio.FillLike, color.ColorSet] = "default"
+    fill: Union[rio.FillLike, color.ColorSet]
 
     @staticmethod
     def _get_registry() -> icon_registry.IconRegistry:
@@ -50,6 +50,42 @@ class Icon(widget_base.FundamentalWidget):
             raise ValueError(f"There is already an icon set named `{set_name}`")
 
         registry.icon_set_archives[set_name] = icon_set_zip_path
+
+    def __init__(
+        self,
+        icon: str,
+        *,
+        fill: Union[rio.FillLike, color.ColorSet] = "default",
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Union[Literal["grow"], float] = 1,
+        height: Union[Literal["grow"], float] = 1,
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        super().__init__(
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
+
+        self.icon = icon
+        self.fill = fill
 
     def _custom_serialize(self) -> JsonDoc:
         # Get the icon's SVG

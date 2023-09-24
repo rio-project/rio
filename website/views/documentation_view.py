@@ -67,8 +67,16 @@ OUTLINE: Tuple[Optional[Tuple[str, Tuple[str, ...]]], ...] = (
             "C",
         ),
     ),
-    # Internal / Developer / Contributor Documentation
+    # Advanced/ Internal / Developer / Contributor Documentation
     None,
+    (
+        "Deep Dives",
+        (
+            "A",
+            "B",
+            "C",
+        ),
+    ),
     (
         "Contributing",
         (
@@ -199,24 +207,6 @@ website](https://www.typescriptlang.org/).
 """
 
 
-class FlatCard(rio.Widget):
-    child: rio.Widget
-    corner_radius: Union[
-        float, Tuple[float, float, float, float]
-    ] = theme.THEME.corner_radius_large
-
-    def build(self) -> rio.Widget:
-        return rio.Card(
-            rio.Container(
-                self.child,
-                margin=2,
-            ),
-            corner_radius=self.corner_radius,
-            hover_height=0,
-            elevate_on_hover=0,
-        )
-
-
 class Outliner(rio.Widget):
     def build(self) -> rio.Widget:
         chapter_expanders = []
@@ -247,7 +237,7 @@ class Outliner(rio.Widget):
                 ),
             )
 
-        return FlatCard(
+        return comps.FlatCard(
             child=rio.Column(
                 *chapter_expanders,
                 width=13,

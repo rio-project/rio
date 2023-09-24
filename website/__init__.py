@@ -3,6 +3,7 @@ from typing import *  # type: ignore
 
 import rio
 import rio.debug
+import rio_docs
 
 from . import components as comps
 from . import theme, views
@@ -63,23 +64,30 @@ routes = [
         "documentation",
         views.DocumentationView,
         children=[
-            # rio.Route(
-            #     "",
-            #     lambda: rio.Column(
-            #         FlatCard(
-            #             comps.ClassApiDocsView(rio_docs.ClassDocs.parse(rio.Column)),
-            #         ),
-            #         FlatCard(
-            #             rio.MarkdownView(text=DOCS_STR),
-            #         ),
-            #         margin_left=23,
-            #         margin_bottom=4,
-            #         spacing=3,
-            #         width=65,
-            #         height="grow",
-            #         align_x=0.5,
-            #     ),
-            # ),
+            rio.Route(
+                "",
+                lambda: rio.Column(
+                    comps.FlatCard(
+                        comps.ClassApiDocsView(rio_docs.ClassDocs.parse(rio.Column)),
+                    ),
+                    comps.FlatCard(
+                        rio.MarkdownView(
+                            # text=DOCS_STR,
+                            text="""
+# Rio
+
+Rio is a Python library for building user interfaces.
+"""
+                        ),
+                    ),
+                    margin_left=23,
+                    margin_bottom=4,
+                    spacing=3,
+                    width=65,
+                    height="grow",
+                    align_x=0.5,
+                ),
+            ),
         ],
     ),
 ]

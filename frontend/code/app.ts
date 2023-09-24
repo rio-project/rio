@@ -811,7 +811,7 @@ function main() {
     // Listen for URL changes, so the session can switch route
     window.addEventListener('popstate', (event) => {
         console.log(`URL changed to ${window.location.href}`);
-        callRemoteMethodDiscardResponse('onUrlChanged', {
+        callRemoteMethodDiscardResponse('onUrlChange', {
             newUrl: window.location.href.toString(),
         });
     });
