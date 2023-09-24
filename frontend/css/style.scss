@@ -210,6 +210,27 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.25, 1.3);
     // TODO
 }
 
+// "Placeholder element"/"content loading" animation
+@keyframes content-loading {
+    from {
+        background-position: -100rem 0;
+    }
+
+    to {
+        background-position: 0 0;
+    }
+}
+
+.rio-content-loading {
+    background-image: linear-gradient(to right,
+            var(--rio-local-surface-color-variant) 10%,
+            var(--rio-local-accent-color-variant) 12%,
+            var(--rio-local-surface-color-variant) 14%,
+        );
+    background-size: 100rem 5rem;
+    animation: content-loading 3s linear infinite;
+}
+
 // For elements that contain an element with a fixed aspect ratio, like images.
 // Such elements usually set their height depending on their width, so they can
 // grow very large if there's horizontal space available. This class prevents
