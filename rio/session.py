@@ -265,6 +265,39 @@ class Session(unicall.Unicall):
         """
         return self._current_route
 
+    @overload
+    async def _call_event_handler(
+        self,
+        handler: common.EventHandler[[]],
+    ) -> None:
+        ...
+
+    @overload
+    async def _call_event_handler(
+        self,
+        handler: common.EventHandler[[T]],
+        event_data: T,
+        /,
+    ) -> None:
+        ...
+
+    async def _call_event_handler(self, handler, *event_data) -> None:
+        # Event handlers are optional
+        if handler is None:
+            return
+
+        # If the handler is available, call it and await it if necessary
+        try:
+            result = handler(*event_data)
+
+            if inspect.isawaitable(result):
+                await result
+
+        # Display and discard exceptions
+        except Exception:
+            print("Exception in event handler:")
+            traceback.print_exc()
+
     def _create_task(self, coro: Coroutine, name: Optional[str] = None) -> asyncio.Task:
         """
         Creates an `asyncio.Task` that is cancelled when the session is closed.
@@ -401,7 +434,7 @@ class Session(unicall.Unicall):
         async def event_worker() -> None:
             for widget, callback in self._route_change_callbacks.items():
                 self._create_task(
-                    common.call_event_handler(lambda: callback(widget)),
+                    self._call_event_handler(callback, widget),
                     name="`on_route_change` event handler",
                 )
 
@@ -1355,6 +1388,6 @@ document.body.removeChild(a)
         # Call any registered callbacks
         for widget, callback in self._on_window_resize_callbacks.items():
             self._create_task(
-                common.call_event_handler(lambda: callback(widget)),
+                self._call_event_handler(callback, widget),
                 name="`on_window_resize` event handler",
             )

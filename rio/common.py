@@ -1,9 +1,7 @@
 import hashlib
-import inspect
 import os
 import re
 import secrets
-import traceback
 from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
@@ -11,6 +9,9 @@ from typing import *  # type: ignore
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL
+
+__all__ = ["ImageLike", "Readonly", "FileInfo", "EventHandler"]
+
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
@@ -84,47 +85,6 @@ T = TypeVar("T")
 P = ParamSpec("P")
 
 EventHandler = Optional[Callable[P, Union[Any, Awaitable[Any]]]]
-
-
-@overload
-async def call_event_handler(
-    handler: EventHandler[[]],
-) -> None:
-    ...
-
-
-@overload
-async def call_event_handler(
-    handler: EventHandler[[T]],
-    event_data: T,
-) -> None:
-    ...
-
-
-async def call_event_handler(  # type: ignore
-    handler: EventHandler[P],
-    *event_data: T,  # type: ignore
-) -> None:
-    """
-    Call an event handler, if one is present. Await it if necessary. Log and
-    discard any exceptions.
-    """
-
-    # Event handlers are optional
-    if handler is None:
-        return
-
-    # If the handler is available, call it and await it if necessary
-    try:
-        result = handler(*event_data)  # type: ignore
-
-        if inspect.isawaitable(result):
-            await result
-
-    # Display and discard exceptions
-    except Exception:
-        print("Exception in event handler:")
-        traceback.print_exc()
 
 
 def join_routes(base: Iterable[str], new: str) -> Tuple[str, ...]:

@@ -87,7 +87,7 @@ class MouseEventListener(widget_base.FundamentalWidget):
 
         # Dispatch the correct event
         if msg_type == "mouseDown":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_mouse_down,
                 MouseDownEvent(
                     x=msg["x"],
@@ -97,7 +97,7 @@ class MouseEventListener(widget_base.FundamentalWidget):
             )
 
         elif msg_type == "mouseUp":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_mouse_up,
                 MouseUpEvent(
                     x=msg["x"],
@@ -107,7 +107,7 @@ class MouseEventListener(widget_base.FundamentalWidget):
             )
 
         elif msg_type == "mouseMove":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_mouse_move,
                 MouseMoveEvent(
                     x=msg["x"],
@@ -116,7 +116,7 @@ class MouseEventListener(widget_base.FundamentalWidget):
             )
 
         elif msg_type == "mouseEnter":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_mouse_enter,
                 MouseEnterEvent(
                     x=msg["x"],
@@ -125,7 +125,7 @@ class MouseEventListener(widget_base.FundamentalWidget):
             )
 
         elif msg_type == "mouseLeave":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_mouse_leave,
                 MouseLeaveEvent(
                     x=msg["x"],

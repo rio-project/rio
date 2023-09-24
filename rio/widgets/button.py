@@ -110,7 +110,7 @@ class _ButtonInternal(widget_base.FundamentalWidget):
             return
 
         # Trigger the press event
-        await self._call_event_handler(
+        await self.call_event_handler(
             self.on_press,
             ButtonPressEvent(),
         )

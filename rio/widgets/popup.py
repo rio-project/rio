@@ -37,7 +37,7 @@ class Popup(widget_base.FundamentalWidget):
             pass
         else:
             assert isinstance(new_value, bool), new_value
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_open_or_close,
                 PopupOpenOrCloseEvent(new_value),
             )
