@@ -17,7 +17,7 @@ export class MediaPlayerWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-media-player');
+        element.classList.add('rio-media-player', 'rio-aspect-ratio-container');
 
         this.mediaElement = document.createElement('video');
         this.mediaElement.textContent =

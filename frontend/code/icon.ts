@@ -42,7 +42,7 @@ export class IconWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-icon');
+        element.classList.add('rio-icon', 'rio-aspect-ratio-container');
         return element;
     }
 

@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 import types
-from typing import *  # noqa
+from typing import *  # type: ignore
 
 import babel
 import pytest
