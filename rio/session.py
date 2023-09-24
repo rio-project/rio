@@ -710,10 +710,6 @@ class Session(unicall.Unicall):
 
         Non-fundamental widgets must have been built, and their output cached in
         the session.
-
-        The result is a tuple of:
-        - All widgets which were encountered as children of the given `widget`
-        - The serialized widget
         """
         result: JsonDoc = {
             "_python_type_": type(widget).__name__,
@@ -740,15 +736,20 @@ class Session(unicall.Unicall):
             widget.height == "grow",
         )
 
-        # Add user-defined state
-        for name, type_ in inspection.get_attributes_to_serialize(type(widget)).items():
-            try:
-                result[name] = self._serialize_and_host_value(
-                    getattr(widget, name),
-                    type_,
-                )
-            except WontSerialize:
-                pass
+        # If it's a fundamental widget, serialize its state because JS needs it.
+        # For non-fundamental widgets, there's no reason to send the state to
+        # the frontend.
+        if isinstance(widget, widget_base.FundamentalWidget):
+            for name, type_ in inspection.get_attributes_to_serialize(
+                type(widget)
+            ).items():
+                try:
+                    result[name] = self._serialize_and_host_value(
+                        getattr(widget, name),
+                        type_,
+                    )
+                except WontSerialize:
+                    pass
 
         # Encode any internal additional state. Doing it this late allows the custom
         # serialization to overwrite automatically generated values.

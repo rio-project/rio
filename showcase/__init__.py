@@ -72,7 +72,7 @@ class ExtendoItem(rio.Widget):
 
     def build(self) -> rio.Widget:
         return rio.Row(
-            rio.Icon("material/archive"),
+            rio.Icon("material/archive", width=1, height=1),
             rio.Text(
                 f"Item Called: {self.name}",
                 width="grow",

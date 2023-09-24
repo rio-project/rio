@@ -210,6 +210,24 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.25, 1.3);
     // TODO
 }
 
+// For elements that contain an element with a fixed aspect ratio, like images.
+// Such elements usually set their height depending on their width, so they can
+// grow very large if there's horizontal space available. This class prevents
+// them from making their parent element grow larger, and instead centers them
+// inside of the available space.
+.rio-aspect-ratio-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.rio-aspect-ratio-container>* {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
 // General
 .rio-single-container {
     display: flex;
@@ -627,18 +645,6 @@ input:not(:placeholder-shown)~.rio-text-input-label,
     // stick out. This can cause frequent re-layouting. To prevent this, we
     // hide the overflow.
     overflow: hidden;
-
-    // The svg is always a square, so make sure it's centered inside of us
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.rio-progress-circle svg {
-    position: absolute;
-    max-width: 100%;
-    max-height: 100%;
 }
 
 .rio-progress-circle circle {
@@ -799,9 +805,6 @@ input:not(:placeholder-shown)~.rio-text-input-label,
 // Icon
 .rio-icon {
     pointer-events: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 // Error popup
@@ -898,24 +901,6 @@ input:not(:placeholder-shown)~.rio-text-input-label,
 // MediaPlayer
 .rio-media-player {
     pointer-events: auto;
-
-    // Videos are weird. For some reason, they can grow larger than their parent
-    // element. Ripping them out of the document flow is the easiest way to make
-    // them behave.
-    // Note: This forces the video to take the size of its parent element, which
-    // means the video has no minimum/natural size. It cannot "push" other
-    // widgets out of the way; it can only ever use up the space it is given.
-    // But I believe that is in line with how other media (like images) work.
-    // TODO: Set a minimum size? Since we've robbed videos of their intrinsic
-    // size, they might sometimes end up 0x0 pixels small. A minimum size would
-    // ensure that the video can't completely disappear.
-    position: relative;
-
-    video {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-    }
 }
 
 // Markdown
@@ -1368,20 +1353,6 @@ $drawer-side-margin: 0.7rem;
     transition:
         transform 0.2s $transition-timing-overshoot,
         opacity 0.1s ease-in-out;
-}
-
-// Image
-.rio-image {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.rio-image img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
 }
 
 // SVG Images
