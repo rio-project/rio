@@ -54,6 +54,9 @@ class Theme:
 
     # Other
     corner_radius_small: float
+    corner_radius_medium: float
+    corner_radius_large: float
+
     base_spacing: float
     shadow_radius: float
     shadow_color: rio.Color
@@ -82,7 +85,8 @@ class Theme:
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
         corner_radius_small: float = 0.6,
-        corner_radius_large: float = 2.5,
+        corner_radius_medium: float = 1.6,
+        corner_radius_large: float = 2.6,
         base_spacing: float = 0.5,
         light: bool = True,
     ) -> None:
@@ -140,6 +144,7 @@ class Theme:
 
         # Other
         self.corner_radius_small = corner_radius_small
+        self.corner_radius_medium = corner_radius_medium
         self.corner_radius_large = corner_radius_large
         self.base_spacing = base_spacing
         self.shadow_color = rio.Color.BLACK.replace(opacity=0.5)
@@ -153,21 +158,37 @@ class Theme:
         self.text_color_on_dark = rio.Color.from_grey(0.9)
 
         self.heading1_style = rio.TextStyle(
-            font_size=3.0,
+            font_size=2.0,
             font_color=self.primary_color,
         )
-        self.heading2_style = self.heading1_style.replace(font_size=2.0)
-        self.heading3_style = self.heading1_style.replace(font_size=1.5)
+        self.heading2_style = self.heading1_style.replace(font_size=1.5)
+        self.heading3_style = self.heading1_style.replace(font_size=1.2)
         self.text_style = self.heading1_style.replace(
             font_size=1,
             font_color=self.text_color_for(self.surface_color),
         )
 
-        self.heading_on_primary_color = self.secondary_color
-        self.text_on_primary_color = self.secondary_color
+        self.heading_on_primary_color = self.text_color_for(self.primary_color)
+        self.text_on_primary_color = self.heading_on_primary_color
 
-        self.heading_on_secondary_color = self.primary_color
-        self.text_on_secondary_color = self.primary_color
+        self.heading_on_secondary_color = self.text_color_for(self.secondary_color)
+        self.text_on_secondary_color = self.heading_on_secondary_color
+
+    @property
+    def text_on_surface_color(self) -> rio.Color:
+        return self.text_style.font_color
+
+    @property
+    def text_on_success_color(self) -> rio.Color:
+        return self.text_color_for(self.success_color)
+
+    @property
+    def text_on_warning_color(self) -> rio.Color:
+        return self.text_color_for(self.warning_color)
+
+    @property
+    def text_on_danger_color(self) -> rio.Color:
+        return self.text_color_for(self.danger_color)
 
     def text_color_for(self, color: rio.Color) -> rio.Color:
         """

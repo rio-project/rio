@@ -256,6 +256,9 @@ class Sidebar(rio.Widget):
                             height=10,
                         ),
                         is_open=Sidebar.popup_visible,
+                        direction="top",
+                        alignment=0.5,
+                        gap=3.0,
                     ),
                     rio.Switch(
                         on_change=lambda _: print("Switch 1 Changed"),

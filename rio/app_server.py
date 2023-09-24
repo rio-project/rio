@@ -29,6 +29,7 @@ from . import (
     debug,
     global_state,
     inspection,
+    routing,
     session,
     user_settings_module,
     widgets,
@@ -74,6 +75,7 @@ def _build_set_theme_variables_message(thm: rio.Theme):
     # Miscellaneous
     variables: Dict[str, str] = {
         "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
+        "--rio-global-corner-radius-medium": f"{thm.corner_radius_medium}rem",
         "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",
         "--rio-global-shadow-radius": f"{thm.shadow_radius}rem",
     }
@@ -147,9 +149,9 @@ def _build_set_theme_variables_message(thm: rio.Theme):
 
     # Colors derived from, but not stored in the theme
     derived_colors = {
-        "text-on-success-color": thm.text_color_for(thm.success_color),
-        "text-on-warning-color": thm.text_color_for(thm.warning_color),
-        "text-on-danger-color": thm.text_color_for(thm.danger_color),
+        "text-on-success-color": thm.text_on_success_color,
+        "text-on-warning-color": thm.text_on_warning_color,
+        "text-on-danger-color": thm.text_on_danger_color,
     }
 
     for css_name, color in derived_colors.items():
@@ -263,7 +265,8 @@ class AppServer(fastapi.FastAPI):
             str, asyncio.Future[List[common.FileInfo]]
         ] = timer_dict.TimerDict(default_duration=timedelta(minutes=15))
 
-        # Fastapi
+        # FastAPI
+
         # self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
         # self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
         self.add_api_route("/rio/favicon.ico", self._serve_favicon, methods=["GET"])
@@ -333,9 +336,26 @@ class AppServer(fastapi.FastAPI):
         Handler for serving the index HTML page via fastapi.
         """
 
-        # Determine the initial route
-        route_url = rio.URL(initial_route_str)
-        initial_route = route_url.path.strip("/").split("/")
+        # Because Rio apps are single-page, this route serves as the fallback.
+        # In addition to legitimate requests for HTML pages, it will also catch
+        # a bunch of invalid requests to other resources. To highlight this,
+        # throw a 404 if HTML is not explicitly requested.
+        if not request.headers.get("accept", "").startswith("text/html"):
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_404_NOT_FOUND,
+            )
+
+        # Prepare some URL constants
+        base_url = rio.URL(str(request.base_url))
+        assert base_url.is_absolute(), base_url
+
+        initial_route_absolute = rio.URL(str(request.url))
+        assert initial_route_absolute.is_absolute(), initial_route_absolute
+
+        initial_route_relative = common.make_url_relative(
+            base_url,
+            initial_route_absolute,
+        )
 
         # Create a session instance to hold all of this state in an organized
         # fashion.
@@ -344,13 +364,34 @@ class AppServer(fastapi.FastAPI):
         # `send_message` and `receive_message`. It will be finished once the
         # websocket connection is established.
         session_token = secrets.token_urlsafe()
+
         sess = session.Session(
             app_server_=self,
             base_url=rio.URL(str(request.base_url)),
-            initial_route=initial_route,
+            initial_route=initial_route_absolute,
         )
 
         self._active_session_tokens[session_token] = sess
+
+        # Run any route guards for the initial route
+        try:
+            (
+                initial_route_instances,
+                initial_route_absolute,
+            ) = routing.check_route_guards(
+                sess,
+                target_url_relative=initial_route_relative,
+                target_url_absolute=initial_route_absolute,
+            )
+        except routing.NavigationFailed:
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f'Navigation to initial route "{initial_route_absolute}" has failed.',
+            ) from None
+
+        # Update the session's active route
+        sess._active_route = initial_route_absolute
+        sess._active_route_instances = tuple(initial_route_instances)
 
         # Add any attachments, except for user settings. These are deserialized
         # later on, once the client has sent the initial message.
@@ -460,10 +501,10 @@ class AppServer(fastapi.FastAPI):
         Handler for serving assets via fastapi.
 
         Some common assets are hosted under permanent, well known URLs under the
-        `/assets/{some-name}` path.
+        `/asset/{some-name}` path.
 
         In addition, `HostedAsset` instances are hosted under their secret id
-        under the `/assets/temp-{asset_id}` path. These assets are held weakly
+        under the `/asset/temp-{asset_id}` path. These assets are held weakly
         by the session, meaning they will be served for as long as the
         corresponding Python object is alive.
         """

@@ -46,14 +46,6 @@ class AppRoot(rio.Widget):
             ),
             # Router
             rio.Router(
-                rio.Route(
-                    "",
-                    views.HomeView,
-                ),
-                rio.Route(
-                    "documentation",
-                    views.DocumentationView,
-                ),
                 width="grow",
                 height="grow",
             ),
@@ -62,41 +54,46 @@ class AppRoot(rio.Widget):
         )
 
 
-rio_app = rio.App(
-    name="Rio",
-    route=rio.Route(
+routes = [
+    rio.Route(
         "",
-        AppRoot,
+        views.HomeView,
+    ),
+    rio.Route(
+        "documentation",
+        views.DocumentationView,
         children=[
-            rio.Route(
-                "",
-                views.HomeView,
-            ),
-            rio.Route(
-                "documentation",
-                views.DocumentationView,
-            ),
+            # rio.Route(
+            #     "",
+            #     lambda: rio.Column(
+            #         FlatCard(
+            #             comps.ClassApiDocsView(rio_docs.ClassDocs.parse(rio.Column)),
+            #         ),
+            #         FlatCard(
+            #             rio.MarkdownView(text=DOCS_STR),
+            #         ),
+            #         margin_left=23,
+            #         margin_bottom=4,
+            #         spacing=3,
+            #         width=65,
+            #         height="grow",
+            #         align_x=0.5,
+            #     ),
+            # ),
         ],
     ),
-    routes={
-        "/": rio.Route(
-            AppRoot,
-        ),
-        "/documentation": rio.Route(
-            "documentation",
-            views.DocumentationView,
-        ),
-    },
+]
+
+
+rio_app = rio.App(
+    name="Rio",
+    build=AppRoot,
+    routes=routes,
     default_attachments=[
         theme.THEME,
     ],
     assets_dir=Path(__file__).parent / "assets",
 )
-
-
-@rio_app.route("/slideshow")
-def slideshow() -> rio.Widget:
-    pass
 
 
 if __name__ == "__main__":

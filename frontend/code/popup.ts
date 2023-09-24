@@ -63,43 +63,43 @@ export class PopupWidget extends WidgetBase {
         // point. (But never off the screen.)
         let anchorRelativeX, anchorRelativeY;
         let contentRelativeX, contentRelativeY;
-        let fixedOffsetX, fixedOffsetY;
+        let fixedOffsetXRem, fixedOffsetYRem;
 
         if (this.state.direction === 'left') {
             anchorRelativeX = 0;
             anchorRelativeY = this.state.alignment;
             contentRelativeX = 1;
             contentRelativeY = this.state.alignment;
-            fixedOffsetX = -this.state.gap;
-            fixedOffsetY = 0;
+            fixedOffsetXRem = -this.state.gap;
+            fixedOffsetYRem = 0;
         } else if (this.state.direction === 'top') {
             anchorRelativeX = this.state.alignment;
             anchorRelativeY = 0;
             contentRelativeX = this.state.alignment;
             contentRelativeY = 1;
-            fixedOffsetX = 0;
-            fixedOffsetY = -this.state.gap;
+            fixedOffsetXRem = 0;
+            fixedOffsetYRem = -this.state.gap;
         } else if (this.state.direction === 'right') {
             anchorRelativeX = 1;
             anchorRelativeY = this.state.alignment;
             contentRelativeX = 0;
             contentRelativeY = this.state.alignment;
-            fixedOffsetX = this.state.gap;
-            fixedOffsetY = 0;
+            fixedOffsetXRem = this.state.gap;
+            fixedOffsetYRem = 0;
         } else if (this.state.direction === 'bottom') {
             anchorRelativeX = this.state.alignment;
             anchorRelativeY = 1;
             contentRelativeX = this.state.alignment;
             contentRelativeY = 0;
-            fixedOffsetX = 0;
-            fixedOffsetY = this.state.gap;
+            fixedOffsetXRem = 0;
+            fixedOffsetYRem = this.state.gap;
         } else if (this.state.direction === 'center') {
             anchorRelativeX = 0.5;
             anchorRelativeY = 0.5;
             contentRelativeX = 0.5;
             contentRelativeY = 0.5;
-            fixedOffsetX = 0;
-            fixedOffsetY = 0;
+            fixedOffsetXRem = 0;
+            fixedOffsetYRem = 0;
         }
 
         // Determine the size of the screen
@@ -120,23 +120,10 @@ export class PopupWidget extends WidgetBase {
         let popupPointX = popupWidth * contentRelativeX;
         let popupPointY = popupHeight * contentRelativeY;
 
-        let spawnPointX = anchorPointX - popupPointX + fixedOffsetX;
-        let spawnPointY = anchorPointY - popupPointY + fixedOffsetY;
-
-        console.log('Sizes');
-        console.log('Screen:', screenWidth, screenHeight);
-        console.log(
-            'Anchor',
-            anchorRect.left,
-            anchorRect.top,
-            anchorRect.width,
-            anchorRect.height
-        );
-        console.log('Popup:', popupWidth, popupHeight);
-        console.log('Positions');
-        console.log('Anchor:', anchorPointX, anchorPointY);
-        console.log('Popup:', popupPointX, popupPointY);
-        console.log('Spawn:', spawnPointX, spawnPointY);
+        let spawnPointX =
+            anchorPointX - popupPointX + fixedOffsetXRem * pixelsPerEm;
+        let spawnPointY =
+            anchorPointY - popupPointY + fixedOffsetYRem * pixelsPerEm;
 
         // Establish limits, so the popup doesn't go off the screen. This is
         // relative to the popup's top left corner.

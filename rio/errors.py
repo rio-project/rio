@@ -14,3 +14,7 @@ class AssetError(Exception):
     @property
     def message(self) -> str:
         return self.args[0]
+
+
+class NavigationFailed(Exception):
+    pass

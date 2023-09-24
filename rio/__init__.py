@@ -13,8 +13,7 @@ from .common import EventHandler, ImageLike, escape_markdown, escape_markdown_co
 from .cursor_style import CursorStyle
 from .errors import *
 from .fills import *
-from .route import *
-from .route import Route
+from .routing import Route
 from .session import *
 from .text_style import *
 from .theme import *

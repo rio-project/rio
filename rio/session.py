@@ -7,8 +7,8 @@ import inspect
 import json
 import logging
 import secrets
-import time
 import traceback
+import time
 import typing
 import weakref
 from dataclasses import dataclass
@@ -32,6 +32,7 @@ from . import (
     font,
     global_state,
     inspection,
+    routing,
     self_serializing,
     text_style,
     theme,
@@ -130,7 +131,7 @@ class Session(unicall.Unicall):
         self,
         app_server_: app_server.AppServer,
         base_url: rio.URL,
-        initial_route: Iterable[str],
+        initial_route: rio.URL,
     ):
         super().__init__(
             send_message=dummy_send_message,
@@ -143,9 +144,17 @@ class Session(unicall.Unicall):
         # client. After a while with no communication we close the session.
         self._last_interaction_timestamp = time.monotonic()
 
-        # The current route. This isn't used by the session itself, but routers
-        # can use it to agree on what to display.
-        self._current_route: Tuple[str, ...] = tuple(initial_route)
+        # The URL to the app's root directory. The current route will always
+        # start with this.
+        assert base_url.is_absolute(), base_url
+        self._base_url = base_url
+
+        # The current route. This is publicly accessible as property
+        assert initial_route.is_absolute(), initial_route
+        self._active_route: rio.URL = initial_route
+
+        # Also the current route, but as stack of the actual route instances
+        self._active_route_instances: Tuple[rio.Route, ...] = ()
 
         # Keeps track of running asyncio tasks. This is used to make sure that
         # the tasks are cancelled when the session is closed.
@@ -241,6 +250,13 @@ class Session(unicall.Unicall):
         self.assets = self._app_server.app.assets_dir
 
     @property
+    def app(self) -> rio.App:
+        """
+        Returns the app which this session belongs to.
+        """
+        return self._app_server.app
+
+    @property
     def running_in_window(self) -> bool:
         """
         Returns `True` if the app is running in a local window, and `False` if
@@ -257,13 +273,36 @@ class Session(unicall.Unicall):
         return self._app_server.running_in_window
 
     @property
-    def current_route(self) -> Tuple[str, ...]:
+    def base_url(self) -> rio.URL:
+        """
+        Returns the base URL of the app.
+
+        Only available when running as a website.
+        """
+        if self._app_server.running_in_window:
+            raise RuntimeError(
+                f"Cannot get the base URL of an app that is running in a window"
+            )
+
+        return self._base_url
+
+    @property
+    def active_route(self) -> rio.URL:
         """
         Returns the current route as a tuple of strings.
 
         This property is read-only. To change the route, use `Session.navigate_to`.
         """
-        return self._current_route
+        return self._active_route
+
+    @property
+    def active_route_instances(self) -> Tuple[rio.Route, ...]:
+        """
+        Returns the current route as a tuple of `Route` instances.
+
+        This property is read-only. To change the route, use `Session.navigate_to`.
+        """
+        return self._active_route_instances
 
     @overload
     async def _call_event_handler(
@@ -316,22 +355,12 @@ class Session(unicall.Unicall):
 
     def navigate_to(
         self,
-        route: str,
+        target_url: Union[rio.URL, str],
         *,
         replace: bool = False,
     ) -> None:
         """
-        If `route` starts with `/`, `./` o `../`, switch to the given route,
-        without reloading the website. If it starts with `/` the route is taken
-        as absolute, completely superseeding the current route. Otherwise the
-        route is taken as relative to the current route. Any `./` are ignored.
-        `../` are interpreted as "go up one level".
-
-        If `route` doesn't start with `/`, `./` o `../`, it is taken to be a
-        full URL, and the browser will navigate to it.
-
-        Raises a `ValueError` if so many `../` are used that the route would
-        leave the root route.
+        Switches the app to display the given route.
 
         If `replace` is `True`, the browser's most recent history entry is
         replaced with the new route. This means that the user can't go back to
@@ -339,85 +368,42 @@ class Session(unicall.Unicall):
         history entry is created, allowing the user to go back to the previous
         route.
         """
-        # If this is a full URL, navigate to it
-        if not route.startswith(("/", "./", "../")):
+
+        # Determine the full route to navigate to
+        target_url_absolute = self.active_route.join(rio.URL(target_url))
+
+        # Is this a route, or a full URL to another site?
+        try:
+            target_url_relative = common.make_url_relative(
+                self._base_url,
+                target_url_absolute,
+            )
+
+        # This is an external URL. Navigate to it
+        except ValueError:
 
             async def history_worker() -> None:
                 await self._evaluate_javascript(
-                    f"window.location.href = {json.dumps(route)}",
+                    f"window.location.href = {json.dumps(target_url)}",
                 )
 
             self._create_task(history_worker(), name="history worker")
             return
 
-        # Determine the full route to navigate to
-        initial_target_route = common.join_routes(self._current_route, route)
-
         # Is any guard opposed to this route?
-        target_route = initial_target_route
-        visited_redirects = {target_route}
-        past_redirects = [target_route]
-
-        while True:
-            for router in self._routers:
-                # Get the route instance
-                try:
-                    route_segment = target_route[router._level[0]]
-                except IndexError:
-                    route_segment = ""
-
-                try:
-                    route_instance = router.routes[route_segment]
-                except KeyError:
-                    # If there is no fallback route this can be safely ignored,
-                    # since the default fallback doesn't have a guard.
-                    if router.fallback_route is None:
-                        continue
-
-                    route_instance = router.fallback_route
-
-                # Run the guard
-                try:
-                    redirect_str = route_instance.guard(self)
-                except Exception:
-                    print("Ignoring guard, because it has raised an exception:")
-                    traceback.print_exc()
-                    continue
-
-                # No redirect - check the next router
-                if redirect_str is None:
-                    continue
-
-                # Honest to god redirect
-                target_route = common.join_routes(self._current_route, redirect_str)
-                break
-
-            # No guard is opposed to this route. Use it
-            else:
-                break
-
-            # Detect infinite loops and break them
-            if target_route in visited_redirects:
-                current_route_str = "/" + "/".join(self._current_route)
-                initial_target_route_str = "/" + "/".join(initial_target_route)
-                route_strings = ["/" + "/".join(route) for route in past_redirects]
-                route_strings_list = " -> " + "\n -> ".join(route_strings)
-
-                logging.warning(
-                    f"Rejecting navigation to `{initial_target_route_str}` because route guards have created an infinite loop:\n\n    {current_route_str}\n{route_strings_list}"
-                )
-                return
-
-            # Remember that this route has been visited before
-            visited_redirects.add(target_route)
-            past_redirects.append(target_route)
+        active_route_instances, active_route = routing.check_route_guards(
+            self,
+            target_url_relative,
+            target_url_absolute,
+        )
 
         # Update the current route
-        self._current_route = target_route
+        self._active_route = active_route
+        self._active_route_instances = tuple(active_route_instances)
 
         # Dirty all routers to force a rebuild
         for router in self._routers:
-            self._register_dirty_widget(router, include_children_recursively=True)
+            self._register_dirty_widget(router, include_children_recursively=False)
 
         self._create_task(self._refresh())
 
@@ -425,7 +411,7 @@ class Session(unicall.Unicall):
         async def history_worker() -> None:
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
-                f"window.history.{method}(null, null, {json.dumps(route)})",
+                f"window.history.{method}(null, null, {json.dumps(target_url)})",
             )
 
         self._create_task(history_worker())
@@ -434,7 +420,7 @@ class Session(unicall.Unicall):
         async def event_worker() -> None:
             for widget, callback in self._route_change_callbacks.items():
                 self._create_task(
-                    self._call_event_handler(callback, widget),
+                    self._call_event_handler(lambda widget=widget: callback(widget)),
                     name="`on_route_change` event handler",
                 )
 
@@ -656,7 +642,7 @@ class Session(unicall.Unicall):
                 widget = to_do.pop()
                 visited_widgets.add(widget)
 
-                _, cur_serialized = self._serialize_and_host_widget(widget)
+                cur_serialized = self._serialize_and_host_widget(widget)
                 delta_states[widget._id] = cur_serialized
 
                 if isinstance(widget, widget_base.FundamentalWidget):

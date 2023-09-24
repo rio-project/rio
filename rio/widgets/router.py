@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY, dataclass
+from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
 import rio
@@ -8,35 +8,14 @@ import rio
 from . import widget_base
 
 __all__ = [
-    "Route",
     "Router",
 ]
 
 
-@dataclass(frozen=True)
-class Route:
-    segment_name: str
-    build_function: Callable[[], rio.Widget]
-    _: KW_ONLY
-    guard: Callable[[rio.Session], Optional[str]] = lambda _: None
-
-
-FALLBACK_ROUTE = Route(
-    segment_name="",
-    # TODO: build a nice error page
-    build_function=lambda: rio.Text(
-        "The page you requested could not be found.",
-        height=4,
-        width=12,
-        align_x=0.5,
-        align_y=0.4,
-    ),
-)
-
-
 class Router(widget_base.Widget):
-    routes: Dict[str, Route]
-    fallback_route: Optional[Route]
+    _: KW_ONLY
+
+    fallback_build: Optional[Callable[[], rio.Widget]] = None
 
     # Routers must not be reconciled completely, because doing so would prevent
     # a rebuild. Rebuilds are necessary so routers can update their location in
@@ -44,65 +23,19 @@ class Router(widget_base.Widget):
     #
     # This value will never compare equal to that of any other router,
     # preventing reconciliation.
-    _please_do_not_reconcile_me: object
+    _please_do_not_reconcile_me: object = field(
+        init=False,
+        default_factory=object,
+    )
 
     # How many other routers are above this one in the widget tree. Zero for
     # top-level routers, 1 for the next level, and so on.
     #
     # This is stored in a list so that modifications don't trigger a rebuild.
-    _level = [-1]
-
-    def __init__(
-        self,
-        *routes: Route,
-        fallback_route: Optional[Route] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
-    ):
-        super().__init__(
-            key=key,
-            margin=margin,
-            margin_x=margin_x,
-            margin_y=margin_y,
-            margin_left=margin_left,
-            margin_top=margin_top,
-            margin_right=margin_right,
-            margin_bottom=margin_bottom,
-            width=width,
-            height=height,
-            align_x=align_x,
-            align_y=align_y,
-        )
-
-        self.routes = {}
-        self.fallback_route = fallback_route
-        self._please_do_not_reconcile_me = object()
-        self._current_route_name = []
-
-        # Convert the routes to a form that facilitates lookup. This is also a
-        # good time for sanity checks
-        for route in routes:
-            if "/" in route.segment_name:
-                raise ValueError(
-                    f"Route names cannot contain slashes: {route.segment_name}",
-                )
-
-            if route.segment_name in self.routes:
-                raise ValueError(
-                    f'Multiple routes share the same name "{route.segment_name}"',
-                )
-
-            self.routes[route.segment_name] = route
+    _level: List[int] = field(
+        init=False,
+        default_factory=lambda: [-1],
+    )
 
     def _find_router_level_and_track_in_session(self) -> int:
         """
@@ -153,20 +86,16 @@ class Router(widget_base.Widget):
         # Look up the parent router
         level = self._find_router_level_and_track_in_session()
 
-        # Determine the route segment
-        try:
-            new_route_segment = self.session._current_route[level]
-        except IndexError:
-            new_route_segment = ""
-
         # Fetch the route instance
         try:
-            route = self.routes[new_route_segment]
-        except KeyError:
-            if self.fallback_route is None:
-                route = FALLBACK_ROUTE
+            route = self.session._active_route_instances[level]
+        except IndexError:
+            if self.fallback_build is None:
+                build_callback = lambda: rio.Text("TODO: No such route")
             else:
-                route = self.fallback_route
+                build_callback = self.fallback_build
+        else:
+            build_callback = route.build
 
         # Build the child
-        return route.build_function()
+        return build_callback()

@@ -213,7 +213,7 @@ class WidgetMeta(abc.ABCMeta):
     def __call__(cls, *args, **kwargs):
         widget = super().__call__(*args, **kwargs)
         widget._create_state_bindings()
-        widget.on_created()
+        widget.on_create()
         return widget
 
 
@@ -374,7 +374,7 @@ class Widget(metaclass=WidgetMeta):
         self.margin_right = elvis("margin_right", "margin_x", "margin")
         self.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
 
-    def on_created(self) -> None:
+    def on_create(self) -> None:
         """
         Called after the `__init__` method has finished executing and the
         widget's state bindings have been created.

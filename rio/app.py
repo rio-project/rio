@@ -21,12 +21,14 @@ from .common import ImageLike
 
 # Only available with the `window` extra
 try:
-    import webview
+    import webview  # type: ignore
 except ImportError:
     webview = None
 
 
-__all__ = ["App"]
+__all__ = [
+    "App",
+]
 
 
 def _validate_build_function(
@@ -55,7 +57,7 @@ class App:
         *,
         name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
-        routes: rio.Routes = {},
+        routes: Iterable[rio.Route] = tuple(),
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
@@ -70,7 +72,7 @@ class App:
         self.name = name
         self.build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
-        self.routes = routes
+        self.routes = tuple(routes)
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)

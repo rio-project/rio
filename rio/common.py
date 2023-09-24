@@ -87,60 +87,45 @@ P = ParamSpec("P")
 EventHandler = Optional[Callable[P, Union[Any, Awaitable[Any]]]]
 
 
-def join_routes(base: Iterable[str], new: str) -> Tuple[str, ...]:
+def make_url_relative(base: URL, other: URL) -> URL:
     """
-    Given a base path and a new path, join them together and return the result.
+    Returns `other` as a relative URL to `base`. Raises a `ValueError` if
+    `other` is not a child of `base`.
 
-    This will process any `./` and `../` parts in the new path, and return a
-    list of path parts.
-
-    Raises a `ValueError` if so many `../` are used that the route would leave
-    the root route.
-
-    Raises a `ValueError` if
+    This will never generate URLs containing `..`. If those would be needed a
+    `ValueError` is raised.
     """
+    # Verify the URLs have the same scheme and host
+    if base.scheme != other.scheme:
+        raise ValueError(
+            f'URLs have different schemes: "{base.scheme}" and "{other.scheme}"'
+        )
 
-    # If the path is absolute (starts with '/'), ignore the base
-    if new.startswith("/"):
-        stack = []
-        new = new[1:]
-    else:
-        stack = list(base)
+    if base.host != other.host:
+        raise ValueError(f'URLs have different hosts: "{base.host}" and "{other.host}"')
 
-    # Special case: Just '/'
-    if not new:
-        return tuple(stack)
+    # Get the path segments of the URLs
+    base_parts = base.parts
+    other_parts = other.parts
 
-    # Iterate through the parts of the path
-    new_segments = new.split("/")
-    for ii, segment in enumerate(new_segments):
-        # Empty segments are acceptable only if they are the final segment,
-        # since that just means the URL ended in a slash
-        if not segment:
-            if ii == len(new_segments) - 1:
-                break
+    # Strip empty segments
+    if base_parts and base_parts[-1] == "":
+        base_parts = base_parts[:-1]
 
-            raise ValueError(f"Route segments cannot be empty strings: `{new}`")
+    if other_parts and other_parts[-1] == "":
+        other_parts = other_parts[:-1]
 
-        # Nop
-        if segment == ".":
-            pass
+    # See if the base is a parent of the other URL
+    if base_parts != other_parts[: len(base_parts)]:
+        raise ValueError(f'"{other}" is not a child of "{base}"')
 
-        # One up
-        elif segment == "..":
-            try:
-                stack.pop()
-            except IndexError:
-                base_str = "/" + "/".join(base)
-                raise ValueError(
-                    f"Route `{new}` would leave the root route when joined with `{base_str}`"
-                )
-
-        # Go to a child
-        else:
-            stack.append(segment)
-
-    return tuple(stack)
+    # Remove the common parts from the URL
+    other_parts = other_parts[len(base_parts) :]
+    return URL.build(
+        path="/".join(other_parts),
+        query=other.query,
+        fragment=other.fragment,
+    )
 
 
 def escape_markdown(text: str) -> str:

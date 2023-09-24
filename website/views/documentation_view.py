@@ -278,29 +278,11 @@ class DocumentationView(rio.Widget):
                     align_y=0,
                 ),
                 rio.Router(
-                    rio.Route(
-                        "",
-                        lambda: rio.Column(
-                            FlatCard(
-                                comps.ClassApiDocsView(
-                                    rio_docs.ClassDocs.parse(rio.Column)
-                                ),
-                            ),
-                            FlatCard(
-                                rio.MarkdownView(text=DOCS_STR),
-                            ),
-                            margin_left=23,
-                            margin_bottom=4,
-                            spacing=3,
-                            width=65,
-                            height="grow",
-                            align_x=0.5,
-                        ),
-                    ),
                     margin_top=14,
                     width="grow",
                     height="grow",
                 ),
-                key="waitforme",
+                width="grow",
+                height="grow",
             ),
         )
