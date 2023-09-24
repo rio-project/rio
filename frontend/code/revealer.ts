@@ -100,8 +100,10 @@ export class RevealerWidget extends WidgetBase {
         //
         // TODO: This doesn't seem to be working. The first time a revealer is
         // expanded, no animation is shown.
-        element.classList.add('expanded');
-        collapseRevealer(element);
+        requestAnimationFrame(() => {
+            element.classList.add('expanded');
+            collapseRevealer(element);
+        });
 
         return element;
     }
