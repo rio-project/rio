@@ -104,7 +104,7 @@ class NumberInput(widget_base.Widget):
         was_updated = self._try_set_value(ev.text)
 
         if was_updated:
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_change,
                 NumberInputChangeEvent(self.value),
             )
@@ -113,7 +113,7 @@ class NumberInput(widget_base.Widget):
         was_updated = self._try_set_value(ev.text)
 
         if was_updated:
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_confirm,
                 NumberInputConfirmEvent(self.value),
             )

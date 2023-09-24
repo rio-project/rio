@@ -46,7 +46,7 @@ class TextInput(widget_base.FundamentalWidget):
             pass
         else:
             assert isinstance(new_value, str), new_value
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_change,
                 TextInputChangeEvent(new_value),
             )
@@ -63,12 +63,12 @@ class TextInput(widget_base.FundamentalWidget):
         assert isinstance(msg, dict), msg
         self.text = msg["text"]
 
-        await self._call_event_handler(
+        await self.call_event_handler(
             self.on_change,
             TextInputChangeEvent(self.text),
         )
 
-        await self._call_event_handler(
+        await self.call_event_handler(
             self.on_confirm,
             TextInputConfirmEvent(self.text),
         )

@@ -49,7 +49,7 @@ class AutoForm(widget_base.Widget):
 
         # Delegate to the user's submit method
         try:
-            await self._call_event_handler(self.on_submit)
+            await self.call_event_handler(self.on_submit)
         finally:
             self._is_loading = False
 

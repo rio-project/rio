@@ -35,7 +35,7 @@ class ColorPicker(widget_base.FundamentalWidget):
         self.color = color.Color.from_rgb(*msg["color"])
 
         # Trigger the change event
-        await self._call_event_handler(
+        await self.call_event_handler(
             self.on_change,
             ColorChangeEvent(self.color),
         )

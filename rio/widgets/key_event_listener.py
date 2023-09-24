@@ -626,19 +626,19 @@ class KeyEventListener(widget_base.FundamentalWidget):
 
         # Dispatch the correct event
         if msg_type == "KeyDown":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_key_down,
                 KeyDownEvent._from_json(msg),
             )
 
         elif msg_type == "KeyUp":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_key_up,
                 KeyUpEvent._from_json(msg),
             )
 
         elif msg_type == "KeyPress":
-            await self._call_event_handler(
+            await self.call_event_handler(
                 self.on_key_press,
                 KeyPressEvent._from_json(msg),
             )

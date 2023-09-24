@@ -50,7 +50,7 @@ class CustomButton(widget_base.Widget):
         if event.button != rio.MouseButton.LEFT or not self.is_sensitive:
             return
 
-        await self._call_event_handler(
+        await self.call_event_handler(
             self.on_press,
             button.ButtonPressEvent(),
         )

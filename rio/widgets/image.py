@@ -28,7 +28,7 @@ class Image(widget_base.FundamentalWidget):
         }
 
     async def _on_message(self, message: JsonDoc) -> None:
-        await self._call_event_handler(self.on_error)
+        await self.call_event_handler(self.on_error)
 
 
 Image._unique_id = "Image-builtin"

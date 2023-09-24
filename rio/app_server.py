@@ -638,7 +638,7 @@ class AppServer(fastapi.FastAPI):
 
         finally:
             # Fire the session end event
-            await common.call_event_handler(self.on_session_end, sess)
+            await sess._call_event_handler(self.on_session_end, sess)
 
     async def _finish_session_initialization(
         self,
@@ -800,11 +800,11 @@ class AppServer(fastapi.FastAPI):
         finally:
             global_state.currently_building_session = None
 
-        # Trigger the `on_session_started` event.
+        # Trigger the `on_session_start` event.
         #
         # Note: Since this event is often used for initialization, like adding
         # attachments, we actually wait for it to finish before continuing.
-        await common.call_event_handler(self.on_session_start, sess)
+        await sess._call_event_handler(self.on_session_start, sess)
 
 
 class RootContainer(widgets.Widget):

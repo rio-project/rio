@@ -673,46 +673,32 @@ class Widget(metaclass=WidgetMeta):
         cache[self] = result
         return result
 
-    @typing.overload
-    async def _call_event_handler(
+    @overload
+    async def call_event_handler(
         self,
         handler: rio.EventHandler[[]],
     ) -> None:
         ...
 
-    @typing.overload
-    async def _call_event_handler(
+    @overload
+    async def call_event_handler(
         self,
         handler: rio.EventHandler[[T]],
         event_data: T,
+        /,
     ) -> None:
         ...
 
-    async def _call_event_handler(  # type: ignore
+    async def call_event_handler(
         self,
-        handler: rio.EventHandler[P],
-        *event_data: T,  # type: ignore
+        handler,
+        *event_data,
     ) -> None:
         """
         Call an event handler, if one is present. Await it if necessary. Log and
         discard any exceptions.
         """
-
-        # Event handlers are optional
-        if handler is None:
-            return
-
-        # If the handler is available, call it and await it if necessary
-        try:
-            result = handler(*event_data)  # type: ignore
-
-            if inspect.isawaitable(result):
-                await result
-
-        # Display and discard exceptions
-        except Exception:
-            print("Exception in event handler:")
-            traceback.print_exc()
+        await self.session._call_event_handler(handler, *event_data)
 
     async def force_refresh(self) -> None:
         self.session._register_dirty_widget(
