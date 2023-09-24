@@ -22,6 +22,10 @@ export class ImageWidget extends WidgetBase {
         let element = document.createElement('div');
         element.classList.add('rio-aspect-ratio-container');
 
+        element.onload = () => {
+            element.classList.remove('rio-content-loading');
+        };
+
         let img = document.createElement('img');
         element.appendChild(img);
 
@@ -31,7 +35,8 @@ export class ImageWidget extends WidgetBase {
     updateElement(element: HTMLElement, deltaState: ImageState): void {
         let imgElement = element.firstElementChild as HTMLImageElement;
 
-        if (deltaState.image_url !== undefined) {
+        if (deltaState.image_url !== undefined && imgElement.src !== deltaState.image_url) {
+            imgElement.classList.add('rio-content-loading');
             imgElement.src = deltaState.image_url;
         }
 
