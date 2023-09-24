@@ -7,8 +7,8 @@ import inspect
 import json
 import logging
 import secrets
-import traceback
 import time
+import traceback
 import typing
 import weakref
 from dataclasses import dataclass
@@ -1356,11 +1356,18 @@ document.body.removeChild(a)
         return "pong"
 
     @unicall.local(name="onUrlChange")
-    async def _on_url_change(self, new_route: str) -> None:
+    async def _on_url_change(self, new_url: str) -> None:
         """
         Called by the client when the route changes.
         """
-        print(f"TODO: The browser has navigated to {new_route}")
+        # Try to navigate to the new route
+        self.navigate_to(
+            new_url,
+            replace=True,
+        )
+
+        # Refresh the session
+        await self._refresh()
 
     @unicall.local(name="onWindowResize")
     async def _on_window_resize(self, new_width: float, new_height: float) -> None:
