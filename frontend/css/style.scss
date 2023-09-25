@@ -1085,14 +1085,16 @@ input:not(:placeholder-shown)~.rio-text-input-label,
 .rio-scroll-container {
     // Needs pointer events so that the scrollbar can be interacted with
     pointer-events: auto;
-}
 
-.rio-scroll-container>* {
     // Unlike other containers with a single child, scroll containers can't use
     // `display: flex`. A flexbox basically doesn't allow the child to be larger
     // than the flexbox, but that is exactly what we want to allow here. We want
     // the child to fill the whole scroll container, so we'll simply give it a
     // minimum size of 100%.
+    position: relative;
+}
+
+.rio-scroll-container>* {
     min-width: 100%;
     min-height: 100%;
 }
@@ -1358,8 +1360,7 @@ $drawer-side-margin: 0.7rem;
 
     background-color: var(--rio-local-surface-color);
     border-radius: var(--rio-global-corner-radius-medium);
-    box-shadow: 0 0 var(--rio-global-shadow-radius)
-        var(--rio-global-shadow-color);
+    box-shadow: 0 0 var(--rio-global-shadow-radius) var(--rio-global-shadow-color);
 
     transform: scale(0);
     opacity: 0;
