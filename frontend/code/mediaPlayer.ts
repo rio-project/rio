@@ -2,12 +2,14 @@ import { WidgetBase, WidgetState } from './widgetBase';
 
 export type MediaPlayerState = WidgetState & {
     _type_: 'mediaPlayer';
-    _media_asset?: string;
     loop?: boolean;
     autoplay?: boolean;
     controls?: boolean;
     muted?: boolean;
     volume?: number;
+    mediaUrl?: string;
+    reportError?: boolean;
+    reportPlaybackEnd?: boolean;
 };
 
 export class MediaPlayerWidget extends WidgetBase {
@@ -31,8 +33,8 @@ export class MediaPlayerWidget extends WidgetBase {
         element: HTMLMediaElement,
         deltaState: MediaPlayerState
     ): void {
-        if (deltaState._media_asset !== undefined) {
-            this.mediaElement.src = deltaState._media_asset;
+        if (deltaState.mediaUrl !== undefined) {
+            this.mediaElement.src = deltaState.mediaUrl;
         }
 
         if (deltaState.loop !== undefined) {
@@ -54,5 +56,37 @@ export class MediaPlayerWidget extends WidgetBase {
         if (deltaState.volume !== undefined) {
             this.mediaElement.volume = deltaState.volume;
         }
+
+        if (deltaState.reportError !== undefined) {
+            if (deltaState.reportError) {
+                if (this.mediaElement.onerror === null) {
+                    this.mediaElement.onerror = this._onError.bind(this);
+                }
+            } else {
+                this.mediaElement.onerror = null;
+            }
+        }
+
+        if (deltaState.reportPlaybackEnd !== undefined) {
+            if (deltaState.reportPlaybackEnd) {
+                if (this.mediaElement.onended === null) {
+                    this.mediaElement.onended = this._onPlaybackEnd.bind(this);
+                }
+            } else {
+                this.mediaElement.onended = null;
+            }
+        }
+    }
+
+    private _onError(event: string | Event): void {
+        this.sendMessageToBackend({
+            type: 'onError',
+        });
+    }
+
+    private _onPlaybackEnd(event: Event): void {
+        this.sendMessageToBackend({
+            type: 'onPlaybackEnd',
+        });
     }
 }
