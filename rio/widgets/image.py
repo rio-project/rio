@@ -18,13 +18,13 @@ class Image(widget_base.FundamentalWidget):
     fill_mode: Literal["fit", "stretch", "zoom"] = "fit"
     on_error: EventHandler[[]] = None
 
-    def on_created(self) -> None:
+    def on_create(self) -> None:
         self._image_asset = assets.Asset.from_image(self.image)
 
     def _custom_serialize(self) -> JsonDoc:
         return {
-            "image_url": self._image_asset._serialize(self.session),
-            "report_error": self.on_error is not None,
+            "imageUrl": self._image_asset._serialize(self.session),
+            "reportError": self.on_error is not None,
         }
 
     async def _on_message(self, message: JsonDoc) -> None:

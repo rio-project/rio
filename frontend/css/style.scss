@@ -1085,7 +1085,9 @@ input:not(:placeholder-shown)~.rio-text-input-label,
 .rio-scroll-container {
     // Needs pointer events so that the scrollbar can be interacted with
     pointer-events: auto;
+}
 
+.rio-scroll-container>* {
     // Unlike other containers with a single child, scroll containers can't use
     // `display: flex`. A flexbox basically doesn't allow the child to be larger
     // than the flexbox, but that is exactly what we want to allow here. We want

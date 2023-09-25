@@ -25,13 +25,13 @@ class MediaPlayer(widget_base.FundamentalWidget):
     volume: float = 1.0
     on_playback_end: EventHandler[[]] = None
     on_error: EventHandler[[]] = None
-    _media_asset: Optional[assets.Asset] = None
 
     def __post_init__(self):
         self._media_asset = assets.Asset.new(self.media, self.media_type)
 
     def _custom_serialize(self) -> JsonDoc:
         return {
+            "mediaUrl": self._media_asset._serialize(self.session),
             "reportError": self.on_error is not None,
             "reportPlaybackEnd": self.on_playback_end is not None,
         }
