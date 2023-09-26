@@ -17,11 +17,14 @@ const SCROLL_TO_OVERFLOW = {
 export class ScrollContainerWidget extends WidgetBase {
     state: Required<ScrollContainerState>;
 
+    private _innerElement: HTMLElement;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
+        element.classList.add('rio-scroll-container', 'rio-zero-size-request-container');
 
-        // Do *NOT* add `rio-single-container` here!
-        element.classList.add('rio-scroll-container');
+        this._innerElement = document.createElement('div');
+        element.appendChild(this._innerElement);
 
         return element;
     }
@@ -30,14 +33,14 @@ export class ScrollContainerWidget extends WidgetBase {
         element: HTMLElement,
         deltaState: ScrollContainerState
     ): void {
-        replaceOnlyChild(element, deltaState.child);
+        replaceOnlyChild(this._innerElement, deltaState.child);
 
         if (deltaState.scroll_x !== undefined) {
-            element.style.overflowX = SCROLL_TO_OVERFLOW[deltaState.scroll_x];
+            this._innerElement.style.overflowX = SCROLL_TO_OVERFLOW[deltaState.scroll_x];
         }
 
         if (deltaState.scroll_y !== undefined) {
-            element.style.overflowY = SCROLL_TO_OVERFLOW[deltaState.scroll_y];
+            this._innerElement.style.overflowY = SCROLL_TO_OVERFLOW[deltaState.scroll_y];
         }
     }
 
