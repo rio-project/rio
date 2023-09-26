@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import dataclasses
 import inspect
+import re
+import textwrap
 from dataclasses import dataclass, is_dataclass
 from typing import *  # type: ignore
 
-import docstring_parser
 import introspection.typing
 from stream_tui import *  # type: ignore
 
@@ -22,6 +23,106 @@ DEFAULT_FACTORY_VALUES: Dict[Any, Any] = {
 }
 
 
+def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
+    """
+    Given a google-style docstring, return the description and sections.
+    """
+    description: str = ""
+    sections: Dict[str, Dict[str, List[str]]] = {}
+    current_section: Optional[Dict[str, List[str]]] = None
+    current_lines: List[str] = []
+
+    # Trim the docstring
+    docstring = textwrap.dedent(docstring.strip())
+
+    # Process the docstring line by line
+    lines = docstring.splitlines()
+
+    for line in lines:
+        line = line.strip()
+
+        # Start of a new section
+        if line.endswith(":"):
+            section_name = line[:-1]
+            section_name = section_name.strip().lower()
+            current_section = sections.setdefault(section_name, {})
+            continue
+
+        # If not inside a section, append to the description
+        if current_section is None:
+            description += line + "\n"
+            continue
+
+        # Ignore empty lines
+        if not line:
+            continue
+
+        # Check if the line contains a colon (:) to separate parameter name and description
+        parts = line.split(":", 1)
+        assert len(parts) >= 1, (line, parts)
+
+        if len(parts) == 1:
+            current_lines.append(parts[0].strip())
+            continue
+
+        if len(parts) == 2:
+            name = parts[0].strip()
+            value = parts[1].strip()
+            current_lines = [value]
+            current_section[name] = current_lines
+
+    # Replace multiple empty lines with a single one
+    description = re.sub("\n\n+", "\n\n", description)
+
+    # Convert the section values from lists to strings
+    result_sections: Dict[str, Dict[str, str]] = {}
+
+    for section_name, section in sections.items():
+        result_sections[section_name] = {}
+
+        for name, lines in section.items():
+            result_sections[section_name][name] = " ".join(lines)
+
+    return description.strip(), result_sections
+
+
+def parse_descriptions(description: str) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Given the description part of a docstring, split it into short and long
+    descriptions. Either value may be Nonne if they are not present in the
+    original string.
+    """
+    description = description.strip()
+
+    # Split into short & long descriptions
+    lines = description.split("\n")
+
+    short_lines = []
+    long_lines = []
+    cur_lines = short_lines
+
+    for line in lines:
+        line = line.strip()
+
+        cur_lines.append(line)
+
+        if not line:
+            cur_lines = long_lines
+
+    # Join the lines
+    short_description = "\n".join(short_lines).strip()
+    long_description = "\n".join(long_lines).strip()
+
+    if not short_description:
+        short_description = None
+
+    if not long_description:
+        long_description = None
+
+    # Done
+    return short_description, long_description
+
+
 def str_type_hint(typ: Type) -> str:
     # Make sure the type annotation has been parsed
     assert not isinstance(typ, str), typ
@@ -30,52 +131,53 @@ def str_type_hint(typ: Type) -> str:
     return introspection.typing.annotation_to_string(typ)
 
 
-def parse_docstring(docstring: str) -> docstring_parser.Docstring:
+def parse_docstring(
+    docstring: str,
+    *,
+    enable_args: bool = False,
+    enable_raises: bool = False,
+    enable_attributes: bool = False,
+) -> Tuple[Optional[str], Optional[str], Dict[str, Dict[str, str]]]:
     """
-    Like `docstring_parser.parse`, but fixes some issues with that parser.
+    Parses a docstring into
+
+    - short description
+    - long description
+    - sections
+
+    The function parameters control which sections are supported. Any other
+    sections will trigger a warning and be removed. All enabled sections will be
+    imputed (as empty) if they aren't present in the docstring. Sections are
+    normalized to be lowercase.
     """
 
-    # Delegate to the original parser
-    result = docstring_parser.parse(docstring)
+    # Pre-parse the docstring
+    description, sections = pre_parse_google_docstring(docstring)
 
-    # It seems to simply consider the first line of the docstring as the short
-    # description, even if there isn't a linebreak. This often cuts off the
-    # first sentence.
+    # Parse the description
+    short_description, long_description = parse_descriptions(description)
 
-    # Re-join the two descriptions
-    description = ""
+    # Post-process the sections
+    enabled_sections = set()
 
-    if result.short_description is not None:
-        description += result.short_description
+    if enable_args:
+        enabled_sections.add("args")
 
-    if result.long_description is not None:
-        description += "\n" + result.long_description
+    if enable_raises:
+        enabled_sections.add("raises")
 
-    # Drop leading / trailing empty lines
-    description = description.strip()
+    if enable_attributes:
+        enabled_sections.add("attributes")
 
-    # Find the first empty line
-    lines = description.split("\n")
+    for section_name in enabled_sections:
+        sections.setdefault(section_name, {})
 
-    for ii, line in enumerate(lines):
-        if line.strip() == "":
-            description_1 = ("\n".join(lines[:ii])).strip()
-            description_2 = ("\n".join(lines[ii + 1 :])).strip()
-
-    else:
-        description_1 = description.strip()
-        description_2 = None
-
-        if len(description_1) > 100:
-            description_2 = description_1
-            description_1 = None
-
-    # Update the result
-    result.short_description = description_1
-    result.long_description = description_2
+    for section in set(sections.keys()) - enabled_sections:
+        warning(f"Removing superfluous section `{section}` from docstring")
+        del sections[section]
 
     # Done
-    return result
+    return short_description, long_description, sections
 
 
 def parse_function(func: Callable) -> models.FunctionDocs:
@@ -120,27 +222,29 @@ def parse_function(func: Callable) -> models.FunctionDocs:
         long_description = None
         raises = []
     else:
-        docstring = parse_docstring(docstring)
-        short_description = docstring.short_description
-        long_description = docstring.long_description
+        short_description, long_description, sections = parse_docstring(
+            docstring,
+            enable_args=True,
+            enable_raises=True,
+        )
+
+        raw_params = sections["args"]
+        raw_raises = sections["raises"]
 
         # Add any information learned about parameters from the docstring
-        for docstring_param in docstring.params:
+        for param_name, param_details in raw_params.items():
             try:
-                result_param = parameters[docstring_param.arg_name]
+                result_param = parameters[param_name]
             except KeyError:
                 warning(
-                    f"The docstring for function `{func.__name__}` mentions a parameter `{docstring_param.arg_name}` that does not exist in the function signature."
+                    f"The docstring for function `{func.__name__}` mentions a parameter `{param_name}` that does not exist in the function signature."
                 )
                 continue
 
-            result_param.description = docstring_param.description
+            result_param.description = param_details
 
         # Add information about raised exceptions
-        raises = []
-
-        for docstring_raise in docstring.raises:
-            raises.append((docstring_raise.type_name, docstring_raise.description))
+        raises = list(raw_raises.items())
 
     # Build the result
     return models.FunctionDocs(
@@ -206,13 +310,24 @@ def parse_class(cls: Type) -> models.ClassDocs:
         long_description = None
 
     else:
-        docstring = parse_docstring(docstring)
-        short_description = docstring.short_description
-        long_description = docstring.long_description
+        short_description, long_description, sections = parse_docstring(
+            docstring,
+            enable_attributes=True,
+        )
 
         # Add any information learned about fields from the docstring
-        #
-        # TODO: Can docstrings contain field information?
+        raw_attributes = sections["attributes"]
+
+        for field_name, field_details in raw_attributes.items():
+            try:
+                result_field = fields_by_name[field_name]
+            except KeyError:
+                warning(
+                    f"The docstring for class `{cls.__name__}` mentions a field `{field_name}` that does not exist in the class."
+                )
+                continue
+
+            result_field.description = field_details
 
     # Treat properties as fields
     #
