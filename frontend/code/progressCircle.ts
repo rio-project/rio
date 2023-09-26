@@ -22,7 +22,7 @@ export class ProgressCircleWidget extends WidgetBase {
                 <circle class="progress" cx="50" cy="50" r="20"></circle>
             </svg>
         `;
-        element.classList.add('rio-progress-circle', 'rio-aspect-ratio-container');
+        element.classList.add('rio-progress-circle', 'rio-zero-size-request-container');
         return element;
     }
 

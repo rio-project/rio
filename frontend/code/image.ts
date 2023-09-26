@@ -20,7 +20,7 @@ export class ImageWidget extends WidgetBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-aspect-ratio-container');
+        element.classList.add('rio-zero-size-request-container');
 
         element.onload = () => {
             element.classList.remove('rio-content-loading');

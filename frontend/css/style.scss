@@ -230,19 +230,24 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     animation: content-loading 3s linear infinite;
 }
 
-// For elements that contain an element with a fixed aspect ratio, like images.
-// Such elements usually set their height depending on their width, so they can
-// grow very large if there's horizontal space available. This class prevents
-// them from making their parent element grow larger, and instead centers them
-// inside of the available space.
-.rio-aspect-ratio-container {
+// For containers that want to ignore their child's size request. This is useful
+// for 
+// 1. Elements with an aspect ratio, like images and videos
+// 2. ScrollContainers
+//
+// (For things like images and videos, you may need to create a container element
+// around the `<img>` or `<video>` element.)
+// In both cases, the parent element doesn't care about the size of its child
+// element. The child element simply receives all the space that's available,
+// and can never force the parent element to grow.
+.rio-zero-size-request-container {
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
 }
 
-.rio-aspect-ratio-container>* {
+.rio-zero-size-request-container>* {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -1085,18 +1090,6 @@ input:not(:placeholder-shown)~.rio-text-input-label,
 .rio-scroll-container {
     // Needs pointer events so that the scrollbar can be interacted with
     pointer-events: auto;
-
-    // Unlike other containers with a single child, scroll containers can't use
-    // `display: flex`. A flexbox basically doesn't allow the child to be larger
-    // than the flexbox, but that is exactly what we want to allow here. We want
-    // the child to fill the whole scroll container, so we'll simply give it a
-    // minimum size of 100%.
-    position: relative;
-}
-
-.rio-scroll-container>* {
-    min-width: 100%;
-    min-height: 100%;
 }
 
 // Color Picker
