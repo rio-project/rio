@@ -83,7 +83,7 @@ class BoxStyle(self_serializing.SelfSerializing):
             )
 
         return BoxStyle(
-            fill=fill if fill is not None else self.fill,
+            fill=self.fill if fill is None else fill,
             # Stroke rio.Color
             stroke_color=self.stroke_color if stroke_color is None else stroke_color,
             # Stroke Width

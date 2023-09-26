@@ -5,6 +5,7 @@ import rio
 import rio.debug
 import rio_docs
 
+from . import article
 from . import components as comps
 from . import theme, views
 
@@ -55,6 +56,38 @@ class AppRoot(rio.Widget):
         )
 
 
+class ColumnSample(rio.Widget):
+    spacing: float = 0
+
+    def build(self) -> rio.Widget:
+        return rio.Row(
+            rio.Column(
+                comps.SampleA(),
+                comps.SampleB(),
+                comps.SampleC(),
+                spacing=ColumnSample.spacing,
+                width="grow",
+                align_x=0.5,
+            ),
+            rio.Card(
+                rio.Column(
+                    rio.Text("Spacing", style="heading3"),
+                    rio.Slider(
+                        min=0,
+                        max=3,
+                        value=ColumnSample.spacing,
+                    ),
+                    width=12,
+                ),
+                hover_height=0,
+                elevate_on_hover=1,
+                align_y=0,
+            ),
+            spacing=2,
+            width="grow",
+        )
+
+
 routes = [
     rio.Route(
         "",
@@ -67,19 +100,11 @@ routes = [
             rio.Route(
                 "",
                 lambda: rio.Column(
-                    comps.FlatCard(
-                        comps.ClassApiDocsView(rio_docs.ClassDocs.parse(rio.Column)),
-                    ),
-                    comps.FlatCard(
-                        rio.MarkdownView(
-                            # text=DOCS_STR,
-                            text="""
-# Rio
-
-Rio is a Python library for building user interfaces.
-"""
-                        ),
-                    ),
+                    article.create_widget_api_docs(
+                        rio_docs.ClassDocs.parse(rio.Column),
+                        ColumnSample,
+                    ).build(),
+                    rio.Spacer(),
                     margin_left=23,
                     margin_bottom=4,
                     spacing=3,

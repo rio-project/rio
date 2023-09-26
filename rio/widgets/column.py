@@ -10,6 +10,23 @@ __all__ = ["Column"]
 
 
 class Column(widget_base.FundamentalWidget):
+    """
+    A container that lays out its children vertically.
+
+    Columns are one of the most common widgets in Rio. They take any number of
+    children and lay them out vertically, with the first on at the top, the
+    second one below that, and so on. All widgets in columns occupy the full
+    width.
+
+    <!-- TODO: Explain undefined space -->
+
+    Attributes:
+        children: The child widgets in this column.
+
+        spacing: How much space to leave between two adjacent children. No
+            spacing is added before the first child or after the last child.
+    """
+
     children: List[widget_base.Widget]
     spacing: float
 
