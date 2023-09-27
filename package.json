@@ -21,9 +21,9 @@
     "axios": "^1.5.0",
     "highlight.js": "^11.8.0",
     "material-components-web": "^14.0.0",
+    "micromark": "^4.0.0",
     "prettier": "^3.0.3",
     "sass": "^1.66.1",
-    "showdown": "^2.1.0",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
     "vite-plugin-singlefile": "^0.13.5"

@@ -1,7 +1,7 @@
 import { WidgetBase, WidgetState } from './widgetBase';
-import * as showdown from 'showdown';
+import { micromark } from 'micromark';
 
-// This import decides, which languages are supported by `highlight.js`. See
+// This import decides which languages are supported by `highlight.js`. See
 // their docs for details:
 //
 // https://github.com/highlightjs/highlight.js#importing-the-library
@@ -9,7 +9,7 @@ import hljs from 'highlight.js/lib/common';
 
 export type MarkdownViewState = WidgetState & {
     _type_: 'MarkdownView-builtin';
-    child?: null | number | string;
+    text?: string;
     default_language?: null | string;
 };
 
@@ -26,7 +26,7 @@ function blockTrim(value: string) {
     // Determine the minimum indentation level
     let indent = Number.MAX_SAFE_INTEGER;
     for (const line of lines.slice(1)) {
-        const stripped = line.trimLeft();
+        const stripped = line.trimStart();
         if (stripped) {
             indent = Math.min(indent, line.length - stripped.length);
         }
@@ -59,8 +59,7 @@ function convertMarkdown(
     }
 
     // Convert the Markdown content to HTML
-    const converter = new showdown.Converter();
-    div.innerHTML = converter.makeHtml(markdownSource);
+    div.innerHTML = micromark(markdownSource);
 
     // Enhance code blocks
     const codeBlocks = div.querySelectorAll('pre code');
@@ -112,14 +111,13 @@ function convertMarkdown(
         // );
         // const language = languageClass ? languageClass.replace('language-', '') : '';
 
-        // Wrap the code block. This outer element will hold additional
-        // widgets and styling.
+        // Wrap the code block. This outer element will hold additional widgets
+        // and styling.
         let codeBlockOuter = document.createElement('div');
         codeBlockOuter.classList.add('rio-markdown-code-block');
 
-        codeBlockOuter.innerHTML = `<div class="rio-markdown-code-block-header"><div class="rio-markdown-code-block-language">${
-            languageNiceName === undefined ? '' : languageNiceName
-        }</div><button class="rio-markdown-code-block-copy-button">Copy code</button></div>`;
+        codeBlockOuter.innerHTML = `<div class="rio-markdown-code-block-header"><div class="rio-markdown-code-block-language">${languageNiceName === undefined ? '' : languageNiceName
+            }</div><button class="rio-markdown-code-block-copy-button">Copy code</button></div>`;
 
         codeBlockInner.parentNode!.insertBefore(codeBlockOuter, codeBlockInner);
         codeBlockOuter.appendChild(codeBlockInner);
@@ -167,16 +165,16 @@ function convertMarkdown(
 export class MarkdownViewWidget extends WidgetBase {
     state: Required<MarkdownViewState>;
 
-    createElement() {
+    createElement(): HTMLElement {
         const element = document.createElement('div');
         element.classList.add('rio-markdown-view');
         return element;
     }
 
-    updateElement(element, deltaState) {
+    updateElement(element: HTMLElement, deltaState: MarkdownViewState): void {
         if (deltaState.text !== undefined) {
             let defaultLanguage =
-                deltaState.defaultLanguage || this.state.default_language;
+                deltaState.default_language || this.state.default_language;
 
             convertMarkdown(deltaState.text, element, defaultLanguage);
         }
