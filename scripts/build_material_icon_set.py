@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import *  # type: ignore
 from xml.etree import ElementTree as ET
 
-from stream_tui import *  # type: ignore
+from revel import *  # type: ignore
 
 import rio
 
