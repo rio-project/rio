@@ -379,6 +379,8 @@ code {
 
     transition-timing-function: ease; // The transition time is set via JS
 
+    overflow: hidden;
+
     /*
     The following attributes are controlled via variables, to allow JavaScript
     to change them, even on pseudo-classes.

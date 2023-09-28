@@ -88,6 +88,18 @@ class ColumnSample(rio.Widget):
         )
 
 
+def get_docs() -> rio.Widget:
+    docs = rio_docs.ClassDocs.parse(rio.Column)
+    rio_docs.custom.postprocess_widget_docs(docs)
+
+    art = article.create_widget_api_docs(
+        docs,
+        ColumnSample,
+    )
+
+    return art.build()
+
+
 routes = [
     rio.Route(
         "",
@@ -100,10 +112,7 @@ routes = [
             rio.Route(
                 "",
                 lambda: rio.Column(
-                    article.create_widget_api_docs(
-                        rio_docs.ClassDocs.parse(rio.Column),
-                        ColumnSample,
-                    ).build(),
+                    get_docs(),
                     rio.Spacer(),
                     margin_left=23,
                     margin_bottom=4,

@@ -49,7 +49,7 @@ class ClassField(uniserde.Serde):
 @dataclass
 class ClassDocs(uniserde.Serde):
     name: str
-    fields: List[ClassField]  # name, type
+    attributes: List[ClassField]  # name, type
     functions: List[FunctionDocs]
 
     short_description: Optional[str]

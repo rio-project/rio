@@ -220,6 +220,112 @@ class WidgetMeta(abc.ABCMeta):
 @dataclass_transform(eq_default=False)
 @dataclass(eq=False, repr=False)
 class Widget(metaclass=WidgetMeta):
+    """
+    Base class for all `rio` widgets.
+
+    Widgets are the building blocks of `rio` apps. `rio` ships with many useful
+    widgets out of the box, but you can also subclass a widget to create your
+    own.
+
+    Attributes:
+        key: A unique identifier for this widget. If two widgets with the same
+            key are present during reconciliation they will be considered the
+            same widget and their state will be preserved. If no key is
+            specified, reconciliation falls back to a less precise method, by
+            comparing the location of the widget in the widget tree.
+
+        margin: The margin around this widget. This is a shorthand for setting
+            `margin_left`, `margin_top`, `margin_right` and `margin_bottom` to
+            the same value. If multiple conflicting margins are specified the
+            most specific one wins. If for example `margin` and `margin_left`
+            are both specified, `margin_left` is used for the left side, while
+            the other sides use `margin`.
+
+        margin_x: The horizontal margin around this widget. This is a shorthand
+            for setting `margin_left` and `margin_right` to the same value. If
+            multiple conflicting margins are specified the most specific one
+            wins. If for example `margin_x` and `margin_left` are both
+            specified, `margin_left` is used for the left side, while the other
+            side uses `margin_x`.
+
+        margin_y: The vertical margin around this widget. This is a shorthand
+            for setting `margin_top` and `margin_bottom` to the same value. If
+            multiple conflicting margins are specified the most specific one
+            wins. If for example `margin_y` and `margin_top` are both specified,
+            `margin_top` is used for the top side, while the other side uses
+            `margin_y`.
+
+        margin_left: The left margin around this widget. If multiple conflicting
+            margins are specified this one will be used, since it's the most
+            specific. If for example `margin_left` and `margin` are both
+            specified, `margin_left` is used for the left side, while the other
+            sides use `margin`.
+
+        margin_top: The top margin around this widget. If multiple conflicting
+            margins are specified this one will be used, since it's the most
+            specific. If for example `margin_top` and `margin` are both
+            specified, `margin_top` is used for the top side, while the other
+            sides use `margin`.
+
+        margin_right: The right margin around this widget. If multiple
+            conflicting margins are specified this one will be used, since it's
+            the most specific. If for example `margin_right` and `margin` are
+            both specified, `margin_right` is used for the right side, while the
+            other sides use `margin`.
+
+        margin_bottom: The bottom margin around this widget. If multiple
+            conflicting margins are specified this one will be used, since it's
+            the most specific. If for example `margin_bottom` and `margin` are
+            both specified, `margin_bottom` is used for the bottom side, while
+            the other sides use `margin`.
+
+        width: How much horizontal space this widget should request during
+            layouting. This can be either a number, or one of the special
+            values:
+
+            If `"natural"`, the widget will request the minimum amount it
+            requires to fit on the screen. For example a `Text` will request
+            however much space the characters of that text require. A `Row`
+            would request the sum of the widths of its children.
+
+            If `"grow"`, the widget will request all the remaining space in its
+            parent.
+
+            Please note that the space a `Widget` receives during layouting may
+            not match the request. As a general rule for example, containers try
+            to pass on all available space to children. If you really want a
+            `Widget` to only take up as much space as requested, consider
+            specifying an alignment.
+
+        height: How much vertical space this widget should request during
+            layouting. This can be either a number, or one of the special
+            values:
+
+            If `"natural"`, the widget will request the minimum amount it
+            requires to fit on the screen. For example a `Text` will request
+            however much space the characters of that text require. A `Row`
+            would request the height of its tallest child.
+
+            If `"grow"`, the widget will request all the remaining space in its
+            parent.
+
+            Please note that the space a `Widget` receives during layouting may
+            not match the request. As a general rule for example, containers try
+            to pass on all available space to children. If you really want a
+            `Widget` to only take up as much space as requested, consider
+            specifying an alignment.
+
+        align_x: How this widget should be aligned horizontally, if it receives
+            more space than it requested. This can be a number between 0 and 1,
+            where 0 means left-aligned, 0.5 means centered, and 1 means
+            right-aligned.
+
+        align_y: How this widget should be aligned vertically, if it receives
+            more space than it requested. This can be a number between 0 and 1,
+            where 0 means top-aligned, 0.5 means centered, and 1 means
+            bottom-aligned.
+    """
+
     _: KW_ONLY
     key: Optional[str] = None
 
@@ -641,7 +747,7 @@ class Widget(metaclass=WidgetMeta):
         dictionary to this function, which will be used to memoize the result.
 
         Be careful not to reuse the cache if the widget hierarchy might have
-        changed (e.g. after an async yield).
+        changed (for example after an async yield).
         """
 
         # Already cached?

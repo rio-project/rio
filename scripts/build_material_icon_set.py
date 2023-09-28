@@ -1,6 +1,9 @@
 """
 This file reads all materials icons/symbols from their github repository and
 packs them into a zip file that can be used by rio as icon set.
+
+The repository is expected to be available locally already - this script does
+not clone it.
 """
 
 import re
@@ -33,7 +36,7 @@ INPUT_DIR = (
 # processed
 INPUT_NAME_PATTERN = r"(.+).svg"
 
-# Configure: (.+).svg"The output file will be written into this directory as
+# Configure: The output file will be written into this directory as
 # <SET_NAME>.zip
 OUTPUT_DIR = rio.common.RIO_ASSETS_DIR / "compressed-icon-sets"
 
@@ -160,7 +163,7 @@ def main() -> None:
 
     print_chapter(None)
     print(
-        f"[bold]Done![/bold] You can find the result at [bold]{OUTPUT_DIR.resolve()}/{SET_NAME}.zip[/bold]"
+        f"[bold]Done![/] You can find the result at [bold]{OUTPUT_DIR.resolve()}/{SET_NAME}.zip[/]"
     )
 
 

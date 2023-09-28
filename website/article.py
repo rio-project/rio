@@ -172,8 +172,8 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
     # Fields
     art.text("Fields", style="heading2")
 
-    if docs.fields:
-        for field in docs.fields:
+    if docs.attributes:
+        for field in docs.attributes:
             art.text(es(field.name), style="heading3")
 
             if field.description is not None:
@@ -244,7 +244,7 @@ def create_widget_api_docs(
     # These are merged into a single section, because developers are unlikely to
     # interact with the attributes anywhere but the constructor.
 
-    for field in docs.fields:
+    for field in docs.attributes:
         art.widget(
             rio.Row(
                 rio.Text(
@@ -258,8 +258,6 @@ def create_widget_api_docs(
                 rio.Spacer(),
             ),
         )
-
-        print(field.name, field.description)
 
         if field.description is not None:
             art.markdown(field.description)
@@ -278,5 +276,31 @@ def create_widget_api_docs(
         art.markdown(docs.long_description)
 
     art.end_section()
+
+    # Functions
+    if docs.functions:
+        art.begin_section()
+        art.text("Functions", style="heading2")
+
+        for func in docs.functions:
+            # Skip the constructor, as it was already handled above
+            if func.name == "__init__":
+                continue
+
+            # Heading
+            art.text(func.name, style="heading3")
+
+            # Signature
+            art.code_block(_str_function_signature(func, owning_class_name=docs.name))
+
+            # Short description
+            if func.short_description is not None:
+                art.markdown(func.short_description)
+
+            # Long description
+            if func.long_description is not None:
+                art.markdown(func.long_description)
+
+        art.end_section()
 
     return art
