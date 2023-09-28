@@ -29,8 +29,10 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
     """
     description: str = ""
     sections: Dict[str, Dict[str, List[str]]] = {}
+
     current_section: Optional[Dict[str, List[str]]] = None
     current_lines: List[str] = []
+    section_indent: int = 0
 
     # Trim the docstring
     docstring = textwrap.dedent(docstring.strip())
@@ -38,11 +40,14 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
     # Process the docstring line by line
     lines = docstring.splitlines()
 
-    for line in lines:
-        line = line.strip()
+    for raw_line in lines:
+        # Strip the line and calculate the indentation
+        line = raw_line.lstrip()
+        indent = len(raw_line) - len(line)
+        line = line.rstrip()
 
         # Start of a new section
-        if line.endswith(":"):
+        if indent == 0 and line.endswith(":"):
             section_name = line[:-1]
             section_name = section_name.strip().lower()
             current_section = sections.setdefault(section_name, {})
@@ -51,10 +56,6 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
         # If not inside a section, append to the description
         if current_section is None:
             description += line + "\n"
-            continue
-
-        # Ignore empty lines
-        if not line:
             continue
 
         # Check if the line contains a colon (:) to separate parameter name and description
@@ -257,16 +258,63 @@ def parse_function(func: Callable) -> models.FunctionDocs:
     )
 
 
+def _parse_class_docstring_with_inheritance(
+    cls: Type,
+) -> Tuple[Optional[str], Optional[str], Dict[str, Dict[str, str]]]:
+    """
+    Parses the docstring of a class in the same format as `parse_docstring`, but
+    accounts for inheritance: Sections of all classes are merged, in a way that
+    preserves child docs over parent docs.
+    """
+
+    # Parse the docstring for this class
+    raw_docs = inspect.getdoc(cls)
+    docstring = parse_docstring(
+        "" if raw_docs is None else raw_docs,
+        enable_attributes=True,
+    )
+
+    # Get the docstrings for the base classes
+    base_docs = []
+
+    for base in cls.__bases__:
+        base_docs.append(_parse_class_docstring_with_inheritance(base))
+
+    # Merge the docstrings
+    result_sections = {}
+    all_in_order = base_docs + [docstring]
+
+    for docs in all_in_order:
+        for section_name, section in docs[2].items():
+            result_section = result_sections.setdefault(section_name, {})
+            result_section.update(section)
+
+    # Done
+    return docstring[0], docstring[1], result_sections
+
+
 def parse_class(cls: Type) -> models.ClassDocs:
     """
     Given a class, parse its signature an docstring into a `ClassDocs` object.
     """
 
     # Parse the functions
-    functions = []
+    #
+    # Make sure to add functions from base classes as well
+    functions_by_name: Dict[str, models.FunctionDocs] = {}
 
-    for name, func in inspect.getmembers(cls, inspect.isfunction):
-        functions.append(parse_function(func))
+    def add_functions(cls: Type) -> None:
+        # Chain to the base classes
+        for base in cls.__bases__:
+            add_functions(base)
+
+        # Then process this class. This way they override inherited functions.
+        for name, func in inspect.getmembers(cls, inspect.isfunction):
+            func_docs = parse_function(func)
+            functions_by_name[name] = func_docs
+
+    add_functions(cls)
+    functions = list(functions_by_name.values())
 
     # Parse the fields
     fields_by_name: Dict[str, models.ClassField] = {}
@@ -303,31 +351,27 @@ def parse_class(cls: Type) -> models.ClassDocs:
                     doc_field.default = repr(default_value)
 
     # Parse the docstring
-    docstring = inspect.getdoc(cls)
+    (
+        short_description,
+        long_description,
+        sections,
+    ) = _parse_class_docstring_with_inheritance(
+        cls,
+    )
 
-    if docstring is None:
-        short_description = None
-        long_description = None
+    # Add any information learned about fields from the docstring
+    raw_attributes = sections["attributes"]
 
-    else:
-        short_description, long_description, sections = parse_docstring(
-            docstring,
-            enable_attributes=True,
-        )
+    for field_name, field_details in raw_attributes.items():
+        try:
+            result_field = fields_by_name[field_name]
+        except KeyError:
+            warning(
+                f"The docstring for class `{cls.__name__}` mentions a field `{field_name}` that does not exist in the class."
+            )
+            continue
 
-        # Add any information learned about fields from the docstring
-        raw_attributes = sections["attributes"]
-
-        for field_name, field_details in raw_attributes.items():
-            try:
-                result_field = fields_by_name[field_name]
-            except KeyError:
-                warning(
-                    f"The docstring for class `{cls.__name__}` mentions a field `{field_name}` that does not exist in the class."
-                )
-                continue
-
-            result_field.description = field_details
+        result_field.description = field_details
 
     # Treat properties as fields
     #
@@ -339,7 +383,7 @@ def parse_class(cls: Type) -> models.ClassDocs:
     # Build the result
     return models.ClassDocs(
         name=cls.__name__,
-        fields=list(fields_by_name.values()),
+        attributes=list(fields_by_name.values()),
         functions=functions,
         short_description=short_description,
         long_description=long_description,

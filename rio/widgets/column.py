@@ -18,12 +18,28 @@ class Column(widget_base.FundamentalWidget):
     second one below that, and so on. All widgets in columns occupy the full
     width.
 
-    <!-- TODO: Explain undefined space -->
+    ### Undefined Space
+
+    Like most containers in `rio`, `Column`s always attempt to allocate all
+    available space to their children. In the context of a column though, this
+    could easily lead to unexpected results. If more space is available than
+    needed, should all children grow? Only the first? Should they grow by equal
+    amounts, or proportionally?
+
+    To avoid this ambiguity, `Column`s have a concept of *undefined space*.
+    Simply put, **not using all available space is considered an error, and
+    should be avoided.** `Column`s indicate this by highlighting the extra space
+    with unmistakable animated sprites.
+
+    Getting rid of undefined space is easy: Depending on what look you're going
+    for, either add a `Spacer` somewhere into your `Column`, assign one of the
+    widgets a `"grow"` value as it's height, or set the `Column`'s vertical
+    alignment.
 
     Attributes:
-        children: The child widgets in this column.
+        children: The `Widget`s to place in this column.
 
-        spacing: How much space to leave between two adjacent children. No
+        spacing: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.
     """
 
