@@ -8,7 +8,7 @@ from dataclasses import dataclass, is_dataclass
 from typing import *  # type: ignore
 
 import introspection.typing
-from stream_tui import *  # type: ignore
+from revel import *  # type: ignore
 
 from rio.inspection import get_type_annotations
 

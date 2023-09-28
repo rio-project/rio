@@ -1,7 +1,7 @@
 import json
 from typing import *  # type: ignore
 
-from stream_tui import *  # type: ignore
+from revel import *  # type: ignore
 
 import rio.debug.crawl_tree as ct
 
