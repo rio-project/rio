@@ -27,6 +27,7 @@ pandas = { version = "^2.0.3", optional = true }
 plotly = { version = "^5.16.1", optional = true }
 babel = "^2.12.1"
 yarl = "^1.9.2"
+revel = "0.7.2"
 
 [tool.poetry.extras]
 window = ["cefpython3", "pygobject", "pywebview"]
@@ -38,7 +39,6 @@ coverage = "^7.2.2"
 isort = "^5.12.0"
 pre-commit = "^3.1.1"
 pytest = "^7.3.1"
-stream-tui = "^0.6.1"
 ipykernel = "^6.25.2"
 
 
