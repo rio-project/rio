@@ -16,9 +16,7 @@ export class SliderWidget extends WidgetBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('mdc-slider');
-        element.classList.add('rio-slider');
-        element.style.pointerEvents = 'auto';
+        element.classList.add('rio-slider', 'mdc-slider');
 
         element.innerHTML = `
         <input class="mdc-slider__input" type="range" min="0" max="1000" value="250">
