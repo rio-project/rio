@@ -48,6 +48,5 @@ async def test_init_cannot_read_state_properties(create_mockapp):
         def build(self) -> rio.Widget:
             return IllegalWidget(17)
 
-    root_widget = Container()
-    async with create_mockapp(root_widget):
+    async with create_mockapp(Container):
         pass

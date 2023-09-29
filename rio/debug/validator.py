@@ -411,10 +411,7 @@ class Validator:
             )
 
         # Make sure all widgets in the session have had their session injected
-        for widget in self.session._root_widget._iter_direct_and_indirect_children(
-            include_self=True,
-            cross_build_boundaries=True,
-        ):
+        for widget in self.session._root_widget._iter_widget_tree():
             if widget._session_ is None:
                 raise ValidationError(
                     f"Widget `{widget}` has not had its session injected"

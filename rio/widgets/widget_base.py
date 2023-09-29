@@ -710,17 +710,19 @@ class Widget(metaclass=WidgetMeta):
                     if isinstance(item, Widget):
                         yield item
 
-    def _iter_direct_and_indirect_children(
+    def _iter_direct_and_indirect_child_containing_attributes(
         self,
         *,
         include_self: bool,
-        cross_build_boundaries: bool,
+        recurse_into_high_level_widgets: bool,
     ) -> Iterable["Widget"]:
         # Special case the widget itself to handle `include_self`
         if include_self:
             yield self
 
-        if not cross_build_boundaries and not isinstance(self, FundamentalWidget):
+        if not recurse_into_high_level_widgets and not isinstance(
+            self, FundamentalWidget
+        ):
             return
 
         # Iteratively yield all children
@@ -729,8 +731,21 @@ class Widget(metaclass=WidgetMeta):
             cur = to_do.pop()
             yield cur
 
-            if cross_build_boundaries or isinstance(cur, FundamentalWidget):
+            if recurse_into_high_level_widgets or isinstance(cur, FundamentalWidget):
                 to_do.extend(cur._iter_direct_children())
+
+    def _iter_widget_tree(self) -> Iterable["Widget"]:
+        """
+        Iterate over all widgets in the widget tree, with this widget as the root.
+        """
+        yield self
+
+        if isinstance(self, FundamentalWidget):
+            for child in self._iter_direct_children():
+                yield from child._iter_widget_tree()
+        else:
+            build_result = self.session._weak_widget_data_by_widget[self].build_result
+            yield from build_result._iter_widget_tree()
 
     async def _on_message(self, msg: Jsonable) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
@@ -769,7 +784,7 @@ class Widget(metaclass=WidgetMeta):
             # Has the builder since created new build output, and this widget
             # isn't part of it anymore?
             else:
-                parent_data = self.session._lookup_widget_data(builder)
+                parent_data = self.session._weak_widget_data_by_widget[builder]
                 result = (
                     parent_data.build_generation == self._build_generation_
                     and builder._is_in_widget_tree(cache)

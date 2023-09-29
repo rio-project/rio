@@ -654,39 +654,11 @@ class AppServer(fastapi.FastAPI):
         # Accept the socket
         await websocket.accept()
 
-        # Check if this is a reconnect
-        if hasattr(sess, "window_width"):
-            init_coro = sess._send_reconnect_message()
-        else:
-            await self._finish_session_initialization(sess, websocket, session_token)
+        # Optionally create a validator
+        validator_instance = (
+            None if self.validator_factory is None else self.validator_factory(sess)
+        )
 
-            # Trigger a refresh. This will also send the initial state to the
-            # frontend.
-            init_coro = sess._refresh()
-
-        try:
-            # This is done in a task, because the server is not yet running, so
-            # the method would never receive a response, and thus would hang
-            # indefinitely.
-            sess._create_task(init_coro, name=f"Session {sess} init")
-
-            # Serve the socket
-            await sess.serve()
-
-        # Don't spam the terminal just because a client disconnected
-        except fastapi.WebSocketDisconnect:
-            pass
-
-        finally:
-            # Fire the session end event
-            await sess._call_event_handler(self.on_session_end, sess)
-
-    async def _finish_session_initialization(
-        self,
-        sess: session.Session,
-        websocket: fastapi.WebSocket,
-        session_token: str,
-    ) -> None:
         # Create a function for sending messages to the frontend. This function
         # will also pipe the message to the validator if one is present.
         if self.validator_factory is None:
@@ -721,6 +693,39 @@ class AppServer(fastapi.FastAPI):
             sess._send_message = send_message
             sess._receive_message = receive_message
 
+        # Check if this is a reconnect
+        if hasattr(sess, "window_width"):
+            init_coro = sess._send_reconnect_message()
+        else:
+            await self._finish_session_initialization(sess, websocket, session_token)
+
+            # Trigger a refresh. This will also send the initial state to the
+            # frontend.
+            init_coro = sess._refresh()
+
+        try:
+            # This is done in a task, because the server is not yet running, so
+            # the method would never receive a response, and thus would hang
+            # indefinitely.
+            sess._create_task(init_coro, name=f"Session {sess} init")
+
+            # Serve the socket
+            await sess.serve()
+
+        # Don't spam the terminal just because a client disconnected
+        except fastapi.WebSocketDisconnect:
+            pass
+
+        finally:
+            # Fire the session end event
+            await sess._call_event_handler(self.on_session_end, sess)
+
+    async def _finish_session_initialization(
+        self,
+        sess: session.Session,
+        websocket: fastapi.WebSocket,
+        session_token: str,
+    ) -> None:
         # Upon connecting, the client sends an initial message containing
         # information about it. Wait for that, but with a timeout - otherwise
         # evildoers could overload the server with connections that never send
@@ -820,11 +825,6 @@ class AppServer(fastapi.FastAPI):
 
                 # Attach the instance to the session
                 sess.attachments._add(att_instance, synchronize=False)
-
-        # Optionally create a validator
-        validator_instance = (
-            None if self.validator_factory is None else self.validator_factory(sess)
-        )
 
         # Create the root widget. The root widget is a non-fundamental widget,
         # because that has many advantages:
