@@ -426,23 +426,6 @@ class Session(unicall.Unicall):
 
         self._create_task(event_worker())
 
-    def _lookup_widget_data(self, widget: rio.Widget) -> WidgetData:
-        """
-        Returns the widget data for the given widget. Raises `KeyError` if no
-        data is present for the widget.
-        """
-        try:
-            return self._weak_widget_data_by_widget[widget]
-        except KeyError:
-            raise KeyError(widget) from None
-
-    def _lookup_widget(self, widget_id: int) -> rio.Widget:
-        """
-        Returns the widget and its data for the given widget ID. Raises
-        `KeyError` if no widget is present for the ID.
-        """
-        return self._weak_widgets_by_id[widget_id]
-
     def _register_dirty_widget(
         self,
         widget: rio.Widget,
@@ -520,7 +503,7 @@ class Session(unicall.Unicall):
 
             # Has this widget been built before?
             try:
-                widget_data = self._lookup_widget_data(widget)
+                widget_data = self._weak_widget_data_by_widget[widget]
 
             # No, this is the first time
             except KeyError:
@@ -557,10 +540,11 @@ class Session(unicall.Unicall):
             # Inject the builder and build generation
             weak_builder = weakref.ref(widget)
 
-            for child in widget_data.build_result._iter_direct_and_indirect_children(
+            children = widget_data.build_result._iter_direct_and_indirect_child_containing_attributes(
                 include_self=True,
-                cross_build_boundaries=False,
-            ):
+                recurse_into_high_level_widgets=False,
+            )
+            for child in children:
                 child._weak_builder_ = weak_builder
                 child._build_generation_ = widget_data.build_generation
 
@@ -636,19 +620,10 @@ class Session(unicall.Unicall):
         async with self._refresh_lock:
             visited_widgets = set()
             delta_states = {}
-            to_do = [self._root_widget]
 
-            while to_do:
-                widget = to_do.pop()
+            for widget in self._root_widget._iter_widget_tree():
                 visited_widgets.add(widget)
-
-                cur_serialized = self._serialize_and_host_widget(widget)
-                delta_states[widget._id] = cur_serialized
-
-                if isinstance(widget, widget_base.FundamentalWidget):
-                    to_do += widget._iter_direct_children()
-                else:
-                    to_do.append(self._lookup_widget_data(widget).build_result)
+                delta_states[widget._id] = self._serialize_and_host_widget(widget)
 
             await self._update_widget_states(visited_widgets, delta_states)
 
@@ -780,7 +755,9 @@ class Session(unicall.Unicall):
             # Take care to add underscores to any properties here, as the
             # user-defined state is also added and could clash
             result["_type_"] = "Placeholder"
-            result["_child_"] = self._lookup_widget_data(widget).build_result._id
+            result["_child_"] = self._weak_widget_data_by_widget[
+                widget
+            ].build_result._id
 
         return result
 
@@ -1030,9 +1007,9 @@ class Session(unicall.Unicall):
             widget: rio.Widget,
             include_self: bool = True,
         ) -> None:
-            for child in widget._iter_direct_and_indirect_children(
+            for child in widget._iter_direct_and_indirect_child_containing_attributes(
                 include_self=include_self,
-                cross_build_boundaries=True,
+                recurse_into_high_level_widgets=True,
             ):
                 register_widget_by_key(widgets_by_key, child)
 
@@ -1313,7 +1290,7 @@ document.body.removeChild(a)
         """
 
         try:
-            return self._lookup_widget(widget_id)
+            return self._weak_widgets_by_id[widget_id]
         except KeyError:
             logging.warn(
                 f"Encountered message for unknown widget {widget_id}. (The widget might have been deleted in the meantime.)"

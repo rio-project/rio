@@ -95,7 +95,7 @@ def _dump_worker(
         children = list(widget._iter_direct_children())
         child_builder = builder
     else:
-        widget_data = sess._lookup_widget_data(widget)
+        widget_data = sess._weak_widget_data_by_widget[widget]
         children = [widget_data.build_result]
         child_builder = widget._id
 

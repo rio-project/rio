@@ -15,16 +15,21 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
         def build(self):
             return rio.Text(self.label, width=self.width, height=self.height)
 
-    square_widget = SquareWidget("Hello", size=10)
-    root_widget = rio.Container(square_widget)
+    class RootWidget(rio.Widget):
+        text: str
 
-    async with create_mockapp(root_widget) as app:
-        assert not app.dirty_widgets
+        def build(self):
+            square_widget = SquareWidget(self.text, size=10)
+            return rio.Container(square_widget)
+
+    async with create_mockapp(lambda: RootWidget("Hello")) as app:
+        root_widget = app.get_root_widget()
+        square_widget = app.get_widget(SquareWidget)
 
         # Create a new SquareWidget with the default size. Since we aren't
-        # explicitly passing a size to the constructor, reconciliation should keep
-        # the old size.
-        root_widget.child = SquareWidget("World")
+        # explicitly passing a size to the constructor, reconciliation should
+        # keep the old size.
+        root_widget.text = "World"
         await root_widget.force_refresh()
 
         assert square_widget.label == "World"
@@ -33,11 +38,13 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
 
 
 async def test_reconcile_same_widget_instance(create_mockapp):
-    root_widget = rio.Container(rio.Text("Hello"))
+    def build():
+        return rio.Container(rio.Text("Hello"))
 
-    async with create_mockapp(root_widget) as app:
+    async with create_mockapp(build) as app:
         app.outgoing_messages.clear()
 
+        root_widget = app.get_widget(rio.Container)
         await root_widget.force_refresh()
 
         # Nothing changed, so there's no need to send any data to JS. But in
@@ -76,9 +83,8 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
         def build(self):
             return self.child
 
-    root_widget = HighLevelWidget1()
-
-    async with create_mockapp(root_widget) as app:
+    async with create_mockapp(HighLevelWidget1) as app:
+        root_widget = app.get_widget(HighLevelWidget1)
         root_widget.switch = True
         await app.refresh()
 
@@ -106,6 +112,8 @@ async def test_reconcile_unusual_types(create_mockapp):
         def build(self):
             return rio.Text(self.text)
 
-    root_widget = Container()
-    async with create_mockapp(root_widget) as mock_app:
+    async with create_mockapp(Container) as app:
+        root_widget = app.get_widget(Container)
+
+        # As long as this doesn't crash, it's fine
         await root_widget.force_refresh()
