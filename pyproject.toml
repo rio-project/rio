@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "rio-ui"
 version = "0.3.0"
@@ -40,11 +44,6 @@ isort = "^5.12.0"
 pre-commit = "^3.1.1"
 pytest = "^7.3.1"
 ipykernel = "^6.25.2"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
