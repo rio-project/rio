@@ -1234,7 +1234,20 @@ document.body.removeChild(a)
 
         self._create_task(keepaliver())
 
-    @unicall.remote(name="updateWidgetStates", parameter_format="dict")
+    async def _apply_theme(self, thm: theme.Theme) -> None:
+        serialized_theme = thm._serialize(self)
+        await self._remote_apply_theme(serialized_theme)
+
+    @unicall.remote(name="applyTheme", parameter_format="dict", await_response=False)
+    async def _remote_apply_theme(
+        self,
+        theme: Any,
+    ) -> None:
+        raise NotImplementedError
+
+    @unicall.remote(
+        name="updateWidgetStates", parameter_format="dict", await_response=False
+    )
     async def _remote_update_widget_states(
         self,
         # Maps widget ids to serialized widgets. The widgets may be partial,
@@ -1248,14 +1261,18 @@ document.body.removeChild(a)
         """
         raise NotImplementedError
 
-    @unicall.remote(name="evaluateJavaScript", parameter_format="dict")
+    @unicall.remote(
+        name="evaluateJavaScript", parameter_format="dict", await_response=True
+    )
     async def _evaluate_javascript(self, java_script_source: str) -> Any:
         """
         Evaluate the given javascript code in the client.
         """
         raise NotImplementedError
 
-    @unicall.remote(name="requestFileUpload", parameter_format="dict")
+    @unicall.remote(
+        name="requestFileUpload", parameter_format="dict", await_response=False
+    )
     async def _request_file_upload(
         self,
         upload_url: str,
@@ -1267,7 +1284,7 @@ document.body.removeChild(a)
         """
         raise NotImplementedError
 
-    @unicall.remote(name="setUserSettings")
+    @unicall.remote(name="setUserSettings", await_response=False)
     async def _set_user_settings(self, delta_settings: Dict[str, Any]) -> None:
         """
         Persistently store the given key-value pairs at the user. The values
@@ -1278,7 +1295,7 @@ document.body.removeChild(a)
         """
         raise NotImplementedError
 
-    @unicall.remote(name="registerFont")
+    @unicall.remote(name="registerFont", await_response=False)
     async def _remote_register_font(self, name: str, urls: List[Optional[str]]) -> None:
         raise NotImplementedError
 

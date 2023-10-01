@@ -51,8 +51,11 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-heading-color: var(--rio-global-heading-on-primary-color);
+    --rio-local-heading-background: var(--rio-global-heading-on-primary-background);
     --rio-local-text-color: var(--rio-global-text-on-primary-color);
+    --rio-local-text-background: var(--rio-global-text-on-primary-background);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-secondary-color);
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-secondary-background);
 
     // Material Design Web
     // TODO
@@ -73,8 +76,11 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-heading-color: var(--rio-global-heading-on-secondary-color);
+    --rio-local-heading-background: var(--rio-global-heading-on-secondary-background);
     --rio-local-text-color: var(--rio-global-text-on-secondary-color);
+    --rio-local-text-background: var(--rio-global-text-on-secondary-background);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-primary-color);
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-primary-background);
 
     // Material Design Web
     // TODO
@@ -93,6 +99,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // --rio-local-heading-color: var(--rio-global-text-on-success-color);
     // --rio-local-text-color: var(--rio-global-text-on-success-color);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-success-color);
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-success-background);
 
     // Material Design Web
     // TODO
@@ -111,6 +118,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // --rio-local-heading-color: var(--rio-global-text-on-warning-color);
     // --rio-local-text-color: var(--rio-global-text-on-warning-color);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-warning-color);
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-warning-background);
 
     // Material Design Web
     // TODO
@@ -129,6 +137,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // --rio-local-heading-color: var(--rio-global-text-on-danger-color);
     // --rio-local-text-color: var(--rio-global-text-on-danger-color);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-danger-color);
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-danger-background);
 
     // Material Design Web
     // TODO
@@ -146,7 +155,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-heading-color: var(--rio-local-text-color);
+    --rio-local-heading-background: var(--rio-local-text-background);
     --rio-local-text-color: var(--rio-local-text-color);
+    --rio-local-text-background: var(--rio-local-text-background);
 
     // Material Design Web
     // TODO
@@ -168,7 +179,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-heading-color: var(--rio-global-heading-on-surface-color);
+    --rio-local-heading-background: var(--rio-global-heading-on-surface-background);
     --rio-local-text-color: var(--rio-global-text-on-surface-color);
+    --rio-local-text-background: var(--rio-global-text-on-surface-background);
 
     // Material Design Web
     --mdc-theme-primary: var(--rio-global-secondary-color);
@@ -190,6 +203,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-text-color: var(--rio-global-text-on-surface-color);
+    --rio-local-text-background: var(--rio-global-text-on-surface-background);
 
     // Material Design Web
     // TODO
@@ -204,6 +218,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-text-color: var(--rio-local-custom-text-color);
+    --rio-local-text-background: var(--rio-local-custom-text-background);
 
     // Material Design Web
     // TODO

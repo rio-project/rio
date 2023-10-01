@@ -1,4 +1,5 @@
-import { getInstanceByWidgetId, pixelsPerEm, replaceOnlyChild } from './app';
+import { pixelsPerEm } from '../app';
+import { getInstanceByWidgetId, replaceOnlyChild } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 function eventMouseButtonToString(event: MouseEvent): object {

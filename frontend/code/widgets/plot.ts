@@ -1,4 +1,4 @@
-import { fillToCss } from './app';
+import { fillToCss } from '../cssUtils';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 type PlotState = WidgetState & {
@@ -7,7 +7,7 @@ type PlotState = WidgetState & {
     boxStyle: object;
 };
 
-function loadPlotly(callback) {
+function loadPlotly(callback: () => void): void {
     if (typeof Plotly === 'undefined') {
         console.log('Fetching plotly.js');
         let script = document.createElement('script');
@@ -21,7 +21,7 @@ function loadPlotly(callback) {
 
 function applyStyle(element: HTMLElement, style: any) {
     // Fill
-    element.style.background = fillToCss(style.fill);
+    Object.assign(element.style, fillToCss(style.fill));
 
     // Corner radius
     element.style.borderRadius = `${style.cornerRadius[0]}em ${style.cornerRadius[1]}em ${style.cornerRadius[2]}em ${style.cornerRadius[3]}em`;

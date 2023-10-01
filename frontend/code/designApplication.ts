@@ -1,22 +1,24 @@
 import { Color, ColorSet, Fill } from './models';
+import { colorToCssString } from './cssUtils';
+
 
 export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
-    let switcheroo;
+    let switcheroo: string;
 
     // Is this a color instance?
     if (typeof colorSet !== 'string') {
         // Expose the color as CSS variables
         element.style.setProperty(
             '--rio-local-custom-color',
-            colorToCss(colorSet.color)
+            colorToCssString(colorSet.color)
         );
         element.style.setProperty(
             '--rio-local-custom-color-variant',
-            colorToCss(colorSet.colorVariant)
+            colorToCssString(colorSet.colorVariant)
         );
         element.style.setProperty(
             '--rio-local-custom-color-variant',
-            colorToCss(colorSet.textColor)
+            colorToCssString(colorSet.textColor)
         );
 
         // Select the custom switcheroo
@@ -40,28 +42,6 @@ export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
 
     // Add the new switcheroo
     element.classList.add(`rio-switcheroo-${switcheroo}`);
-}
-
-export function colorToCss(color: Color): string {
-    const [r, g, b, a] = color;
-
-    const red = Math.round(r * 255)
-        .toString(16)
-        .padStart(2, '0');
-
-    const green = Math.round(g * 255)
-        .toString(16)
-        .padStart(2, '0');
-
-    const blue = Math.round(b * 255)
-        .toString(16)
-        .padStart(2, '0');
-
-    const alpha = Math.round(a * 255)
-        .toString(16)
-        .padStart(2, '0');
-
-    return `#${red}${green}${blue}${alpha}`;
 }
 
 export function applyFillToSVG(svgRoot: SVGSVGElement, fill: Fill): void {

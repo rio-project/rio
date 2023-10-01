@@ -1,4 +1,4 @@
-import { replaceOnlyChild } from './app';
+import { replaceOnlyChild } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type ScrollTargetState = WidgetState & {

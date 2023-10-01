@@ -1,4 +1,4 @@
-import { getInstanceByWidgetId, replaceChildren } from './app';
+import { getInstanceByWidgetId, replaceChildren } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type StackState = WidgetState & {

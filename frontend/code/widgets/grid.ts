@@ -1,4 +1,4 @@
-import { getElementByWidgetId, replaceChildren } from './app';
+import { getElementByWidgetId, replaceChildren } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 type GridChildPosition = {
@@ -43,14 +43,12 @@ export class GridWidget extends WidgetBase {
             let childElement = getElementByWidgetId(childId);
 
             childElement.style.gridRowStart = `${childPosition.row + 1}`;
-            childElement.style.gridRowEnd = `${
-                childPosition.row + 1 + childPosition.height
-            }`;
+            childElement.style.gridRowEnd = `${childPosition.row + 1 + childPosition.height
+                }`;
 
             childElement.style.gridColumnStart = `${childPosition.column + 1}`;
-            childElement.style.gridColumnEnd = `${
-                childPosition.column + 1 + childPosition.width
-            }`;
+            childElement.style.gridColumnEnd = `${childPosition.column + 1 + childPosition.width
+                }`;
         });
     }
 }

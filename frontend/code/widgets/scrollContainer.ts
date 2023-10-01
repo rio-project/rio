@@ -1,4 +1,4 @@
-import { getInstanceByWidgetId, replaceOnlyChild } from './app';
+import { getInstanceByWidgetId, replaceOnlyChild } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type ScrollContainerState = WidgetState & {

@@ -32,9 +32,7 @@ class Testimonial(rio.Widget):
                         style=rio.TextStyle(
                             font_size=1.0,
                             font_weight="bold",
-                            font_color=theme.THEME.text_color_for(
-                                theme.THEME.surface_color
-                            ),
+                            fill=theme.THEME.text_color_for(theme.THEME.surface_color),
                         ),
                     ),
                     width="grow",

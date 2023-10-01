@@ -15,7 +15,7 @@ class MarkdownStyle:
     # Headers
     header_1_style: rio.TextStyle = rio.TextStyle(
         font_size=1.5,
-        font_color=rio.Color.BLACK,
+        fill=rio.Color.BLACK,
     )
     header_2_style: rio.TextStyle = header_1_style.replace(
         font_size=1.35,
@@ -39,7 +39,7 @@ class MarkdownStyle:
     text_body_style: rio.TextStyle = rio.TextStyle()
 
     hyperlink_style: rio.TextStyle = rio.TextStyle(
-        font_color=rio.Color.BLUE,
+        fill=rio.Color.BLUE,
     )
 
     def replace(

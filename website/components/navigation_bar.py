@@ -73,7 +73,7 @@ class NavigationBar(rio.Widget):
                         style=rio.TextStyle(
                             font_size=1.5,
                             font_weight="bold",
-                            font_color=text_color,
+                            fill=text_color,
                         ),
                     ),
                     spacing=0.7,

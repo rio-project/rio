@@ -48,8 +48,8 @@ class ColorPickerPopup(rio.Widget):
 class ColorSwatch(rio.Widget):
     theme: rio.Theme
     description: Optional[str]
-    heading_color: rio.Color
-    text_color: rio.Color
+    heading_fill: rio.FillLike
+    text_fill: rio.FillLike
     color_property_names: List[Tuple[str, str, bool]]
     currently_edited_property_name: Optional[str]
 
@@ -86,10 +86,10 @@ class ColorSwatch(rio.Widget):
             if ii == 0:
                 # Prepare text styles
                 heading_style = self.theme.heading3_style.replace(
-                    font_color=self.heading_color,
+                    fill=self.heading_fill,
                 )
                 text_style = self.theme.text_style.replace(
-                    font_color=self.text_color,
+                    fill=self.text_fill,
                 )
 
                 children = [
@@ -121,7 +121,7 @@ class ColorSwatch(rio.Widget):
                 child = rio.Text(
                     text=color_nice_name,
                     style=self.theme.text_style.replace(
-                        font_color=self.theme.text_color_for(color),
+                        fill=self.theme.text_color_for(color),
                     ),
                     margin=0.5,
                 )
@@ -239,8 +239,8 @@ class Sidebar(rio.Widget):
                         ("Primary", "primary_color", True),
                         ("Variant", "primary_color_variant", True),
                     ],
-                    heading_color=self.theme.heading_on_primary_color,
-                    text_color=self.theme.text_on_primary_color,
+                    heading_fill=self.theme.heading_on_primary_color,
+                    text_fill=self.theme.text_on_primary_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -250,8 +250,8 @@ class Sidebar(rio.Widget):
                         ("Secondary", "secondary_color", True),
                         ("Variant", "secondary_color_variant", True),
                     ],
-                    heading_color=self.theme.heading_on_secondary_color,
-                    text_color=self.theme.text_on_secondary_color,
+                    heading_fill=self.theme.heading_on_secondary_color,
+                    text_fill=self.theme.text_on_secondary_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -263,8 +263,8 @@ class Sidebar(rio.Widget):
                         ("Active", "surface_active_color", True),
                         ("Background", "background_color", True),
                     ],
-                    heading_color=self.theme.heading1_style.font_color,
-                    text_color=self.theme.text_style.font_color,
+                    heading_fill=self.theme.heading1_style.fill,
+                    text_fill=self.theme.text_style.fill,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -274,8 +274,8 @@ class Sidebar(rio.Widget):
                         ("Success", "success_color", True),
                         ("Variant", "success_color_variant", True),
                     ],
-                    heading_color=self.theme.text_on_success_color,
-                    text_color=self.theme.text_on_success_color,
+                    heading_fill=self.theme.text_on_success_color,
+                    text_fill=self.theme.text_on_success_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -285,8 +285,8 @@ class Sidebar(rio.Widget):
                         ("Warning", "warning_color", True),
                         ("Variant", "warning_color_variant", True),
                     ],
-                    heading_color=self.theme.text_on_warning_color,
-                    text_color=self.theme.text_on_warning_color,
+                    heading_fill=self.theme.text_on_warning_color,
+                    text_fill=self.theme.text_on_warning_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -296,8 +296,8 @@ class Sidebar(rio.Widget):
                         ("Danger", "danger_color", True),
                         ("Variant", "danger_color_variant", True),
                     ],
-                    heading_color=self.theme.text_on_danger_color,
-                    text_color=self.theme.text_on_danger_color,
+                    heading_fill=self.theme.text_on_danger_color,
+                    text_fill=self.theme.text_on_danger_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -306,10 +306,10 @@ class Sidebar(rio.Widget):
                     color_property_names=[
                         ("Text on Dark", "text_color_on_dark", True),  # type: ignore
                     ],
-                    heading_color=self.theme.text_color_for(
+                    heading_fill=self.theme.text_color_for(
                         self.theme.text_color_on_dark
                     ),
-                    text_color=self.theme.text_color_for(self.theme.text_color_on_dark),
+                    text_fill=self.theme.text_color_for(self.theme.text_color_on_dark),
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 ColorSwatch(
@@ -318,12 +318,10 @@ class Sidebar(rio.Widget):
                     color_property_names=[
                         ("Text on Light", "text_color_on_light", True),  # type: ignore
                     ],
-                    heading_color=self.theme.text_color_for(
+                    heading_fill=self.theme.text_color_for(
                         self.theme.text_color_on_light
                     ),
-                    text_color=self.theme.text_color_for(
-                        self.theme.text_color_on_light
-                    ),
+                    text_fill=self.theme.text_color_for(self.theme.text_color_on_light),
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),
                 spacing=1,

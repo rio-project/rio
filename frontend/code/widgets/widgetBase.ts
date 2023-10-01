@@ -1,6 +1,8 @@
-import { callRemoteMethodDiscardResponse } from './app';
 
 /// Base for all widget states. Updates received from the backend are partial,
+
+import { callRemoteMethodDiscardResponse } from "../rpc";
+
 /// hence most properties may be undefined.
 export type WidgetState = {
     _type_?: string;
