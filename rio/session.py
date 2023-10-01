@@ -68,6 +68,29 @@ async def dummy_receive_message() -> JsonDoc:
     raise NotImplementedError()
 
 
+def _host_and_get_fill_as_css_variables(
+    fill: rio.FillLike, sess: "Session"
+) -> Dict[str, str]:
+    # Convert the fill
+    fill = rio.Fill._try_from(fill)
+
+    if isinstance(fill, rio.SolidFill):
+        return {
+            "text-color": f"#{fill.color.hex}",
+            "text-background": "none",
+            "text-background-clip": "border-box",
+            "text-fill-color": "transparent",
+        }
+
+    assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill
+    return {
+        "text-color": "var(--rio-local-text-color)",
+        "text-background": fill._as_css_background(sess),
+        "text-background-clip": "text",
+        "text-fill-color": "transparent",
+    }
+
+
 class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
@@ -420,7 +443,7 @@ class Session(unicall.Unicall):
         async def event_worker() -> None:
             for widget, callback in self._route_change_callbacks.items():
                 self._create_task(
-                    self._call_event_handler(lambda widget=widget: callback(widget)),
+                    self._call_event_handler(callback, widget),
                     name="`on_route_change` event handler",
                 )
 
@@ -1111,7 +1134,7 @@ class Session(unicall.Unicall):
 
             font_assets.append(asset)
 
-        self._create_task(self._remote_register_font(font.name, urls))
+        self._create_task(self._remote_register_font(font.name, urls))  # type: ignore
 
         self._registered_font_assets[font.name] = font_assets
 
@@ -1235,18 +1258,111 @@ document.body.removeChild(a)
         self._create_task(keepaliver())
 
     async def _apply_theme(self, thm: theme.Theme) -> None:
-        serialized_theme = thm._serialize(self)
-        await self._remote_apply_theme(serialized_theme)
+        """
+        Updates the client's theme to match the given one.
+        """
+        # Build the set of all variables
 
-    @unicall.remote(name="applyTheme", parameter_format="dict", await_response=False)
+        # Miscellaneous
+        variables: Dict[str, str] = {
+            "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
+            "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",
+            "--rio-global-shadow-radius": f"{thm.shadow_radius}rem",
+        }
+
+        # Theme Colors
+        color_names = (
+            "primary_color",
+            "secondary_color",
+            "disabled_color",
+            "primary_color_variant",
+            "secondary_color_variant",
+            "disabled_color_variant",
+            "background_color",
+            "surface_color",
+            "surface_color_variant",
+            "surface_active_color",
+            "success_color",
+            "warning_color",
+            "danger_color",
+            "success_color_variant",
+            "warning_color_variant",
+            "danger_color_variant",
+            "shadow_color",
+            "text_color_on_light",
+            "text_color_on_dark",
+        )
+
+        for py_color_name in color_names:
+            css_color_name = f'--rio-global-{py_color_name.replace("_", "-")}'
+            color = getattr(thm, py_color_name)
+            assert isinstance(color, rio.Color), color
+            variables[css_color_name] = f"#{color.hex}"
+
+        # Text styles
+        style_names = (
+            "heading1",
+            "heading2",
+            "heading3",
+            "text",
+        )
+
+        for style_name in style_names:
+            style = getattr(thm, f"{style_name}_style")
+            assert isinstance(style, rio.TextStyle), style
+
+            css_prefix = f"--rio-global-{style_name}"
+            variables[f"{css_prefix}-font-name"] = style.font._serialize(self)
+            variables[f"{css_prefix}-font-size"] = f"{style.font_size}rem"
+            variables[f"{css_prefix}-italic"] = "italic" if style.italic else "normal"
+            variables[f"{css_prefix}-font-weight"] = style.font_weight
+            variables[f"{css_prefix}-underlined"] = (
+                "underline" if style.underlined else "unset"
+            )
+            variables[f"{css_prefix}-all-caps"] = (
+                "uppercase" if style.all_caps else "unset"
+            )
+
+            # CSS variables for the fill
+            fill_variables = _host_and_get_fill_as_css_variables(style.fill, self)
+
+            for var, value in fill_variables.items():
+                variables[f"{css_prefix}-{var}"] = value
+
+        # Colors derived from, but not stored in the theme
+        derived_colors = {
+            "text-on-primary-color": thm.text_color_for(thm.primary_color),
+            "text-on-secondary-color": thm.text_color_for(thm.secondary_color),
+            "text-on-success-color": thm.text_color_for(thm.success_color),
+            "text-on-warning-color": thm.text_color_for(thm.warning_color),
+            "text-on-danger-color": thm.text_color_for(thm.danger_color),
+        }
+
+        for css_name, color in derived_colors.items():
+            variables[f"--rio-global-{css_name}"] = f"#{color.hex}"
+
+        # Update the variables client-side
+        await self._remote_apply_theme(
+            variables,
+            "light" if thm.background_color.perceived_brightness > 0.5 else "dark",
+        )
+
+    @unicall.remote(
+        name="applyTheme",
+        parameter_format="dict",
+        await_response=False,
+    )
     async def _remote_apply_theme(
         self,
-        theme: Any,
+        css_variables: Dict[str, str],
+        theme_variant: Literal["light", "dark"],
     ) -> None:
         raise NotImplementedError
 
     @unicall.remote(
-        name="updateWidgetStates", parameter_format="dict", await_response=False
+        name="updateWidgetStates",
+        parameter_format="dict",
+        await_response=False,
     )
     async def _remote_update_widget_states(
         self,
@@ -1262,7 +1378,9 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(
-        name="evaluateJavaScript", parameter_format="dict", await_response=True
+        name="evaluateJavaScript",
+        parameter_format="dict",
+        await_response=True,
     )
     async def _evaluate_javascript(self, java_script_source: str) -> Any:
         """
@@ -1271,7 +1389,9 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(
-        name="requestFileUpload", parameter_format="dict", await_response=False
+        name="requestFileUpload",
+        parameter_format="dict",
+        await_response=False,
     )
     async def _request_file_upload(
         self,

@@ -54,8 +54,8 @@ class SampleB(rio.Widget):
     def build(self) -> rio.Widget:
         return _make_sample_rectangle(
             "B",
-            4.0,
-            6.0,
+            5.0,
+            8.0,
             STYLE_B,
         )
 
@@ -64,7 +64,7 @@ class SampleC(rio.Widget):
     def build(self) -> rio.Widget:
         return _make_sample_rectangle(
             "C",
-            8.0,
-            8.0,
+            10.0,
+            10.0,
             STYLE_C,
         )

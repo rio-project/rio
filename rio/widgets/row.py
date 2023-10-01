@@ -12,6 +12,41 @@ __all__ = [
 
 
 class Row(widget_base.FundamentalWidget):
+    """
+    A container that lays out its children horizontally.
+
+    `Row`s are one of the most common widgets in Rio. They take any number of
+    children and lay them out horizontally, with the first one on the left, the
+    second one to its right, and so on. All widgets in `Row`s occupy the full
+    height of their parent.
+
+    The `Row`'s horizontal counterpart is the `Column`.
+
+    ### Undefined Space
+
+    Like most containers in `rio`, `Row`s always attempt to allocate all
+    available space to their children. In the context of a `Row` though, this
+    could easily lead to unexpected results. If more space is available than
+    needed, should all children grow? Only the first? Should they grow by equal
+    amounts, or proportionally?
+
+    To avoid this ambiguity, `Row`s have a concept of *undefined space*. Simply
+    put, **not using all available space is considered an error and should be
+    avoided.** `Row`s indicate this by highlighting the extra space with
+    unmistakable animated sprites.
+
+    Getting rid of undefined space is easy: Depending on what look you're going
+    for, either add a `Spacer` somewhere into your `Row`, assign one of the
+    widgets a `"grow"` value as its height, or set the `Row`'s vertical
+    alignment.
+
+    Attributes:
+        children: The `Widget`s to place in this `Row`.
+
+        spacing: How much empty space to leave between two adjacent children. No
+            spacing is added before the first child or after the last child.
+    """
+
     children: List[rio.Widget]
     spacing: float = 0.0
 

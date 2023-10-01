@@ -13,31 +13,33 @@ class Column(widget_base.FundamentalWidget):
     """
     A container that lays out its children vertically.
 
-    Columns are one of the most common widgets in Rio. They take any number of
-    children and lay them out vertically, with the first on at the top, the
-    second one below that, and so on. All widgets in columns occupy the full
-    width.
+    `Column`s are one of the most common widgets in Rio. They take any number of
+    children and lay them out vertically, with the first one at the top, the
+    second one below that, and so on. All widgets in `Column`s occupy the full
+    width of their parent.
+
+    The `Column`'s horizontal counterpart is the `Row`.
 
     ### Undefined Space
 
     Like most containers in `rio`, `Column`s always attempt to allocate all
-    available space to their children. In the context of a column though, this
+    available space to their children. In the context of a `Column` though, this
     could easily lead to unexpected results. If more space is available than
     needed, should all children grow? Only the first? Should they grow by equal
     amounts, or proportionally?
 
     To avoid this ambiguity, `Column`s have a concept of *undefined space*.
-    Simply put, **not using all available space is considered an error, and
+    Simply put, **not using all available space is considered an error and
     should be avoided.** `Column`s indicate this by highlighting the extra space
     with unmistakable animated sprites.
 
     Getting rid of undefined space is easy: Depending on what look you're going
     for, either add a `Spacer` somewhere into your `Column`, assign one of the
-    widgets a `"grow"` value as it's height, or set the `Column`'s vertical
+    widgets a `"grow"` value as its height, or set the `Column`'s vertical
     alignment.
 
     Attributes:
-        children: The `Widget`s to place in this column.
+        children: The `Widget`s to place in this `Column`.
 
         spacing: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.

@@ -5,7 +5,6 @@ packs them into a zip file that can be used by rio as icon set.
 The repository is expected to be available locally already - this script does
 not clone it.
 """
-
 import re
 import tempfile
 import zipfile
@@ -13,6 +12,7 @@ from pathlib import Path
 from typing import *  # type: ignore
 from xml.etree import ElementTree as ET
 
+import revel
 from revel import *  # type: ignore
 
 import rio
@@ -100,7 +100,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
 
-        with ProgressBar(max=len(in_files), unit="count") as bar:
+        with revel.ProgressBar(max=len(in_files), unit="count") as bar:
             for ii, file_path in enumerate(in_files):
                 bar.progress = ii
 

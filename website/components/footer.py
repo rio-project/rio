@@ -65,6 +65,6 @@ class Footer(rio.Widget):
                 margin=2,
             ),
             style=rio.BoxStyle(
-                fill=theme.THEME.surface_color.darker(0.4),
+                fill=theme.THEME.surface_color.darker(0.8),
             ),
         )

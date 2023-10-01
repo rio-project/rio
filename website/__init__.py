@@ -1,3 +1,4 @@
+import inspect
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -7,7 +8,7 @@ import rio_docs
 
 from . import article
 from . import components as comps
-from . import theme, views
+from . import structure, theme, views
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
@@ -88,8 +89,8 @@ class ColumnSample(rio.Widget):
         )
 
 
-def get_docs() -> rio.Widget:
-    docs = rio_docs.ClassDocs.parse(rio.Column)
+def get_docs(widget_class: Type[rio.Widget]) -> rio.Widget:
+    docs = rio_docs.ClassDocs.parse(widget_class)
     rio_docs.custom.postprocess_widget_docs(docs)
 
     art = article.create_widget_api_docs(
@@ -100,7 +101,46 @@ def get_docs() -> rio.Widget:
     return art.build()
 
 
+# Prepare the list of all documentation routes
+def _make_documentation_routes() -> List[rio.Route]:
+    result = []
+
+    for (
+        url_segment,
+        section_name,
+        article_name,
+        article_or_widget,
+    ) in structure.DOCUMENTATION_STRUCTURE_LINEAR:
+        if inspect.isclass(article_or_widget) and issubclass(
+            article_or_widget, rio.Widget
+        ):
+            make_child = lambda widget_class=article_or_widget: rio.Column(
+                get_docs(widget_class),
+                rio.Spacer(),
+                margin_left=23,
+                margin_bottom=4,
+                spacing=3,
+                width=65,
+                height="grow",
+                align_x=0.5,
+            )
+
+        else:
+            make_child = lambda article=article_or_widget: article().build()
+
+        result.append(
+            rio.Route(
+                url_segment,
+                make_child,
+            )
+        )
+
+    return result
+
+
+# Merge all routes
 routes = [
+    # Top Level Views
     rio.Route(
         "",
         views.HomeView,
@@ -111,24 +151,16 @@ routes = [
         children=[
             rio.Route(
                 "",
-                lambda: rio.Column(
-                    get_docs(),
-                    rio.Spacer(),
-                    margin_left=23,
-                    margin_bottom=4,
-                    spacing=3,
-                    width=65,
-                    height="grow",
-                    align_x=0.5,
-                ),
+                views.DocumentationWelcomePage,
             ),
+            *_make_documentation_routes(),
         ],
     ),
 ]
 
 
 rio_app = rio.App(
-    name="Rio",
+    name="RIO",
     build=AppRoot,
     routes=routes,
     default_attachments=[

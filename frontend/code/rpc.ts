@@ -1,28 +1,28 @@
-import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from "./app";
-import { updateWidgetStates } from "./widgetManagement";
-import { requestFileUpload, registerFont, applyTheme } from "./rpcFunctions";
+import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
+import { updateWidgetStates } from './widgetManagement';
+import { requestFileUpload, registerFont } from './rpcFunctions';
 
 let websocket: WebSocket | null = null;
-const connectionLostPopup = document.querySelector('.rio-error-popup') as HTMLElement;
-
+const connectionLostPopup = document.querySelector(
+    '.rio-error-popup'
+) as HTMLElement;
 
 export type JsonRpcMessage = {
-    jsonrpc: '2.0',
-    id?: number,
-    method?: string,
-    params?: any,
+    jsonrpc: '2.0';
+    id?: number;
+    method?: string;
+    params?: any;
 };
 
 export type JsonRpcResponse = {
-    jsonrpc: '2.0',
-    id: number,
-    result?: any,
+    jsonrpc: '2.0';
+    id: number;
+    result?: any;
     error?: {
-        code: number,
-        message: string,
-    },
+        code: number;
+        message: string;
+    };
 };
-
 
 function createWebsocket(): WebSocket {
     let url = new URL(
@@ -57,12 +57,10 @@ function createWebsocket(): WebSocket {
     return websocket;
 }
 
-
 export function initWebsocket(): void {
     let websocket = createWebsocket();
     websocket.addEventListener('open', sendInitialMessage);
 }
-
 
 function sendInitialMessage(): void {
     // Send the initial message with user information to the server
@@ -90,7 +88,6 @@ function sendInitialMessage(): void {
     });
 }
 
-
 function reconnectWebsocket(attempt: number = 1): void {
     let websocket = createWebsocket();
 
@@ -112,26 +109,27 @@ function reconnectWebsocket(attempt: number = 1): void {
     };
 }
 
-
 function onOpen(): void {
     console.log('Websocket connection opened');
 }
 
-
-function onMessage(event: any) {
+async function onMessage(event: any) {
     // Parse the message JSON
     let message = JSON.parse(event.data);
     console.log('Received message: ', message);
 
     // Handle it
-    processMessage(message);
-}
+    let response = await processMessageReturnResponse(message);
 
+    // If this is a request, send the response
+    if (message.id !== undefined && response !== null) {
+        await sendMessageOverWebsocket(response);
+    }
+}
 
 function onError(event: Event) {
     console.warn(`Websocket error`);
 }
-
 
 function onClose(event: Event) {
     console.log(`Websocket connection closed`);
@@ -140,7 +138,6 @@ function onClose(event: Event) {
     displayConnectionLostPopup();
     // reconnectWebsocket();
 }
-
 
 export function sendMessageOverWebsocket(message: object) {
     if (!websocket) {
@@ -155,7 +152,6 @@ export function sendMessageOverWebsocket(message: object) {
     websocket.send(JSON.stringify(message));
 }
 
-
 export function callRemoteMethodDiscardResponse(
     method: string,
     params: object
@@ -167,8 +163,9 @@ export function callRemoteMethodDiscardResponse(
     });
 }
 
-
-export async function processMessageReturnResponse(message: JsonRpcMessage): Promise<JsonRpcResponse | null> {
+export async function processMessageReturnResponse(
+    message: JsonRpcMessage
+): Promise<JsonRpcResponse | null> {
     // If this isn't a method call, ignore it
     if (message.method === undefined) {
         return null;
@@ -219,11 +216,30 @@ export async function processMessageReturnResponse(message: JsonRpcMessage): Pro
             );
         }
         response = null;
-    } else if (message.method == 'registerFont') {
+    }
+
+    // Load and register a new font
+    else if (message.method == 'registerFont') {
         await registerFont(message.params.name, message.params.urls);
         response = null;
-    } else if (message.method == 'applyTheme') {
-        await applyTheme(message.params.theme);
+    }
+
+    // Apply a theme
+    else if (message.method == 'applyTheme') {
+        // Set the CSS variables
+        for (let key in message.params.cssVariables) {
+            document.documentElement.style.setProperty(
+                key,
+                message.params.cssVariables[key]
+            );
+        }
+
+        // Set the theme variant
+        document.documentElement.setAttribute(
+            'data-theme',
+            message.params.themeVariant
+        );
+
         response = null;
     }
 
@@ -252,17 +268,6 @@ export async function processMessageReturnResponse(message: JsonRpcMessage): Pro
 
     return rpcResponse;
 }
-
-
-export async function processMessage(message: JsonRpcMessage): Promise<void> {
-    let response = await processMessageReturnResponse(message);
-
-    // If this is a request, send the response
-    if (message.id !== undefined && response !== null) {
-        await sendMessageOverWebsocket(response);
-    }
-}
-
 
 function displayConnectionLostPopup(): void {
     connectionLostPopup.style.display = 'block';

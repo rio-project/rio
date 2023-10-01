@@ -239,7 +239,7 @@ class Sidebar(rio.Widget):
                         ("Primary", "primary_color", True),
                         ("Variant", "primary_color_variant", True),
                     ],
-                    heading_fill=self.theme.heading_on_primary_color,
+                    heading_fill=self.theme.heading_on_primary_fill,
                     text_fill=self.theme.text_on_primary_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
                 ),

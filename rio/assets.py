@@ -149,8 +149,21 @@ class Asset(SelfSerializing):
     def _eq(self, other: Asset) -> bool:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def url(self) -> URL:
+        """
+        Returns the URL at which the asset can be accessed. The URL may or may
+        not be relative.
+        """
+        raise NotImplementedError
+
     @abc.abstractmethod
     def _serialize(self, sess: session.Session) -> str:
+        """
+        Make sure this asset is available under its URL, and return that URL,
+        unescaped.
+        """
         raise NotImplementedError
 
 
@@ -158,10 +171,6 @@ class HostedAsset(Asset):
     """
     Base class for assets that are hosted locally.
     """
-
-    def _serialize(self, sess: session.Session) -> str:
-        sess._app_server.weakly_host_asset(self)
-        return self.url()
 
     @property
     def secret_id(self) -> str:
@@ -180,26 +189,17 @@ class HostedAsset(Asset):
         self._secret_id = self._get_secret_id()
         return self._secret_id
 
-    def url(self, server_external_url: Optional[str] = None) -> str:
-        """
-        Returns the URL at which the asset can be accessed. If
-        `server_external_url` is passed the result will be an absolute URL. If
-        not, a relative URL is returned instead.
-        """
-        relative_url = f"/rio/asset/temp-{self.secret_id}"
-
-        if server_external_url is None:
-            return relative_url
-        else:
-            # TODO document this and/or enfoce it in the `AppServer` class already
-            assert not server_external_url.endswith(
-                "/"
-            ), "server_external_url must not end with a slash"
-            return server_external_url + relative_url
-
     @abc.abstractmethod
     def _get_secret_id(self) -> str:
         raise NotImplementedError
+
+    @property
+    def url(self) -> URL:
+        return URL(f"/rio/asset/temp-{self.secret_id}")
+
+    def _serialize(self, sess: session.Session) -> str:
+        sess._app_server.weakly_host_asset(self)
+        return f"/rio/asset/temp-{self.secret_id}"
 
 
 class BytesAsset(HostedAsset):
@@ -273,14 +273,8 @@ class UrlAsset(Asset):
 
         self._url = url
 
-    def _serialize(self, sess: session.Session) -> str:
-        return str(self._url)
-
     def _eq(self, other: UrlAsset) -> bool:
         return self.url == other.url
-
-    def url(self, server_external_url: Optional[str] = None) -> URL:
-        return self._url
 
     async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
         try:
@@ -289,3 +283,10 @@ class UrlAsset(Asset):
                     return await response.read(), response.content_type
         except aiohttp.ClientError:
             raise ValueError(f"Could not fetch asset from {self._url}")
+
+    @property
+    def url(self) -> URL:
+        return self._url
+
+    def _serialize(self, sess: session.Session) -> str:
+        return self._url.human_repr()
