@@ -1,6 +1,6 @@
-import { colorToCss } from './app';
-import { applyColorSet } from './designApplication';
-import { ColorSet } from './models';
+import { colorToCssString } from '../cssUtils';
+import { applyColorSet } from '../designApplication';
+import { ColorSet } from '../models';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type ProgressCircleState = WidgetState & {
@@ -34,7 +34,7 @@ export class ProgressCircleWidget extends WidgetBase {
         if (deltaState.background_color !== undefined) {
             element.style.setProperty(
                 '--background-color',
-                colorToCss(deltaState.background_color)
+                colorToCssString(deltaState.background_color)
             );
         }
 

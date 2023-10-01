@@ -1,4 +1,3 @@
-import { Fill } from './models';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { MDCSlider } from '@material/slider';
 

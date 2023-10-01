@@ -1,6 +1,6 @@
-import { replaceChildren } from './app';
+import { replaceChildren } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { easeIn, easeInOut, easeOut } from './easeFunctions';
+import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 
 const switchDuration = 0.8;
 const progressBarFadeDuration = 0.2;
@@ -123,12 +123,10 @@ export class SlideshowWidget extends WidgetBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${
-                -100 * offset
-            }%)`;
-            this.incomingChild.style.transform = `translateX(${
-                -100 * (offset - 1)
-            }%)`;
+            this.outgoingChild.style.transform = `translateX(${-100 * offset
+                }%)`;
+            this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)
+                }%)`;
 
             // Update the progress bar's opacity
             this.progressBarOpacity = Math.max(

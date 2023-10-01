@@ -1,4 +1,5 @@
-import { pixelsPerEm, replaceOnlyChild } from './app';
+import { pixelsPerEm } from '../app';
+import { replaceOnlyChild } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 export type SizeTripSwitchState = WidgetState & {

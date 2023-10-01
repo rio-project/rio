@@ -1,10 +1,9 @@
 import {
-    colorToCss,
-    fillToCss,
     getInstanceByWidgetId,
     replaceOnlyChild,
-} from './app';
-import { BoxStyle } from './models';
+} from '../widgetManagement';
+import { BoxStyle } from '../models';
+import { colorToCssString, fillToCss } from '../cssUtils';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { MDCRipple } from '@material/ripple';
 
@@ -51,9 +50,9 @@ function setBoxStyleVariables(
             'shadow-offset-y': '0em',
         };
     } else {
-        variables['background'] = fillToCss(style.fill);
+        Object.assign(variables, fillToCss(style.fill));
 
-        variables['stroke-color'] = colorToCss(style.strokeColor);
+        variables['stroke-color'] = colorToCssString(style.strokeColor);
         variables['stroke-width'] = `${style.strokeWidth}em`;
 
         variables['corner-radius-top-left'] = `${style.cornerRadius[0]}em`;
@@ -61,7 +60,7 @@ function setBoxStyleVariables(
         variables['corner-radius-bottom-right'] = `${style.cornerRadius[2]}em`;
         variables['corner-radius-bottom-left'] = `${style.cornerRadius[3]}em`;
 
-        variables['shadow-color'] = colorToCss(style.shadowColor);
+        variables['shadow-color'] = colorToCssString(style.shadowColor);
         variables['shadow-radius'] = `${style.shadowRadius}em`;
         variables['shadow-offset-x'] = `${style.shadowOffset[0]}em`;
         variables['shadow-offset-y'] = `${style.shadowOffset[1]}em`;

@@ -10,7 +10,7 @@ class FooterColumn(rio.Widget):
 
     def build(self) -> rio.Widget:
         text_style = rio.TextStyle(
-            font_color=theme.THEME.text_color_on_dark,
+            fill=theme.THEME.text_color_on_dark,
         )
 
         return rio.Column(
@@ -33,7 +33,7 @@ class Footer(rio.Widget):
                 rio.Text(
                     "Made with ❤️ in Vienna",
                     style=rio.TextStyle(
-                        font_color=rio.Color.WHITE,
+                        fill=rio.Color.WHITE,
                     ),
                     margin_bottom=2,
                 ),

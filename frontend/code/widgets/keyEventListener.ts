@@ -1,4 +1,4 @@
-import { getInstanceByWidgetId, replaceOnlyChild } from './app';
+import { getInstanceByWidgetId, replaceOnlyChild } from '../widgetManagement';
 import { WidgetBase, WidgetState } from './widgetBase';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values

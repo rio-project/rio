@@ -28,7 +28,7 @@ def _make_sample_rectangle(
         child=rio.Text(
             text,
             style=rio.TextStyle(
-                font_color=theme.THEME.text_color_for(
+                fill=theme.THEME.text_color_for(
                     style.fill.color,
                 ),
                 font_weight="bold",

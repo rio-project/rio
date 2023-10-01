@@ -1,6 +1,6 @@
-import { replaceOnlyChild } from './app';
-import { applyColorSet } from './designApplication';
-import { ColorSet } from './models';
+import { replaceOnlyChild } from '../widgetManagement';
+import { applyColorSet } from '../designApplication';
+import { ColorSet } from '../models';
 import { WidgetBase, WidgetState } from './widgetBase';
 import { MDCRipple } from '@material/ripple';
 

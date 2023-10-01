@@ -1,6 +1,6 @@
-import { Color } from './models';
+import { Color } from '../models';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from './colorConversion';
+import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from '../colorConversion';
 
 export type ColorPickerState = WidgetState & {
     color?: Color;

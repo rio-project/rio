@@ -61,133 +61,36 @@ class InitialClientMessage(uniserde.Serde):
     window_height: float
 
 
-def _build_set_theme_variables_message(thm: rio.Theme):
+async def _build_initial_messages(
+    sess: session.Session, thm: rio.Theme
+) -> List[Jsonable]:
     """
-    Build a message which, when sent to the client, sets the root element's CSS
-    theme variables.
-
-    The result is a valid JSON-RPC message, without an ID set (so don't expect a
-    response).
+    Build the initial messages that are sent to the frontend when a new session
+    is established.
     """
+    # We'll temporarily replace the session's `send_message` method and make it
+    # append all the messages to a list.
+    initial_messages: List[Jsonable] = []
 
-    # Build the set of all variables
+    async def send_message(msg: uniserde.Jsonable) -> None:
+        initial_messages.append(msg)
 
-    # Miscellaneous
-    variables: Dict[str, str] = {
-        "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
-        "--rio-global-corner-radius-medium": f"{thm.corner_radius_medium}rem",
-        "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",
-        "--rio-global-shadow-radius": f"{thm.shadow_radius}rem",
-    }
+    sess._send_message = send_message
 
-    # Theme Colors
-    color_names = (
-        "primary_color",
-        "secondary_color",
-        "disabled_color",
-        "primary_color_variant",
-        "secondary_color_variant",
-        "disabled_color_variant",
-        "background_color",
-        "surface_color",
-        "surface_color_variant",
-        "surface_active_color",
-        "success_color",
-        "warning_color",
-        "danger_color",
-        "success_color_variant",
-        "warning_color_variant",
-        "danger_color_variant",
-        "shadow_color",
-        "heading_on_primary_color",
-        "text_on_primary_color",
-        "heading_on_secondary_color",
-        "text_on_secondary_color",
-        "text_color_on_light",
-        "text_color_on_dark",
-    )
+    await sess._apply_theme(thm)
 
-    for py_color_name in color_names:
-        css_color_name = f'--rio-global-{py_color_name.replace("_", "-")}'
-        color = getattr(thm, py_color_name)
-        assert isinstance(color, rio.Color), color
-        variables[css_color_name] = f"#{color.hex}"
+    # The methods we just called may have some side effects like registering
+    # fonts. Registering fonts in particular is an operation that's done in a
+    # background task, so we need to wait for that to finish.
+    #
+    # Since the session is freshly created, there shouldn't be any other tasks
+    # running, so we can just wait for all of them.
+    for task in sess._running_tasks:
+        await task
 
-    # Text styles
-    style_names = (
-        "heading1",
-        "heading2",
-        "heading3",
-        "text",
-    )
+    sess._send_message = session.dummy_send_message
 
-    for style_name in style_names:
-        style = getattr(thm, f"{style_name}_style")
-        assert isinstance(style, rio.TextStyle), style
-
-        css_prefix = f"--rio-global-{style_name}"
-        variables[f"{css_prefix}-font-name"] = (
-            style.font if isinstance(style.font, str) else style.font.name
-        )
-        variables[f"{css_prefix}-color"] = f"#{style.font_color.hex}"
-        variables[f"{css_prefix}-font-size"] = f"{style.font_size}rem"
-        variables[f"{css_prefix}-italic"] = "italic" if style.italic else "normal"
-        variables[f"{css_prefix}-font-weight"] = style.font_weight
-        variables[f"{css_prefix}-underlined"] = (
-            "underline" if style.underlined else "unset"
-        )
-        variables[f"{css_prefix}-all-caps"] = "uppercase" if style.all_caps else "unset"
-
-    # Colors that need to be extracted from styles
-    variables[
-        "--rio-global-heading-on-surface-color"
-    ] = f"#{thm.heading1_style.font_color.hex}"
-
-    variables[
-        "--rio-global-text-on-surface-color"
-    ] = f"#{thm.text_style.font_color.hex}"
-
-    # Colors derived from, but not stored in the theme
-    derived_colors = {
-        "text-on-success-color": thm.text_on_success_color,
-        "text-on-warning-color": thm.text_on_warning_color,
-        "text-on-danger-color": thm.text_on_danger_color,
-    }
-
-    for css_name, color in derived_colors.items():
-        variables[f"--rio-global-{css_name}"] = f"#{color.hex}"
-
-    # Assign to the html's `data-theme` attribute. This is used to dynamically
-    # switch highlight.js themes.
-    theme_variant = (
-        "light" if thm.background_color.perceived_brightness > 0.5 else "dark"
-    )
-
-    # Build JavaScript code which applies the theme
-    js_source = f"""
-VARIABLES = {json.dumps(variables)};
-
-// Expose the CSS Variables
-for (let key in VARIABLES) {{
-    document.documentElement.style.setProperty(
-        key,
-        VARIABLES[key]
-    );
-}}
-response = null;
-
-// Set the theme variant
-document.documentElement.setAttribute("data-theme", "{theme_variant}");
-"""
-
-    # Wrap in JSON-RPC
-    return {
-        "jsonrpc": "2.0",
-        "method": "evaluateJavaScript",
-        "params": {
-            "javaScriptSource": js_source,
-        },
-    }
+    return initial_messages
 
 
 async def _periodically_clean_up_expired_sessions(
@@ -409,9 +312,7 @@ class AppServer(fastapi.FastAPI):
             thm = sess.attachments[rio.Theme]
 
         # Create a list of initial messages for the client to process
-        initial_messages = [
-            _build_set_theme_variables_message(thm),
-        ]
+        initial_messages = await _build_initial_messages(sess, thm)
 
         # Load the templates
         html = read_frontend_template("index.html")

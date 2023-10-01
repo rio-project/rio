@@ -65,7 +65,7 @@ class HomeView(rio.Widget):
                                 align_y=0,
                                 align_x=0,
                                 style=rio.TextStyle(
-                                    font_color=rio.Color.BLACK,
+                                    fill=rio.Color.BLACK,
                                     font_size=7,
                                     font_weight="bold",
                                 ),

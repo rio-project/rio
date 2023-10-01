@@ -1,7 +1,7 @@
-import { ColorSet, Fill } from './models';
+import { ColorSet, Fill } from '../models';
 import { WidgetBase, WidgetState } from './widgetBase';
-import { applyFillToSVG } from './designApplication';
-import { pixelsPerEm } from './app';
+import { applyFillToSVG } from '../designApplication';
+import { pixelsPerEm } from '../app';
 
 export type IconState = WidgetState & {
     svgSource: string;

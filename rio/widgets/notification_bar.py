@@ -51,7 +51,7 @@ class NotificationBar(widget_base.Widget):
                 margin=thm.base_spacing,
                 multiline=self.multiline,
                 style=thm.text_style.replace(
-                    font_color=text_color,
+                    fill=text_color,
                 ),
             ),
             style=rio.BoxStyle(
