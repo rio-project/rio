@@ -4,7 +4,6 @@ import abc
 import dataclasses
 import inspect
 import json
-import traceback
 import typing
 import weakref
 from abc import ABC, abstractmethod
@@ -18,7 +17,7 @@ from uniserde import Jsonable, JsonDoc
 
 import rio
 
-from .. import common, global_state, inspection
+from .. import common, event, global_state, inspection
 
 __all__ = ["Widget"]
 
@@ -213,7 +212,14 @@ class WidgetMeta(abc.ABCMeta):
     def __call__(cls, *args, **kwargs):
         widget = super().__call__(*args, **kwargs)
         widget._create_state_bindings()
-        widget.on_create()
+
+        try:
+            on_create_handler = widget._rio_event_handlers_[event.EventTag.ON_CREATE]
+        except KeyError:
+            pass
+        else:
+            on_create_handler(widget)
+
         return widget
 
 
@@ -374,7 +380,7 @@ class Widget(metaclass=WidgetMeta):
 
     # Maps event tags to the methods that handle them. The methods aren't bound
     # to the instance yet, so make sure to pass `self` when calling them
-    _rio_event_handlers_: ClassVar[Dict[str, Callable]]
+    _rio_event_handlers_: ClassVar[Dict[event.EventTag, Callable]] = {}
 
     # This flag indicates whether state bindings for this widget have already
     # been initialized. Used by `__getattribute__` to check if it should throw
@@ -458,7 +464,7 @@ class Widget(metaclass=WidgetMeta):
 
         # Some events need support from the session. Register them
         for event_tag, event_handler in self._rio_event_handlers_.items():
-            if event_tag == "on_route_change":
+            if event_tag == event.EventTag.ON_ROUTE_CHANGE:
                 session._route_change_callbacks[self] = event_handler
 
         # Call the `__init__` created by `@dataclass`
@@ -594,8 +600,28 @@ class Widget(metaclass=WidgetMeta):
         # instantiation.
         cls._rio_event_handlers_ = {}
 
-        if cls.on_route_change is not Widget.on_route_change:
-            cls._rio_event_handlers_["on_route_change"] = cls.on_route_change
+        # Inherit event handlers from base classes. Note that this could quietly
+        # overwrite a handler.
+        for base in cls.__bases__:
+            if not issubclass(base, Widget):
+                continue
+
+            cls._rio_event_handlers_.update(base._rio_event_handlers_)
+
+        # Add any event handlers added in this class
+        for method in vars(cls).values():
+            try:
+                tag = method._rio_event_tag_
+            except AttributeError:
+                continue
+
+            # Make sure there's only one handler for each tag
+            if tag in cls._rio_event_handlers_:
+                raise RuntimeError(
+                    f"Multiple event handlers for tag `{tag}` in widget `{cls.__name__}`"
+                )
+
+            cls._rio_event_handlers_[tag] = method
 
     @classmethod
     def _initialize_state_properties(

@@ -5,7 +5,7 @@ from dataclasses import KW_ONLY, field
 # use.
 from yarl import URL
 
-from . import font
+from . import event, font
 from .app import *
 from .box_style import *
 from .color import *
