@@ -1,231 +1,61 @@
-from typing import *  # type: ignore
+from typing import *
+from typing import Any  # type: ignore
 
 import rio
 import rio_docs
+from rio.widgets.widget_base import Widget
 
 from .. import components as comps
-from .. import theme
-
-OUTLINE: Tuple[Optional[Tuple[str, Tuple[str, ...]]], ...] = (
-    (
-        "Getting Started",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    (
-        "How-To",
-        (
-            "Set up a Project",
-            "Add Pages to a Project",
-            "Deploy a Project",
-            "Multiple Pages",
-            "Theming",
-        ),
-    ),
-    # API Docs
-    None,
-    (
-        "Inputs",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    (
-        "Layout",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    (
-        "Tripswitches",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    (
-        "Other",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    (
-        "Non-Widgets",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    # Advanced/ Internal / Developer / Contributor Documentation
-    None,
-    (
-        "Deep Dives",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-    (
-        "Contributing",
-        (
-            "A",
-            "B",
-            "C",
-        ),
-    ),
-)
-
-
-DOCS_STR = """
-# `TypeScript` Tutorial
-
-Welcome to the `TypeScript` tutorial! In this tutorial you will see
-
-- what `TypeScript` is
-- how to install it
-- how to write your first `TypeScript` program
-- basic `TypeScript` features
-
-## What is `TypeScript`?
-
-`TypeScript` is a statically typed language that builds on the foundation of
-`JavaScript`. It allows you to catch errors at compile-time and write more
-maintainable code.
-
-### Installation
-
-To get started with `TypeScript`, you need to install it using npm:
-
-```sh
-npm install - g typescript
-```
-
-You can check the installed version using:
-
-## Your First `TypeScript` Program
-
-Let's create a simple `TypeScript` program. Create a file called hello.ts with
-the following content:
-
-```typescript
-function sayHello(name: string) {
-    console.log(`Hello, ${name}!`);
-}
-
-sayHello("TypeScript");
-```
-
-Compile the `TypeScript` code to `JavaScript` using the `TypeScript` compiler:
-
-```bash
-tsc hello.ts
-```
-
-This will generate a hello.js file that you can run with Node.js:
-
-```bash
-node hello.js
-```
-
-You should see the output: "Hello, TypeScript!"
-
-## Basic `TypeScript` Features
-
-### Variables and Types
-
-In `TypeScript`, you can declare variables with types:
-
-```typescript
-let age: number = 30; let name: string = "John"; let isStudent:
-boolean = true;
-```
-
-### Functions
-
-Functions can also have type annotations:
-
-```typescript
-function add(a: number, b: number): number {
-    return a + b;
-}
-
-const result = add(10, 20);
-```
-
-### Interfaces
-
-You can define custom types using interfaces:
-
-```typescript
-interface Person {
-    name: string; age: number;
-}
-
-const person: Person = {
-    name: "Alice", age: 25,
-};
-```
-
-### Classes
-
-Create classes with `TypeScript`:
-
-```typescript
-class Animal {
-    constructor(public name: string) { }
-
-    speak() {
-        console.log(`The ${this.name} makes a sound.`);
-    }
-}
-
-const dog = new Animal("Dog"); dog.speak();
-```
-
-## Conclusion
-
-_This is just the beginning of your `TypeScript` journey_. `TypeScript` offers
-many more features like enums, generics, and advanced type system capabilities.
-Explore and enjoy the power of `TypeScript` in your projects!
-
-You can find more information on the [official `TypeScript`
-website](https://www.typescriptlang.org/).
-
-**Thank you for reading!**
-"""
+from .. import structure, theme
 
 
 class Outliner(rio.Widget):
+    async def on_route_change(self) -> Any:
+        await self.force_refresh()
+
     def build(self) -> rio.Widget:
         chapter_expanders = []
 
-        for section in OUTLINE:
+        for section in structure.DOCUMENTATION_STRUCTURE:
+            # `None` is used to represent whitespace
             if section is None:
                 chapter_expanders.append(rio.Spacer(height=3))
                 continue
 
-            title, subsections = section
+            # Otherwise, it's a tuple of (title, articles)
+            title, arts = section
+            buttons = []
 
-            buttons = [
-                rio.Button(
-                    section,
-                    color=rio.Color.TRANSPARENT,
-                    on_press=lambda _: self.session.navigate_to(f"./{section}"),
+            # ... where each article is either a tuple of (name, url_segment,
+            # article), or a rio `Widget`
+            for art in arts:
+                if isinstance(art, tuple):
+                    name, url_segment, _ = art
+                elif issubclass(art, rio.Widget):
+                    name = art.__name__
+                    url_segment = name
+                else:
+                    assert False, f"Unknown article type: {art}"
+
+                # Highlight the button as active?
+                try:
+                    part = self.session.active_route.parts[2]
+                except IndexError:
+                    part = ""
+                is_active = part == url_segment
+
+                # Create the button
+                buttons.append(
+                    rio.Button(
+                        name,
+                        color=theme.THEME.primary_color.replace(opacity=0.3)
+                        if is_active
+                        else rio.Color.TRANSPARENT,
+                        on_press=lambda _, segment=url_segment: self.session.navigate_to(
+                            f"/documentation/{segment}"
+                        ),
+                    ),
                 )
-                for section in subsections
-            ]
 
             chapter_expanders.append(
                 rio.Revealer(
@@ -275,4 +105,11 @@ class DocumentationView(rio.Widget):
                 width="grow",
                 height="grow",
             ),
+        )
+
+
+class DocumentationWelcomePage(rio.Widget):
+    def build(self) -> Widget:
+        return rio.Column(
+            rio.Text("Yo this is da docs!"),
         )

@@ -120,7 +120,9 @@ def _str_function_signature(
 
     # Name
     if owning_class_name is None:
-        parts.append(f"def {docs.name}(")
+        parts.append("def " if docs.synchronous else "async def ")
+        parts.append(docs.name)
+        parts.append("(")
     elif docs.name == "__init__":
         parts.append(f"{owning_class_name}(")
     else:
@@ -243,7 +245,6 @@ def create_widget_api_docs(
     #
     # These are merged into a single section, because developers are unlikely to
     # interact with the attributes anywhere but the constructor.
-
     for field in docs.attributes:
         art.widget(
             rio.Row(
@@ -253,7 +254,8 @@ def create_widget_api_docs(
                 ),
                 rio.MarkdownView(
                     f"`{esc(field.type)}`",
-                    margin_left=0.5,
+                    margin_left=1.0,
+                    default_language="python",
                 ),
                 rio.Spacer(),
             ),
@@ -291,7 +293,7 @@ def create_widget_api_docs(
             art.text(func.name, style="heading3")
 
             # Signature
-            art.code_block(_str_function_signature(func, owning_class_name=docs.name))
+            art.code_block(_str_function_signature(func))
 
             # Short description
             if func.short_description is not None:

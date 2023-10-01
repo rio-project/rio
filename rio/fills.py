@@ -6,6 +6,8 @@ from typing import Iterable, Literal, Tuple, Union
 
 from uniserde import Jsonable
 
+import rio
+
 from . import assets, self_serializing, session
 from .color import Color
 from .common import ImageLike
@@ -47,7 +49,7 @@ class SolidFill(Fill):
 
 @dataclass(frozen=True, eq=True)
 class LinearGradientFill(Fill):
-    stops: Iterable[Tuple[Color, float]]
+    stops: Tuple[Tuple[Color, float], ...]
     angle_degrees: float = 0.0
 
     def __init__(
@@ -63,6 +65,23 @@ class LinearGradientFill(Fill):
         vars(self).update(
             stops=tuple(sorted(stops, key=lambda x: x[1])),
             angle_degrees=angle_degrees,
+        )
+
+    def _as_css_background(self, sess: rio.Session) -> str:
+        # Special case: Just one color
+        if len(self.stops) == 1:
+            return f"#{self.stops[0][0].hex}"
+
+        # Proper gradient
+        stop_strings = []
+
+        for stop in self.stops:
+            color = stop[0]
+            position = stop[1]
+            stop_strings.append(f"#{color.hex} {position * 100}%")
+
+        return (
+            f"linear-gradient({90 - self.angle_degrees}deg, {', '.join(stop_strings)})"
         )
 
     def _serialize(self, sess: session.Session) -> Jsonable:
@@ -101,3 +120,21 @@ class ImageFill(Fill):
 
     def __hash__(self) -> int:
         return hash((self._image_asset, self._fill_mode))
+
+    def _as_css_background(self, sess: rio.Session) -> str:
+        # Fetch the escaped URL. That way it cannot interfere with the CSS syntax
+        self._image_asset._serialize(sess)
+        image_url = str(self._image_asset.url)
+        css_url = f"url('{image_url}')"
+
+        if self._fill_mode == "fit":
+            return f"{css_url} center/contain no-repeat"
+        elif self._fill_mode == "stretch":
+            return f"{css_url} top left / 100% 100%"
+        elif self._fill_mode == "tile":
+            return f"{css_url} left top repeat"
+        elif self._fill_mode == "zoom":
+            return f"{css_url} center/cover no-repeat"
+        else:
+            # Invalid fill mode
+            raise Exception(f"Invalid fill mode for image fill: {self._fill_mode}")

@@ -14,30 +14,31 @@ from rio.inspection import get_type_annotations
 
 from . import models
 
-# Maps common default factories to the value they represent
-DEFAULT_FACTORY_VALUES: Dict[Any, Any] = {
-    list: [],
-    dict: {},
-    set: set(),
-    tuple: (),
-}
-
 
 def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
     """
     Given a google-style docstring, return the description and sections.
     """
+    # All lines not part of a section are part of the description
     description: str = ""
+
+    # Maps section names to their contents. The contents themselves are also a
+    # map from attribute/parameter names to their description. The description
+    # is stored as a list here so lines can easily be appended in place. They're
+    # converted to strings later.
     sections: Dict[str, Dict[str, List[str]]] = {}
 
+    # The section currently being parsed, or `None` if not inside a section
     current_section: Optional[Dict[str, List[str]]] = None
-    current_lines: List[str] = []
-    section_indent: int = 0
 
-    # Trim the docstring
+    # Th lines of the value in the section currently being parsed
+    current_value_lines: List[str] = []
+
+    # The indentation of content in the current section
+    section_content_indent: int = 0
+
+    # Trim the docstring and split it into lines
     docstring = textwrap.dedent(docstring.strip())
-
-    # Process the docstring line by line
     lines = docstring.splitlines()
 
     for raw_line in lines:
@@ -46,11 +47,13 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
         indent = len(raw_line) - len(line)
         line = line.rstrip()
 
-        # Start of a new section
+        # Start of a new section?
         if indent == 0 and line.endswith(":"):
             section_name = line[:-1]
             section_name = section_name.strip().lower()
             current_section = sections.setdefault(section_name, {})
+            current_value_lines = []
+            section_content_indent = 0
             continue
 
         # If not inside a section, append to the description
@@ -58,22 +61,31 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
             description += line + "\n"
             continue
 
-        # Check if the line contains a colon (:) to separate parameter name and description
-        parts = line.split(":", 1)
-        assert len(parts) >= 1, (line, parts)
-
-        if len(parts) == 1:
-            current_lines.append(parts[0].strip())
+        # Continuation of the previous value
+        if indent > section_content_indent or not line:
+            current_value_lines.append(line)
             continue
 
-        if len(parts) == 2:
-            name = parts[0].strip()
-            value = parts[1].strip()
-            current_lines = [value]
-            current_section[name] = current_lines
+        # New value
+        section_content_indent = indent
+        parts = line.split(":", 1)
 
-    # Replace multiple empty lines with a single one
-    description = re.sub("\n\n+", "\n\n", description)
+        if len(parts) == 1:
+            warning(f'Invalid indentation in docstring: "{line}"')
+            continue
+
+        name, value = parts
+        name = name.strip()
+        value = value.strip()
+        current_value_lines = [value]
+        current_section[name] = current_value_lines
+
+    # Post-processing function for strings
+    def postprocess_string(value: str) -> str:
+        return re.sub("\n\n+", "\n\n", description)
+
+    # Post-process the description
+    description = postprocess_string(description)
 
     # Convert the section values from lists to strings
     result_sections: Dict[str, Dict[str, str]] = {}
@@ -82,7 +94,7 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
         result_sections[section_name] = {}
 
         for name, lines in section.items():
-            result_sections[section_name][name] = " ".join(lines)
+            result_sections[section_name][name] = postprocess_string(" ".join(lines))
 
     return description.strip(), result_sections
 
@@ -252,6 +264,7 @@ def parse_function(func: Callable) -> models.FunctionDocs:
         name=func.__name__,
         parameters=list(parameters.values()),
         return_type=str_type_hint(get_type_hints(func).get("return", None)),
+        synchronous=not inspect.iscoroutinefunction(func),
         short_description=short_description,
         long_description=long_description,
         raises=raises,
@@ -341,14 +354,7 @@ def parse_class(cls: Type) -> models.ClassDocs:
 
             # Default factory?
             elif dataclass_field.default_factory is not dataclasses.MISSING:
-                try:
-                    default_value = DEFAULT_FACTORY_VALUES[
-                        dataclass_field.default_factory
-                    ]
-                except KeyError:
-                    pass
-                else:
-                    doc_field.default = repr(default_value)
+                doc_field.default = repr(dataclass_field.default_factory())
 
     # Parse the docstring
     (

@@ -75,12 +75,17 @@ export class ButtonWidget extends WidgetBase {
         }
 
         // Apply the color
-        let is_sensitive: boolean =
-            deltaState.is_sensitive || this.state['is_sensitive'];
+        if (
+            deltaState.color !== undefined ||
+            deltaState.is_sensitive !== undefined
+        ) {
+            let is_sensitive: boolean =
+                deltaState.is_sensitive || this.state['is_sensitive'];
 
-        let colorSet = is_sensitive ? deltaState.color : 'disabled';
+            let colorSet = is_sensitive
+                ? (deltaState.color || this.state['color'])
+                : 'disabled';
 
-        if (colorSet !== undefined) {
             applyColorSet(element, colorSet);
         }
 

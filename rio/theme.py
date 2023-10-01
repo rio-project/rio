@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
-from uniserde import Jsonable, JsonDoc
+from uniserde import Jsonable
 
 import rio
 
-from . import color, self_serializing, session
+from . import color
 
 __all__ = [
     "Theme",
@@ -24,7 +24,19 @@ def _make_variant_color(base: rio.Color) -> rio.Color:
     )
 
 
-class Theme(self_serializing.SelfSerializing):
+class Palette:
+    surface_color: rio.Fill
+    surface_color_variant_1: rio.Fill
+    surface_color_variant_2: rio.Fill
+    surface_color_variant_3: rio.Fill
+
+    heading1_style: rio.TextStyle
+    heading2_style: rio.TextStyle
+    heading3_style: rio.TextStyle
+    text_style: rio.TextStyle
+
+
+class Theme:
     _: KW_ONLY
 
     # The main theme colors
@@ -66,12 +78,6 @@ class Theme(self_serializing.SelfSerializing):
     heading2_style: rio.TextStyle
     heading3_style: rio.TextStyle
     text_style: rio.TextStyle
-
-    heading_on_primary_color: rio.Color
-    text_on_primary_color: rio.Color
-
-    heading_on_secondary_color: rio.Color
-    text_on_secondary_color: rio.Color
 
     text_color_on_light: rio.Color
     text_color_on_dark: rio.Color
@@ -159,21 +165,15 @@ class Theme(self_serializing.SelfSerializing):
         self.text_on_surface_color = self.text_color_for(self.surface_color)
 
         self.heading1_style = rio.TextStyle(
-            font_size=2.0,
+            font_size=3.0,
             fill=self.primary_color,
         )
-        self.heading2_style = self.heading1_style.replace(font_size=1.5)
-        self.heading3_style = self.heading1_style.replace(font_size=1.2)
+        self.heading2_style = self.heading1_style.replace(font_size=1.8)
+        self.heading3_style = self.heading1_style.replace(font_size=1.3)
         self.text_style = self.heading1_style.replace(
             font_size=1,
             fill=self.text_on_surface_color,
         )
-
-        self.heading_on_primary_color = self.text_color_for(self.primary_color)
-        self.text_on_primary_color = self.heading_on_primary_color
-
-        self.heading_on_secondary_color = self.text_color_for(self.secondary_color)
-        self.text_on_secondary_color = self.heading_on_secondary_color
 
     @property
     def text_on_success_color(self) -> rio.Color:
@@ -207,46 +207,4 @@ class Theme(self_serializing.SelfSerializing):
             "color": color.rgba,
             "colorVariant": _make_variant_color(color).rgba,
             "textColor": self.text_color_for(color).rgba,
-        }
-
-    def _serialize(self, sess: session.Session) -> JsonDoc:
-        return {
-            "primaryColor": self.primary_color._serialize(sess),
-            "secondaryColor": self.secondary_color._serialize(sess),
-            "disabledColor": self.disabled_color._serialize(sess),
-            "primaryColorVariant": self.primary_color_variant._serialize(sess),
-            "secondaryColorVariant": self.secondary_color_variant._serialize(sess),
-            "disabledColorVariant": self.disabled_color_variant._serialize(sess),
-            "backgroundColor": self.background_color._serialize(sess),
-            "surfaceColor": self.surface_color._serialize(sess),
-            "surfaceColorVariant": self.surface_color_variant._serialize(sess),
-            "surfaceActiveColor": self.surface_active_color._serialize(sess),
-            "successColor": self.success_color._serialize(sess),
-            "warningColor": self.warning_color._serialize(sess),
-            "dangerColor": self.danger_color._serialize(sess),
-            "successColorVariant": self.success_color_variant._serialize(sess),
-            "warningColorVariant": self.warning_color_variant._serialize(sess),
-            "dangerColorVariant": self.danger_color_variant._serialize(sess),
-            "cornerRadiusSmall": self.corner_radius_small,
-            "cornerRadiusMedium": self.corner_radius_medium,
-            "cornerRadiusLarge": self.corner_radius_large,
-            "baseSpacing": self.base_spacing,
-            "shadowRadius": self.shadow_radius,
-            "shadowColor": self.shadow_color._serialize(sess),
-            "heading1Style": self.heading1_style._serialize(sess),
-            "heading2Style": self.heading2_style._serialize(sess),
-            "heading3Style": self.heading3_style._serialize(sess),
-            "textStyle": self.text_style._serialize(sess),
-            "headingOnPrimaryColor": self.heading_on_primary_color._serialize(sess),
-            "textOnPrimaryColor": self.text_on_primary_color._serialize(sess),
-            "headingOnSecondaryColor": self.heading_on_secondary_color._serialize(sess),
-            "textOnSecondaryColor": self.text_on_secondary_color._serialize(sess),
-            "textColorOnLight": self.text_color_on_light._serialize(sess),
-            "textColorOnDark": self.text_color_on_dark._serialize(sess),
-            "variant": (
-                "light" if self.background_color.perceived_brightness > 0.5 else "dark"
-            ),
-            "textOnSuccessColor": self.text_on_success_color._serialize(sess),
-            "textOnWarningColor": self.text_on_warning_color._serialize(sess),
-            "textOnDangerColor": self.text_on_danger_color._serialize(sess),
         }

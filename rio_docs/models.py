@@ -26,6 +26,7 @@ class FunctionDocs(uniserde.Serde):
     name: str
     parameters: List[FunctionParameter]
     return_type: Optional[str]
+    synchronous: bool
 
     short_description: Optional[str]
     long_description: Optional[str]

@@ -39,7 +39,7 @@ def postprocess_widget_docs(docs: models.ClassDocs) -> None:
         # Internal methods start with an underscore
         keep = not func.name.startswith("_")
 
-        # No point in documenting somebody else's `buid` method. It's not
+        # No point in documenting somebody else's `build` method. It's not
         # supposed to be used by the user
         keep = keep and func.name != "build"
 
