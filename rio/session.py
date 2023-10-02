@@ -413,7 +413,7 @@ class Session(unicall.Unicall):
 
             async def history_worker() -> None:
                 await self._evaluate_javascript(
-                    f"window.location.href = {json.dumps(target_url)}",
+                    f"window.location.href = {json.dumps(str(target_url))}",
                 )
 
             self._create_task(history_worker(), name="history worker")
@@ -440,7 +440,7 @@ class Session(unicall.Unicall):
         async def history_worker() -> None:
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
-                f"window.history.{method}(null, null, {json.dumps(target_url)})",
+                f"window.history.{method}(null, null, {json.dumps(str(target_url))})",
             )
 
         self._create_task(history_worker())

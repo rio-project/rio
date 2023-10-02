@@ -1,4 +1,4 @@
-from typing import *
+from typing import *  # type: ignore
 from typing import Any  # type: ignore
 
 import rio
@@ -31,11 +31,9 @@ class Outliner(rio.Widget):
             for art in arts:
                 if isinstance(art, tuple):
                     name, url_segment, _ = art
-                elif issubclass(art, rio.Widget):
+                else:
                     name = art.__name__
                     url_segment = name
-                else:
-                    assert False, f"Unknown article type: {art}"
 
                 # Highlight the button as active?
                 try:
@@ -67,7 +65,7 @@ class Outliner(rio.Widget):
                 ),
             )
 
-        return comps.FlatCard(
+        return rio.Card(
             child=rio.Column(
                 *chapter_expanders,
                 width=13,
@@ -79,6 +77,7 @@ class Outliner(rio.Widget):
                 theme.THEME.corner_radius_large,
                 0,
             ),
+            elevate_on_hover=True,
             align_y=0,
         )
 
@@ -92,24 +91,9 @@ class DocumentationView(rio.Widget):
                     align_y=0.4,
                 ),
             ),
-            rio.Stack(
-                comps.NavigationBarDeadSpace(
-                    height=22,
-                    align_y=0,
-                ),
-                rio.Router(
-                    margin_top=14,
-                    width="grow",
-                    height="grow",
-                ),
+            rio.Router(
+                margin_top=9,
                 width="grow",
                 height="grow",
             ),
-        )
-
-
-class DocumentationWelcomePage(rio.Widget):
-    def build(self) -> Widget:
-        return rio.Column(
-            rio.Text("Yo this is da docs!"),
         )

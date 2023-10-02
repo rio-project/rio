@@ -42,7 +42,6 @@ class Testimonial(rio.Widget):
                 ),
             ),
             corner_radius=theme.THEME.corner_radius_large,
-            elevate_on_hover=0.6,
             width=30,
             height=12,
         )

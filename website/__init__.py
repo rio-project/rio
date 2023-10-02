@@ -80,9 +80,8 @@ class ColumnSample(rio.Widget):
                     ),
                     width=12,
                 ),
-                hover_height=0,
-                elevate_on_hover=1,
                 align_y=0,
+                elevate_on_hover=True,
             ),
             spacing=2,
             width="grow",
@@ -151,7 +150,7 @@ routes = [
         children=[
             rio.Route(
                 "",
-                views.DocumentationWelcomePage,
+                views.DocumentationLandingPage,
             ),
             *_make_documentation_routes(),
         ],

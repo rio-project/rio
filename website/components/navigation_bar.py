@@ -3,14 +3,7 @@ from dataclasses import field
 
 import rio
 
-from .. import common, theme
-
-# Random images to choose from for the spacer background
-IMAGES = (
-    common.ASSETS_DIR
-    / "material-backgrounds"
-    / "pawel-czerwinski-ruJm3dBXCqw-unsplash.jpg",
-)
+from .. import theme
 
 
 class NavigationButton(rio.Widget):
@@ -136,7 +129,7 @@ class NavigationBarDeadSpace(rio.Widget):
         return rio.Rectangle(
             style=rio.BoxStyle(
                 fill=rio.ImageFill(
-                    random.choice(IMAGES),
+                    random.choice(theme.GENERIC_MATERIAL_IMAGES),
                     fill_mode="zoom",
                 ),
             ),

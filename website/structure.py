@@ -1,3 +1,4 @@
+import inspect
 from typing import *  # type: ignore
 
 import rio
@@ -9,9 +10,7 @@ __all__ = [
 ]
 
 
-ArticleType: TypeAlias = Union[
-    Tuple[str, str, Callable[[], article.Article]], Type[rio.Widget]
-]
+ArticleType: TypeAlias = Union[Tuple[str, str, Callable[[], article.Article]], Type]
 SectionType: TypeAlias = Union[Tuple[str, Tuple[ArticleType, ...]], None]
 
 
@@ -44,6 +43,13 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
         (
             rio.Row,
             rio.Column,
+        ),
+    ),
+    (
+        "Non-Widgets",
+        (
+            rio.App,
+            rio.URL,
         ),
     ),
 )
@@ -79,13 +85,12 @@ def _compute_linear() -> (
                     name, url_segment, generate_article = art
                     result.append((url_segment, section_title, name, generate_article))
 
-            elif issubclass(arts[0], rio.Widget):
+            else:
+                assert inspect.isclass(art), art
+
                 for art in arts:
                     name = art.__name__
                     result.append((name, section_title, name, art))
-
-            else:
-                assert False, f"Unknown article type: {art}"
 
     return tuple(result)
 

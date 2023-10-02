@@ -11,6 +11,7 @@ from rio import escape_markdown_code as esc
 from rio_docs import models as docmodels
 
 from . import components as comps
+from . import theme
 
 
 class Article:
@@ -34,7 +35,7 @@ class Article:
         if self._current_section is None:
             raise ValueError(f"This article is not currently in a section")
 
-        self._parts.append(comps.FlatCard(rio.Column(*self._current_section)))
+        self._parts.append(rio.Card(rio.Column(*self._current_section)))
         self._current_section = None
 
     def widget(self, widget: rio.Widget) -> None:
@@ -220,15 +221,41 @@ def create_widget_api_docs(
 ) -> Article:
     art = Article()
 
-    # Heading
-    art.begin_section()
-    art.text(docs.name, style="heading1")
-
-    # Short description
-    if docs.short_description is not None:
-        art.markdown(docs.short_description)
+    # Heading / short description
+    art.widget(
+        rio.Row(
+            rio.Card(
+                child=rio.Column(
+                    rio.Text(
+                        docs.name,
+                        style="heading1",
+                        align_x=0,
+                    ),
+                    rio.Text(
+                        docs.short_description or "",
+                        style="heading3",
+                        multiline=True,
+                        align_x=0,
+                    ),
+                    align_y=0,
+                    margin=2,
+                ),
+                width="grow",
+                corner_radius=theme.THEME.corner_radius_large,
+            ),
+            rio.Image(
+                theme.get_random_material_image(),
+                width="grow",
+                corner_radius=theme.THEME.corner_radius_large,
+                fill_mode="zoom",
+            ),
+            spacing=1,
+            height=20,
+        )
+    )
 
     # Constructor Signature
+    art.begin_section()
     for init_function in docs.functions:
         if init_function.name == "__init__":
             break
