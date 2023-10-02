@@ -211,25 +211,6 @@ class AppServer(fastapi.FastAPI):
         """
         self._assets[asset.secret_id] = asset
 
-    def check_and_refresh_session(self, session_token: str) -> rio.Session:
-        """
-        Look up the session token. If it is valid the session's duration
-        is refreshed so it doesn't expire. If the token is not valid,
-        a HttpException is raised.
-        """
-
-        try:
-            sess = self._active_session_tokens[session_token]
-        except KeyError:
-            raise fastapi.HTTPException(
-                status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid session token.",
-            ) from None
-
-        self._active_session_tokens[session_token] = sess
-
-        return sess
-
     async def _serve_index(
         self,
         request: fastapi.Request,
@@ -549,11 +530,30 @@ class AppServer(fastapi.FastAPI):
         session_token = sessionToken
         del sessionToken
 
-        # Make sure the session token is valid
-        sess = self.check_and_refresh_session(session_token)
-
         # Accept the socket
         await websocket.accept()
+
+        # Look up the session token. If it is valid the session's duration is
+        # refreshed so it doesn't expire. If the token is not valid, don't
+        # accept the websocket.
+        try:
+            sess = self._active_session_tokens[session_token]
+        except KeyError:
+            # Inform the client that it's session token is unknown and request a
+            # refresh
+            await websocket.send_json(
+                {
+                    "jsonrpc": "2.0",
+                    "method": "invalidSessionToken",
+                    "params": {},
+                }
+            )
+
+            await websocket.close(
+                3000,  # Custom error code
+                "Invalid session token.",
+            )
+            return
 
         # Optionally create a validator
         validator_instance = (

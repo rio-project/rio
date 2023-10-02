@@ -88,16 +88,18 @@ function sendInitialMessage(): void {
     });
 }
 
+async function delayAndReconnectWebsocket(attempt: number, event: Event) {
+    // Wait a bit longer before trying again
+    let delay = Math.min(1 * attempt, 15);
+
+    console.log(`Websocket reconnect failed. Retrying in ${delay} seconds`);
+    setTimeout(reconnectWebsocket, delay * 1000, attempt + 1);
+}
+
 function reconnectWebsocket(attempt: number = 1): void {
     let websocket = createWebsocket();
 
-    websocket.onerror = (event: any) => {
-        // Wait a bit longer before trying again
-        let delay = Math.min(1 * attempt, 15);
-
-        console.log(`Websocket reconnect failed. Retrying in ${delay} seconds`);
-        setTimeout(reconnectWebsocket, delay * 1000, attempt + 1);
-    };
+    websocket.onerror = delayAndReconnectWebsocket.bind(null, attempt + 1);
 
     websocket.onopen = () => {
         websocket.onerror = null;
@@ -136,7 +138,7 @@ function onClose(event: Event) {
 
     // Show the user that the connection was lost
     displayConnectionLostPopup();
-    // reconnectWebsocket();
+    reconnectWebsocket();
 }
 
 export function sendMessageOverWebsocket(message: object) {
@@ -241,6 +243,15 @@ export async function processMessageReturnResponse(
         );
 
         response = null;
+    }
+
+    // The attempt to connect to the server has failed, because the session
+    // token is invalid
+    else if (message.method == 'invalidSessionToken') {
+        console.error(
+            'Reloading the page because the session token is invalid'
+        );
+        window.location.reload();
     }
 
     // Invalid method
