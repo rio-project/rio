@@ -200,7 +200,7 @@ class StateProperty:
 
 
 class WidgetMeta(abc.ABCMeta):
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args: object, **kwargs: object):
         widget = super().__call__(*args, **kwargs)
         widget._create_state_bindings()
 
@@ -371,7 +371,7 @@ class Widget(metaclass=WidgetMeta):
 
     # Maps event tags to the methods that handle them. The methods aren't bound
     # to the instance yet, so make sure to pass `self` when calling them
-    _rio_event_handlers_: ClassVar[Dict[event.EventTag, Callable]] = {}
+    _rio_event_handlers_: ClassVar[Dict[event.EventTag, Callable[..., Any]]] = {}
 
     # This flag indicates whether state bindings for this widget have already
     # been initialized. Used by `__getattribute__` to check if it should throw
@@ -766,7 +766,7 @@ class Widget(metaclass=WidgetMeta):
             build_result = self.session._weak_widget_data_by_widget[self].build_result
             yield from build_result._iter_widget_tree()
 
-    async def _on_message(self, msg: Jsonable) -> None:
+    async def _on_message(self, msg: Jsonable, /) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
     def _is_in_widget_tree(self, cache: Dict[rio.Widget, bool]) -> bool:
@@ -851,7 +851,7 @@ class Widget(metaclass=WidgetMeta):
     def __repr__(self) -> str:
         result = f"<{type(self).__name__} id:{self._id}"
 
-        child_strings = []
+        child_strings: List[str] = []
         for child in self._iter_direct_children():
             child_strings.append(f" {type(child).__name__}:{child._id}")
 
