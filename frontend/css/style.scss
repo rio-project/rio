@@ -258,16 +258,13 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 // element. The child element simply receives all the space that's available,
 // and can never force the parent element to grow.
 .rio-zero-size-request-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: relative;
 }
 
 .rio-zero-size-request-container>* {
     position: absolute;
-    min-width: 100%;
-    min-height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 // General
@@ -300,10 +297,23 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
+// The root element for the widget tree. It should display scrollbars if the
+// widgets grow too large for the screen.
+//
+// This is a little simpler than the `ScrollContainer` widget, because we can
+// give it a fixed size.
 .widget-root {
-    // Overflow for scroll-containers is usually set by the JS code, so here we
-    // have to do it manually.
     overflow: auto;
+
+    width: 100vw;
+    height: 100vh;
+
+    position: relative;
+}
+
+.widget-root>* {
+    min-width: 100%;
+    min-height: 100%;
 }
 
 .rio-widget {
@@ -311,6 +321,10 @@ code {
 }
 
 // Align
+.rio-align {
+    position: relative;
+}
+
 .rio-align>* {
     pointer-events: none;
     position: relative;

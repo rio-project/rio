@@ -2,7 +2,10 @@ import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
 import { updateWidgetStates } from './widgetManagement';
 import { requestFileUpload, registerFont } from './rpcFunctions';
 
+
 let websocket: WebSocket | null = null;
+let pingPongHandlerId: number;
+
 const connectionLostPopup = document.querySelector(
     '.rio-error-popup'
 ) as HTMLElement;
@@ -24,7 +27,7 @@ export type JsonRpcResponse = {
     };
 };
 
-function createWebsocket(): WebSocket {
+function createWebsocket(connectionAttempt: number = 1): WebSocket {
     let url = new URL(
         `/rio/ws?sessionToken=${sessionToken}`,
         window.location.href
@@ -33,26 +36,10 @@ function createWebsocket(): WebSocket {
     console.log(`Connecting websocket to ${url.href}`);
     websocket = new WebSocket(url.href);
 
-    // Some proxies kill idle websocket connections. Send pings occasionally to
-    // keep the connection alive.
-    //
-    // Make sure to set an ID so the server replies
-    let pingPongHandlerId = setInterval(() => {
-        sendMessageOverWebsocket({
-            jsonrpc: '2.0',
-            method: 'ping',
-            params: ['ping'],
-            id: `ping-${Date.now()}`,
-        });
-    }, pingPongIntervalSeconds * 1000);
-
     websocket.addEventListener('open', onOpen);
     websocket.addEventListener('message', onMessage);
     websocket.addEventListener('error', onError);
-    websocket.addEventListener('close', (event: CloseEvent) => {
-        clearInterval(pingPongHandlerId);
-        onClose(event);
-    });
+    websocket.addEventListener('close', onClose.bind(null, connectionAttempt));
 
     return websocket;
 }
@@ -88,31 +75,22 @@ function sendInitialMessage(): void {
     });
 }
 
-async function delayAndReconnectWebsocket(attempt: number, event: Event) {
-    // Wait a bit longer before trying again
-    let delay = Math.min(1 * attempt, 15);
-
-    console.log(`Websocket reconnect failed. Retrying in ${delay} seconds`);
-    setTimeout(reconnectWebsocket, delay * 1000, attempt + 1);
-}
-
-function reconnectWebsocket(attempt: number = 1): void {
-    let websocket = createWebsocket();
-
-    websocket.onerror = delayAndReconnectWebsocket.bind(null, attempt + 1);
-
-    websocket.onopen = () => {
-        websocket.onerror = null;
-
-        console.log('Websocket reconnect succeeded');
-
-        connectionLostPopup.style.opacity = '0';
-        connectionLostPopup.style.display = 'none';
-    };
-}
-
 function onOpen(): void {
     console.log('Websocket connection opened');
+
+    connectionLostPopup.style.opacity = '0';
+    connectionLostPopup.style.display = 'none';
+
+    // Some proxies kill idle websocket connections. Send pings occasionally to
+    // keep the connection alive.
+    pingPongHandlerId = setInterval(() => {
+        sendMessageOverWebsocket({
+            jsonrpc: '2.0',
+            method: 'ping',
+            params: ['ping'],
+            id: `ping-${Date.now()}`,
+        });
+    }, pingPongIntervalSeconds * 1000);
 }
 
 async function onMessage(event: any) {
@@ -133,12 +111,22 @@ function onError(event: Event) {
     console.warn(`Websocket error`);
 }
 
-function onClose(event: Event) {
-    console.log(`Websocket connection closed`);
+function onClose(connectionAttempt: number, event: Event) {
+    // Wait a bit before trying to reconnect (again)
+    if (connectionAttempt < 10) {
+        let delay = 2 * connectionAttempt;
+
+        console.log(`Websocket connection closed. Reconnecting in ${delay} seconds`);
+        setTimeout(createWebsocket, delay * 1000, connectionAttempt + 1);
+    } else {
+        console.warn(`Websocket connection closed. Giving up trying to reconnect.`);
+    }
+
+    // Stop sending pings
+    clearInterval(pingPongHandlerId);
 
     // Show the user that the connection was lost
     displayConnectionLostPopup();
-    reconnectWebsocket();
 }
 
 export function sendMessageOverWebsocket(message: object) {
