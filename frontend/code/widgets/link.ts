@@ -12,46 +12,48 @@ export class LinkWidget extends WidgetBase {
     state: Required<LinkState>;
 
     createElement(): HTMLElement {
-        let containerElement = document.createElement('div');
+        let containerElement = document.createElement('a');
         containerElement.classList.add('rio-link');
+        containerElement.classList.add('rio-single-container');
 
         // Listen for clicks
         //
         // This only needs to handle routes, since regular links will be handled
         // by the browser.
-        containerElement.addEventListener('click', (event) => {
-            if (this.state.isRoute) {
-                this.sendMessageToBackend({
-                    route: this.state.targetUrl,
-                });
-            }
-        });
+        containerElement.addEventListener(
+            'click',
+            (event) => {
+                if (this.state.isRoute) {
+                    this.sendMessageToBackend({
+                        route: this.state.targetUrl,
+                    });
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+            },
+            { capture: true }
+        );
 
         return containerElement;
     }
 
-    updateElement(containerElement: HTMLElement, deltaState: LinkState): void {
+    updateElement(element: HTMLAnchorElement, deltaState: LinkState): void {
         // Child Text?
         if (
             deltaState.child_text !== undefined &&
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            replaceOnlyChild(containerElement, null);
+            replaceOnlyChild(element, null);
 
-            // Add a link element
-            let linkElement = document.createElement('a');
-
-            if (!deltaState.isRoute) {
-                linkElement.href = deltaState.targetUrl;
-            }
-
-            linkElement.innerText = deltaState.child_text;
-            containerElement.appendChild(linkElement);
+            // Add the new text
+            let textElement = document.createElement('div');
+            element.appendChild(textElement);
+            textElement.innerText = deltaState.child_text;
 
             // Update the CSS classes
-            containerElement.classList.add('rio-text-link');
-            containerElement.classList.remove('rio-single-container');
+            element.classList.add('rio-text-link');
         }
 
         // Child Widget?
@@ -59,9 +61,13 @@ export class LinkWidget extends WidgetBase {
             deltaState.child_widget !== undefined &&
             deltaState.child_widget !== null
         ) {
-            replaceOnlyChild(containerElement, deltaState.child_widget);
-            containerElement.classList.add('rio-single-container');
-            containerElement.classList.remove('rio-text-link');
+            replaceOnlyChild(element, deltaState.child_widget);
+            element.classList.remove('rio-text-link');
+        }
+
+        // Target URL?
+        if (deltaState.targetUrl !== undefined) {
+            element.href = deltaState.targetUrl;
         }
     }
 }
