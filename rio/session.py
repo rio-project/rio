@@ -163,6 +163,12 @@ class Session(unicall.Unicall):
 
         self._app_server = app_server_
 
+        # Widgets need unique ids, but we don't want them to be globally unique
+        # because then people could guesstimate the approximate number of
+        # visitors on a server based on how quickly the widget ids go up. So
+        # each session will assign its widgets ids starting from 0.
+        self._next_free_widget_id: int = 0
+
         # Keep track of the last time we successfully communicated with the
         # client. After a while with no communication we close the session.
         self._last_interaction_timestamp = time.monotonic()
