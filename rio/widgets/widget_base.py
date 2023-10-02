@@ -6,7 +6,7 @@ import inspect
 import json
 import typing
 import weakref
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 from typing import Any
@@ -41,15 +41,6 @@ document.head.appendChild(style);
 
 T = TypeVar("T")
 P = ParamSpec("P")
-
-
-_unique_id_counter = -1
-
-
-def _make_unique_id() -> int:
-    global _unique_id_counter
-    _unique_id_counter += 1
-    return _unique_id_counter
 
 
 def make_default_factory_for_value(value: T) -> Callable[[], T]:
@@ -442,15 +433,17 @@ class Widget(metaclass=WidgetMeta):
         *args,
         **kwargs,
     ):
-        # Create a unique ID for this widget
-        self._id = _make_unique_id()
-
         # Fetch the session this widget is part of
         if global_state.currently_building_session is None:
             raise RuntimeError("Widgets can only be created inside of `build` methods.")
 
         session = global_state.currently_building_session
         self._session_ = session
+
+        # Create a unique ID for this widget
+        self._id = session._next_free_widget_id
+        session._next_free_widget_id += 1
+
         session._register_dirty_widget(
             self,
             include_children_recursively=False,
@@ -472,7 +465,7 @@ class Widget(metaclass=WidgetMeta):
 
         # Initialize the margins. This has to happen after the dataclass
         # `__init__`, because it would overwrite our values.
-        def elvis(*param_names):
+        def elvis(*param_names: str) -> Any:
             for param_name in param_names:
                 value = kwargs.get(param_name)
 
