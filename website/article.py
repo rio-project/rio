@@ -44,6 +44,9 @@ class Article:
         else:
             self._current_section.append(widget)
 
+    def spacer(self, height: float) -> None:
+        self.widget(rio.Spacer(height=height))
+
     def text(
         self,
         text: str,
@@ -157,11 +160,44 @@ def _str_function_signature(
     return "".join(parts)
 
 
+def _append_method_docs_to_article(
+    art: Article,
+    docs: docmodels.ClassDocs,
+) -> None:
+    art.begin_section()
+    art.text("Functions", style="heading2")
+
+    if docs.functions:
+        for func in docs.functions:
+            # Skip the constructor, as it was already handled above
+            if func.name == "__init__":
+                continue
+
+            # Heading
+            art.spacer(1)
+            art.text(f"{docs.name}.{func.name}", style="heading3")
+
+            # Signature
+            art.code_block(_str_function_signature(func))
+
+            # Short description
+            if func.short_description is not None:
+                art.markdown(func.short_description)
+
+            # Long description
+            if func.long_description is not None:
+                art.markdown(func.long_description)
+
+    else:
+        art.markdown(f"`{esc(docs.name)}` has no public functions.")
+
+    art.end_section()
+
+
 def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
     art = Article()
 
     # Heading
-    art.begin_section()
     art.text(docs.name, style="heading1")
 
     # Short description
@@ -173,6 +209,7 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
         art.markdown(docs.long_description)
 
     # Fields
+    art.begin_section()
     art.text("Fields", style="heading2")
 
     if docs.attributes:
@@ -187,31 +224,17 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
     else:
         art.markdown(f"`{esc(docs.name)}` has no public fields.")
 
+    art.end_section()
+
     rio.Spacer(height=1.5)
 
     # Functions
-    art.text("Functions", style="heading2")
-
-    if docs.functions:
-        for fun in docs.functions:
-            art.text(es(fun.name), style="heading3")
-
-            # Short description
-            if fun.short_description is not None:
-                art.markdown(fun.short_description)
-
-            # Signature
-            art.code_block(_str_function_signature(fun, owning_class_name=docs.name))
-
-            # Long description
-            if fun.long_description is not None:
-                art.markdown(fun.long_description)
+    _append_method_docs_to_article(art, docs)
 
     # Events
     # TODO
 
     # Done
-    art.end_section()
     return art
 
 
@@ -305,29 +328,6 @@ def create_widget_api_docs(
     art.end_section()
 
     # Functions
-    if docs.functions:
-        art.begin_section()
-        art.text("Functions", style="heading2")
-
-        for func in docs.functions:
-            # Skip the constructor, as it was already handled above
-            if func.name == "__init__":
-                continue
-
-            # Heading
-            art.text(func.name, style="heading3")
-
-            # Signature
-            art.code_block(_str_function_signature(func))
-
-            # Short description
-            if func.short_description is not None:
-                art.markdown(func.short_description)
-
-            # Long description
-            if func.long_description is not None:
-                art.markdown(func.long_description)
-
-        art.end_section()
+    _append_method_docs_to_article(art, docs)
 
     return art

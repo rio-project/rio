@@ -53,7 +53,7 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
             section_name = section_name.strip().lower()
             current_section = sections.setdefault(section_name, {})
             current_value_lines = []
-            section_content_indent = 0
+            section_content_indent = 999999
             continue
 
         # If not inside a section, append to the description
@@ -82,7 +82,7 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
 
     # Post-processing function for strings
     def postprocess_string(value: str) -> str:
-        return re.sub("\n\n+", "\n\n", description)
+        return re.sub("\n\n+", "\n\n", value)
 
     # Post-process the description
     description = postprocess_string(description)
@@ -383,8 +383,8 @@ def parse_class(cls: Type) -> models.ClassDocs:
     #
     # TODO
 
-    # If this is a dataclass, the docs for the fields should also be used for
-    # documenting parameters in `__init__`
+    # TODO: If this is a dataclass, the docs for the fields should also be used
+    #       for documenting parameters in `__init__`
 
     # Build the result
     return models.ClassDocs(

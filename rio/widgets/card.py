@@ -50,6 +50,11 @@ class Card(widget_base.Widget):
             else self.corner_radius
         )
 
+        if isinstance(corner_radius, (int, float)):
+            margin = corner_radius
+        else:
+            margin = max(corner_radius)
+
         style = rio.BoxStyle(
             fill=thm.surface_color,
             corner_radius=corner_radius,
@@ -67,7 +72,7 @@ class Card(widget_base.Widget):
         result = rio.Rectangle(
             child=rio.Container(
                 self.child,
-                margin=thm.base_spacing * 1.7,
+                margin=margin,
             ),
             style=style,
             hover_style=hover_style,

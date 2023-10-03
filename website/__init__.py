@@ -93,14 +93,24 @@ class ColumnSample(rio.Widget):
         )
 
 
-def get_docs(widget_class: Type[rio.Widget]) -> rio.Widget:
+def get_docs(widget_class: Type) -> rio.Widget:
+    # Get the docs class for this class
     docs = rio_docs.ClassDocs.parse(widget_class)
-    rio_docs.custom.postprocess_widget_docs(docs)
 
-    art = article.create_widget_api_docs(
-        docs,
-        ColumnSample,
-    )
+    # Generate the article. This is done differently based on whether this is a
+    # widget or another class.
+    if issubclass(widget_class, rio.Widget):
+        rio_docs.custom.postprocess_widget_docs(docs)
+
+        art = article.create_widget_api_docs(
+            docs,
+            ColumnSample,
+        )
+
+    else:
+        rio_docs.custom.postprocess_class_docs(docs)
+
+        art = article.create_class_api_docs(docs)
 
     return art.build()
 
@@ -113,13 +123,11 @@ def _make_documentation_routes() -> List[rio.Route]:
         url_segment,
         section_name,
         article_name,
-        article_or_widget,
+        article_or_class,
     ) in structure.DOCUMENTATION_STRUCTURE_LINEAR:
-        if inspect.isclass(article_or_widget) and issubclass(
-            article_or_widget, rio.Widget
-        ):
-            make_child = lambda widget_class=article_or_widget: rio.Column(
-                get_docs(widget_class),
+        if inspect.isclass(article_or_class):
+            make_child = lambda rio_class=article_or_class: rio.Column(
+                get_docs(rio_class),
                 rio.Spacer(),
                 margin_left=23,
                 margin_bottom=4,
@@ -130,7 +138,7 @@ def _make_documentation_routes() -> List[rio.Route]:
             )
 
         else:
-            make_child = lambda article=article_or_widget: article().build()
+            make_child = lambda article=article_or_class: article().build()
 
         result.append(
             rio.Route(

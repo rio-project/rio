@@ -952,9 +952,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: unset;
 
     display: flex;
-    align-items: stretch;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.8rem;
 
     color: var(--rio-global-danger-color);
     background: var(--rio-global-surface-color-variant);
