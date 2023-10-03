@@ -25,7 +25,6 @@ export class ScrollContainerWidget extends WidgetBase {
         element.classList.add('rio-scroll-container', 'rio-zero-size-request-container');
 
         this._innerElement = document.createElement('div');
-        this._innerElement.classList.add('rio-single-container');
         element.appendChild(this._innerElement);
 
         return element;
