@@ -700,7 +700,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     border-radius: 0 0 var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small);
 
-    box-shadow: 0 0 0.8 var(--rio-global-shadow-color);
+    box-shadow: 0 0 0.8rem var(--rio-global-shadow-color);
 }
 
 .rio-dropdown > .rio-text-input > .rio-icon-revealer-arrow {
@@ -960,7 +960,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     background: var(--rio-global-surface-color-variant);
     padding: 1.5rem;
     border-radius: 99999px;
-    box-shadow: 0 0 1 var(--rio-global-shadow-color);
+    box-shadow: 0 0 1rem var(--rio-global-shadow-color);
 
     // This is immediately changed by JavaScript to effect a fade-in
     transform: translate(-50%, -200%);
@@ -1407,7 +1407,7 @@ $drawer-side-margin: 0.7rem;
     position: absolute;
     background-color: var(--rio-global-surface-color);
 
-    box-shadow: 0 0 1 var(--rio-global-shadow-color);
+    box-shadow: 0 0 1rem var(--rio-global-shadow-color);
 
     transition: transform 0.5s ease-out;
 }
@@ -1483,7 +1483,7 @@ $drawer-side-margin: 0.7rem;
 
     background-color: var(--rio-local-surface-color);
     border-radius: var(--rio-global-corner-radius-medium);
-    box-shadow: 0 0 1 var(--rio-global-shadow-color);
+    box-shadow: 0 0 1rem var(--rio-global-shadow-color);
 
     transform: scale(0);
     opacity: 0;
