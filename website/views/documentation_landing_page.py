@@ -24,6 +24,7 @@ class ButtonCard(rio.Widget):
                         align_x=0,
                         multiline=True,
                     ),
+                    width=20,
                     spacing=1,
                 ),
                 rio.Spacer(),
@@ -32,6 +33,7 @@ class ButtonCard(rio.Widget):
                     height=2,
                     width=2,
                     align_x=1,
+                    align_y=0,
                 ),
                 spacing=2,
                 margin=2,
@@ -60,7 +62,7 @@ class LargeNavigationButtons(rio.Widget):
                     "Detailed API documentation for all of Rio.",
                     rio.URL("/documentation/api-reference"),
                 ),
-                spacing=1,
+                spacing=2,
             ),
             rio.Image(
                 theme.get_random_material_image(),
@@ -69,20 +71,28 @@ class LargeNavigationButtons(rio.Widget):
                 corner_radius=theme.THEME.corner_radius_large,
                 fill_mode="zoom",
             ),
-            spacing=1,
+            spacing=2,
         )
 
 
 class DocumentationLandingPage(rio.Widget):
     def build(self) -> rio.Widget:
         return rio.Column(
-            # rio.Text(
-            #     "Welcome to the Rio Documentation",
-            #     style="heading1",
-            #     margin_bottom=5,
-            # ),
+            rio.MarkdownView(
+                """
+# Welcome to the Rio Documentation
+
+Rio is your friendly companion for web development, especially if you're not a
+web design expert but know some Python.
+
+This page is a perfect starting point to explore Rio and learn how to build your
+very own websites. Whether you're a beginner or have specific questions, Rio is
+here to simplify things for you.
+""",
+                margin_bottom=2,
+            ),
             LargeNavigationButtons(),
             rio.Spacer(),
-            width=theme.CENTER_COLUMN_WIDTH,
+            width=theme.get_center_column_width(self.session),
             align_x=0.5,
         )

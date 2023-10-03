@@ -34,8 +34,16 @@ class Footer(rio.Widget):
                     "Made with ❤️ in Vienna",
                     style=rio.TextStyle(
                         fill=rio.Color.WHITE,
+                        font_size=1.1,
                     ),
-                    margin_bottom=2,
+                    margin_bottom=0.6,
+                ),
+                rio.Text(
+                    "by the Rio team & contributors",
+                    style=rio.TextStyle(
+                        fill=rio.Color.WHITE,
+                    ),
+                    margin_bottom=4,
                 ),
                 rio.Row(
                     FooterColumn(
@@ -62,9 +70,16 @@ class Footer(rio.Widget):
                     spacing=6.0,
                     align_x=0.5,
                 ),
-                margin=2,
+                margin=4,
+                margin_bottom=7,
             ),
             style=rio.BoxStyle(
                 fill=theme.THEME.surface_color.darker(0.8),
+                corner_radius=(
+                    theme.THEME.corner_radius_large,
+                    theme.THEME.corner_radius_large,
+                    0,
+                    0,
+                ),
             ),
         )

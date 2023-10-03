@@ -10,6 +10,7 @@ from .. import structure, theme
 
 
 class Outliner(rio.Widget):
+    @rio.event.on_route_change
     async def on_route_change(self) -> Any:
         await self.force_refresh()
 
@@ -78,6 +79,7 @@ class Outliner(rio.Widget):
                 0,
             ),
             elevate_on_hover=True,
+            colorize_on_hover=True,
             align_y=0,
         )
 
@@ -92,7 +94,7 @@ class DocumentationView(rio.Widget):
                 ),
             ),
             rio.Router(
-                margin_top=9,
+                margin_top=3,
                 width="grow",
                 height="grow",
             ),

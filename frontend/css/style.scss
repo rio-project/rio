@@ -836,11 +836,16 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     background: var(--rio-local-accent-color);
     font-weight: bold;
     --rio-local-text-color: var(--rio-local-text-on-accent-color);
+
+    box-shadow: 0 0 0 transparent;
+    transition: box-shadow 0.2s ease-in-out;
 }
 
 .rio-buttonstyle-major:hover:not(.rio-switcheroo-disabled) {
     background: var(--rio-local-accent-color);
     cursor: pointer;
+
+    box-shadow: 0 0.1rem 0.18rem rgba(0, 0, 0, 0.3);
 }
 
 .rio-buttonstyle-minor {
@@ -1198,7 +1203,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     pointer-events: auto;
 }
 
-.rio-scroll-container>*>* {
+.rio-scroll-container > * > * {
     min-width: 100%;
     min-height: 100%;
 }

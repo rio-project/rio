@@ -11,9 +11,11 @@ class NavigationButton(rio.Widget):
     route: str
     is_active: bool = False
 
+    @rio.event.on_create
     def on_create(self) -> None:
         self.on_route_change()
 
+    @rio.event.on_route_change
     def on_route_change(self) -> None:
         try:
             self.is_active = self.session.active_route.parts[1] == self.route
@@ -42,10 +44,11 @@ class NavigationBar(rio.Widget):
 
         # If the page is narrow, fill most of the width with the navigation bar.
         # Otherwise fall back to a fixed width.
-        width_trip = theme.CENTER_COLUMN_WIDTH + 25
+        center_column_width = theme.get_center_column_width(self.session)
+        width_trip = center_column_width + 25
 
         if self.session.window_width > width_trip:
-            bar_width = theme.CENTER_COLUMN_WIDTH + 20
+            bar_width = center_column_width + 20
             bar_align_x = 0.5
         else:
             bar_width = "grow"
@@ -99,14 +102,10 @@ class NavigationBar(rio.Widget):
             ),
             style=rio.BoxStyle(
                 fill=surface_color,
-                corner_radius=(
-                    0,
-                    0,
-                    theme.THEME.corner_radius_large,
-                    theme.THEME.corner_radius_large,
-                ),
+                corner_radius=(theme.THEME.corner_radius_large),
                 shadow_color=theme.THEME.shadow_color,
-                shadow_radius=theme.THEME.shadow_radius,
+                shadow_radius=0.4,
+                shadow_offset_y=0.1,
             ),
             width=bar_width,
             align_x=bar_align_x,

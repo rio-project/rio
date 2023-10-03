@@ -50,7 +50,7 @@ class Testimonial(rio.Widget):
 class Testimonials(rio.Widget):
     def build(self) -> rio.Widget:
         grid = rio.Grid(
-            width=theme.CENTER_COLUMN_WIDTH,
+            width=theme.get_center_column_width(self.session),
             row_spacing=4,
             column_spacing=9,
             align_x=0.5,

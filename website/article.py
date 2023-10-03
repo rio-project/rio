@@ -231,11 +231,9 @@ def create_widget_api_docs(
                         style="heading1",
                         align_x=0,
                     ),
-                    rio.Text(
+                    rio.MarkdownView(
                         docs.short_description or "",
-                        style="heading3",
-                        multiline=True,
-                        align_x=0,
+                        default_language="python",
                     ),
                     align_y=0,
                     margin=2,
