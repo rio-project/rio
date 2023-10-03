@@ -164,7 +164,7 @@ routes = [
 
 
 rio_app = rio.App(
-    name="RIO",
+    name="Rio",
     build=AppRoot,
     routes=routes,
     default_attachments=[

@@ -15,7 +15,6 @@ CARD_STYLE = rio.BoxStyle(
 
 CARD_STYLE_HOVER = CARD_STYLE.replace(
     # fill=theme.surface_active_color,
-    # shadow_radius=2.5,
 )
 
 
