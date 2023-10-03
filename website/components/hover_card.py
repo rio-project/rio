@@ -43,7 +43,7 @@ class HoverCard(rio.Widget):
                     fill=theme.THEME.surface_color,
                     corner_radius=theme.THEME.corner_radius_large,
                     shadow_color=theme.THEME.shadow_color,
-                    shadow_radius=theme.THEME.shadow_radius if self._is_hovered else 0,
+                    shadow_radius=1.0 if self._is_hovered else 0,
                 ),
                 align_x=self.alignment,
                 margin_x=2,

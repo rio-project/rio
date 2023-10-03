@@ -81,10 +81,6 @@ class NavigationBar(rio.Widget):
                         "",
                     ),
                     NavigationButton(
-                        "News",
-                        "posts",
-                    ),
-                    NavigationButton(
                         "Docs",
                         "documentation",
                     ),

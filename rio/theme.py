@@ -70,7 +70,6 @@ class Theme:
     corner_radius_large: float
 
     base_spacing: float
-    shadow_radius: float
     shadow_color: rio.Color
 
     # Text styles
@@ -154,7 +153,6 @@ class Theme:
         self.corner_radius_large = corner_radius_large
         self.base_spacing = base_spacing
         self.shadow_color = rio.Color.BLACK.replace(opacity=0.4)
-        self.shadow_radius = 1
 
         # Text styles
 

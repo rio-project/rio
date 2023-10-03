@@ -1279,7 +1279,6 @@ document.body.removeChild(a)
         variables: Dict[str, str] = {
             "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
             "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",
-            "--rio-global-shadow-radius": f"{thm.shadow_radius}rem",
         }
 
         # Theme Colors
