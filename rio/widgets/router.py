@@ -12,6 +12,34 @@ __all__ = [
 ]
 
 
+def default_fallback_build(sess: rio.Session) -> rio.Widget:
+    return rio.Column(
+        rio.Row(
+            rio.Icon(
+                "material/error",
+                fill="warning",
+                width=4,
+                height=4,
+            ),
+            rio.Text("This page does not exist", style="heading1"),
+            spacing=2,
+            align_x=0.5,
+        ),
+        rio.Text(
+            "The URL you have entered does not exist on this website. Double check your spelling, or try navigating to the home page.",
+            multiline=True,
+        ),
+        rio.Button(
+            "Take me home",
+            on_press=lambda _: sess.navigate_to("/"),
+        ),
+        spacing=3,
+        width=20,
+        align_x=0.5,
+        align_y=0.35,
+    )
+
+
 class Router(widget_base.Widget):
     _: KW_ONLY
 
@@ -91,7 +119,7 @@ class Router(widget_base.Widget):
             route = self.session._active_route_instances[level]
         except IndexError:
             if self.fallback_build is None:
-                build_callback = lambda: rio.Text("TODO: No such route")
+                build_callback = lambda sess=self.session: default_fallback_build(sess)
             else:
                 build_callback = self.fallback_build
         else:

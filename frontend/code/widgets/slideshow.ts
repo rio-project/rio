@@ -8,6 +8,7 @@ const progressBarFadeDuration = 0.2;
 export type SlideshowState = WidgetState & {
     children?: (number | string)[];
     linger_time?: number;
+    corner_radius?: [number, number, number, number];
 };
 
 export class SlideshowWidget extends WidgetBase {
@@ -90,6 +91,14 @@ export class SlideshowWidget extends WidgetBase {
                 ++ii;
             }
         }
+
+        // Corner radius
+        if (deltaState.corner_radius !== undefined) {
+            let [topLeft, topRight, bottomRight, bottomLeft] =
+                deltaState.corner_radius;
+
+            element.style.borderRadius = `${topLeft}rem ${topRight}rem ${bottomRight}rem ${bottomLeft}rem`;
+        }
     }
 
     async updateLoop() {
@@ -123,10 +132,12 @@ export class SlideshowWidget extends WidgetBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${-100 * offset
-                }%)`;
-            this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)
-                }%)`;
+            this.outgoingChild.style.transform = `translateX(${
+                -100 * offset
+            }%)`;
+            this.incomingChild.style.transform = `translateX(${
+                -100 * (offset - 1)
+            }%)`;
 
             // Update the progress bar's opacity
             this.progressBarOpacity = Math.max(

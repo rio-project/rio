@@ -39,21 +39,26 @@ def make_slideshow_placeholder(variant: int) -> rio.Widget:
 class AppRoot(rio.Widget):
     def build(self) -> rio.Widget:
         return rio.Column(
-            # Navbar (sticky)
+            # Navigation Bar
             rio.Sticky(
                 comps.NavigationBar(
                     height=4,
                     width="grow",
+                    margin_top=1.0,
                     align_y=0,
                 ),
             ),
+            # Spacer for the navigation bar
+            rio.Spacer(height=5.1),
             # Router
             rio.Router(
                 width="grow",
                 height="grow",
             ),
             # Footer
-            comps.Footer(),
+            comps.Footer(
+                margin_top=2,
+            ),
         )
 
 

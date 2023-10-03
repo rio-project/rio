@@ -19,6 +19,7 @@ class Card(widget_base.Widget):
     corner_radius: Union[None, float, Tuple[float, float, float, float]] = None
     on_press: rio.EventHandler[[]] = None
     elevate_on_hover: Optional[bool] = None
+    colorize_on_hover: Optional[bool] = None
     _is_hovered: bool = False
 
     def _on_mouse_enter(self, event: rio.MouseEnterEvent) -> None:
@@ -38,6 +39,9 @@ class Card(widget_base.Widget):
         elevate_on_hover = (
             act_as_button if self.elevate_on_hover is None else self.elevate_on_hover
         )
+        colorize_on_hover = (
+            act_as_button if self.colorize_on_hover is None else self.colorize_on_hover
+        )
 
         # Prepare the regular style
         corner_radius = (
@@ -54,7 +58,7 @@ class Card(widget_base.Widget):
 
         # Prepare the hover style
         hover_style = style.replace(
-            fill=thm.surface_active_color if act_as_button else thm.surface_color,
+            fill=thm.surface_active_color if colorize_on_hover else thm.surface_color,
             shadow_radius=0.2 if elevate_on_hover else None,
             shadow_offset_y=0.12 if elevate_on_hover else None,
         )

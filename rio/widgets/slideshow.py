@@ -4,6 +4,8 @@ from dataclasses import KW_ONLY
 from datetime import timedelta
 from typing import *  # type: ignore
 
+from uniserde import JsonDoc
+
 import rio
 
 from . import widget_base
@@ -17,11 +19,13 @@ class Slideshow(widget_base.FundamentalWidget):
     children: List[rio.Widget]
     _: KW_ONLY
     linger_time: float
+    corner_radius: Union[None, float, Tuple[float, float, float, float]]
 
     def __init__(
         self,
         *children: rio.Widget,
         linger_time: Union[float, timedelta] = timedelta(seconds=10),
+        corner_radius: Union[None, float, Tuple[float, float, float, float]] = None,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -59,6 +63,34 @@ class Slideshow(widget_base.FundamentalWidget):
 
         self.children = list(children)
         self.linger_time = linger_time
+        self.corner_radius = corner_radius
+
+    def _custom_serialize(self) -> JsonDoc:
+        # Serialize the corner radius
+        if self.corner_radius is None:
+            thm = self.session.attachments[rio.Theme]
+
+            corner_radius = (
+                thm.corner_radius_medium,
+                thm.corner_radius_medium,
+                thm.corner_radius_medium,
+                thm.corner_radius_medium,
+            )
+
+        elif isinstance(self.corner_radius, (int, float)):
+            corner_radius = (
+                self.corner_radius,
+                self.corner_radius,
+                self.corner_radius,
+                self.corner_radius,
+            )
+
+        else:
+            corner_radius = self.corner_radius
+
+        return {
+            "corner_radius": corner_radius,
+        }
 
 
 Slideshow._unique_id = "Slideshow-builtin"

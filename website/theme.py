@@ -10,9 +10,16 @@ THEME = rio.Theme(
 )
 
 
-# On desktop, most of the website is located in a centered column. This is the
-# width of that column.
-CENTER_COLUMN_WIDTH = 75
+# On desktop, most of the website is located in a centered column. This function
+# returns the width of that column.
+def get_center_column_width(sess: rio.Session) -> float:
+    if sess.window_height > 120:
+        return 116
+
+    if sess.window_width > 60:
+        return sess.window_height - 4
+
+    return 40
 
 
 # Random material-styled images placed around the website

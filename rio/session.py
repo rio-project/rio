@@ -530,6 +530,12 @@ class Session(unicall.Unicall):
                 global_state.currently_building_widget = None
                 global_state.currently_building_session = None
 
+            # Sanity check
+            if not isinstance(build_result, rio.Widget):
+                raise ValueError(
+                    f"The output of `build` methods must be instances of `rio.Widget`, but `{widget}` returned `{build_result}`"
+                )
+
             # Has this widget been built before?
             try:
                 widget_data = self._weak_widget_data_by_widget[widget]

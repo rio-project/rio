@@ -30,13 +30,14 @@ def make_slideshow_placeholder(variant: int) -> rio.Widget:
 
 
 def make_slide(
+    sess: rio.Session,
     foreground: rio.Widget,
     background: rio.ImageLike,
 ) -> rio.Widget:
     return rio.Rectangle(
         child=rio.Container(
             child=foreground,
-            width=theme.CENTER_COLUMN_WIDTH,
+            width=theme.get_center_column_width(sess),
             align_x=0.5,
             margin_top=6,
             margin_bottom=5,
@@ -55,44 +56,41 @@ def make_slide(
 class HomeView(rio.Widget):
     def build(self) -> rio.Widget:
         return rio.Column(
-            rio.Stack(
-                # Slideshow
-                rio.Column(
-                    rio.Slideshow(
-                        make_slide(
-                            rio.Text(
-                                "Beautiful\nby Default",
-                                align_y=0,
-                                align_x=0,
-                                style=rio.TextStyle(
-                                    fill=rio.Color.BLACK,
-                                    font_size=7,
-                                    font_weight="bold",
-                                ),
-                            ),
-                            Path().resolve()
-                            / "website"
-                            / "assets"
-                            / "material-backgrounds"
-                            / "pawel-czerwinski-ruJm3dBXCqw-unsplash.jpg",
+            # Slideshow
+            rio.Slideshow(
+                make_slide(
+                    self.session,
+                    rio.Text(
+                        "Beautiful\nby Default",
+                        align_y=0,
+                        align_x=0,
+                        style=rio.TextStyle(
+                            fill=rio.Color.BLACK,
+                            font_size=7,
+                            font_weight="bold",
                         ),
-                        make_slideshow_placeholder(0),
-                        # make_slideshow_placeholder(1),
-                        # make_slideshow_placeholder(2),
-                        # make_slideshow_placeholder(3),
-                        width="grow",
-                        linger_time=10,
-                        height=45,
                     ),
-                    rio.Rectangle(
-                        style=rio.BoxStyle(fill=theme.THEME.surface_color),
-                        height=7,
-                    ),
+                    Path().resolve()
+                    / "website"
+                    / "assets"
+                    / "material-backgrounds"
+                    / "pawel-czerwinski-ruJm3dBXCqw-unsplash.jpg",
                 ),
-                # Testimonials
-                comps.Testimonials(
-                    align_y=1,
-                ),
+                make_slideshow_placeholder(0),
+                make_slideshow_placeholder(1),
+                # make_slideshow_placeholder(2),
+                # make_slideshow_placeholder(3),
+                corner_radius=theme.THEME.corner_radius_large,
+                width="grow",
+                linger_time=3,
+                height=45,
+                margin_x=1,
+                margin_top=1,
+            ),
+            # Testimonials
+            comps.Testimonials(
+                margin_top=1,
+                margin_bottom=1,
             ),
             # Features
             comps.HoverCard(0),
