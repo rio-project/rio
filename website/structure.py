@@ -82,14 +82,14 @@ def _compute_linear() -> (
         for art in arts:
             if isinstance(art, tuple):
                 for art in arts:
-                    name, url_segment, generate_article = art
+                    name, url_segment, generate_article = art  # type: ignore
                     result.append((url_segment, section_title, name, generate_article))
 
             else:
                 assert inspect.isclass(art), art
 
                 for art in arts:
-                    name = art.__name__
+                    name = art.__name__  # type: ignore
                     result.append((name, section_title, name, art))
 
     return tuple(result)

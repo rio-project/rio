@@ -3,13 +3,16 @@ Contains processing specific to the RIO project.
 """
 
 import inspect
+from typing import *  # type: ignore
+
+from revel import *
 
 import rio_docs
 
 from . import models
 
 
-def postprocess_widget_docs(docs: models.ClassDocs) -> None:
+def postprocess_class_docs(docs: models.ClassDocs) -> None:
     """
     Perform RIO specific post-processing on the widget, such as stripping out
     internal attributes and functions.
@@ -54,3 +57,7 @@ def postprocess_widget_docs(docs: models.ClassDocs) -> None:
             index += 1
         else:
             del docs.functions[index]
+
+
+def postprocess_widget_docs(docs: models.ClassDocs) -> None:
+    return postprocess_class_docs(docs)
