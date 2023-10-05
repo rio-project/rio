@@ -86,18 +86,20 @@ class App:
     def _as_fastapi(
         self,
         *,
-        external_url_override: Optional[str] = None,
-        _running_in_window: bool = False,
-        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
+        external_url_override: Optional[str],
+        running_in_window: bool,
+        validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
+        on_startup: Union[None, Callable[[], None], Callable[[], Awaitable[None]]],
     ) -> fastapi.FastAPI:
         return app_server.AppServer(
             self,
-            running_in_window=_running_in_window,
+            running_in_window=running_in_window,
             external_url_override=external_url_override,
             on_session_start=self.on_session_start,
             on_session_end=self.on_session_end,
             default_attachments=self.default_attachments,
-            validator_factory=_validator_factory,
+            validator_factory=validator_factory,
+            on_startup=on_startup,
         )
 
     def as_fastapi(
@@ -105,17 +107,22 @@ class App:
         *,
         external_url_override: Optional[str] = None,
     ):
-        return self._as_fastapi(external_url_override=external_url_override)
+        return self._as_fastapi(
+            external_url_override=external_url_override,
+            running_in_window=False,
+            validator_factory=None,
+            on_startup=None,
+        )
 
-    def run_as_web_server(
+    def _run_as_web_server(
         self,
         *,
-        external_url_override: Optional[str] = None,
-        host: str = "localhost",
-        port: int = 8000,
-        quiet: bool = True,
-        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
-        _on_startup: Optional[Callable[[], Awaitable[None]]] = None,
+        external_url_override: Optional[str],
+        host: str,
+        port: int,
+        quiet: bool,
+        validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
+        on_startup: Union[None, Callable[[], None], Callable[[], Awaitable[None]]],
     ) -> None:
         port = _ensure_valid_port(host, port)
 
@@ -134,13 +141,10 @@ class App:
         # Create the FastAPI server
         fastapi_app = self._as_fastapi(
             external_url_override=external_url_override,
-            _running_in_window=False,
-            _validator_factory=_validator_factory,
+            running_in_window=False,
+            validator_factory=validator_factory,
+            on_startup=on_startup,
         )
-
-        # Register the startup event
-        if _on_startup is not None:
-            fastapi_app.add_event_handler("startup", _on_startup)
 
         # Serve
         uvicorn.run(
@@ -150,27 +154,43 @@ class App:
             **kwargs,
         )
 
+    def run_as_web_server(
+        self,
+        *,
+        external_url_override: Optional[str] = None,
+        host: str = "localhost",
+        port: int = 8000,
+        quiet: bool = False,
+    ) -> None:
+        self._run_as_web_server(
+            external_url_override=external_url_override,
+            host=host,
+            port=port,
+            quiet=quiet,
+            validator_factory=None,
+            on_startup=None,
+        )
+
     def run_in_browser(
         self,
         *,
         external_url_override: Optional[str] = None,
         host: str = "localhost",
         port: Optional[int] = None,
-        quiet: bool = True,
-        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
+        quiet: bool = False,
     ):
         port = _ensure_valid_port(host, port)
 
         async def on_startup() -> None:
             webbrowser.open(f"http://{host}:{port}")
 
-        self.run_as_web_server(
+        self._run_as_web_server(
             external_url_override=external_url_override,
             host=host,
             port=port,
             quiet=quiet,
-            _validator_factory=_validator_factory,
-            _on_startup=on_startup,
+            validator_factory=None,
+            on_startup=on_startup,
         )
 
     def run_in_window(
@@ -201,8 +221,9 @@ class App:
         def run_web_server():
             fastapi_app = self._as_fastapi(
                 external_url_override=url,
-                _running_in_window=True,
-                _validator_factory=_validator_factory,
+                running_in_window=True,
+                validator_factory=_validator_factory,
+                on_startup=None,
             )
             fastapi_app.add_event_handler("startup", lock.release)
 
