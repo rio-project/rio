@@ -190,10 +190,10 @@ class Session(unicall.Unicall):
         # the tasks are cancelled when the session is closed.
         self._running_tasks: Set[asyncio.Task] = set()
 
-        # Maps all routers to the id of the router one higher up in the component
-        # tree. Root routers are mapped to None. This map is kept up to date by
-        # routers themselves.
-        self._routers: weakref.WeakKeyDictionary[
+        # Maps all PageViews to the id of the PageView one higher up in the component
+        # tree. Root PageViews are mapped to None. This map is kept up to date by
+        # PageViews themselves.
+        self._page_views: weakref.WeakKeyDictionary[
             rio.PageView, Optional[int]
         ] = weakref.WeakKeyDictionary()
 
@@ -422,7 +422,7 @@ class Session(unicall.Unicall):
             return
 
         # Is any guard opposed to this route?
-        active_route_instances, active_route = routing.check_route_guards(
+        active_route_instances, active_route = routing.check_page_guards(
             self,
             target_url_relative,
             target_url_absolute,
@@ -432,9 +432,11 @@ class Session(unicall.Unicall):
         self._active_route = active_route
         self._active_route_instances = tuple(active_route_instances)
 
-        # Dirty all routers to force a rebuild
-        for router in self._routers:
-            self._register_dirty_component(router, include_children_recursively=False)
+        # Dirty all PageViews to force a rebuild
+        for page_view in self._page_views:
+            self._register_dirty_component(
+                page_view, include_children_recursively=False
+            )
 
         self._create_task(self._refresh())
 
