@@ -15,9 +15,9 @@ class Row(component_base.FundamentalComponent):
     """
     A container that lays out its children horizontally.
 
-    `Row`s are one of the most common widgets in Rio. They take any number of
+    `Row`s are one of the most common components in Rio. They take any number of
     children and lay them out horizontally, with the first one on the left, the
-    second one to its right, and so on. All widgets in `Row`s occupy the full
+    second one to its right, and so on. All components in `Row`s occupy the full
     height of their parent.
 
     The `Row`'s horizontal counterpart is the `Column`.
@@ -37,11 +37,11 @@ class Row(component_base.FundamentalComponent):
 
     Getting rid of undefined space is easy: Depending on what look you're going
     for, either add a `Spacer` somewhere into your `Row`, assign one of the
-    widgets a `"grow"` value as its height, or set the `Row`'s vertical
+    components a `"grow"` value as its height, or set the `Row`'s vertical
     alignment.
 
     Attributes:
-        children: The `Widget`s to place in this `Row`.
+        children: The `Component`s to place in this `Row`.
 
         spacing: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.

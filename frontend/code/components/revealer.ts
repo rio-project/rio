@@ -25,7 +25,7 @@ function expandRevealer(elem: HTMLElement): void {
     contentInner.style.transform = `translateY(0)`;
     contentInner.style.opacity = '1';
 
-    // The widgets may currently be in flux due to a pending re-layout. If that
+    // The components may currently be in flux due to a pending re-layout. If that
     // is the case, reading the `scrollHeight` would lead to an incorrect value.
     // Wait for the resize to finish before fetching it.
     requestAnimationFrame(() => {

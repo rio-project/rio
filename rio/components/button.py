@@ -74,7 +74,7 @@ class Button(component_base.Component):
                 height=1.6,
             )
 
-        # Delegate to a HTML Widget
+        # Delegate to a HTML Component
         return _ButtonInternal(
             on_press=self.on_press,
             child=child,

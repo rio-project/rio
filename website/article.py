@@ -1,6 +1,6 @@
 """
 Contains helpers for creating articles on the website. Articles are represented
-as sequences of `Union[rio.Widget, str]`. Strings are rendered as markdown.
+as sequences of `Union[rio.Component, str]`. Strings are rendered as markdown.
 """
 
 from typing import *  # type: ignore
@@ -38,14 +38,14 @@ class Article:
         self._parts.append(rio.Card(rio.Column(*self._current_section)))
         self._current_section = None
 
-    def widget(self, widget: rio.Component) -> None:
+    def component(self, component: rio.Component) -> None:
         if self._current_section is None:
-            self._parts.append(widget)
+            self._parts.append(component)
         else:
-            self._current_section.append(widget)
+            self._current_section.append(component)
 
     def spacer(self, height: float) -> None:
-        self.widget(rio.Spacer(height=height))
+        self.component(rio.Spacer(height=height))
 
     def text(
         self,
@@ -56,7 +56,7 @@ class Article:
             rio.TextStyle,
         ] = "text",
     ) -> None:
-        self.widget(
+        self.component(
             rio.Text(
                 text,
                 style=style,
@@ -66,7 +66,7 @@ class Article:
         )
 
     def markdown(self, text: str) -> None:
-        self.widget(
+        self.component(
             rio.MarkdownView(
                 text,
                 default_language=self.default_language,
@@ -88,7 +88,7 @@ class Article:
         # Footer
         markdown += "\n```"
 
-        # Build the widget
+        # Build the component
         self.markdown(markdown)
 
     def build(self) -> rio.Component:
@@ -238,14 +238,14 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
     return art
 
 
-def create_widget_api_docs(
+def create_component_api_docs(
     docs: docmodels.ClassDocs,
     interactive_example: Optional[Callable[[], rio.Component]],
 ) -> Article:
     art = Article()
 
     # Heading / short description
-    art.widget(
+    art.component(
         rio.Row(
             rio.Card(
                 child=rio.Column(
@@ -281,7 +281,7 @@ def create_widget_api_docs(
         if init_function.name == "__init__":
             break
     else:
-        raise ValueError(f"Could not find constructor for widget `{docs.name}`")
+        raise ValueError(f"Could not find constructor for component `{docs.name}`")
 
     init_signature = _str_function_signature(
         init_function,
@@ -294,7 +294,7 @@ def create_widget_api_docs(
     # These are merged into a single section, because developers are unlikely to
     # interact with the attributes anywhere but the constructor.
     for field in docs.attributes:
-        art.widget(
+        art.component(
             rio.Row(
                 rio.Text(
                     field.name,
@@ -316,7 +316,7 @@ def create_widget_api_docs(
 
     # Interactive example
     if interactive_example is not None:
-        art.widget(interactive_example())
+        art.component(interactive_example())
 
     # Details
     art.begin_section()

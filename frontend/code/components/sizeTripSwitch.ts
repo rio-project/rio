@@ -11,10 +11,10 @@ export type SizeTripSwitchState = ComponentState & {
     is_tall?: boolean;
 };
 
-// Call `callback` when the size of `widget` changes. Furthermore, make sure to
-// stop observing the widget when it is no longer in the DOM.
-function watchWidget(
-    widget: HTMLElement,
+// Call `callback` when the size of `component` changes. Furthermore, make sure to
+// stop observing the component when it is no longer in the DOM.
+function watchComponent(
+    component: HTMLElement,
     callback: (width: number, height: number) => void
 ): void {
     let resizeObserver: ResizeObserver;
@@ -28,20 +28,20 @@ function watchWidget(
     };
 
     resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(widget);
+    resizeObserver.observe(component);
 
-    // Periodically check if the widget is still in the DOM, and stop observing
+    // Periodically check if the component is still in the DOM, and stop observing
     // it if it is not.
-    const checkWidgetInDOM = () => {
-        // Widget is still in the DOM, so keep checking
-        if (widget.isConnected) {
-            setTimeout(checkWidgetInDOM, 30000);
+    const checkComponentInDOM = () => {
+        // Component is still in the DOM, so keep checking
+        if (component.isConnected) {
+            setTimeout(checkComponentInDOM, 30000);
         }
 
-        // Stop observing the widget
+        // Stop observing the component
         resizeObserver.disconnect();
     };
-    setTimeout(checkWidgetInDOM, 30000);
+    setTimeout(checkComponentInDOM, 30000);
 }
 
 export class SizeTripSwitchComponent extends ComponentBase {
@@ -53,7 +53,7 @@ export class SizeTripSwitchComponent extends ComponentBase {
         element.classList.add('rio-single-container');
 
         // Watch for size changes
-        watchWidget(element, this.processSize.bind(this));
+        watchComponent(element, this.processSize.bind(this));
 
         return element;
     }
@@ -67,7 +67,7 @@ export class SizeTripSwitchComponent extends ComponentBase {
     }
 
     processSize(width: number, height: number): void {
-        // Does the widget exceed its thresholds?
+        // Does the component exceed its thresholds?
         const is_wide =
             this.state.width_threshold !== null &&
             width / pixelsPerEm > this.state.width_threshold;

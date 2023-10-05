@@ -27,7 +27,7 @@ html[data-theme='dark'] {
 //
 // JavaScript sets global theming variables, of the form `--rio-global-...`.
 
-// Z-indices for widgets which are expected to show up on top
+// Z-indices for components which are expected to show up on top
 $z-index-sticky: 10000;
 $z-index-popup: 10001;
 $z-index-error-popup: 10002;
@@ -169,7 +169,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 .rio-switcheroo-text {
     // text := accent
     //
-    // Useful to change the color of widgets which use the text color, to the
+    // Useful to change the color of components which use the text color, to the
     // current accent color. E.g. Allows to display text or icons as danger.
 
     // Theme colors
@@ -329,10 +329,10 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
-// The root element for the widget tree. It should display scrollbars if the
-// widgets grow too large for the screen.
+// The root element for the component tree. It should display scrollbars if the
+// components grow too large for the screen.
 //
-// This is a little simpler than the `ScrollContainer` widget, because this is
+// This is a little simpler than the `ScrollContainer` component, because this is
 // the root-most element that can scroll. Unlike `ScrollContainer`s, we don't
 // have to take care to start scrolling before our parent does, because we don't
 // have a parent that can scroll. Hence there's no need for a `postion:
@@ -353,7 +353,7 @@ code {
     min-height: 100%;
 }
 
-.rio-widget {
+.rio-component {
     box-sizing: border-box;
 }
 
@@ -1198,7 +1198,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 //    no matter how large its contents are, the parent element will always have
 //    a size request of 0x0.
 //
-// And finally, there's the child widget of the ScrollContainer, which must
+// And finally, there's the child component of the ScrollContainer, which must
 // never be smaller than the ScrollContainer itself. This is achieved by giving
 // it a `min-width` and `min-height` of 100%.
 .rio-scroll-container {

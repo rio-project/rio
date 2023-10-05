@@ -49,7 +49,7 @@ export class SliderComponent extends ComponentBase {
     }
 
     updateElement(element: HTMLElement, deltaState: SliderState): void {
-        // Convert between the widget's units and the backend's.
+        // Convert between the component's units and the backend's.
         let min =
             deltaState.min === undefined ? this.state['min'] : deltaState.min;
 
@@ -65,10 +65,10 @@ export class SliderComponent extends ComponentBase {
         }
 
         // The slider stores the coordinates of its rectangle. Since rio
-        // likes to resize and move around widgets, the rectangle must be
+        // likes to resize and move around components, the rectangle must be
         // updated appropriately.
         //
-        // Really, this should be done when the widget is resized or moved, but
+        // Really, this should be done when the component is resized or moved, but
         // there is no hook for that. Update seems to work fine.
         requestAnimationFrame(() => {
             this.mdcSlider.layout();

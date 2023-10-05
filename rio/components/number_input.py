@@ -49,7 +49,7 @@ class NumberInput(component_base.Component):
 
     def _try_set_value(self, raw_value: str) -> bool:
         """
-        Parse the given string and update the widget's value accordingly.
+        Parse the given string and update the component's value accordingly.
         Returns `True` if the value was successfully updated, `False` otherwise.
         """
 
@@ -142,7 +142,7 @@ class NumberInput(component_base.Component):
         else:
             value_str = int_str + locale.number_symbols["decimal"] + frac_str
 
-        # Build the widget
+        # Build the component
         return rio.TextInput(
             text=value_str,
             label=self.placeholder,

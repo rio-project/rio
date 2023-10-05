@@ -36,16 +36,16 @@ def _validate_build_function(
 ) -> Callable[[], rio.Component]:
     assert callable(
         build_function
-    ), f"The App requires a function that returns a widget, not {build_function!r}"
+    ), f"The App requires a function that returns a component, not {build_function!r}"
 
     def wrapper():
-        widget = build_function()
+        component = build_function()
 
         assert isinstance(
-            widget, rio.Component
-        ), f"The `build` function passed to the App must return a `Widget` instance, not {widget!r}."
+            component, rio.Component
+        ), f"The `build` function passed to the App must return a `Component` instance, not {component!r}."
 
-        return widget
+        return component
 
     return wrapper
 

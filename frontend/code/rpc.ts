@@ -1,5 +1,5 @@
 import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
-import { updateWidgetStates } from './componentManagement';
+import { updateComponentStates } from './componentManagement';
 import { requestFileUpload, registerFont } from './rpcFunctions';
 
 let websocket: WebSocket | null = null;
@@ -168,11 +168,11 @@ export async function processMessageReturnResponse(
     let response;
     let responseIsError = false;
 
-    // New widgets received
-    if (message.method == 'updateWidgetStates') {
-        await updateWidgetStates(
+    // New components received
+    if (message.method == 'updateComponentStates') {
+        await updateComponentStates(
             message.params.deltaStates,
-            message.params.rootWidgetId
+            message.params.rootComponentId
         );
         response = null;
     }

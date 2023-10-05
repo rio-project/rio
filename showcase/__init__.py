@@ -319,7 +319,7 @@ class Sidebar(rio.Component):
         )
 
 
-class WidgetShowcase(rio.Component):
+class ComponentShowcase(rio.Component):
     def build(self) -> rio.Component:
         return rio.Row(
             Sidebar(
@@ -353,7 +353,7 @@ def validator_factory(sess: rio.Session) -> rio.debug.Validator:
 
 
 rio_app = rio.App(
-    WidgetShowcase,
+    ComponentShowcase,
     name="Rio Showcase",
     on_session_start=lambda sess: print("Session Started"),
     on_session_end=lambda sess: print("Session Ended"),

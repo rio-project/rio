@@ -50,7 +50,7 @@ class Asset(SelfSerializing):
         >>> Asset.new(Path("foo.png")) is Asset.new(Path("foo.png"))
         True
 
-    To use an asset in a widget, simply store it in the widget's state. The
+    To use an asset in a component, simply store it in the component's state. The
     asset will automatically register itself with the AppServer (if necessary)
     and serialize itself as a URL.
     """

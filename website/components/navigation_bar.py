@@ -114,7 +114,7 @@ class NavigationBarDeadSpace(rio.Component):
     The Navigation Bar hovers above other content, necessitating a spacer to
     prevent real content from being obscured.
 
-    This widget is that spacer. it fills itself with a random background image
+    This component is that spacer. it fills itself with a random background image
     to provide visual interest.
     """
 

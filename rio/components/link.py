@@ -17,7 +17,7 @@ __all__ = [
 class Link(component_base.FundamentalComponent):
     # Exactly one of these will be set, the other `None`
     child_text: Optional[str]
-    child_widget: Optional[component_base.Component]
+    child_component: Optional[component_base.Component]
 
     target_url: Union[rio.URL, str]
 
@@ -58,10 +58,10 @@ class Link(component_base.FundamentalComponent):
 
         if isinstance(child, str):
             self.child_text = child
-            self.child_widget = None
+            self.child_component = None
         else:
             self.child_text = None
-            self.child_widget = child
+            self.child_component = child
 
         self.target_url = target_url
 

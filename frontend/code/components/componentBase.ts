@@ -1,4 +1,4 @@
-/// Base for all widget states. Updates received from the backend are partial,
+/// Base for all component states. Updates received from the backend are partial,
 
 import { callRemoteMethodDiscardResponse } from '../rpc';
 
@@ -13,7 +13,7 @@ export type ComponentState = {
     _grow_?: [boolean, boolean];
 };
 
-/// Base class for all widgets
+/// Base class for all components
 export abstract class ComponentBase {
     elementId: string;
     state: Required<ComponentState>;
@@ -25,14 +25,14 @@ export abstract class ComponentBase {
         this.layoutCssProperties = {};
     }
 
-    /// Fetches the HTML element associated with this widget. This is a slow
+    /// Fetches the HTML element associated with this component. This is a slow
     /// operation and should be avoided if possible. Returns `null` if the
     /// element cannot be found.
     tryGetElement(): HTMLElement | null {
         return document.getElementById(this.elementId);
     }
 
-    /// Fetches the HTML element associated with this widget. This is a slow
+    /// Fetches the HTML element associated with this component. This is a slow
     /// operation and should be avoided if possible. It is an error to look up
     /// an element which does not exist.
     element(): HTMLElement {
@@ -40,18 +40,18 @@ export abstract class ComponentBase {
 
         if (element === null) {
             throw new Error(
-                `Instance for ${this.state._python_type_} widget with id ${this.elementId} cannot find its element`
+                `Instance for ${this.state._python_type_} component with id ${this.elementId} cannot find its element`
             );
         }
 
         return element;
     }
 
-    /// Creates the HTML element associated with this widget. This function does
+    /// Creates the HTML element associated with this component. This function does
     /// not attach the element to the DOM, but merely returns it.
     abstract createElement(): HTMLElement;
 
-    /// Given a partial state update, this function updates the widget's HTML
+    /// Given a partial state update, this function updates the component's HTML
     /// element to reflect the new state.
     ///
     /// The `element` parameter is identical to `this.element`. Calling that
@@ -62,12 +62,12 @@ export abstract class ComponentBase {
         deltaState: ComponentState
     ): void;
 
-    /// Update the layout relevant CSS attributes for all of the widget's
+    /// Update the layout relevant CSS attributes for all of the component's
     /// children.
     updateChildLayouts(): void {}
 
     /// Used by the parent for assigning the layout relevant CSS attributes to
-    /// the widget's HTML element. This function keeps track of the assigned
+    /// the component's HTML element. This function keeps track of the assigned
     /// properties, allowing it to remove properties which are no longer
     /// relevant.
     replaceLayoutCssProperties(cssProperties: object): void {
@@ -89,13 +89,13 @@ export abstract class ComponentBase {
         this.layoutCssProperties = cssProperties;
     }
 
-    /// Send a message to the python instance corresponding to this widget. The
+    /// Send a message to the python instance corresponding to this component. The
     /// message is an arbitrary JSON object and will be passed to the instance's
     /// `_on_message` method.
     sendMessageToBackend(message: object): void {
-        callRemoteMethodDiscardResponse('widgetMessage', {
+        callRemoteMethodDiscardResponse('componentMessage', {
             // Remove the leading `rio-id-` from the element's ID
-            widgetId: parseInt(this.elementId.substring('rio-id-'.length)),
+            componentId: parseInt(this.elementId.substring('rio-id-'.length)),
             payload: message,
         });
     }
@@ -113,16 +113,16 @@ export abstract class ComponentBase {
     }
 
     setStateAndNotifyBackend(deltaState: object): void {
-        // Set the state. This also updates the widget
+        // Set the state. This also updates the component
         this._setStateDontNotifyBackend(deltaState);
 
         // Notify the backend
-        callRemoteMethodDiscardResponse('widgetStateUpdate', {
+        callRemoteMethodDiscardResponse('componentStateUpdate', {
             // Remove the leading `rio-id-` from the element's ID
-            widgetId: parseInt(this.elementId.substring('rio-id-'.length)),
+            componentId: parseInt(this.elementId.substring('rio-id-'.length)),
             deltaState: deltaState,
         });
     }
 }
 
-globalThis.WidgetBase = ComponentBase;
+globalThis.ComponentBase = ComponentBase;

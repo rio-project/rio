@@ -5,7 +5,7 @@ from revel import *  # type: ignore
 
 import rio.debug.crawl_tree as ct
 
-root_widget: ct.Widget
+root_component: ct.Component
 tree: ct.TreeDump
 
 
@@ -18,15 +18,15 @@ class UserError(Exception):
         return self.args[0]
 
 
-def get_widget_by_id(id: int) -> ct.Widget:
-    for widget in tree.widgets:
-        if widget.id == id:
-            return widget
+def get_component_by_id(id: int) -> ct.Component:
+    for component in tree.components:
+        if component.id == id:
+            return component
 
     raise KeyError(id)
 
 
-def parse_path(cur_path: ct.Widget, path: str) -> Tuple[ct.Widget, Optional[str]]:
+def parse_path(cur_path: ct.Component, path: str) -> Tuple[ct.Component, Optional[str]]:
     # Special case: Nothing
     if path == "":
         return cur_path, None
@@ -41,12 +41,12 @@ def parse_path(cur_path: ct.Widget, path: str) -> Tuple[ct.Widget, Optional[str]
         # Special case: Parent
         if cur == "parent":
             if cur_path.parent is None:
-                warning(f"Widget #{cur_path.id} has no parent. Staying put.")
+                warning(f"Component #{cur_path.id} has no parent. Staying put.")
             else:
                 try:
-                    cur_widget = get_widget_by_id(cur_path.parent)
+                    cur_component = get_component_by_id(cur_path.parent)
                 except KeyError:
-                    raise UserError(f"There is no widget #{cur_path.parent}")
+                    raise UserError(f"There is no component #{cur_path.parent}")
 
             continue
 
@@ -61,7 +61,7 @@ def visualize_node(path: List[str], tree: ct.TreeDump) -> None:
 
 
 def main():
-    global tree, root_widget
+    global tree, root_component
 
     # Load the tree
     with ct.DUMP_PATH.open("r") as f:
@@ -69,19 +69,19 @@ def main():
             json.load(f),
         )
 
-    # Find the root widget
-    root: Optional[ct.Widget] = None
+    # Find the root component
+    root: Optional[ct.Component] = None
 
-    for widget in tree.widgets:
-        if widget.parent is None:
-            assert root is None, (widget, root)
-            root = widget
+    for component in tree.components:
+        if component.parent is None:
+            assert root is None, (component, root)
+            root = component
 
-    assert root is not None, "No root widget found"
-    root_widget = root
+    assert root is not None, "No root component found"
+    root_component = root
 
     # Initialize state
-    cur_widget = root
+    cur_component = root
 
     # REPL
     while True:

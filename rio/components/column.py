@@ -13,9 +13,9 @@ class Column(component_base.FundamentalComponent):
     """
     A container that lays out its children vertically.
 
-    `Column`s are one of the most common widgets in Rio. They take any number of
+    `Column`s are one of the most common components in Rio. They take any number of
     children and lay them out vertically, with the first one at the top, the
-    second one below that, and so on. All widgets in `Column`s occupy the full
+    second one below that, and so on. All components in `Column`s occupy the full
     width of their parent.
 
     The `Column`'s horizontal counterpart is the `Row`.
@@ -35,11 +35,11 @@ class Column(component_base.FundamentalComponent):
 
     Getting rid of undefined space is easy: Depending on what look you're going
     for, either add a `Spacer` somewhere into your `Column`, assign one of the
-    widgets a `"grow"` value as its height, or set the `Column`'s vertical
+    components a `"grow"` value as its height, or set the `Column`'s vertical
     alignment.
 
     Attributes:
-        children: The `Widget`s to place in this `Column`.
+        children: The `Component`s to place in this `Column`.
 
         spacing: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.

@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 import rio
 
-T = TypeVar("T", bound="rio.Widget")
+T = TypeVar("T", bound="rio.Component")
 U = TypeVar("U")
 
 

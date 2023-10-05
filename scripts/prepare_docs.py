@@ -39,7 +39,7 @@ def main() -> None:
 
         # Postprocess them as needed
         if isinstance(cls, rio.Component):
-            rio_docs.custom.postprocess_widget_docs(docs)
+            rio_docs.custom.postprocess_component_docs(docs)
         else:
             rio_docs.custom.postprocess_class_docs(docs)
 

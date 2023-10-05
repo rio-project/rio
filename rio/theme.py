@@ -48,7 +48,7 @@ class Theme:
     secondary_color_variant: rio.Color
     disabled_color_variant: rio.Color
 
-    # Surface colors are often used for backgrounds. Most widgets are placed on
+    # Surface colors are often used for backgrounds. Most components are placed on
     # top of the surface color.
     background_color: rio.Color
     surface_color: rio.Color

@@ -93,16 +93,16 @@ class ColumnSample(rio.Component):
         )
 
 
-def get_docs(widget_class: Type) -> rio.Component:
+def get_docs(component_class: Type) -> rio.Component:
     # Get the docs class for this class
-    docs = rio_docs.ClassDocs.parse(widget_class)
+    docs = rio_docs.ClassDocs.parse(component_class)
 
     # Generate the article. This is done differently based on whether this is a
-    # widget or another class.
-    if issubclass(widget_class, rio.Component):
-        rio_docs.custom.postprocess_widget_docs(docs)
+    # component or another class.
+    if issubclass(component_class, rio.Component):
+        rio_docs.custom.postprocess_component_docs(docs)
 
-        art = article.create_widget_api_docs(
+        art = article.create_component_api_docs(
             docs,
             ColumnSample,
         )
