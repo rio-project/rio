@@ -68,6 +68,7 @@ function sendInitialMessage(): void {
     sendMessageOverWebsocket({
         websiteUrl: window.location.href,
         preferredLanguages: navigator.languages,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         userSettings: userSettings,
         windowWidth: window.innerWidth / pixelsPerEm,
         windowHeight: window.innerHeight / pixelsPerEm,

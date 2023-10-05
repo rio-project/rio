@@ -16,6 +16,7 @@ from typing import *  # type: ignore
 
 import babel
 import fastapi
+import pytz
 import timer_dict
 import uniserde.case_convert
 from PIL import Image
@@ -56,6 +57,7 @@ def read_frontend_template(template_name: str) -> str:
 class InitialClientMessage(uniserde.Serde):
     website_url: str
     preferred_languages: List[str]
+    timezone: str
     user_settings: Dict[str, Any]
 
     window_width: float
@@ -668,6 +670,15 @@ class AppServer(fastapi.FastAPI):
             preferred_locales.append(babel.Locale.parse("en"))
 
         sess.preferred_locales = tuple(preferred_locales)
+
+        # Parse the timezone
+        try:
+            sess.timezone = pytz.timezone(initial_message.timezone)
+        except pytz.UnknownTimeZoneError:
+            logging.warning(
+                f'Client sent unknown timezone "{initial_message.timezone}". Using UTC instead.'
+            )
+            sess.timezone = pytz.UTC
 
         # Publish the external URL via the session
         sess.external_url = (
