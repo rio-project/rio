@@ -17,7 +17,7 @@ aiohttp = "^3.8.4"
 cefpython3 = { version = "^66.1", platform = "windows", optional = true }
 fastapi = "^0.95.1"
 introspection = "^1.5.2"
-pillow = "^9.5.0"
+pillow = "^10.0.1"
 pygobject = { version = "^3.44.1", platform = "linux", optional = true }
 pytest = "^7.3.1"
 python-multipart = "^0.0.6"
