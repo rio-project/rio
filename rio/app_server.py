@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 import copy
 import functools
+import inspect
 import io
 import json
 import logging
@@ -125,6 +126,7 @@ class AppServer(fastapi.FastAPI):
         on_session_end: rio.EventHandler[rio.Session],
         default_attachments: Tuple[Any, ...],
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
+        on_startup: Union[None, Callable[[], None], Callable[[], Awaitable[None]]],
     ):
         super().__init__(lifespan=__class__._lifespan)
 
@@ -141,6 +143,7 @@ class AppServer(fastapi.FastAPI):
         self.on_session_end = on_session_end
         self.default_attachments = default_attachments
         self.validator_factory = validator_factory
+        self.on_startup = on_startup
 
         # Initialized lazily, when the favicon is first requested.
         self._icon_as_ico_blob: Optional[bytes] = None
@@ -195,8 +198,16 @@ class AppServer(fastapi.FastAPI):
             assert type(self) is AppServer  # Shut up pyright
 
             asyncio.create_task(
-                _periodically_clean_up_expired_sessions(weakref.ref(self))
+                _periodically_clean_up_expired_sessions(weakref.ref(self)),
+                name="Periodic session cleanup",
             )
+
+        # Run the user's startup code
+        if self.on_startup is not None:
+            result = self.on_startup()
+
+            if inspect.isawaitable(result):
+                await result
 
         yield
 

@@ -373,5 +373,5 @@ if __name__ == "__main__":
 else:
     app = rio_app._as_fastapi(
         external_url_override="http://localhost:8001",
-        _validator_factory=validator_factory,
+        validator_factory=validator_factory,
     )
