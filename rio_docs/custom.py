@@ -2,12 +2,9 @@
 Contains processing specific to the RIO project.
 """
 
-import inspect
 from typing import *  # type: ignore
 
-from revel import *
-
-import rio_docs
+from revel import *  # type: ignore
 
 from . import models
 
@@ -44,7 +41,8 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
 
         # No point in documenting somebody else's `build` method. It's not
         # supposed to be used by the user
-        keep = keep and func.name != "build"
+        is_user_build_method = func.name == "build" and docs.name != "Component"
+        keep = keep and not is_user_build_method
 
         # Strip lambdas
         keep = keep and func.name != "<lambda>"
