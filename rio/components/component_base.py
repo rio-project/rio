@@ -9,7 +9,6 @@ import weakref
 from abc import abstractmethod
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
-from typing import Any
 
 import introspection
 from typing_extensions import dataclass_transform

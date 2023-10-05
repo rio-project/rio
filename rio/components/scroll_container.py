@@ -1,5 +1,5 @@
 from dataclasses import KW_ONLY
-from typing import Literal
+from typing import *  # type: ignore
 
 from .component_base import Component, FundamentalComponent
 
