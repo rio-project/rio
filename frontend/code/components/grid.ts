@@ -1,7 +1,4 @@
-import {
-    getElementByComponentId,
-    replaceChildren,
-} from '../componentManagement';
+import { getElementByComponentId, replaceChildrenAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 type GridChildPosition = {
@@ -22,14 +19,14 @@ export type GridState = ComponentState & {
 export class GridComponent extends ComponentBase {
     state: Required<GridState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-grid');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: GridState): void {
-        replaceChildren(element, deltaState._children);
+    _updateElement(element: HTMLElement, deltaState: GridState): void {
+        replaceChildrenAndResetCssProperties(element, deltaState._children);
 
         if (deltaState.row_spacing !== undefined) {
             element.style.rowGap = `${deltaState.row_spacing}em`;
@@ -46,14 +43,12 @@ export class GridComponent extends ComponentBase {
             let childElement = getElementByComponentId(childId);
 
             childElement.style.gridRowStart = `${childPosition.row + 1}`;
-            childElement.style.gridRowEnd = `${
-                childPosition.row + 1 + childPosition.height
-            }`;
+            childElement.style.gridRowEnd = `${childPosition.row + 1 + childPosition.height
+                }`;
 
             childElement.style.gridColumnStart = `${childPosition.column + 1}`;
-            childElement.style.gridColumnEnd = `${
-                childPosition.column + 1 + childPosition.width
-            }`;
+            childElement.style.gridColumnEnd = `${childPosition.column + 1 + childPosition.width
+                }`;
         });
     }
 }

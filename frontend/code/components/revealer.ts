@@ -1,4 +1,4 @@
-import { replaceOnlyChild } from '../componentManagement';
+import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type RevealerState = ComponentState & {
@@ -61,7 +61,7 @@ function collapseRevealer(elem: HTMLElement): void {
 export class RevealerComponent extends ComponentBase {
     state: Required<RevealerState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-revealer');
@@ -75,9 +75,7 @@ export class RevealerComponent extends ComponentBase {
     <div class="rio-revealer-content-inner rio-single-container"></div>
 </div>
 `;
-        let header = element.querySelector(
-            '.rio-revealer-header'
-        ) as HTMLElement;
+        let header = element.querySelector('.rio-revealer-header') as HTMLElement;
 
         // Listen for presses
         header.onmouseup = (e) => {
@@ -108,7 +106,7 @@ export class RevealerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: RevealerState): void {
+    _updateElement(element: HTMLElement, deltaState: RevealerState): void {
         // Update the label
         if (deltaState.label !== undefined) {
             let label = element.querySelector(
@@ -122,7 +120,7 @@ export class RevealerComponent extends ComponentBase {
         let contentInner = element.querySelector(
             '.rio-revealer-content-inner'
         ) as HTMLElement;
-        replaceOnlyChild(contentInner, deltaState.child);
+        replaceOnlyChildAndResetCssProperties(contentInner, deltaState.child);
 
         // Expand / collapse
         if (deltaState.is_expanded === true) {

@@ -111,5 +111,11 @@ def get_child_component_containing_attribute_names_for_builtin_components() -> (
         if cls._unique_id.endswith("-builtin")  # type: ignore
     }
 
-    result["Placeholder"] = ["_child_"]
+    result.update(
+        {
+            "Placeholder": ["_child_"],
+            "Align-builtin": ["child"],
+            "Margin-builtin": ["child"],
+        }
+    )
     return result

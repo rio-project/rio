@@ -1,8 +1,8 @@
-import { replaceOnlyChild } from '../componentManagement';
 import { applyColorSet } from '../designApplication';
 import { ColorSet } from '../models';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
+import { SingleContainer } from './singleContainer';
 
 export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
@@ -13,16 +13,14 @@ export type ButtonState = ComponentState & {
     is_sensitive: boolean;
 };
 
-export class ButtonComponent extends ComponentBase {
+export class ButtonComponent extends SingleContainer {
     state: Required<ButtonState>;
     private mdcRipple: MDCRipple;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('rio-button');
-        element.classList.add('rio-single-container');
-        element.classList.add('mdc-ripple-surface');
+        element.classList.add('rio-button', 'mdc-ripple-surface');
 
         // Add a material ripple effect
         this.mdcRipple = new MDCRipple(element);
@@ -47,9 +45,7 @@ export class ButtonComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ButtonState): void {
-        replaceOnlyChild(element, deltaState.child);
-
+    _updateElement(element: HTMLElement, deltaState: ButtonState): void {
         // Set the shape
         if (deltaState.shape !== undefined) {
             element.classList.remove(

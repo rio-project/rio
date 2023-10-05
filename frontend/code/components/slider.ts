@@ -12,7 +12,7 @@ export class SliderComponent extends ComponentBase {
     state: Required<SliderState>;
     private mdcSlider: MDCSlider;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-slider', 'mdc-slider');
@@ -48,7 +48,7 @@ export class SliderComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SliderState): void {
+    _updateElement(element: HTMLElement, deltaState: SliderState): void {
         // Convert between the component's units and the backend's.
         let min =
             deltaState.min === undefined ? this.state['min'] : deltaState.min;

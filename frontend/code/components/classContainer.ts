@@ -1,5 +1,5 @@
-import { replaceOnlyChild } from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { SingleContainer } from './singleContainer';
+import { ComponentState } from './componentBase';
 
 export type ClassContainerState = ComponentState & {
     _type_: 'ClassContainer-builtin';
@@ -7,28 +7,20 @@ export type ClassContainerState = ComponentState & {
     classes?: string[];
 };
 
-export class ClassContainerComponent extends ComponentBase {
+export class ClassContainerComponent extends SingleContainer {
     state: Required<ClassContainerState>;
 
-    createElement(): HTMLElement {
-        let element = document.createElement('div');
-        return element;
+    _createElement(): HTMLElement {
+        return document.createElement('div');
     }
 
-    updateElement(element: HTMLElement, deltaState: ClassContainerState): void {
-        replaceOnlyChild(element, deltaState.child);
-
+    _updateElement(element: HTMLElement, deltaState: ClassContainerState): void {
         if (deltaState.classes !== undefined) {
             // Remove all old values
-            element.classList.forEach((className) => {
-                element.classList.remove(className);
-            });
+            element.className = '';
 
             // Add all new values
-            element.classList.add('rio-single-container');
-            deltaState.classes.forEach((className) => {
-                element.classList.add(className);
-            });
+            element.classList.add('rio-single-container', ...deltaState.classes);
         }
     }
 }

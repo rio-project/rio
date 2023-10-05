@@ -1,8 +1,6 @@
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { SingleContainer } from './singleContainer';
+import { ComponentState } from './componentBase';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values
 const HARDWARE_KEY_MAP = {
@@ -694,22 +692,19 @@ export type KeyEventListenerState = ComponentState & {
     reportKeyPress?: boolean;
 };
 
-export class KeyEventListenerComponent extends ComponentBase {
+export class KeyEventListenerComponent extends SingleContainer {
     state: Required<KeyEventListenerState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.tabIndex = -1; // So that it can receive keyboard events
-        element.classList.add('rio-single-container');
         return element;
     }
 
-    updateElement(
+    _updateElement(
         element: HTMLElement,
         deltaState: KeyEventListenerState
     ): void {
-        replaceOnlyChild(element, deltaState.child);
-
         let reportKeyDown =
             deltaState.reportKeyDown ?? this.state.reportKeyDown;
         let reportKeyUp = deltaState.reportKeyUp ?? this.state.reportKeyUp;
@@ -748,15 +743,5 @@ export class KeyEventListenerComponent extends ComponentBase {
         } else {
             element.onkeyup = null;
         }
-    }
-
-    updateChildLayouts(): void {
-        const childId = this.state.child;
-        if (childId === undefined) {
-            return;
-        }
-
-        const childInstance = getInstanceByComponentId(childId);
-        childInstance.replaceLayoutCssProperties({});
     }
 }

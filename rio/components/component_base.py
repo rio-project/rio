@@ -960,7 +960,7 @@ class FundamentalComponent(Component):
         assert self._session_ is not None
         await self._session_._refresh()
 
-    async def _on_message(self, message: Jsonable) -> None:
+    async def _on_message(self, message: Jsonable, /) -> None:
         """
         This function is called when the frontend sends a message to this component
         via `sendMessage`.

@@ -1,7 +1,4 @@
-import {
-    getInstanceByComponentId,
-    replaceChildren,
-} from '../componentManagement';
+import { getInstanceByComponentId, replaceChildrenAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type LinearContainerState = ComponentState & {
@@ -17,7 +14,7 @@ class LinearContainer extends ComponentBase {
     private grower1: HTMLElement;
     private grower2: HTMLElement;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
 
         this.grower1 = document.createElement('div');
@@ -38,12 +35,12 @@ class LinearContainer extends ComponentBase {
         return element;
     }
 
-    updateElement(
+    _updateElement(
         element: HTMLElement,
         deltaState: LinearContainerState
     ): void {
         // Update the children
-        replaceChildren(this.childContainer, deltaState.children);
+        replaceChildrenAndResetCssProperties(this.childContainer, deltaState.children);
 
         // Spacing
         if (deltaState.spacing !== undefined) {
@@ -71,8 +68,8 @@ class LinearContainer extends ComponentBase {
 }
 
 export class ColumnComponent extends LinearContainer {
-    createElement(): HTMLElement {
-        let element = super.createElement();
+    _createElement(): HTMLElement {
+        let element = super._createElement();
         element.classList.add('rio-column');
 
         return element;
@@ -84,8 +81,8 @@ export class ColumnComponent extends LinearContainer {
 }
 
 export class RowComponent extends LinearContainer {
-    createElement(): HTMLElement {
-        let element = super.createElement();
+    _createElement(): HTMLElement {
+        let element = super._createElement();
         element.classList.add('rio-row');
 
         return element;

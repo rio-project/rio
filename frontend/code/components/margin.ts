@@ -1,8 +1,5 @@
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { SingleContainer } from './singleContainer';
+import { ComponentState } from './componentBase';
 
 export type MarginState = ComponentState & {
     _type_: 'Margin-builtin';
@@ -13,19 +10,16 @@ export type MarginState = ComponentState & {
     margin_bottom?: number;
 };
 
-export class MarginComponent extends ComponentBase {
+export class MarginComponent extends SingleContainer {
     state: Required<MarginState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-margin');
-        element.classList.add('rio-single-container');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: MarginState): void {
-        replaceOnlyChild(element, deltaState.child);
-
+    _updateElement(element: HTMLElement, deltaState: MarginState): void {
         if (deltaState.margin_left !== undefined) {
             element.style.paddingLeft = `${deltaState.margin_left}em`;
         }
@@ -41,11 +35,5 @@ export class MarginComponent extends ComponentBase {
         if (deltaState.margin_bottom !== undefined) {
             element.style.paddingBottom = `${deltaState.margin_bottom}em`;
         }
-    }
-
-    updateChildLayouts(): void {
-        getInstanceByComponentId(
-            this.state['child']
-        ).replaceLayoutCssProperties({});
     }
 }

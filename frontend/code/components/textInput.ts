@@ -14,7 +14,7 @@ export type TextInputState = ComponentState & {
 export class TextInputComponent extends ComponentBase {
     state: Required<TextInputState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-text-input');
@@ -53,7 +53,7 @@ export class TextInputComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: TextInputState): void {
+    _updateElement(element: HTMLElement, deltaState: TextInputState): void {
         let inputElement = element.querySelector('input') as HTMLInputElement;
 
         if (deltaState.text !== undefined) {

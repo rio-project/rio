@@ -1,9 +1,6 @@
 import { pixelsPerEm } from '../app';
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { SingleContainer } from './singleContainer';
+import { ComponentState } from './componentBase';
 
 function eventMouseButtonToString(event: MouseEvent): object {
     return {
@@ -28,21 +25,17 @@ export type MouseEventListenerState = ComponentState & {
     reportMouseLeave: boolean;
 };
 
-export class MouseEventListenerComponent extends ComponentBase {
+export class MouseEventListenerComponent extends SingleContainer {
     state: Required<MouseEventListenerState>;
 
-    createElement(): HTMLElement {
-        let element = document.createElement('div');
-        element.classList.add('rio-single-container');
-        return element;
+    _createElement(): HTMLElement {
+        return document.createElement('div');
     }
 
-    updateElement(
+    _updateElement(
         element: HTMLElement,
         deltaState: MouseEventListenerState
     ): void {
-        replaceOnlyChild(element, deltaState.child);
-
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
                 this.sendMessageToBackend({
@@ -99,11 +92,5 @@ export class MouseEventListenerComponent extends ComponentBase {
         } else {
             element.onmouseleave = null;
         }
-    }
-
-    updateChildLayouts(): void {
-        getInstanceByComponentId(
-            this.state['child']
-        ).replaceLayoutCssProperties({});
     }
 }

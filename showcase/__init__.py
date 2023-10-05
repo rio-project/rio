@@ -313,7 +313,8 @@ class Sidebar(rio.Component):
                     ),
                     spacing=1.0,
                     align_y=0,
-                )
+                ),
+                scroll_x="never",
             ),
             margin=1.0,
         )
@@ -373,5 +374,7 @@ if __name__ == "__main__":
 else:
     app = rio_app._as_fastapi(
         external_url_override="http://localhost:8001",
+        running_in_window=False,
         validator_factory=validator_factory,
+        on_startup=lambda: None,
     )

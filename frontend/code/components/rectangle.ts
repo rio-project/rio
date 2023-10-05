@@ -1,11 +1,8 @@
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
 import { BoxStyle } from '../models';
 import { colorToCssString, fillToCss } from '../cssUtils';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
+import { SingleContainer } from './singleContainer';
 
 export type RectangleState = ComponentState & {
     _type_: 'Rectangle-builtin';
@@ -72,23 +69,20 @@ function setBoxStyleVariables(
     }
 }
 
-export class RectangleComponent extends ComponentBase {
+export class RectangleComponent extends SingleContainer {
     state: Required<RectangleState>;
 
     // If this rectangle has a ripple effect, this is the ripple instance.
     // `null` otherwise.
     private mdcRipple: MDCRipple | null = null;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-rectangle');
-        element.classList.add('rio-single-container');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: RectangleState): void {
-        replaceOnlyChild(element, deltaState.child);
-
+    _updateElement(element: HTMLElement, deltaState: RectangleState): void {
         setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
 
         if (deltaState.transition_time !== undefined) {
@@ -144,14 +138,6 @@ export class RectangleComponent extends ComponentBase {
                     this.mdcRipple.layout();
                 }
             });
-        }
-    }
-
-    updateChildLayouts(): void {
-        let child = this.state['child'];
-
-        if (child !== undefined && child !== null) {
-            getInstanceByComponentId(child).replaceLayoutCssProperties({});
         }
     }
 }

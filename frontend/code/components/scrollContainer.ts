@@ -1,7 +1,4 @@
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
+import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ScrollContainerState = ComponentState & {
@@ -23,7 +20,17 @@ export class ScrollContainerComponent extends ComponentBase {
     private _innerElement: HTMLElement;
     private _resizeObserver: ResizeObserver | null = null;
 
-    createElement(): HTMLElement {
+    // Consists of two elements:
+    // 1. A container element that simply has `position: relative` so that its
+    //    child can copy its size with `100%`.
+    // 2. The element that actually scrolls. This has `position: absolute` so
+    //    that no matter how large its contents are, the parent element will
+    //    always have a minimum size of 0x0.
+    //
+    // And finally, there's the child component of the ScrollContainer, which must
+    // never be smaller than the ScrollContainer itself. This is achieved by
+    // giving it a `min-width` and `min-height` of 100%.
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add(
             'rio-scroll-container',
@@ -46,10 +53,7 @@ export class ScrollContainerComponent extends ComponentBase {
     // ScrollContainer's inner element. This ensures that the child will never
     // be too large for the ScrollContainer. But since children fill up their
     // entire parent, the child's size can only ever grow and never shrink.
-    _onChildSizeChange(
-        entries: ResizeObserverEntry[],
-        observer: ResizeObserver
-    ): void {
+    private _onChildSizeChange(entries: ResizeObserverEntry[], observer: ResizeObserver): void {
         let element = this.tryGetElement();
 
         // If the parent isn't alive anymore, remove the observer
@@ -60,20 +64,26 @@ export class ScrollContainerComponent extends ComponentBase {
 
         for (let entry of entries) {
             let child = entry.target as HTMLElement;
-            let width = child.scrollWidth;
-            let height = child.scrollHeight;
-
-            if (this.state.scroll_x === 'never') {
-                element.style.minWidth = `${width}px`;
-            }
-
-            if (this.state.scroll_y === 'never') {
-                element.style.minHeight = `${height}px`;
-            }
+            this._resizeToFitChild(child);
         }
     }
 
-    updateElement(
+    private _resizeToFitChild(child: HTMLElement): void {
+        let minWidth: string | null = null;
+        let minHeight: string | null = null;
+
+        if (this.state.scroll_x === 'never') {
+            minWidth = `${child.scrollWidth}px`;
+        }
+
+        if (this.state.scroll_y === 'never') {
+            minHeight = `${child.scrollHeight}px`;
+        }
+
+        this.setMinSizeComponentImpl(minWidth, minHeight);
+    }
+
+    _updateElement(
         element: HTMLElement,
         deltaState: ScrollContainerState
     ): void {
@@ -84,11 +94,15 @@ export class ScrollContainerComponent extends ComponentBase {
                 this._resizeObserver.disconnect();
                 this._resizeObserver = null;
 
-                element.style.minWidth = '';
-                element.style.minHeight = '';
+                this.setMinSizeComponentImpl(null, null);
             }
 
-            replaceOnlyChild(this._innerElement, deltaState.child);
+            replaceOnlyChildAndResetCssProperties(this._innerElement, deltaState.child);
+
+            let child = getInstanceByComponentId(deltaState.child);
+            child.replaceLayoutCssProperties({});
+            child.setMinSizeContainer('100%', '100%');
+            this._resizeToFitChild(child.element());
         }
 
         if (deltaState.scroll_x !== undefined) {
@@ -114,14 +128,6 @@ export class ScrollContainerComponent extends ComponentBase {
                     this._innerElement.firstElementChild!
                 );
             }
-        }
-    }
-
-    updateChildLayouts(): void {
-        let child = this.state['child'];
-
-        if (child !== undefined && child !== null) {
-            getInstanceByComponentId(child).replaceLayoutCssProperties({});
         }
     }
 }

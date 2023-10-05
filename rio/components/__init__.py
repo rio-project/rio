@@ -9,6 +9,7 @@ from .custom_button import *
 from .drawer import *
 from .dropdown import *
 from .grid import *
+from .html import *
 from .icon import *
 from .image import *
 from .key_event_listener import *
