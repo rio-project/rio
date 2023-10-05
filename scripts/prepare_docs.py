@@ -1,3 +1,5 @@
+from typing import *  # type: ignore
+
 from revel import *  # type: ignore
 
 import rio
@@ -6,7 +8,7 @@ import rio_docs
 
 def main() -> None:
     # Find all classes that should be documented
-    target_classes = [
+    target_classes: List[Type] = [
         rio.App,
         rio.AssetError,
         rio.BoxStyle,
@@ -29,7 +31,10 @@ def main() -> None:
 
     while to_do:
         cur = to_do.pop()
-        target_classes.append(cur)
+
+        if not cur.__name__.startswith("_"):
+            target_classes.append(cur)
+
         to_do.extend(cur.__subclasses__())
 
     # Make sure they're all properly documented
@@ -57,6 +62,11 @@ def main() -> None:
                 )
 
         for func in docs.functions:
+            # __init__ methods for components need no documentation, since the
+            # class' documentation already fills that role
+            if func.name == "__init__" and issubclass(cls, rio.Component):  # type: ignore
+                continue
+
             if func.short_description is None:
                 warning(
                     f"Docstring for `{docs.name}.{func.name}` is missing a short description"

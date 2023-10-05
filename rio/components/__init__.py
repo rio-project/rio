@@ -1,4 +1,3 @@
-from .auto_form import *
 from .button import *
 from .card import *
 from .color_picker import *

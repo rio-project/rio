@@ -713,6 +713,17 @@ class Component(metaclass=ComponentMeta):
 
     @abstractmethod
     def build(self) -> "Component":
+        """
+        Return a component tree which represents the UI of this component.
+
+        Most components define their appearance and behavior by combining other,
+        more basic components. This function's purpose is to do exactly that. It
+        returns another component (typically a container) which will be
+        displayed on the screen.
+
+        The `build` function should be pure, meaning that it does not modify the
+        component's state and returns the same result each time it's invoked.
+        """
         raise NotImplementedError()
 
     def _iter_direct_children(self) -> Iterable["Component"]:
@@ -842,12 +853,35 @@ class Component(metaclass=ComponentMeta):
         *event_data,
     ) -> None:
         """
+        Calls an even handler, awaiting it if necessary.
+
         Call an event handler, if one is present. Await it if necessary. Log and
-        discard any exceptions.
+        discard any exceptions. If `event_data` is present, it will be passed to
+        the event handler.
         """
         await self.session._call_event_handler(handler, *event_data)
 
     async def force_refresh(self) -> None:
+        """
+        Force a rebuild of this component.
+
+        Most of the time components update automatically when their state
+        changes. However, some state mutations are invisible to `Rio`: For
+        example, appending items to a list modifies the list, but since no list
+        instance was actually assigned to th component, `Rio` will be unaware of
+        this change.
+
+        In these cases, you can force a rebuild of the component by calling
+        `force_refresh`. This will trigger a rebuild of the component and
+        display the updated version on the screen.
+
+        Another common use case is if you wish to update an component while an
+        event handler is still running. `Rio` will automatically detect changes
+        after event handlers return, but if you are performing a long-running
+        operation, you may wish to update the component while the event handler
+        is still running. This allows you to e.g. update a progress bar while
+        the operation is still running.
+        """
         self.session._register_dirty_component(
             self,
             include_children_recursively=False,
