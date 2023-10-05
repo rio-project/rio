@@ -17,7 +17,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
     private mediaElement: HTMLVideoElement;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add(
             'rio-media-player',
@@ -32,7 +32,7 @@ export class MediaPlayerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(
+    _updateElement(
         element: HTMLMediaElement,
         deltaState: MediaPlayerState
     ): void {

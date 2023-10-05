@@ -24,7 +24,7 @@ export class DropdownComponent extends ComponentBase {
     private textInputElement: HTMLElement;
     private inputElement: HTMLInputElement;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
         element.classList.add('rio-dropdown');
@@ -81,7 +81,7 @@ export class DropdownComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: DropdownState): void {
+    _updateElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
             this.optionsElement.innerHTML = '';
 

@@ -1,7 +1,4 @@
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
+import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type AlignState = ComponentState & {
@@ -14,14 +11,14 @@ export type AlignState = ComponentState & {
 export class AlignComponent extends ComponentBase {
     state: Required<AlignState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-align');
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: AlignState): void {
-        replaceOnlyChild(element, deltaState.child);
+    _updateElement(element: HTMLElement, deltaState: AlignState): void {
+        replaceOnlyChildAndResetCssProperties(element, deltaState.child);
     }
 
     updateChildLayouts(): void {

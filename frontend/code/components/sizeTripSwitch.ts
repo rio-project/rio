@@ -1,10 +1,11 @@
 import { pixelsPerEm } from '../app';
-import { replaceOnlyChild } from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ComponentId } from '../models';
+import { SingleContainer } from './singleContainer';
+import { ComponentState } from './componentBase';
 
 export type SizeTripSwitchState = ComponentState & {
     _type_: 'SizeTripSwitch-builtin';
-    child?: number | string;
+    child?: ComponentId;
     width_threshold?: number | null;
     height_threshold?: number | null;
     is_wide?: boolean;
@@ -44,13 +45,12 @@ function watchComponent(
     setTimeout(checkComponentInDOM, 30000);
 }
 
-export class SizeTripSwitchComponent extends ComponentBase {
+export class SizeTripSwitchComponent extends SingleContainer {
     state: Required<SizeTripSwitchState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('rio-single-container');
 
         // Watch for size changes
         watchComponent(element, this.processSize.bind(this));
@@ -58,10 +58,7 @@ export class SizeTripSwitchComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SizeTripSwitchState): void {
-        // Update the child
-        replaceOnlyChild(element, deltaState.child);
-
+    _updateElement(element: HTMLElement, deltaState: SizeTripSwitchState): void {
         // The update may have changed the thresholds, so reprocess the size
         this.processSize(element.clientWidth, element.clientHeight);
     }

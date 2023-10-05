@@ -1,4 +1,4 @@
-import { replaceChildren } from '../componentManagement';
+import { replaceChildrenAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 
@@ -29,7 +29,7 @@ export class SlideshowComponent extends ComponentBase {
 
     private progressBarOpacity: number = 1;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
         element.classList.add('rio-slideshow');
@@ -67,10 +67,10 @@ export class SlideshowComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SlideshowState): void {
+    _updateElement(element: HTMLElement, deltaState: SlideshowState): void {
         // Update the children
         if (deltaState.children !== undefined) {
-            replaceChildren(this.childContainer, deltaState.children, true);
+            replaceChildrenAndResetCssProperties(this.childContainer, deltaState.children, true);
 
             // Make sure no children are hiding the current one
             //
@@ -132,12 +132,10 @@ export class SlideshowComponent extends ComponentBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${
-                -100 * offset
-            }%)`;
-            this.incomingChild.style.transform = `translateX(${
-                -100 * (offset - 1)
-            }%)`;
+            this.outgoingChild.style.transform = `translateX(${-100 * offset
+                }%)`;
+            this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)
+                }%)`;
 
             // Update the progress bar's opacity
             this.progressBarOpacity = Math.max(

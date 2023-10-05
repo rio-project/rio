@@ -13,7 +13,7 @@ export type ProgressCircleState = ComponentState & {
 export class ProgressCircleComponent extends ComponentBase {
     state: Required<ProgressCircleState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let element = document.createElement('div');
 
         element.innerHTML = `
@@ -29,7 +29,7 @@ export class ProgressCircleComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ProgressCircleState): void {
+    _updateElement(element: HTMLElement, deltaState: ProgressCircleState): void {
         if (deltaState.color !== undefined) {
             applyColorSet(element, deltaState.color);
         }

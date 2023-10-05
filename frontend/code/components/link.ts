@@ -1,5 +1,6 @@
-import { replaceOnlyChild } from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { SingleContainer } from './singleContainer';
+import { ComponentState } from './componentBase';
 
 export type LinkState = ComponentState & {
     child_text?: string | null;
@@ -8,13 +9,16 @@ export type LinkState = ComponentState & {
     isRoute: boolean;
 };
 
-export class LinkComponent extends ComponentBase {
+export class LinkComponent extends SingleContainer {
     state: Required<LinkState>;
 
-    createElement(): HTMLElement {
+    childAttributeName(): string {
+        return 'child_component';
+    }
+
+    _createElement(): HTMLElement {
         let containerElement = document.createElement('a');
         containerElement.classList.add('rio-link');
-        containerElement.classList.add('rio-single-container');
 
         // Listen for clicks
         //
@@ -38,14 +42,14 @@ export class LinkComponent extends ComponentBase {
         return containerElement;
     }
 
-    updateElement(element: HTMLAnchorElement, deltaState: LinkState): void {
+    _updateElement(element: HTMLAnchorElement, deltaState: LinkState): void {
         // Child Text?
         if (
             deltaState.child_text !== undefined &&
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            replaceOnlyChild(element, null);
+            replaceOnlyChildAndResetCssProperties(element, null);
 
             // Add the new text
             let textElement = document.createElement('div');
@@ -61,7 +65,7 @@ export class LinkComponent extends ComponentBase {
             deltaState.child_component !== undefined &&
             deltaState.child_component !== null
         ) {
-            replaceOnlyChild(element, deltaState.child_component);
+            replaceOnlyChildAndResetCssProperties(element, deltaState.child_component);
             element.classList.remove('rio-text-link');
         }
 

@@ -11,7 +11,7 @@ export type TextState = ComponentState & {
 export class TextComponent extends ComponentBase {
     state: Required<TextState>;
 
-    createElement(): HTMLElement {
+    _createElement(): HTMLElement {
         let containerElement = document.createElement('div');
         containerElement.classList.add('rio-text');
 
@@ -20,7 +20,7 @@ export class TextComponent extends ComponentBase {
         return containerElement;
     }
 
-    updateElement(containerElement: HTMLElement, deltaState: TextState): void {
+    _updateElement(containerElement: HTMLElement, deltaState: TextState): void {
         let textElement = containerElement.firstElementChild as HTMLElement;
 
         if (deltaState.text !== undefined) {

@@ -1,5 +1,4 @@
 import { ComponentBase, ComponentState } from "./components/componentBase";
-import { ComponentId } from "./models";
 
 import { AlignComponent } from './components/align';
 import { ButtonComponent } from './components/button';
@@ -33,6 +32,7 @@ import { StackComponent } from './components/stack';
 import { SwitchComponent } from './components/switch';
 import { TextInputComponent } from './components/textInput';
 import { TextComponent } from './components/text';
+import { ComponentId } from "./models";
 import { HtmlComponent } from "./components/html";
 
 const componentClasses = {
@@ -317,7 +317,7 @@ export function updateComponentStates(
     for (let componentId in message) {
         let deltaState = message[componentId];
         let elementId = `rio-id-${componentId}`;
-        let element = document.getElementById(elementId)!;
+        let element = document.getElementById(elementId);
 
         // This is a reused element, no need to instantiate a new one
         if (element) {

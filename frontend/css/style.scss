@@ -52,21 +52,13 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // Text styles
     --rio-local-text-color: var(--rio-global-text-on-primary-color);
     --rio-local-text-background: var(--rio-global-text-on-primary-background);
-    --rio-local-text-background-clip: var(
-        --rio-global-text-on-primary-background-clip
-    );
+    --rio-local-text-background-clip: var(--rio-global-text-on-primary-background-clip);
     --rio-local-text-fill-color: var(--rio-global-text-on-primary-fill-color);
 
     --rio-local-text-on-accent-color: var(--rio-global-text-on-secondary-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-secondary-background
-    );
-    --rio-local-text-on-accent-background-clip: var(
-        --rio-global-text-on-secondary-background-clip
-    );
-    --rio-local-text-on-accent-fill-color: var(
-        --rio-global-text-on-secondary-fill-color
-    );
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-secondary-background);
+    --rio-local-text-on-accent-background-clip: var(--rio-global-text-on-secondary-background-clip);
+    --rio-local-text-on-accent-fill-color: var(--rio-global-text-on-secondary-fill-color);
 
     // Material Design Web
     // TODO
@@ -79,9 +71,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Surface
     --rio-local-surface-color: var(--rio-global-secondary-color);
-    --rio-local-surface-color-variant: var(
-        --rio-global-secondary-color-variant
-    );
+    --rio-local-surface-color-variant: var(--rio-global-secondary-color-variant);
 
     // Theme colors
     --rio-local-accent-color: var(--rio-global-primary-color);
@@ -89,15 +79,11 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-heading-color: var(--rio-global-heading-on-secondary-color);
-    --rio-local-heading-background: var(
-        --rio-global-heading-on-secondary-background
-    );
+    --rio-local-heading-background: var(--rio-global-heading-on-secondary-background);
     --rio-local-text-color: var(--rio-global-text-on-secondary-color);
     --rio-local-text-background: var(--rio-global-text-on-secondary-background);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-primary-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-primary-background
-    );
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-primary-background);
 
     // Material Design Web
     // TODO
@@ -116,9 +102,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // --rio-local-heading-color: var(--rio-global-text-on-success-color);
     // --rio-local-text-color: var(--rio-global-text-on-success-color);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-success-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-success-background
-    );
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-success-background);
 
     // Material Design Web
     // TODO
@@ -137,9 +121,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // --rio-local-heading-color: var(--rio-global-text-on-warning-color);
     // --rio-local-text-color: var(--rio-global-text-on-warning-color);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-warning-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-warning-background
-    );
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-warning-background);
 
     // Material Design Web
     // TODO
@@ -158,9 +140,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // --rio-local-heading-color: var(--rio-global-text-on-danger-color);
     // --rio-local-text-color: var(--rio-global-text-on-danger-color);
     --rio-local-text-on-accent-color: var(--rio-global-text-on-danger-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-danger-background
-    );
+    --rio-local-text-on-accent-background: var(--rio-global-text-on-danger-background);
 
     // Material Design Web
     // TODO
@@ -202,9 +182,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Text styles
     --rio-local-heading-color: var(--rio-global-heading-on-surface-color);
-    --rio-local-heading-background: var(
-        --rio-global-heading-on-surface-background
-    );
+    --rio-local-heading-background: var(--rio-global-heading-on-surface-background);
     --rio-local-text-color: var(--rio-global-text-on-surface-color);
     --rio-local-text-background: var(--rio-global-text-on-surface-background);
 
@@ -261,12 +239,10 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 }
 
 .rio-content-loading {
-    background-image: linear-gradient(
-        to right,
-        transparent 10%,
-        var(--rio-local-accent-color-variant) 12%,
-        transparent 14%
-    );
+    background-image: linear-gradient(to right,
+            transparent 10%,
+            var(--rio-local-accent-color-variant) 12%,
+            transparent 14%);
     background-size: 100rem 5rem;
     animation: content-loading 3s linear infinite;
 }
@@ -285,7 +261,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     position: relative;
 }
 
-.rio-zero-size-request-container > * {
+.rio-zero-size-request-container>* {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -293,13 +269,18 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
 // General
 .rio-single-container {
-    // TODO: I think these can sometimes be smaller than their child. Just like
-    // the Stack before it got `min-width: fit-content`.
     display: flex;
     align-items: stretch;
+
+    // For instances of the `SingleContainer` class, the `min-width` will be set
+    // by JS. But:
+    // 1. That only happens when `updateElement()` is called for the first time
+    // 2. Not every single-container is a real component. Some are just plain ol'
+    //    HTML elements.
+    min-width: fit-content;
 }
 
-.rio-single-container > * {
+.rio-single-container>* {
     flex-grow: 1;
 }
 
@@ -329,14 +310,30 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
+// Some components, for example `Stack`, need a `min-width` or `min-height`. But
+// the `width` and `height` assigned in python also need to be taken into
+// account. (Even though it's called `width` in python, in css it's actually the
+// `min-width`.) So instead of assigning fixed `width` and `height` values to
+// the HTML element, JS will assign `--min-width` and `--min-height` variables.
+// Then the CSS can use `min-width: max(var(--min-width), ...)` to get the
+// correct result.
+.rio-component {
+    box-sizing: border-box;
+
+    min-width: var(--min-width);
+    min-height: var(--min-height);
+}
+
 // The root element for the component tree. It should display scrollbars if the
 // components grow too large for the screen.
 //
-// This is a little simpler than the `ScrollContainer` component, because this is
-// the root-most element that can scroll. Unlike `ScrollContainer`s, we don't
-// have to take care to start scrolling before our parent does, because we don't
-// have a parent that can scroll. Hence there's no need for a `postion:
-// absolute` element here.
+// This is a little simpler than the `ScrollContainer` component, because:
+// 1. This is the root-most element that can scroll. Unlike `ScrollContainer`s,
+//    we don't have to take care to start scrolling before our parent does,
+//    because we don't have a parent that can scroll. Hence there's no need for
+//    a `postion: absolute` element here.
+// 2. The child element is always the `RootContainer` from python, which doesn't
+//    have a `width` or `height` set.
 .component-root {
     overflow: auto;
 
@@ -348,13 +345,18 @@ code {
     position: relative;
 }
 
-.component-root > * {
-    min-width: 100%;
-    min-height: 100%;
-}
-
-.rio-component {
-    box-sizing: border-box;
+// I honestly don't understand this. The child of the component-root is python's
+// `RootContainer`, which is a single-container. Single-containers have
+// `min-width: fit-content`. I tried to set `min-width: max(100%, fit-content)`,
+// but that's not valid. And as far as I can tell, a simple `min-width: 100%`
+// works correctly here. Why is the `fit-content` not necessary here? I have no
+// idea.
+//
+// The JS code initializes the `min-width` and `min-height` to `unset`, so we
+// need `!important` to override that.
+.component-root>.rio-single-container {
+    min-width: 100% !important;
+    min-height: 100% !important;
 }
 
 // Align
@@ -362,7 +364,7 @@ code {
     position: relative;
 }
 
-.rio-align > * {
+.rio-align>* {
     pointer-events: none;
     position: relative;
 }
@@ -370,11 +372,15 @@ code {
 // Margin
 .rio-margin {
     pointer-events: none;
+
+    // We actually use padding instead of margin. Make sure that the padding
+    // is included in the width/height of the element.
+    box-sizing: border-box;
 }
 
 // Column
 .rio-column,
-.rio-column > div.rio-undefined-space + div {
+.rio-column>div.rio-undefined-space+div {
     pointer-events: none;
 
     display: flex;
@@ -384,7 +390,7 @@ code {
 
 // Row
 .rio-row,
-.rio-row > div.rio-undefined-space + div {
+.rio-row>div.rio-undefined-space+div {
     pointer-events: none;
 
     display: flex;
@@ -407,16 +413,14 @@ code {
     pointer-events: auto;
     flex-grow: 1;
 
-    background-image: linear-gradient(
-        -45deg,
-        black 25%,
-        var(--rio-global-warning-color) 25%,
-        var(--rio-global-warning-color) 50%,
-        black 50%,
-        black 75%,
-        var(--rio-global-warning-color) 75%,
-        var(--rio-global-warning-color)
-    );
+    background-image: linear-gradient(-45deg,
+            black 25%,
+            var(--rio-global-warning-color) 25%,
+            var(--rio-global-warning-color) 50%,
+            black 50%,
+            black 75%,
+            var(--rio-global-warning-color) 75%,
+            var(--rio-global-warning-color));
     background-size: 2rem 2rem;
     animation: barber-pole 0.7s linear infinite;
 }
@@ -453,13 +457,8 @@ code {
     background: var(--rectangle-background);
     border-color: var(--rectangle-stroke-color);
     border-width: var(--rectangle-stroke-width);
-    border-radius: var(--rectangle-corner-radius-top-left)
-        var(--rectangle-corner-radius-top-right)
-        var(--rectangle-corner-radius-bottom-right)
-        var(--rectangle-corner-radius-bottom-left);
-    box-shadow: var(--rectangle-shadow-offset-x)
-        var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius)
-        var(--rectangle-shadow-color);
+    border-radius: var(--rectangle-corner-radius-top-left) var(--rectangle-corner-radius-top-right) var(--rectangle-corner-radius-bottom-right) var(--rectangle-corner-radius-bottom-left);
+    box-shadow: var(--rectangle-shadow-offset-x) var(--rectangle-shadow-offset-y) var(--rectangle-shadow-radius) var(--rectangle-shadow-color);
 }
 
 .rio-rectangle-ripple {
@@ -474,13 +473,8 @@ code {
     background: var(--rectangle-background-hover);
     border-color: var(--rectangle-stroke-color-hover);
     border-width: var(--rectangle-stroke-width-hover);
-    border-radius: var(--rectangle-corner-radius-top-left-hover)
-        var(--rectangle-corner-radius-top-right-hover)
-        var(--rectangle-corner-radius-bottom-right-hover)
-        var(--rectangle-corner-radius-bottom-left-hover);
-    box-shadow: var(--rectangle-shadow-offset-x-hover)
-        var(--rectangle-shadow-offset-y-hover)
-        var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
+    border-radius: var(--rectangle-corner-radius-top-left-hover) var(--rectangle-corner-radius-top-right-hover) var(--rectangle-corner-radius-bottom-right-hover) var(--rectangle-corner-radius-bottom-left-hover);
+    box-shadow: var(--rectangle-shadow-offset-x-hover) var(--rectangle-shadow-offset-y-hover) var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
 // Text Input
@@ -498,8 +492,7 @@ code {
 
     background-color: var(--rio-local-surface-color-variant);
 
-    border-radius: var(--rio-global-corner-radius-small)
-        var(--rio-global-corner-radius-small) 0 0;
+    border-radius: var(--rio-global-corner-radius-small) var(--rio-global-corner-radius-small) 0 0;
     border-bottom: 1px solid var(--rio-local-text-color);
 
     transition: border-bottom 0.13s linear;
@@ -520,7 +513,7 @@ code {
     background-color: var(--rio-global-surface-active-color);
 }
 
-.rio-text-input > input {
+.rio-text-input>input {
     order: 1;
 
     position: relative;
@@ -537,11 +530,11 @@ code {
     font-size: 1rem;
 }
 
-.rio-text-input > input:active {
+.rio-text-input>input:active {
     background-color: transparent;
 }
 
-.rio-text-input > input:focus-visible {
+.rio-text-input>input:focus-visible {
     outline: none;
 }
 
@@ -554,8 +547,8 @@ code {
     transition: all 0.13s linear;
 }
 
-input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
-.rio-text-input:focus-within > .rio-text-input-hint-text {
+input:not(:placeholder-shown)~.rio-text-input-hint-text,
+.rio-text-input:focus-within>.rio-text-input-hint-text {
     opacity: 0.5;
 }
 
@@ -572,15 +565,15 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     transition: all 0.13s linear;
 }
 
-input:not(:placeholder-shown) ~ .rio-text-input-label,
-.rio-text-input:focus-within > .rio-text-input-label {
+input:not(:placeholder-shown)~.rio-text-input-label,
+.rio-text-input:focus-within>.rio-text-input-label {
     opacity: 1;
     top: 0.5rem;
     bottom: unset;
     font-size: 0.8rem;
 }
 
-.rio-text-input:focus-within > .rio-text-input-label {
+.rio-text-input:focus-within>.rio-text-input-label {
     color: var(--rio-local-accent-color);
 }
 
@@ -611,10 +604,10 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
     // Not sure why this is necessary, but without it the grid can sometimes be
     // smaller than its children
-    min-width: fit-content;
+    min-width: max(var(--min-width), fit-content);
 }
 
-.rio-stack > * {
+.rio-stack>* {
     grid-column-start: 1;
     grid-row-start: 1;
 }
@@ -662,16 +655,16 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
         left 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15);
 }
 
-.rio-switch input:active + .knob {
+.rio-switch input:active+.knob {
     width: 1.98rem;
     border-radius: 4.3rem;
 }
 
-.rio-switch.is-on input:active + .knob {
+.rio-switch.is-on input:active+.knob {
     margin-left: -1.12rem;
 }
 
-.rio-switch.is-on input + .knob {
+.rio-switch.is-on input+.knob {
     left: 1.8rem;
     background-color: var(--rio-local-surface-color);
 }
@@ -686,7 +679,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     align-items: stretch;
 }
 
-.rio-dropdown > .rio-text-input {
+.rio-dropdown>.rio-text-input {
     flex-grow: 1;
 }
 
@@ -697,13 +690,12 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
     background-color: var(--rio-global-background-color);
     color: var(--rio-global-text-on-surface-color);
-    border-radius: 0 0 var(--rio-global-corner-radius-small)
-        var(--rio-global-corner-radius-small);
+    border-radius: 0 0 var(--rio-global-corner-radius-small) var(--rio-global-corner-radius-small);
 
     box-shadow: 0 0 0.8rem var(--rio-global-shadow-color);
 }
 
-.rio-dropdown > .rio-text-input > .rio-icon-revealer-arrow {
+.rio-dropdown>.rio-text-input>.rio-icon-revealer-arrow {
     pointer-events: none;
 
     position: absolute;
@@ -724,16 +716,16 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     cursor: pointer;
 }
 
-.rio-dropdown-options > * {
+.rio-dropdown-options>* {
     padding: 1rem 1rem;
     transition: background-color 0.1s ease-in-out;
 }
 
-.rio-dropdown-options > *:hover {
+.rio-dropdown-options>*:hover {
     background-color: var(--rio-global-surface-active-color);
 }
 
-.rio-dropdown-options > * + * {
+.rio-dropdown-options>*+* {
     border-top: 1px solid var(--rio-global-text-on-surface-color);
 }
 
@@ -891,7 +883,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     flex-grow: 1;
 }
 
-.rio-revealer-header > .rio-icon-revealer-arrow {
+.rio-revealer-header>.rio-icon-revealer-arrow {
     width: 1.3rem;
     height: 1.3rem;
     margin-left: 0.5rem;
@@ -904,7 +896,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     transition: transform 0.3s ease-in-out;
 }
 
-.rio-revealer-header > .rio-icon-revealer-arrow .expanded {
+.rio-revealer-header>.rio-icon-revealer-arrow .expanded {
     transform: rotate(0deg);
 }
 
@@ -943,7 +935,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     transition: opacity 0.7s ease-in;
 }
 
-.rio-error-popup > div {
+.rio-error-popup>div {
     pointer-events: auto;
     position: fixed;
     top: 2rem;
@@ -982,14 +974,14 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: 100%;
 }
 
-.slideshow-child-container > div {
+.slideshow-child-container>div {
     grid-column-start: 1;
     grid-row-start: 1;
     width: 100%;
     height: 100%;
 }
 
-.slideshow-child-container > div > * {
+.slideshow-child-container>div>* {
     grid-column-start: 1;
     grid-row-start: 1;
     width: 100%;
@@ -1044,16 +1036,16 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
         list-style-type: none;
     }
 
-    ul > li {
+    ul>li {
         margin-bottom: 0.4em;
     }
 
-    ul > li:before {
+    ul>li:before {
         content: '- ';
         font-weight: bold;
     }
 
-    p > code {
+    p>code {
         font-family: 'Roboto Mono', monospace;
         background: var(--rio-local-surface-color-variant);
         border-radius: var(--rio-global-corner-radius-small);
@@ -1073,7 +1065,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     color: var(--rio-local-text-color);
 }
 
-.rio-markdown-code-block-header > * {
+.rio-markdown-code-block-header>* {
     padding: var(--rio-padding);
 }
 
@@ -1108,7 +1100,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     opacity: 1;
 }
 
-.rio-markdown-code-block > code {
+.rio-markdown-code-block>code {
     font-size: 1rem;
     display: block;
     padding: 0 var(--rio-padding) var(--rio-padding) var(--rio-padding);
@@ -1190,25 +1182,9 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 // ScrollContainer
-//
-// Consists of two elements:
-// 1. A container element that simply has `position: relative` so that its child
-//    can copy its size.
-// 2. The element that actually scrolls. This has `position: absolute` so that
-//    no matter how large its contents are, the parent element will always have
-//    a size request of 0x0.
-//
-// And finally, there's the child component of the ScrollContainer, which must
-// never be smaller than the ScrollContainer itself. This is achieved by giving
-// it a `min-width` and `min-height` of 100%.
 .rio-scroll-container {
     // Needs pointer events so that the scrollbar can be interacted with
     pointer-events: auto;
-}
-
-.rio-scroll-container > * > * {
-    min-width: 100%;
-    min-height: 100%;
 }
 
 // Color Picker
@@ -1260,7 +1236,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     cursor: crosshair;
 }
 
-.rio-color-picker-slider-outer > .rio-color-picker-knob {
+.rio-color-picker-slider-outer>.rio-color-picker-knob {
     top: 50%;
 }
 
@@ -1268,31 +1244,27 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     border-radius: 99rem;
 }
 
-.rio-color-picker-hue-bar > .rio-color-slider-inner {
-    background: linear-gradient(
-        to right,
-        red,
-        yellow,
-        lime,
-        aqua,
-        blue,
-        magenta,
-        red
-    );
+.rio-color-picker-hue-bar>.rio-color-slider-inner {
+    background: linear-gradient(to right,
+            red,
+            yellow,
+            lime,
+            aqua,
+            blue,
+            magenta,
+            red);
 }
 
-.rio-color-picker-opacity-bar > .rio-color-slider-inner:not(.rio-checkered) {
+.rio-color-picker-opacity-bar>.rio-color-slider-inner:not(.rio-checkered) {
     position: absolute;
     top: 0.7rem;
     left: 0;
     right: 0;
     bottom: 0.7rem;
 
-    background: linear-gradient(
-        to right,
-        transparent,
-        var(--chosen-color-opaque)
-    );
+    background: linear-gradient(to right,
+            transparent,
+            var(--chosen-color-opaque));
 }
 
 .rio-color-picker-result-container {
@@ -1311,13 +1283,13 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: 2.5rem;
 }
 
-.rio-color-picker-selected-color-circle > * {
+.rio-color-picker-selected-color-circle>* {
     width: 100%;
     height: 100%;
     border-radius: 50%;
 }
 
-.rio-color-picker-selected-color-circle > div:first-child {
+.rio-color-picker-selected-color-circle>div:first-child {
     position: absolute;
     top: 0;
     left: 0;
@@ -1368,11 +1340,9 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     --checker-color: #888;
     --checker-size: 0.9rem;
 
-    background-image: linear-gradient(
-            45deg,
+    background-image: linear-gradient(45deg,
             var(--checker-color) 25%,
-            transparent 25%
-        ),
+            transparent 25%),
         linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
         linear-gradient(45deg, transparent 75%, var(--checker-color) 75%),
         linear-gradient(45deg, var(--checker-color) 25%, transparent 25%);
@@ -1421,51 +1391,47 @@ $drawer-side-margin: 0.7rem;
     min-width: 8rem;
 }
 
-.rio-drawer-left > .rio-drawer-content {
+.rio-drawer-left>.rio-drawer-content {
     top: $drawer-side-margin;
     left: 0;
     bottom: $drawer-side-margin;
     width: min-content;
 
-    border-radius: 0 var(--rio-global-corner-radius-large)
-        var(--rio-global-corner-radius-large) 0;
+    border-radius: 0 var(--rio-global-corner-radius-large) var(--rio-global-corner-radius-large) 0;
 }
 
-.rio-drawer-right > .rio-drawer-content {
+.rio-drawer-right>.rio-drawer-content {
     top: $drawer-side-margin;
     right: 0;
     bottom: $drawer-side-margin;
     width: min-content;
 
-    border-radius: var(--rio-global-corner-radius-large) 0 0
-        var(--rio-global-corner-radius-large);
+    border-radius: var(--rio-global-corner-radius-large) 0 0 var(--rio-global-corner-radius-large);
 }
 
-.rio-drawer-top > .rio-drawer-content {
+.rio-drawer-top>.rio-drawer-content {
     left: $drawer-side-margin;
     top: 0;
     right: $drawer-side-margin;
     height: min-content;
 
-    border-radius: 0 0 var(--rio-global-corner-radius-large)
-        var(--rio-global-corner-radius-large);
+    border-radius: 0 0 var(--rio-global-corner-radius-large) var(--rio-global-corner-radius-large);
 }
 
-.rio-drawer-bottom > .rio-drawer-content {
+.rio-drawer-bottom>.rio-drawer-content {
     left: $drawer-side-margin;
     bottom: 0;
     right: $drawer-side-margin;
     height: min-content;
 
-    border-radius: var(--rio-global-corner-radius-large)
-        var(--rio-global-corner-radius-large) 0 0;
+    border-radius: var(--rio-global-corner-radius-large) var(--rio-global-corner-radius-large) 0 0;
 }
 
 .rio-drawer-no-transition {
     transition: none !important;
 }
 
-.rio-drawer-no-transition > * {
+.rio-drawer-no-transition>* {
     transition: none !important;
 }
 
@@ -1492,7 +1458,7 @@ $drawer-side-margin: 0.7rem;
         opacity 0.1s ease-in-out;
 }
 
-.rio-popup-open > .rio-popup-content {
+.rio-popup-open>.rio-popup-content {
     transform: scale(1);
     opacity: 1;
 
@@ -1502,7 +1468,7 @@ $drawer-side-margin: 0.7rem;
 }
 
 // Image
-.rio-image > * {
+.rio-image>* {
     display: flex;
     align-items: center;
     justify-content: center;
