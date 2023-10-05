@@ -50,7 +50,7 @@ class AppRoot(rio.Component):
             ),
             # Spacer for the navigation bar
             rio.Spacer(height=5.1),
-            # Router
+            # PageView
             rio.PageView(
                 width="grow",
                 height="grow",

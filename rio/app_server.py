@@ -275,7 +275,7 @@ class AppServer(fastapi.FastAPI):
             (
                 initial_route_instances,
                 initial_route_absolute,
-            ) = routing.check_route_guards(
+            ) = routing.check_page_guards(
                 sess,
                 target_url_relative=initial_route_relative,
                 target_url_absolute=initial_route_absolute,

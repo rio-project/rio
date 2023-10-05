@@ -37,7 +37,7 @@ class PageRedirect(Exception):
         self.redirect = redirect
 
 
-def check_route_guards(
+def check_page_guards(
     sess: rio.Session,
     target_url_relative: rio.URL,
     target_url_absolute: rio.URL,
@@ -54,7 +54,7 @@ def check_route_guards(
 
     If the URL points to a route which doesn't exist that is not considered an
     error. The result will still be valid. That is because navigation is
-    possible, it's just that some router(s) will display a 404 page.
+    possible, it's just that some PageViews will display a 404 page.
 
     This function does not perform any actual navigation. It simply checks
     whether navigation to the target route is possible.
