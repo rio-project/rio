@@ -12,6 +12,7 @@ import traceback
 import typing
 import weakref
 from dataclasses import dataclass
+from datetime import tzinfo
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -225,6 +226,7 @@ class Session(unicall.Unicall):
         self.preferred_locales: Tuple[
             babel.Locale, ...
         ]  # Always has at least one member
+        self.timezone: tzinfo
 
         self.window_width: float
         self.window_height: float
