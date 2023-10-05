@@ -440,7 +440,7 @@ class Validator:
 
     def _handle_outgoing_evaluateJavascript(self, msg: Any):
         # Is this message registering a new widget class?
-        match = re.search(r"window.widgetClasses\['(.*)'\]", msg["javaScriptSource"])
+        match = re.search(r"window.componentClasses\['(.*)'\]", msg["javaScriptSource"])
 
         if match is None:
             return

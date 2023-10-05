@@ -4,9 +4,9 @@ from . import pages
 
 app = rio.App(
     name="My Portfolio",
-    build=rio.Router,
+    build=rio.PageView,
     routes=[
-        rio.Route("", pages.PortfolioView),
+        rio.Page("", pages.PortfolioView),
     ],
 )
 

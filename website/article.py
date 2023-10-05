@@ -22,8 +22,8 @@ class Article:
     ):
         self.default_language = default_language
 
-        self._parts: List[rio.Widget] = []
-        self._current_section: Optional[List[rio.Widget]] = None
+        self._parts: List[rio.Component] = []
+        self._current_section: Optional[List[rio.Component]] = None
 
     def begin_section(self) -> None:
         if self._current_section is not None:
@@ -38,7 +38,7 @@ class Article:
         self._parts.append(rio.Card(rio.Column(*self._current_section)))
         self._current_section = None
 
-    def widget(self, widget: rio.Widget) -> None:
+    def widget(self, widget: rio.Component) -> None:
         if self._current_section is None:
             self._parts.append(widget)
         else:
@@ -91,7 +91,7 @@ class Article:
         # Build the widget
         self.markdown(markdown)
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Column(
             *self._parts,
             spacing=2,
@@ -240,7 +240,7 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
 
 def create_widget_api_docs(
     docs: docmodels.ClassDocs,
-    interactive_example: Optional[Callable[[], rio.Widget]],
+    interactive_example: Optional[Callable[[], rio.Component]],
 ) -> Article:
     art = Article()
 

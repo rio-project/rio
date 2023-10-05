@@ -3,7 +3,7 @@ import rio
 from .. import theme
 
 
-class HoverCard(rio.Widget):
+class HoverCard(rio.Component):
     alignment: float
 
     _is_hovered: bool = False
@@ -14,7 +14,7 @@ class HoverCard(rio.Widget):
     def _on_mouse_leave(self, event: rio.MouseLeaveEvent) -> None:
         self._is_hovered = False
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Stack(
             # Hidden background
             rio.Rectangle(

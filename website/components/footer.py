@@ -5,10 +5,10 @@ import rio
 from .. import theme
 
 
-class FooterColumn(rio.Widget):
+class FooterColumn(rio.Component):
     entries: List[Tuple[str, Union[str, rio.URL]]]
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         text_style = rio.TextStyle(
             fill=theme.THEME.text_color_on_dark,
         )
@@ -26,8 +26,8 @@ class FooterColumn(rio.Widget):
         )
 
 
-class Footer(rio.Widget):
-    def build(self) -> rio.Widget:
+class Footer(rio.Component):
+    def build(self) -> rio.Component:
         return rio.Rectangle(
             child=rio.Column(
                 rio.Rectangle(

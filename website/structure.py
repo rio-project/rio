@@ -63,7 +63,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
 # - Article generation function, or `Widget` class
 def _compute_linear() -> (
     Tuple[
-        Tuple[str, str, str, Union[Callable[[], article.Article], Type[rio.Widget]]],
+        Tuple[str, str, str, Union[Callable[[], article.Article], Type[rio.Component]]],
         ...,
     ]
 ):

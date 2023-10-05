@@ -4,7 +4,7 @@ import rio
 
 
 async def test_default_values_arent_considered_explicitly_set(create_mockapp):
-    class SquareWidget(rio.Widget):
+    class SquareWidget(rio.Component):
         label: str
 
         def __init__(self, label, size=5):
@@ -15,7 +15,7 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
         def build(self):
             return rio.Text(self.label, width=self.width, height=self.height)
 
-    class RootWidget(rio.Widget):
+    class RootWidget(rio.Component):
         text: str
 
         def build(self):
@@ -66,7 +66,7 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
     # The end result is that there is a new widget (the child of
     # LowLevelContainer), whose builder (HighLevelWidget2) is not "dirty". Make
     # sure the new widget is initialized correctly despite this.
-    class HighLevelWidget1(rio.Widget):
+    class HighLevelWidget1(rio.Component):
         switch: bool = False
 
         def build(self):
@@ -77,8 +77,8 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
 
             return HighLevelWidget2(rio.Column(child))
 
-    class HighLevelWidget2(rio.Widget):
-        child: rio.Widget
+    class HighLevelWidget2(rio.Component):
+        child: rio.Component
 
         def build(self):
             return self.child
@@ -94,8 +94,8 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
 
 
 async def test_reconcile_unusual_types(create_mockapp):
-    class Container(rio.Widget):
-        def build(self) -> rio.Widget:
+    class Container(rio.Component):
+        def build(self) -> rio.Component:
             return CustomWidget(
                 integer=4,
                 text="bar",
@@ -103,10 +103,10 @@ async def test_reconcile_unusual_types(create_mockapp):
                 byte_array=bytearray(b"foo"),
             )
 
-    class CustomWidget(rio.Widget):
+    class CustomWidget(rio.Component):
         integer: int
         text: str
-        tuple: Tuple[float, rio.Widget]
+        tuple: Tuple[float, rio.Component]
         byte_array: bytearray
 
         def build(self):

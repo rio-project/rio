@@ -3,14 +3,14 @@ import rio
 from .. import theme
 
 
-class Testimonial(rio.Widget):
+class Testimonial(rio.Component):
     text: str
     icon: str
     company_name: str
     # company_logo: str  # TODO
     # image: str  # TODO
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Card(
             rio.Row(
                 rio.Icon(
@@ -47,8 +47,8 @@ class Testimonial(rio.Widget):
         )
 
 
-class Testimonials(rio.Widget):
-    def build(self) -> rio.Widget:
+class Testimonials(rio.Component):
+    def build(self) -> rio.Component:
         grid = rio.Grid(
             width=theme.get_center_column_width(self.session),
             row_spacing=4,

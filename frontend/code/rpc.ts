@@ -1,7 +1,6 @@
 import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
-import { updateWidgetStates } from './widgetManagement';
+import { updateWidgetStates } from './componentManagement';
 import { requestFileUpload, registerFont } from './rpcFunctions';
-
 
 let websocket: WebSocket | null = null;
 let pingPongHandlerId: number;
@@ -116,10 +115,14 @@ function onClose(connectionAttempt: number, event: Event) {
     if (connectionAttempt < 10) {
         let delay = 2 * connectionAttempt;
 
-        console.log(`Websocket connection closed. Reconnecting in ${delay} seconds`);
+        console.log(
+            `Websocket connection closed. Reconnecting in ${delay} seconds`
+        );
         setTimeout(createWebsocket, delay * 1000, connectionAttempt + 1);
     } else {
-        console.warn(`Websocket connection closed. Giving up trying to reconnect.`);
+        console.warn(
+            `Websocket connection closed. Giving up trying to reconnect.`
+        );
     }
 
     // Stop sending pings

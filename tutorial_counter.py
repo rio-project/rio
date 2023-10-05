@@ -1,7 +1,7 @@
 import rio
 
 
-class Counter(rio.Widget):
+class Counter(rio.Component):
     value: int = 0
 
     def _on_increment(self, event: rio.ButtonPressEvent) -> None:
@@ -29,9 +29,9 @@ class Counter(rio.Widget):
 
 
 app = rio.App(
-    rio.Router,
+    rio.PageView,
     routes=[
-        rio.Route(
+        rio.Page(
             "",
             Counter,
         )

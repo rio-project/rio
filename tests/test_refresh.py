@@ -28,13 +28,13 @@ async def test_refresh_with_clean_root_widget(create_mockapp):
 
 
 async def test_rebuild_widget_with_dead_parent(create_mockapp):
-    class WidgetWithState(rio.Widget):
+    class WidgetWithState(rio.Component):
         state: str
 
-        def build(self) -> rio.Widget:
+        def build(self) -> rio.Component:
             return rio.Text(self.state)
 
-    def build() -> rio.Widget:
+    def build() -> rio.Component:
         return rio.Container(rio.Row(WidgetWithState("Hello"), rio.ProgressCircle()))
 
     async with create_mockapp(build) as app:

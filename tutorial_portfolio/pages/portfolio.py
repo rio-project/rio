@@ -3,8 +3,8 @@ from typing import Dict
 import rio
 
 
-class Picture(rio.Widget):
-    def build(self) -> rio.Widget:
+class Picture(rio.Component):
+    def build(self) -> rio.Component:
         return rio.Image(
             rio.URL("https://avatars.githubusercontent.com/u/25320293?v=4"),
             corner_radius=99999,
@@ -12,10 +12,10 @@ class Picture(rio.Widget):
         )
 
 
-class SkillBars(rio.Widget):
+class SkillBars(rio.Component):
     skills: Dict[str, int]
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         rows = []
 
         for name, level in self.skills.items():
@@ -37,8 +37,8 @@ class SkillBars(rio.Widget):
         )
 
 
-class PortfolioView(rio.Widget):
-    def build(self) -> rio.Widget:
+class PortfolioView(rio.Component):
+    def build(self) -> rio.Component:
         return rio.Column(
             rio.Row(
                 Picture(

@@ -1,17 +1,17 @@
 import rio
 
-StateBinding = rio.widget_base.StateBinding
-StateProperty = rio.widget_base.StateProperty
+StateBinding = rio.component_base.StateBinding
+StateProperty = rio.component_base.StateProperty
 
 
-class Parent(rio.Widget):
+class Parent(rio.Component):
     text: str = ""
 
     def build(self):
         return rio.Text(Parent.text)
 
 
-class Grandparent(rio.Widget):
+class Grandparent(rio.Component):
     text: str = ""
 
     def build(self):
@@ -21,20 +21,20 @@ class Grandparent(rio.Widget):
 async def test_bindings_arent_created_too_early(create_mockapp):
     # There was a time when state bindings were created in `Widget.__init__`.
     # Make sure they're created after *all* `__init__`s have run.
-    class IHaveACustomInit(rio.Widget):
+    class IHaveACustomInit(rio.Component):
         text: str
 
         def __init__(self, *args, text: str, **kwargs):
             super().__init__(*args, **kwargs)
             self.text = text
 
-        def build(self) -> rio.Widget:
+        def build(self) -> rio.Component:
             return rio.Text(self.text)
 
-    class Container(rio.Widget):
+    class Container(rio.Component):
         text: str = "hi"
 
-        def build(self) -> rio.Widget:
+        def build(self) -> rio.Component:
             return IHaveACustomInit(text=Container.text)
 
     async with create_mockapp(Container) as app:
@@ -53,19 +53,19 @@ async def test_init_receives_state_properties_as_input(create_mockapp):
     # into `__init__`. But ultimately we decided against it, because some
     # widgets may want to use state properties/bindings in their __init__. So
     # make sure the `__init__` actually receives a `StateProperty` as input.
-    class Square(rio.Widget):
+    class Square(rio.Component):
         def __init__(self, size: float):
             assert isinstance(size, StateProperty), size
 
             super().__init__(width=size, height=size)
 
-        def build(self) -> rio.Widget:
+        def build(self) -> rio.Component:
             return rio.Text("hi", width=self.width, height=self.height)
 
-    class Container(rio.Widget):
+    class Container(rio.Component):
         size: float
 
-        def build(self) -> rio.Widget:
+        def build(self) -> rio.Component:
             return Square(Container.size)
 
     async with create_mockapp(lambda: Container(7)):
@@ -101,7 +101,7 @@ async def test_binding_assignment_on_parent(create_mockapp):
 
 
 async def test_binding_assignment_on_sibling(create_mockapp):
-    class Root(rio.Widget):
+    class Root(rio.Component):
         text: str = ""
 
         def build(self):
@@ -191,7 +191,7 @@ async def test_binding_assignment_on_parent_after_reconciliation(create_mockapp)
 
 
 async def test_binding_assignment_on_sibling_after_reconciliation(create_mockapp):
-    class Root(rio.Widget):
+    class Root(rio.Component):
         text: str = ""
 
         def build(self):
