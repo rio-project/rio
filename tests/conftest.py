@@ -34,7 +34,7 @@ async def _fake_receive_message() -> Jsonable:
 
 
 @pytest.fixture()
-def enable_widget_instantiation():
+def enable_component_instantiation():
     app = rio.App(_fake_build_function)
     app_server = AppServer(
         app,
@@ -91,41 +91,41 @@ class _MockApp:
             }
         )
 
-        if message["method"] == "updateWidgetStates":
+        if message["method"] == "updateComponentStates":
             self._first_refresh_completed.set()
 
     async def _receive_message(self) -> Jsonable:
         return await self._responses.get()
 
     @property
-    def dirty_widgets(self) -> Container[rio.Component]:
-        return set(self._session._dirty_widgets)
+    def dirty_components(self) -> Container[rio.Component]:
+        return set(self._session._dirty_components)
 
     @property
-    def last_updated_widgets(self) -> Set[rio.Component]:
+    def last_updated_components(self) -> Set[rio.Component]:
         for message in reversed(self.outgoing_messages):
-            if message["method"] == "updateWidgetStates":
+            if message["method"] == "updateComponentStates":
                 return {
-                    self._session._weak_widgets_by_id[widget_id]
-                    for widget_id in message["params"]["deltaStates"]  # type: ignore
-                    if widget_id != self._session._root_widget._id
+                    self._session._weak_components_by_id[component_id]
+                    for component_id in message["params"]["deltaStates"]  # type: ignore
+                    if component_id != self._session._root_component._id
                 }
 
         return set()
 
-    def get_root_widget(self) -> rio.Component:
+    def get_root_component(self) -> rio.Component:
         sess = self._session
-        return sess._weak_widget_data_by_widget[sess._root_widget].build_result
+        return sess._weak_component_data_by_component[sess._root_component].build_result
 
-    def get_widget(self, widget_type: Type[W]) -> W:
-        for widget in self._session._root_widget._iter_widget_tree():
-            if type(widget) is widget_type:
-                return widget  # type: ignore
+    def get_component(self, component_type: Type[W]) -> W:
+        for component in self._session._root_component._iter_component_tree():
+            if type(component) is component_type:
+                return component  # type: ignore
 
-        raise AssertionError(f"No widget of type {widget_type} found")
+        raise AssertionError(f"No component of type {component_type} found")
 
-    def get_build_output(self, widget: rio.Component) -> rio.Component:
-        return self._session._weak_widget_data_by_widget[widget].build_result
+    def get_build_output(self, component: rio.Component) -> rio.Component:
+        return self._session._weak_component_data_by_component[component].build_result
 
     async def refresh(self) -> None:
         await self._session._refresh()

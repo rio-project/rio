@@ -11,7 +11,7 @@ export class ScrollTargetComponent extends ComponentBase {
     state: Required<ScrollTargetState>;
 
     createElement(): HTMLElement {
-        // We need to set the element's id, but elements for widgets must all
+        // We need to set the element's id, but elements for components must all
         // have ids of the form `rio-id-...`. So we must create a container
         // for our <a> element.
         let element = document.createElement('span');

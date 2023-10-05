@@ -6,28 +6,28 @@ import pytest
 import rio
 
 # @pytest.fixture(autouse=True)
-# def _enable_widget_instantiation(enable_widget_instantiation):
+# def _enable_component_instantiation(enable_component_instantiation):
 #     pass
 
 
-def test_fields_with_defaults(enable_widget_instantiation):
-    class TestWidget(rio.Component):
+def test_fields_with_defaults(enable_component_instantiation):
+    class TestComponent(rio.Component):
         foo: List[str] = dataclasses.field(init=False, default_factory=list)
         bar: int = dataclasses.field(init=False, default=5)
 
         def build(self):
             raise NotImplementedError()
 
-    widget = TestWidget()
-    assert widget.foo == []
-    assert widget.bar == 5
+    component = TestComponent()
+    assert component.foo == []
+    assert component.bar == 5
 
 
 async def test_init_cannot_read_state_properties(create_mockapp):
     # Accessing state properties in `__init__` is not allowed because state
     # bindings aren't initialized yet at that point. In development mode, trying
     # to access a state property in `__init__` should raise an exception.
-    class IllegalWidget(rio.Component):
+    class IllegalComponent(rio.Component):
         foo: int
 
         def __init__(self, foo: int):
@@ -46,7 +46,7 @@ async def test_init_cannot_read_state_properties(create_mockapp):
 
     class Container(rio.Component):
         def build(self) -> rio.Component:
-            return IllegalWidget(17)
+            return IllegalComponent(17)
 
     async with create_mockapp(Container):
         pass

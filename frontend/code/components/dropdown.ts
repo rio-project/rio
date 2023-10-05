@@ -60,7 +60,7 @@ export class DropdownComponent extends ComponentBase {
 
         // Connect events
         let outsideClickListener = (event) => {
-            // Check if the click was outside of the dropdown widget
+            // Check if the click was outside of the dropdown component
             if (event.target === element || element.contains(event.target)) {
                 return;
             }

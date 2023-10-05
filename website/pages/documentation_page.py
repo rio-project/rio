@@ -28,7 +28,7 @@ class Outliner(rio.Component):
             buttons = []
 
             # ... where each article is either a tuple of (name, url_segment,
-            # article), or a rio `Widget`
+            # article), or a rio `Component`
             for art in arts:
                 if isinstance(art, tuple):
                     name, url_segment, _ = art

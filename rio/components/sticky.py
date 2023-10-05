@@ -29,7 +29,7 @@ class Sticky(component_base.Component):
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):
-        # Passing the layout values through to `Widget` would ignore them,
+        # Passing the layout values through to `Component` would ignore them,
         # because the HTML `Sticky` element will force itself to span the entire
         # screen.
         #
@@ -66,7 +66,7 @@ class Sticky(component_base.Component):
             # screen and doesn't scroll.
             class_container.ClassContainer(
                 # Inner: This container is used to apply any layouting
-                # attributes passed to the `Sticky` widget.
+                # attributes passed to the `Sticky` component.
                 rio.Container(
                     margin=self._passthrough_margin,
                     margin_x=self._passthrough_margin_x,

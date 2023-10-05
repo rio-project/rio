@@ -107,7 +107,7 @@ export class ColorPickerComponent extends ComponentBase {
             this.setFromUserHex.bind(this)
         );
 
-        // TODO: This widget probably doesn't unsubscribe from events if it
+        // TODO: This component probably doesn't unsubscribe from events if it
         // gets removed from the DOM. This is a memory leak.
 
         return containerElement;
@@ -155,11 +155,11 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Apply the modified state
         requestAnimationFrame(() => {
-            this.matchWidgetToSelectedHsv();
+            this.matchComponentToSelectedHsv();
         });
     }
 
-    matchWidgetToSelectedHsv(): void {
+    matchComponentToSelectedHsv(): void {
         // Precompute the color in RGB
         let [r, g, b] = hsvToRgb(
             this.selectedHsv[0],
@@ -226,7 +226,7 @@ export class ColorPickerComponent extends ComponentBase {
         this.selectedHsv[2] = 1 - (y - boundingBox.top) / boundingBox.height;
         this.selectedHsv[2] = Math.max(0, Math.min(1, this.selectedHsv[2]));
 
-        this.matchWidgetToSelectedHsv();
+        this.matchComponentToSelectedHsv();
     }
 
     updateHue(x: number): void {
@@ -235,7 +235,7 @@ export class ColorPickerComponent extends ComponentBase {
             (360 * (x - boundingBox.left)) / boundingBox.width;
         this.selectedHsv[0] = Math.max(0, Math.min(360, this.selectedHsv[0]));
 
-        this.matchWidgetToSelectedHsv();
+        this.matchComponentToSelectedHsv();
     }
 
     updateOpacity(x: number): void {
@@ -243,7 +243,7 @@ export class ColorPickerComponent extends ComponentBase {
         this.state.color[3] = (x - boundingBox.left) / boundingBox.width;
         this.state.color[3] = Math.max(0, Math.min(1, this.state.color[3]));
 
-        this.matchWidgetToSelectedHsv();
+        this.matchComponentToSelectedHsv();
     }
 
     bindHandler(eventName: string, handler: any) {
@@ -393,15 +393,15 @@ export class ColorPickerComponent extends ComponentBase {
             return;
         }
 
-        // If a color could be parsed, update the widget
+        // If a color could be parsed, update the component
         let [h, s, l] = rgbToHsv(color[0], color[1], color[2]);
         this.selectedHsv[0] = h;
         this.selectedHsv[1] = s;
         this.selectedHsv[2] = l;
         this.state.color[3] = this.state.pick_opacity ? color[3] : 1.0;
 
-        // Update the widget
-        this.matchWidgetToSelectedHsv();
+        // Update the component
+        this.matchComponentToSelectedHsv();
 
         // Deselect the text input
         event.target.blur();

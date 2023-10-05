@@ -14,7 +14,7 @@ from . import models
 
 def postprocess_class_docs(docs: models.ClassDocs) -> None:
     """
-    Perform RIO specific post-processing on the widget, such as stripping out
+    Perform RIO specific post-processing on the component, such as stripping out
     internal attributes and functions.
     """
 
@@ -59,5 +59,5 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
             del docs.functions[index]
 
 
-def postprocess_widget_docs(docs: models.ClassDocs) -> None:
+def postprocess_component_docs(docs: models.ClassDocs) -> None:
     return postprocess_class_docs(docs)

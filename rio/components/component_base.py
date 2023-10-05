@@ -54,8 +54,8 @@ def make_default_factory_for_value(value: T) -> Callable[[], T]:
 
 @dataclass(eq=False)
 class StateBinding:
-    # Weak reference to the widget containing this binding
-    owning_widget_weak: Callable[[], Optional[Component]]
+    # Weak reference to the component containing this binding
+    owning_component_weak: Callable[[], Optional[Component]]
 
     # The state property whose value this binding is
     owning_property: StateProperty
@@ -95,15 +95,15 @@ class StateBinding:
 
         while to_do:
             cur = to_do.pop()
-            owning_widget = cur.owning_widget_weak()
+            owning_component = cur.owning_component_weak()
 
-            # The widget's session may be `None`, if this widget has never
-            # entered the widget tree. e.g. `build` returns a widget, which
+            # The component's session may be `None`, if this component has never
+            # entered the component tree. e.g. `build` returns a component, which
             # doesn't make it through reconciliation and is thus never even
             # marked as dirty -> No session is injected.
-            if owning_widget is not None and owning_widget._session_ is not None:
-                owning_widget._session_._register_dirty_widget(
-                    owning_widget,
+            if owning_component is not None and owning_component._session_ is not None:
+                owning_component._session_._register_dirty_component(
+                    owning_component,
                     include_children_recursively=False,
                 )
 
@@ -114,7 +114,7 @@ class StateProperty:
     """
     StateProperties act like regular properties, with additional considerations:
 
-    - When a state property is assigned to, the widget owning it is marked as
+    - When a state property is assigned to, the component owning it is marked as
       dirty in the session
 
     - State properties have the ability to share their value with other state
@@ -123,10 +123,10 @@ class StateProperty:
       be routed to `A` instead:
 
     ```
-    class Foo(Widget):
+    class Foo(Component):
         foo_text = "Hello"
 
-        def build(self) -> Widget:
+        def build(self) -> Component:
             return Bar(bar_text=Foo.foo_text)  # Note `Foo` instead of `self`
     ```
     """
@@ -145,7 +145,7 @@ class StateProperty:
         if instance is None:
             return self
 
-        # Otherwise get the value assigned to the property in the widget
+        # Otherwise get the value assigned to the property in the component
         # instance
         try:
             value = vars(instance)[self.name]
@@ -178,7 +178,7 @@ class StateProperty:
             # Which is not a valid place to create a state binding.
             if isinstance(value, StateProperty):
                 raise RuntimeError(
-                    "State bindings can only be created when calling the widget constructor"
+                    "State bindings can only be created when calling the component constructor"
                 )
 
             # Delegate to the binding if it exists
@@ -186,11 +186,11 @@ class StateProperty:
                 local_value.set_value(value)
                 return
 
-        # Otherwise set the value directly and mark the widget as dirty
+        # Otherwise set the value directly and mark the component as dirty
         instance_vars[self.name] = value
 
         if instance._session_ is not None:
-            instance._session_._register_dirty_widget(
+            instance._session_._register_dirty_component(
                 instance,
                 include_children_recursively=False,
             )
@@ -201,123 +201,123 @@ class StateProperty:
 
 class ComponentMeta(abc.ABCMeta):
     def __call__(cls, *args: object, **kwargs: object):
-        widget = super().__call__(*args, **kwargs)
-        widget._create_state_bindings()
+        component = super().__call__(*args, **kwargs)
+        component._create_state_bindings()
 
         try:
-            on_create_handler = widget._rio_event_handlers_[event.EventTag.ON_CREATE]
+            on_create_handler = component._rio_event_handlers_[event.EventTag.ON_CREATE]
         except KeyError:
             pass
         else:
-            on_create_handler(widget)
+            on_create_handler(component)
 
-        return widget
+        return component
 
 
 @dataclass_transform(eq_default=False)
 @dataclass(eq=False, repr=False)
 class Component(metaclass=ComponentMeta):
     """
-    Base class for all `rio` widgets.
+    Base class for all `rio` components.
 
-    Widgets are the building blocks of `rio` apps. `rio` ships with many useful
-    widgets out of the box, but you can also subclass a widget to create your
+    Components are the building blocks of `rio` apps. `rio` ships with many useful
+    components out of the box, but you can also subclass a component to create your
     own.
 
     Attributes:
-        key: A unique identifier for this widget. If two widgets with the same
+        key: A unique identifier for this component. If two components with the same
             key are present during reconciliation they will be considered the
-            same widget and their state will be preserved. If no key is
+            same component and their state will be preserved. If no key is
             specified, reconciliation falls back to a less precise method, by
-            comparing the location of the widget in the widget tree.
+            comparing the location of the component in the component tree.
 
-        margin: The margin around this widget. This is a shorthand for setting
+        margin: The margin around this component. This is a shorthand for setting
             `margin_left`, `margin_top`, `margin_right` and `margin_bottom` to
             the same value. If multiple conflicting margins are specified the
             most specific one wins. If for example `margin` and `margin_left`
             are both specified, `margin_left` is used for the left side, while
             the other sides use `margin`.
 
-        margin_x: The horizontal margin around this widget. This is a shorthand
+        margin_x: The horizontal margin around this component. This is a shorthand
             for setting `margin_left` and `margin_right` to the same value. If
             multiple conflicting margins are specified the most specific one
             wins. If for example `margin_x` and `margin_left` are both
             specified, `margin_left` is used for the left side, while the other
             side uses `margin_x`.
 
-        margin_y: The vertical margin around this widget. This is a shorthand
+        margin_y: The vertical margin around this component. This is a shorthand
             for setting `margin_top` and `margin_bottom` to the same value. If
             multiple conflicting margins are specified the most specific one
             wins. If for example `margin_y` and `margin_top` are both specified,
             `margin_top` is used for the top side, while the other side uses
             `margin_y`.
 
-        margin_left: The left margin around this widget. If multiple conflicting
+        margin_left: The left margin around this component. If multiple conflicting
             margins are specified this one will be used, since it's the most
             specific. If for example `margin_left` and `margin` are both
             specified, `margin_left` is used for the left side, while the other
             sides use `margin`.
 
-        margin_top: The top margin around this widget. If multiple conflicting
+        margin_top: The top margin around this component. If multiple conflicting
             margins are specified this one will be used, since it's the most
             specific. If for example `margin_top` and `margin` are both
             specified, `margin_top` is used for the top side, while the other
             sides use `margin`.
 
-        margin_right: The right margin around this widget. If multiple
+        margin_right: The right margin around this component. If multiple
             conflicting margins are specified this one will be used, since it's
             the most specific. If for example `margin_right` and `margin` are
             both specified, `margin_right` is used for the right side, while the
             other sides use `margin`.
 
-        margin_bottom: The bottom margin around this widget. If multiple
+        margin_bottom: The bottom margin around this component. If multiple
             conflicting margins are specified this one will be used, since it's
             the most specific. If for example `margin_bottom` and `margin` are
             both specified, `margin_bottom` is used for the bottom side, while
             the other sides use `margin`.
 
-        width: How much horizontal space this widget should request during
+        width: How much horizontal space this component should request during
             layouting. This can be either a number, or one of the special
             values:
 
-            If `"natural"`, the widget will request the minimum amount it
+            If `"natural"`, the component will request the minimum amount it
             requires to fit on the screen. For example a `Text` will request
             however much space the characters of that text require. A `Row`
             would request the sum of the widths of its children.
 
-            If `"grow"`, the widget will request all the remaining space in its
+            If `"grow"`, the component will request all the remaining space in its
             parent.
 
-            Please note that the space a `Widget` receives during layouting may
+            Please note that the space a `Component` receives during layouting may
             not match the request. As a general rule for example, containers try
             to pass on all available space to children. If you really want a
-            `Widget` to only take up as much space as requested, consider
+            `Component` to only take up as much space as requested, consider
             specifying an alignment.
 
-        height: How much vertical space this widget should request during
+        height: How much vertical space this component should request during
             layouting. This can be either a number, or one of the special
             values:
 
-            If `"natural"`, the widget will request the minimum amount it
+            If `"natural"`, the component will request the minimum amount it
             requires to fit on the screen. For example a `Text` will request
             however much space the characters of that text require. A `Row`
             would request the height of its tallest child.
 
-            If `"grow"`, the widget will request all the remaining space in its
+            If `"grow"`, the component will request all the remaining space in its
             parent.
 
-            Please note that the space a `Widget` receives during layouting may
+            Please note that the space a `Component` receives during layouting may
             not match the request. As a general rule for example, containers try
             to pass on all available space to children. If you really want a
-            `Widget` to only take up as much space as requested, consider
+            `Component` to only take up as much space as requested, consider
             specifying an alignment.
 
-        align_x: How this widget should be aligned horizontally, if it receives
+        align_x: How this component should be aligned horizontally, if it receives
             more space than it requested. This can be a number between 0 and 1,
             where 0 means left-aligned, 0.5 means centered, and 1 means
             right-aligned.
 
-        align_y: How this widget should be aligned vertically, if it receives
+        align_y: How this component should be aligned vertically, if it receives
             more space than it requested. This can be a number between 0 and 1,
             where 0 means top-aligned, 0.5 means centered, and 1 means
             bottom-aligned.
@@ -343,8 +343,8 @@ class Component(metaclass=ComponentMeta):
 
     _id: int = dataclasses.field(init=False)
 
-    # Weak reference to the widget's builder. Used to check if the widget is
-    # still part of the widget tree.
+    # Weak reference to the component's builder. Used to check if the component is
+    # still part of the component tree.
     _weak_builder_: Callable[[], Optional[Component]] = dataclasses.field(
         # Dataclasses seem to unintentionally turn this function into a method.
         # Make sure it works whether or not `self` is passed.
@@ -352,12 +352,12 @@ class Component(metaclass=ComponentMeta):
         init=False,
     )
 
-    # Each time a widget is built the build generation in that widget's WIDGET
+    # Each time a component is built the build generation in that component's COMPONENT
     # DATA is incremented. If this value no longer matches the value in its
-    # builder's WIDGET DATA, the widget is dead.
+    # builder's COMPONENT DATA, the component is dead.
     _build_generation_: int = dataclasses.field(default=-1, init=False)
 
-    # Injected by the session when the widget is refreshed
+    # Injected by the session when the component is refreshed
     _session_: Optional["rio.Session"] = dataclasses.field(default=None, init=False)
 
     # Remember which properties were explicitly set in the constructor. This is
@@ -373,7 +373,7 @@ class Component(metaclass=ComponentMeta):
     # to the instance yet, so make sure to pass `self` when calling them
     _rio_event_handlers_: ClassVar[Dict[event.EventTag, Callable[..., Any]]] = {}
 
-    # This flag indicates whether state bindings for this widget have already
+    # This flag indicates whether state bindings for this component have already
     # been initialized. Used by `__getattribute__` to check if it should throw
     # an error.
     _state_bindings_initialized_: bool = dataclasses.field(default=False, init=False)
@@ -427,33 +427,35 @@ class Component(metaclass=ComponentMeta):
         self._explicitly_set_properties_.update(bound_args.arguments)
 
     @staticmethod
-    def _init_widget(
+    def _init_component(
         original_init,
         self: "Component",
         *args,
         **kwargs,
     ):
-        # Fetch the session this widget is part of
+        # Fetch the session this component is part of
         if global_state.currently_building_session is None:
-            raise RuntimeError("Widgets can only be created inside of `build` methods.")
+            raise RuntimeError(
+                "Components can only be created inside of `build` methods."
+            )
 
         session = global_state.currently_building_session
         self._session_ = session
 
-        # Create a unique ID for this widget
-        self._id = session._next_free_widget_id
-        session._next_free_widget_id += 1
+        # Create a unique ID for this component
+        self._id = session._next_free_component_id
+        session._next_free_component_id += 1
 
-        session._register_dirty_widget(
+        session._register_dirty_component(
             self,
             include_children_recursively=False,
         )
 
-        # Keep track of this widget's existence
+        # Keep track of this component's existence
         #
-        # Widgets must be known by their id, so any messages addressed to
+        # Components must be known by their id, so any messages addressed to
         # them can be passed on correctly.
-        session._weak_widgets_by_id[self._id] = self
+        session._weak_components_by_id[self._id] = self
 
         # Some events need support from the session. Register them
         for event_tag, event_handler in self._rio_event_handlers_.items():
@@ -482,16 +484,16 @@ class Component(metaclass=ComponentMeta):
     def on_create(self) -> None:
         """
         Called after the `__init__` method has finished executing and the
-        widget's state bindings have been created.
+        component's state bindings have been created.
         """
         pass
 
     def _create_state_bindings(self) -> None:
         self._state_bindings_initialized_ = True
 
-        creator = global_state.currently_building_widget
+        creator = global_state.currently_building_component
 
-        # The creator can be `None` if this widget was created by the app's
+        # The creator can be `None` if this component was created by the app's
         # `build` function. It's not possible to create a state binding in that
         # case.
         if creator is None:
@@ -520,7 +522,7 @@ class Component(metaclass=ComponentMeta):
 
             if not isinstance(parent_binding, StateBinding):
                 parent_binding = StateBinding(
-                    owning_widget_weak=weakref.ref(creator),
+                    owning_component_weak=weakref.ref(creator),
                     owning_property=value,
                     is_root=True,
                     parent=None,
@@ -531,7 +533,7 @@ class Component(metaclass=ComponentMeta):
 
             # Create the child binding
             child_binding = StateBinding(
-                owning_widget_weak=weakref.ref(self),
+                owning_component_weak=weakref.ref(self),
                 owning_property=state_property,
                 is_root=False,
                 parent=parent_binding,
@@ -549,7 +551,7 @@ class Component(metaclass=ComponentMeta):
 
         # If it exists, rename the `__post_init__` method, so that the dataclass
         # `__init__` doesn't automatically call it. We will call it manually
-        # once the widget's state bindings have been created.
+        # once the component's state bindings have been created.
         if "__post_init__" in cls_vars:
             cls._rio_post_init = cls.__post_init__  # type: ignore
             del cls.__post_init__  # type: ignore
@@ -566,13 +568,13 @@ class Component(metaclass=ComponentMeta):
             "__init__",
         )
 
-        # Widgets need to run custom code in in `__init__`, but dataclass
+        # Components need to run custom code in in `__init__`, but dataclass
         # constructors don't chain up. So if this class's `__init__` was created
         # by the `@dataclass` decorator, wrap it with a custom `__init__` that
         # calls our initialization code.
         if not has_custom_init:
             introspection.wrap_method(
-                cls._init_widget,
+                cls._init_component,
                 cls,
                 "__init__",
             )
@@ -588,7 +590,7 @@ class Component(metaclass=ComponentMeta):
 
         cls._initialize_state_properties(all_parent_state_properties)
 
-        # Keep track of all event handlers. By gathering them here, the widget
+        # Keep track of all event handlers. By gathering them here, the component
         # constructor doesn't have to re-scan the entire class for each
         # instantiation.
         cls._rio_event_handlers_ = {}
@@ -611,7 +613,7 @@ class Component(metaclass=ComponentMeta):
             # Make sure there's only one handler for each tag
             if tag in cls._rio_event_handlers_:
                 raise RuntimeError(
-                    f"Multiple event handlers for tag `{tag}` in widget `{cls.__name__}`"
+                    f"Multiple event handlers for tag `{tag}` in component `{cls.__name__}`"
                 )
 
             cls._rio_event_handlers_[tag] = method
@@ -666,7 +668,7 @@ class Component(metaclass=ComponentMeta):
             # Add it to the set of all state properties for rapid lookup
             cls._state_properties_[attr_name] = state_property
 
-    # When running in development mode, make sure that no widget `__init__`
+    # When running in development mode, make sure that no component `__init__`
     # tries to read a state property. This would be incorrect because state
     # bindings are not yet initialized at that point.
     if common.RUNNING_IN_DEV_MODE:
@@ -679,7 +681,7 @@ class Component(metaclass=ComponentMeta):
             ):
                 # fmt: on
                 raise Exception(
-                    "You have attempted to read a state property in a widget's"
+                    "You have attempted to read a state property in a component's"
                     " `__init__` method. This is not allowed because state"
                     " bindings are not yet initialized at that point. Please"
                     " move this code into the `on_create` method."
@@ -690,15 +692,15 @@ class Component(metaclass=ComponentMeta):
     @property
     def session(self) -> "rio.Session":
         """
-        Return the session this widget is part of.
+        Return the session this component is part of.
 
         The session is accessible after the build method which constructed this
-        widget has returned.
+        component has returned.
         """
         if self._session_ is None:
             raise RuntimeError(
                 "The session is only accessible once the build method which"
-                " constructed this widget has returned."
+                " constructed this component has returned."
             )
 
         return self._session_
@@ -715,7 +717,9 @@ class Component(metaclass=ComponentMeta):
         raise NotImplementedError()
 
     def _iter_direct_children(self) -> Iterable["Component"]:
-        for name in inspection.get_child_widget_containing_attribute_names(type(self)):
+        for name in inspection.get_child_component_containing_attribute_names(
+            type(self)
+        ):
             try:
                 value = getattr(self, name)
             except AttributeError:
@@ -733,13 +737,13 @@ class Component(metaclass=ComponentMeta):
         self,
         *,
         include_self: bool,
-        recurse_into_high_level_widgets: bool,
+        recurse_into_high_level_components: bool,
     ) -> Iterable["Component"]:
-        # Special case the widget itself to handle `include_self`
+        # Special case the component itself to handle `include_self`
         if include_self:
             yield self
 
-        if not recurse_into_high_level_widgets and not isinstance(
+        if not recurse_into_high_level_components and not isinstance(
             self, FundamentalComponent
         ):
             return
@@ -750,37 +754,41 @@ class Component(metaclass=ComponentMeta):
             cur = to_do.pop()
             yield cur
 
-            if recurse_into_high_level_widgets or isinstance(cur, FundamentalComponent):
+            if recurse_into_high_level_components or isinstance(
+                cur, FundamentalComponent
+            ):
                 to_do.extend(cur._iter_direct_children())
 
-    def _iter_widget_tree(self) -> Iterable["Component"]:
+    def _iter_component_tree(self) -> Iterable["Component"]:
         """
-        Iterate over all widgets in the widget tree, with this widget as the root.
+        Iterate over all components in the component tree, with this component as the root.
         """
         yield self
 
         if isinstance(self, FundamentalComponent):
             for child in self._iter_direct_children():
-                yield from child._iter_widget_tree()
+                yield from child._iter_component_tree()
         else:
-            build_result = self.session._weak_widget_data_by_widget[self].build_result
-            yield from build_result._iter_widget_tree()
+            build_result = self.session._weak_component_data_by_component[
+                self
+            ].build_result
+            yield from build_result._iter_component_tree()
 
     async def _on_message(self, msg: Jsonable, /) -> None:
         raise RuntimeError(f"{type(self).__name__} received unexpected message `{msg}`")
 
-    def _is_in_widget_tree(self, cache: Dict[rio.Component, bool]) -> bool:
+    def _is_in_component_tree(self, cache: Dict[rio.Component, bool]) -> bool:
         """
-        Returns whether this widget is directly or indirectly connected to the
-        widget tree of a session.
+        Returns whether this component is directly or indirectly connected to the
+        component tree of a session.
 
-        This operation is fast, but has to walk up the widget tree to make sure
-        the widget's parent is also connected. Thus, when checking multiple
-        widgets it can easily happen that the same widgets are checked over and
+        This operation is fast, but has to walk up the component tree to make sure
+        the component's parent is also connected. Thus, when checking multiple
+        components it can easily happen that the same components are checked over and
         over, resulting on O(n log n) runtime. To avoid this, pass a cache
         dictionary to this function, which will be used to memoize the result.
 
-        Be careful not to reuse the cache if the widget hierarchy might have
+        Be careful not to reuse the cache if the component hierarchy might have
         changed (for example after an async yield).
         """
 
@@ -790,8 +798,8 @@ class Component(metaclass=ComponentMeta):
         except KeyError:
             pass
 
-        # Root widget?
-        if self is self.session._root_widget:
+        # Root component?
+        if self is self.session._root_component:
             result = True
 
         # Has the builder has been garbage collected?
@@ -800,13 +808,13 @@ class Component(metaclass=ComponentMeta):
             if builder is None:
                 result = False
 
-            # Has the builder since created new build output, and this widget
+            # Has the builder since created new build output, and this component
             # isn't part of it anymore?
             else:
-                parent_data = self.session._weak_widget_data_by_widget[builder]
+                parent_data = self.session._weak_component_data_by_component[builder]
                 result = (
                     parent_data.build_generation == self._build_generation_
-                    and builder._is_in_widget_tree(cache)
+                    and builder._is_in_component_tree(cache)
                 )
 
         # Cache the result and return
@@ -841,7 +849,7 @@ class Component(metaclass=ComponentMeta):
         await self.session._call_event_handler(handler, *event_data)
 
     async def force_refresh(self) -> None:
-        self.session._register_dirty_widget(
+        self.session._register_dirty_component(
             self,
             include_children_recursively=False,
         )
@@ -868,11 +876,11 @@ class Component(metaclass=ComponentMeta):
 
 
 # Most classes have their state properties initialized in
-# `Widget.__init_subclass__`. However, since `Widget` isn't a subclass of
+# `Component.__init_subclass__`. However, since `Component` isn't a subclass of
 # itself this needs to be done manually.
 Component._initialize_state_properties({})
 introspection.wrap_method(
-    Component._init_widget,
+    Component._init_component,
     Component,
     "__init__",
 )
@@ -880,11 +888,13 @@ introspection.wrap_method(
 
 class FundamentalComponent(Component):
     # Unique id for identifying this class in the frontend. This is initialized
-    # in `Widget.__init_subclass__`.
+    # in `Component.__init_subclass__`.
     _unique_id: ClassVar[str]
 
     def build(self) -> "Component":
-        raise RuntimeError(f"Attempted to call `build` on `FundamentalWidget` {self}")
+        raise RuntimeError(
+            f"Attempted to call `build` on `FundamentalComponent` {self}"
+        )
 
     @classmethod
     def build_javascript_source(cls, sess: rio.Session) -> str:
@@ -896,7 +906,7 @@ class FundamentalComponent(Component):
 
     def __init_subclass__(cls):
         # Assign a unique id to this class. This allows the frontend to identify
-        # widgets.
+        # components.
         hash_ = common.secure_string_hash(
             cls.__module__,
             cls.__qualname__,
@@ -919,7 +929,7 @@ class FundamentalComponent(Component):
                 "js_class_name": cls.__name__,
                 "cls_unique_id": cls._unique_id,
                 "child_attribute_names": json.dumps(
-                    inspection.get_child_widget_containing_attribute_names(cls)
+                    inspection.get_child_component_containing_attribute_names(cls)
                 ),
             }
 
@@ -936,7 +946,7 @@ class FundamentalComponent(Component):
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         """
         This function is called when the frontend sends a state update to this
-        widget.
+        component.
         """
         # Update all state properties to reflect the new state
         for attr_name, attr_value in delta_state.items():
@@ -952,7 +962,7 @@ class FundamentalComponent(Component):
 
     async def _on_message(self, message: Jsonable) -> None:
         """
-        This function is called when the frontend sends a message to this widget
+        This function is called when the frontend sends a message to this component
         via `sendMessage`.
         """
         pass

@@ -40,7 +40,7 @@ def get_attributes_to_serialize(
 ) -> Mapping[str, Type]:
     """
     Returns a dictionary of attribute names to their types that should be
-    serialized for the given widget class.
+    serialized for the given component class.
     """
     result = {}
 
@@ -77,7 +77,7 @@ def get_attributes_to_serialize(
 
 
 @functools.lru_cache(maxsize=None)
-def get_child_widget_containing_attribute_names(
+def get_child_component_containing_attribute_names(
     cls: Type[component_base.Component],
 ) -> Collection[str]:
     attr_names = []
@@ -102,11 +102,11 @@ def get_child_widget_containing_attribute_names(
 
 
 @functools.lru_cache(maxsize=None)
-def get_child_widget_containing_attribute_names_for_builtin_widgets() -> (
+def get_child_component_containing_attribute_names_for_builtin_components() -> (
     Mapping[str, Collection[str]]
 ):
     result = {
-        cls._unique_id: get_child_widget_containing_attribute_names(cls)  # type: ignore
+        cls._unique_id: get_child_component_containing_attribute_names(cls)  # type: ignore
         for cls in iter_subclasses(component_base.FundamentalComponent)
         if cls._unique_id.endswith("-builtin")  # type: ignore
     }

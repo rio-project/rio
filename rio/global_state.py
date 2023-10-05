@@ -5,25 +5,25 @@ from typing import *  # type: ignore
 import rio
 
 __all__ = [
-    "currently_building_widget",
+    "currently_building_component",
 ]
 
 
-# Before a widget is built, this value is set to that widget. This allows newly
-# created widgets to infer their creator, as well as session.
+# Before a component is built, this value is set to that component. This allows newly
+# created components to infer their creator, as well as session.
 #
-# - `Widget`: The widget that is currently being built
+# - `Component`: The component that is currently being built
 # - `None`: The app's build method is currently being called
-currently_building_widget: Optional[rio.Component] = None
+currently_building_component: Optional[rio.Component] = None
 
 
-# Same as `currently_building_widget`, but holding that widget's session.
+# Same as `currently_building_component`, but holding that component's session.
 #
-# - `Session`: The session that owns the currently building widget
+# - `Session`: The session that owns the currently building component
 # - `None`: No build is currently in progress
 currently_building_session: Optional[rio.Session] = None
 
 
-# This counter is increased each time a widget is built. It can thus be used to
-# uniquely identify the build generation of every widget.
+# This counter is increased each time a component is built. It can thus be used to
+# uniquely identify the build generation of every component.
 build_generation: int = 0

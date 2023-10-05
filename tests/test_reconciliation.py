@@ -4,7 +4,7 @@ import rio
 
 
 async def test_default_values_arent_considered_explicitly_set(create_mockapp):
-    class SquareWidget(rio.Component):
+    class SquareComponent(rio.Component):
         label: str
 
         def __init__(self, label, size=5):
@@ -15,58 +15,60 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
         def build(self):
             return rio.Text(self.label, width=self.width, height=self.height)
 
-    class RootWidget(rio.Component):
+    class RootComponent(rio.Component):
         text: str
 
         def build(self):
-            square_widget = SquareWidget(self.text, size=10)
-            return rio.Container(square_widget)
+            square_component = SquareComponent(self.text, size=10)
+            return rio.Container(square_component)
 
-    async with create_mockapp(lambda: RootWidget("Hello")) as app:
-        root_widget = app.get_root_widget()
-        square_widget = app.get_widget(SquareWidget)
+    async with create_mockapp(lambda: RootComponent("Hello")) as app:
+        root_component = app.get_root_component()
+        square_component = app.get_component(SquareComponent)
 
-        # Create a new SquareWidget with the default size. Since we aren't
+        # Create a new SquareComponent with the default size. Since we aren't
         # explicitly passing a size to the constructor, reconciliation should
         # keep the old size.
-        root_widget.text = "World"
-        await root_widget.force_refresh()
+        root_component.text = "World"
+        await root_component.force_refresh()
 
-        assert square_widget.label == "World"
-        assert square_widget.width == 10
-        assert square_widget.height == 10
+        assert square_component.label == "World"
+        assert square_component.width == 10
+        assert square_component.height == 10
 
 
-async def test_reconcile_same_widget_instance(create_mockapp):
+async def test_reconcile_same_component_instance(create_mockapp):
     def build():
         return rio.Container(rio.Text("Hello"))
 
     async with create_mockapp(build) as app:
         app.outgoing_messages.clear()
 
-        root_widget = app.get_widget(rio.Container)
-        await root_widget.force_refresh()
+        root_component = app.get_component(rio.Container)
+        await root_component.force_refresh()
 
         # Nothing changed, so there's no need to send any data to JS. But in
         # order to know that nothing changed, the framework would have to track
-        # every individual attribute of every widget. Since we forced the
-        # root_widget to refresh, it's reasonable to send that widget's data to
+        # every individual attribute of every component. Since we forced the
+        # root_component to refresh, it's reasonable to send that component's data to
         # JS.
-        assert not app.outgoing_messages or app.last_updated_widgets == {root_widget}
+        assert not app.outgoing_messages or app.last_updated_components == {
+            root_component
+        }
 
 
-async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
+async def test_reconcile_not_dirty_high_level_component(create_mockapp):
     # Situation:
-    # HighLevelWidget1 contains HighLevelWidget2
-    # HighLevelWidget2 contains LowLevelContainer
-    # HighLevelWidget1 is rebuilt and changes the child of LowLevelContainer
+    # HighLevelComponent1 contains HighLevelComponent2
+    # HighLevelComponent2 contains LowLevelContainer
+    # HighLevelComponent1 is rebuilt and changes the child of LowLevelContainer
     # -> LowLevelContainer is reconciled and dirty (because it has new children)
-    # -> HighLevelWidget2 is reconciled but *not* dirty because its child was
+    # -> HighLevelComponent2 is reconciled but *not* dirty because its child was
     # reconciled
-    # The end result is that there is a new widget (the child of
-    # LowLevelContainer), whose builder (HighLevelWidget2) is not "dirty". Make
-    # sure the new widget is initialized correctly despite this.
-    class HighLevelWidget1(rio.Component):
+    # The end result is that there is a new component (the child of
+    # LowLevelContainer), whose builder (HighLevelComponent2) is not "dirty". Make
+    # sure the new component is initialized correctly despite this.
+    class HighLevelComponent1(rio.Component):
         switch: bool = False
 
         def build(self):
@@ -75,35 +77,36 @@ async def test_reconcile_not_dirty_high_level_widget(create_mockapp):
             else:
                 child = rio.Text("hi")
 
-            return HighLevelWidget2(rio.Column(child))
+            return HighLevelComponent2(rio.Column(child))
 
-    class HighLevelWidget2(rio.Component):
+    class HighLevelComponent2(rio.Component):
         child: rio.Component
 
         def build(self):
             return self.child
 
-    async with create_mockapp(HighLevelWidget1) as app:
-        root_widget = app.get_widget(HighLevelWidget1)
-        root_widget.switch = True
+    async with create_mockapp(HighLevelComponent1) as app:
+        root_component = app.get_component(HighLevelComponent1)
+        root_component.switch = True
         await app.refresh()
 
         assert any(
-            isinstance(widget, rio.Switch) for widget in app.last_updated_widgets
+            isinstance(component, rio.Switch)
+            for component in app.last_updated_components
         )
 
 
 async def test_reconcile_unusual_types(create_mockapp):
     class Container(rio.Component):
         def build(self) -> rio.Component:
-            return CustomWidget(
+            return CustomComponent(
                 integer=4,
                 text="bar",
                 tuple=(2.0, rio.Text("baz")),
                 byte_array=bytearray(b"foo"),
             )
 
-    class CustomWidget(rio.Component):
+    class CustomComponent(rio.Component):
         integer: int
         text: str
         tuple: Tuple[float, rio.Component]
@@ -113,7 +116,7 @@ async def test_reconcile_unusual_types(create_mockapp):
             return rio.Text(self.text)
 
     async with create_mockapp(Container) as app:
-        root_widget = app.get_widget(Container)
+        root_component = app.get_component(Container)
 
         # As long as this doesn't crash, it's fine
-        await root_widget.force_refresh()
+        await root_component.force_refresh()

@@ -47,11 +47,11 @@ T = typing.TypeVar("T")
 
 
 @dataclass
-class WidgetData:
+class ComponentData:
     build_result: rio.Component
 
-    # Keep track of how often this widget has been built. This is used by
-    # widgets to determine whether they are still part of their parent's current
+    # Keep track of how often this component has been built. This is used by
+    # components to determine whether they are still part of their parent's current
     # build output.
     build_generation: int
 
@@ -163,11 +163,11 @@ class Session(unicall.Unicall):
 
         self._app_server = app_server_
 
-        # Widgets need unique ids, but we don't want them to be globally unique
+        # Components need unique ids, but we don't want them to be globally unique
         # because then people could guesstimate the approximate number of
-        # visitors on a server based on how quickly the widget ids go up. So
-        # each session will assign its widgets ids starting from 0.
-        self._next_free_widget_id: int = 0
+        # visitors on a server based on how quickly the component ids go up. So
+        # each session will assign its components ids starting from 0.
+        self._next_free_component_id: int = 0
 
         # Keep track of the last time we successfully communicated with the
         # client. After a while with no communication we close the session.
@@ -189,23 +189,23 @@ class Session(unicall.Unicall):
         # the tasks are cancelled when the session is closed.
         self._running_tasks: Set[asyncio.Task] = set()
 
-        # Maps all routers to the id of the router one higher up in the widget
+        # Maps all routers to the id of the router one higher up in the component
         # tree. Root routers are mapped to None. This map is kept up to date by
         # routers themselves.
         self._routers: weakref.WeakKeyDictionary[
             rio.PageView, Optional[int]
         ] = weakref.WeakKeyDictionary()
 
-        # All widgets / methods which should be called when the session's route
+        # All components / methods which should be called when the session's route
         # has changed.
         #
-        # The methods don't have the widget bound yet, so they don't unduly
-        # prevent the widget from being garbage collected.
+        # The methods don't have the component bound yet, so they don't unduly
+        # prevent the component from being garbage collected.
         self._route_change_callbacks: weakref.WeakKeyDictionary[
             rio.Component, Callable[[rio.Component], None]
         ] = weakref.WeakKeyDictionary()
 
-        # All widgets / methods which should be called when the session's window
+        # All components / methods which should be called when the session's window
         # size has changed.
         self._on_window_resize_callbacks: weakref.WeakKeyDictionary[
             rio.Component, Callable[[rio.Component], None]
@@ -220,7 +220,7 @@ class Session(unicall.Unicall):
         }
 
         # These are injected by the app server after the session has already been created
-        self._root_widget: rio.Component
+        self._root_component: rio.Component
         self.external_url: Optional[str]  # None if running in a window
         self.preferred_locales: Tuple[
             babel.Locale, ...
@@ -232,40 +232,40 @@ class Session(unicall.Unicall):
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
 
-        # Weak dictionaries to hold additional information about widgets. These
-        # are split in two to avoid the dictionaries keeping the widgets alive.
-        # Notice how both dictionaries are weak on the actual widget.
+        # Weak dictionaries to hold additional information about components. These
+        # are split in two to avoid the dictionaries keeping the components alive.
+        # Notice how both dictionaries are weak on the actual component.
         #
         # Never access these directly. Instead, use helper functions
-        # - `lookup_widget`
-        # - `lookup_widget_data`
-        self._weak_widgets_by_id: weakref.WeakValueDictionary[
+        # - `lookup_component`
+        # - `lookup_component_data`
+        self._weak_components_by_id: weakref.WeakValueDictionary[
             int, rio.Component
         ] = weakref.WeakValueDictionary()
 
-        self._weak_widget_data_by_widget: weakref.WeakKeyDictionary[
-            rio.Component, WidgetData
+        self._weak_component_data_by_component: weakref.WeakKeyDictionary[
+            rio.Component, ComponentData
         ] = weakref.WeakKeyDictionary()
 
-        # Keep track of all dirty widgets, once again, weakly.
+        # Keep track of all dirty components, once again, weakly.
         #
-        # Widgets are dirty if any of their properties have changed since the
-        # last time they were built. Newly created widgets are also considered
+        # Components are dirty if any of their properties have changed since the
+        # last time they were built. Newly created components are also considered
         # dirty.
         #
-        # Use `register_dirty_widget` to add a widget to this set.
-        self._dirty_widgets: weakref.WeakSet[rio.Component] = weakref.WeakSet()
+        # Use `register_dirty_component` to add a component to this set.
+        self._dirty_components: weakref.WeakSet[rio.Component] = weakref.WeakSet()
 
-        # HTML widgets have source code which must be evaluated by the client
-        # exactly once. Keep track of which widgets have already sent their
+        # HTML components have source code which must be evaluated by the client
+        # exactly once. Keep track of which components have already sent their
         # source code.
-        self._initialized_html_widgets: Set[str] = set(
-            inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()
+        self._initialized_html_components: Set[str] = set(
+            inspection.get_child_component_containing_attribute_names_for_builtin_components()
         )
 
         # This lock is used to order state updates that are sent to the client.
         # Without it a message which was generated later might be sent to the
-        # client before an earlier message, leading to invalid widget
+        # client before an earlier message, leading to invalid component
         # references.
         self._refresh_lock = asyncio.Lock()
 
@@ -275,7 +275,7 @@ class Session(unicall.Unicall):
         self.attachments = SessionAttachments(self)
 
         # This allows easy access to the app's assets. Users can simply write
-        # `widget.session.assets / "my_asset.png"`.
+        # `component.session.assets / "my_asset.png"`.
         self.assets = self._app_server.app.assets_dir
 
     @property
@@ -432,7 +432,7 @@ class Session(unicall.Unicall):
 
         # Dirty all routers to force a rebuild
         for router in self._routers:
-            self._register_dirty_widget(router, include_children_recursively=False)
+            self._register_dirty_component(router, include_children_recursively=False)
 
         self._create_task(self._refresh())
 
@@ -447,39 +447,39 @@ class Session(unicall.Unicall):
 
         # Trigger the `on_route_change` event
         async def event_worker() -> None:
-            for widget, callback in self._route_change_callbacks.items():
+            for component, callback in self._route_change_callbacks.items():
                 self._create_task(
-                    self._call_event_handler(callback, widget),
+                    self._call_event_handler(callback, component),
                     name="`on_route_change` event handler",
                 )
 
         self._create_task(event_worker())
 
-    def _register_dirty_widget(
+    def _register_dirty_component(
         self,
-        widget: rio.Component,
+        component: rio.Component,
         *,
         include_children_recursively: bool,
     ) -> None:
         """
-        Add the widget to the set of dirty widgets. The widget is only held
+        Add the component to the set of dirty components. The component is only held
         weakly by the session.
 
-        If `include_children_recursively` is true, all children of the widget
+        If `include_children_recursively` is true, all children of the component
         are also added.
 
-        The children of non-fundamental widgets are not added, since they will
+        The children of non-fundamental components are not added, since they will
         be added after the parent is built anyway.
         """
-        self._dirty_widgets.add(widget)
+        self._dirty_components.add(component)
 
         if not include_children_recursively or not isinstance(
-            widget, component_base.FundamentalComponent
+            component, component_base.FundamentalComponent
         ):
             return
 
-        for child in widget._iter_direct_children():
-            self._register_dirty_widget(
+        for child in component._iter_direct_children():
+            self._register_dirty_component(
                 child,
                 include_children_recursively=True,
             )
@@ -494,173 +494,175 @@ class Session(unicall.Unicall):
         To make sure async isn't used unintentionally this part of the refresh
         function is split into a separate, synchronous function.
 
-        The session keeps track of widgets which are no longer referenced in its
-        widget tree. Those widgets are NOT included in the function's result.
+        The session keeps track of components which are no longer referenced in its
+        component tree. Those components are NOT included in the function's result.
         """
 
-        # Keep track of all widgets which are visited. Only they will be sent to
+        # Keep track of all components which are visited. Only they will be sent to
         # the client.
-        visited_widgets: collections.Counter[rio.Component] = collections.Counter()
+        visited_components: collections.Counter[rio.Component] = collections.Counter()
 
-        # Build all dirty widgets
-        while self._dirty_widgets:
-            widget = self._dirty_widgets.pop()
+        # Build all dirty components
+        while self._dirty_components:
+            component = self._dirty_components.pop()
 
-            # Remember that this widget has been visited
-            visited_widgets[widget] += 1
+            # Remember that this component has been visited
+            visited_components[component] += 1
 
             # Catch deep recursions and abort
-            build_count = visited_widgets[widget]
+            build_count = visited_components[component]
             if build_count > 5:
                 raise RecursionError(
-                    f"The widget `{widget}` has been rebuilt {build_count} times during a single refresh. This is likely because one of your widgets' `build` methods is modifying the widget's state"
+                    f"The component `{component}` has been rebuilt {build_count} times during a single refresh. This is likely because one of your components' `build` methods is modifying the component's state"
                 )
 
-            # Fundamental widgets require no further treatment
-            if isinstance(widget, component_base.FundamentalComponent):
+            # Fundamental components require no further treatment
+            if isinstance(component, component_base.FundamentalComponent):
                 continue
 
             # Others need to be built
-            global_state.currently_building_widget = widget
+            global_state.currently_building_component = component
             global_state.currently_building_session = self
 
             try:
-                build_result = widget.build()
+                build_result = component.build()
             finally:
-                global_state.currently_building_widget = None
+                global_state.currently_building_component = None
                 global_state.currently_building_session = None
 
             # Sanity check
             if not isinstance(build_result, rio.Component):
                 raise ValueError(
-                    f"The output of `build` methods must be instances of `rio.Widget`, but `{widget}` returned `{build_result}`"
+                    f"The output of `build` methods must be instances of `rio.Component`, but `{component}` returned `{build_result}`"
                 )
 
-            # Has this widget been built before?
+            # Has this component been built before?
             try:
-                widget_data = self._weak_widget_data_by_widget[widget]
+                component_data = self._weak_component_data_by_component[component]
 
             # No, this is the first time
             except KeyError:
-                # Create the widget data and cache it
-                widget_data = WidgetData(build_result, 0)
-                self._weak_widget_data_by_widget[widget] = widget_data
+                # Create the component data and cache it
+                component_data = ComponentData(build_result, 0)
+                self._weak_component_data_by_component[component] = component_data
 
             # Yes, rescue state. This will:
             #
-            # - Look for widgets in the build output which correspond to widgets
+            # - Look for components in the build output which correspond to components
             #   in the previous build output, and transfers state from the new
-            #   to the old widget ("reconciliation")
+            #   to the old component ("reconciliation")
             #
-            # - Replace any references to new, reconciled widgets in the build
-            #   output with the old widgets instead
+            # - Replace any references to new, reconciled components in the build
+            #   output with the old components instead
             #
-            # - Add any dirty widgets from the build output (new, or old but
+            # - Add any dirty components from the build output (new, or old but
             #   changed) to the dirty set.
             #
-            # - Update the widget data with the build output resulting from the
+            # - Update the component data with the build output resulting from the
             #   operations above
             else:
-                self._reconcile_tree(widget, widget_data, build_result)
+                self._reconcile_tree(component, component_data, build_result)
 
                 # Increment the build generation
-                widget_data.build_generation = global_state.build_generation
+                component_data.build_generation = global_state.build_generation
                 global_state.build_generation += 1
 
                 # Reconciliation can change the build result. Make sure nobody
-                # uses `build_result` instead of `widget_data.build_result` from
+                # uses `build_result` instead of `component_data.build_result` from
                 # now on.
                 del build_result
 
             # Inject the builder and build generation
-            weak_builder = weakref.ref(widget)
+            weak_builder = weakref.ref(component)
 
-            children = widget_data.build_result._iter_direct_and_indirect_child_containing_attributes(
+            children = component_data.build_result._iter_direct_and_indirect_child_containing_attributes(
                 include_self=True,
-                recurse_into_high_level_widgets=False,
+                recurse_into_high_level_components=False,
             )
             for child in children:
                 child._weak_builder_ = weak_builder
-                child._build_generation_ = widget_data.build_generation
+                child._build_generation_ = component_data.build_generation
 
-        # Determine which widgets are alive, to avoid sending references to dead
-        # widgets to the frontend.
+        # Determine which components are alive, to avoid sending references to dead
+        # components to the frontend.
         alive_cache: Dict[rio.Component, bool] = {
-            self._root_widget: True,
+            self._root_component: True,
         }
 
         return {
-            widget
-            for widget in visited_widgets
-            if widget._is_in_widget_tree(alive_cache)
+            component
+            for component in visited_components
+            if component._is_in_component_tree(alive_cache)
         }
 
     async def _refresh(self) -> None:
         """
         Make sure the session state is up to date. Specifically:
 
-        - Call build on all widgets marked as dirty
-        - Recursively do this for all freshly spawned widgets
-        - mark all widgets as clean
+        - Call build on all components marked as dirty
+        - Recursively do this for all freshly spawned components
+        - mark all components as clean
 
         Afterwards, the client is also informed of any changes, meaning that
-        after this method returns there are no more dirty widgets in the
+        after this method returns there are no more dirty components in the
         session, and Python's state and the client's state are in sync.
         """
 
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
-            # Refresh and get a set of all widgets which have been visited
-            visited_widgets = self._refresh_sync()
+            # Refresh and get a set of all components which have been visited
+            visited_components = self._refresh_sync()
 
             # Avoid sending empty messages
-            if not visited_widgets:
+            if not visited_components:
                 return
 
-            # Serialize all widgets which have been visited
+            # Serialize all components which have been visited
             delta_states: Dict[int, JsonDoc] = {
-                widget._id: self._serialize_and_host_widget(widget)
-                for widget in visited_widgets
+                component._id: self._serialize_and_host_component(component)
+                for component in visited_components
             }
 
-            await self._update_widget_states(visited_widgets, delta_states)
+            await self._update_component_states(visited_components, delta_states)
 
-    async def _update_widget_states(
-        self, visited_widgets: Set[rio.Component], delta_states: Dict[int, JsonDoc]
+    async def _update_component_states(
+        self, visited_components: Set[rio.Component], delta_states: Dict[int, JsonDoc]
     ) -> None:
-        # Initialize all HTML widgets
-        for widget in visited_widgets:
+        # Initialize all HTML components
+        for component in visited_components:
             if (
-                not isinstance(widget, component_base.FundamentalComponent)
-                or type(widget)._unique_id in self._initialized_html_widgets
+                not isinstance(component, component_base.FundamentalComponent)
+                or type(component)._unique_id in self._initialized_html_components
             ):
                 continue
 
-            await widget._initialize_on_client(self)
-            self._initialized_html_widgets.add(type(widget)._unique_id)
+            await component._initialize_on_client(self)
+            self._initialized_html_components.add(type(component)._unique_id)
 
-        # Check whether the root widget needs replacing
-        if self._root_widget in visited_widgets:
-            root_widget_id = self._root_widget._id
+        # Check whether the root component needs replacing
+        if self._root_component in visited_components:
+            root_component_id = self._root_component._id
         else:
-            root_widget_id = None
+            root_component_id = None
 
         # Send the new state to the client
-        await self._remote_update_widget_states(delta_states, root_widget_id)
+        await self._remote_update_component_states(delta_states, root_component_id)
 
     async def _send_reconnect_message(self) -> None:
-        self._initialized_html_widgets.clear()
+        self._initialized_html_components.clear()
 
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
-            visited_widgets = set()
+            visited_components = set()
             delta_states = {}
 
-            for widget in self._root_widget._iter_widget_tree():
-                visited_widgets.add(widget)
-                delta_states[widget._id] = self._serialize_and_host_widget(widget)
+            for component in self._root_component._iter_component_tree():
+                visited_components.add(component)
+                delta_states[component._id] = self._serialize_and_host_component(
+                    component
+                )
 
-            await self._update_widget_states(visited_widgets, delta_states)
+            await self._update_component_states(visited_components, delta_states)
 
     def _serialize_and_host_value(
         self,
@@ -722,59 +724,59 @@ class Session(unicall.Unicall):
         if origin is Literal:
             return self._serialize_and_host_value(value, type(value))
 
-        # Widgets
+        # Components
         if introspection.safe_is_subclass(type_, rio.Component):
             return value._id
 
         # Invalid type
         raise WontSerialize()
 
-    def _serialize_and_host_widget(
+    def _serialize_and_host_component(
         self,
-        widget: rio.Component,
+        component: rio.Component,
     ) -> JsonDoc:
         """
-        Serializes the widget, non-recursively. Children are serialized just by
+        Serializes the component, non-recursively. Children are serialized just by
         their `_id`.
 
-        Non-fundamental widgets must have been built, and their output cached in
+        Non-fundamental components must have been built, and their output cached in
         the session.
         """
         result: JsonDoc = {
-            "_python_type_": type(widget).__name__,
+            "_python_type_": type(component).__name__,
         }
 
         # Add layout properties, in a more succinct way than sending them
         # separately
         result["_margin_"] = (
-            widget.margin_left,
-            widget.margin_top,
-            widget.margin_right,
-            widget.margin_bottom,
+            component.margin_left,
+            component.margin_top,
+            component.margin_right,
+            component.margin_bottom,
         )
         result["_size_"] = (
-            widget.width if isinstance(widget.width, (int, float)) else None,
-            widget.height if isinstance(widget.height, (int, float)) else None,
+            component.width if isinstance(component.width, (int, float)) else None,
+            component.height if isinstance(component.height, (int, float)) else None,
         )
         result["_align_"] = (
-            widget.align_x,
-            widget.align_y,
+            component.align_x,
+            component.align_y,
         )
         result["_grow_"] = (
-            widget.width == "grow",
-            widget.height == "grow",
+            component.width == "grow",
+            component.height == "grow",
         )
 
-        # If it's a fundamental widget, serialize its state because JS needs it.
-        # For non-fundamental widgets, there's no reason to send the state to
+        # If it's a fundamental component, serialize its state because JS needs it.
+        # For non-fundamental components, there's no reason to send the state to
         # the frontend.
-        if isinstance(widget, component_base.FundamentalComponent):
+        if isinstance(component, component_base.FundamentalComponent):
             for name, type_ in inspection.get_attributes_to_serialize(
-                type(widget)
+                type(component)
             ).items():
                 try:
                     result[name] = self._serialize_and_host_value(
-                        getattr(widget, name),
+                        getattr(component, name),
                         type_,
                     )
                 except WontSerialize:
@@ -782,16 +784,16 @@ class Session(unicall.Unicall):
 
         # Encode any internal additional state. Doing it this late allows the custom
         # serialization to overwrite automatically generated values.
-        if isinstance(widget, component_base.FundamentalComponent):
-            result["_type_"] = widget._unique_id
-            result.update(widget._custom_serialize())
+        if isinstance(component, component_base.FundamentalComponent):
+            result["_type_"] = component._unique_id
+            result.update(component._custom_serialize())
 
         else:
             # Take care to add underscores to any properties here, as the
             # user-defined state is also added and could clash
             result["_type_"] = "Placeholder"
-            result["_child_"] = self._weak_widget_data_by_widget[
-                widget
+            result["_child_"] = self._weak_component_data_by_component[
+                component
             ].build_result._id
 
         return result
@@ -799,61 +801,62 @@ class Session(unicall.Unicall):
     def _reconcile_tree(
         self,
         builder: rio.Component,
-        old_build_data: WidgetData,
+        old_build_data: ComponentData,
         new_build: rio.Component,
     ) -> None:
-        # Find all pairs of widgets which should be reconciled
+        # Find all pairs of components which should be reconciled
         matched_pairs = list(
-            self._find_widgets_for_reconciliation(
+            self._find_components_for_reconciliation(
                 old_build_data.build_result, new_build
             )
         )
 
-        # Reconciliating individual widgets requires knowledge of which other
-        # widgets are being reconciled.
+        # Reconciliating individual components requires knowledge of which other
+        # components are being reconciled.
         #
         # -> Collect them into a set first.
-        reconciled_widgets_new_to_old: Dict[rio.Component, rio.Component] = {
-            new_widget: old_widget for old_widget, new_widget in matched_pairs
+        reconciled_components_new_to_old: Dict[rio.Component, rio.Component] = {
+            new_component: old_component
+            for old_component, new_component in matched_pairs
         }
 
         # Reconcile all matched pairs
-        for new_widget, old_widget in reconciled_widgets_new_to_old.items():
-            self._reconcile_widget(
-                old_widget,
-                new_widget,
-                reconciled_widgets_new_to_old,
+        for new_component, old_component in reconciled_components_new_to_old.items():
+            self._reconcile_component(
+                old_component,
+                new_component,
+                reconciled_components_new_to_old,
             )
 
-            # Performance optimization: Since the new widget has just been
+            # Performance optimization: Since the new component has just been
             # reconciled into the old one, it cannot possibly still be part of
-            # the widget tree. It is thus safe to remove from the set of dirty
-            # widgets to prevent a pointless rebuild.
-            self._dirty_widgets.discard(new_widget)
+            # the component tree. It is thus safe to remove from the set of dirty
+            # components to prevent a pointless rebuild.
+            self._dirty_components.discard(new_component)
 
-        # Update the widget data. If the root widget was not reconciled, the new
-        # widget is the new build result.
+        # Update the component data. If the root component was not reconciled, the new
+        # component is the new build result.
         try:
-            reconciled_build_result = reconciled_widgets_new_to_old[new_build]
+            reconciled_build_result = reconciled_components_new_to_old[new_build]
         except KeyError:
             reconciled_build_result = new_build
             old_build_data.build_result = new_build
 
-        # Replace any references to new reconciled widgets to old ones instead
-        def remap_widgets(parent: rio.Component) -> None:
+        # Replace any references to new reconciled components to old ones instead
+        def remap_components(parent: rio.Component) -> None:
             parent_vars = vars(parent)
 
-            for attr_name in inspection.get_child_widget_containing_attribute_names(
+            for attr_name in inspection.get_child_component_containing_attribute_names(
                 type(parent)
             ):
                 attr_value = parent_vars[attr_name]
 
-                # Just a widget
+                # Just a component
                 if isinstance(attr_value, rio.Component):
                     try:
-                        attr_value = reconciled_widgets_new_to_old[attr_value]
+                        attr_value = reconciled_components_new_to_old[attr_value]
                     except KeyError:
-                        # Make sure that any widgets which are now in the tree
+                        # Make sure that any components which are now in the tree
                         # have their builder properly set.
                         if isinstance(parent, component_base.FundamentalComponent):
                             attr_value._weak_builder_ = parent._weak_builder_
@@ -861,16 +864,16 @@ class Session(unicall.Unicall):
                     else:
                         parent_vars[attr_name] = attr_value
 
-                    remap_widgets(attr_value)
+                    remap_components(attr_value)
 
                 # List / Collection
                 elif isinstance(attr_value, list):
                     for ii, item in enumerate(attr_value):
                         if isinstance(item, rio.Component):
                             try:
-                                item = reconciled_widgets_new_to_old[item]
+                                item = reconciled_components_new_to_old[item]
                             except KeyError:
-                                # Make sure that any widgets which are now in
+                                # Make sure that any components which are now in
                                 # the tree have their builder properly set.
                                 if isinstance(
                                     parent, component_base.FundamentalComponent
@@ -880,47 +883,50 @@ class Session(unicall.Unicall):
                             else:
                                 attr_value[ii] = item
 
-                            remap_widgets(item)
+                            remap_components(item)
 
-        remap_widgets(reconciled_build_result)
+        remap_components(reconciled_build_result)
 
-    def _reconcile_widget(
+    def _reconcile_component(
         self,
-        old_widget: rio.Component,
-        new_widget: rio.Component,
-        reconciled_widgets_new_to_old: Dict[rio.Component, rio.Component],
+        old_component: rio.Component,
+        new_component: rio.Component,
+        reconciled_components_new_to_old: Dict[rio.Component, rio.Component],
     ) -> None:
         """
-        Given two widgets of the same type, reconcile them. Specifically:
+        Given two components of the same type, reconcile them. Specifically:
 
-        - Any state which was explicitly set by the user in the new widget's
+        - Any state which was explicitly set by the user in the new component's
           constructor is considered explicitly set, and will be copied into the
-          old widget
-        - If any values were changed, the widget is registered as dirty with the
+          old component
+        - If any values were changed, the component is registered as dirty with the
           session
 
         This function also handles `StateBinding`s, for details see comments.
         """
-        assert type(old_widget) is type(new_widget), (old_widget, new_widget)
+        assert type(old_component) is type(new_component), (
+            old_component,
+            new_component,
+        )
 
-        # Let any following code assume that the two widgets aren't the same
+        # Let any following code assume that the two components aren't the same
         # instance
-        if old_widget is new_widget:
+        if old_component is new_component:
             return
 
-        # Determine which properties will be taken from the new widget
+        # Determine which properties will be taken from the new component
         overridden_values = {}
-        old_widget_dict = vars(old_widget)
-        new_widget_dict = vars(new_widget)
+        old_component_dict = vars(old_component)
+        new_component_dict = vars(new_component)
 
-        for prop_name in new_widget._state_properties_:
+        for prop_name in new_component._state_properties_:
             # Should the value be overridden?
-            if prop_name not in new_widget._explicitly_set_properties_:
+            if prop_name not in new_component._explicitly_set_properties_:
                 continue
 
             # Take care to keep state bindings up to date
-            old_value = old_widget_dict[prop_name]
-            new_value = new_widget_dict[prop_name]
+            old_value = old_component_dict[prop_name]
+            new_value = new_component_dict[prop_name]
             old_is_binding = isinstance(old_value, component_base.StateBinding)
             new_is_binding = isinstance(new_value, component_base.StateBinding)
 
@@ -928,7 +934,7 @@ class Session(unicall.Unicall):
             # tree of bindings. All children are now roots.
             if old_is_binding and not new_is_binding:
                 binding_value = old_value.get_value()
-                old_value.owning_widget_weak = lambda: None
+                old_value.owning_component_weak = lambda: None
 
                 for child_binding in old_value.children:
                     child_binding.is_root = True
@@ -938,7 +944,7 @@ class Session(unicall.Unicall):
             # If both values are bindings transfer the children to the new
             # binding
             elif old_is_binding and new_is_binding:
-                new_value.owning_widget_weak = old_value.owning_widget_weak
+                new_value.owning_component_weak = old_value.owning_component_weak
                 new_value.children = old_value.children
 
                 for child in old_value.children:
@@ -949,16 +955,18 @@ class Session(unicall.Unicall):
 
             overridden_values[prop_name] = new_value
 
-        # If the widget has changed mark it as dirty
+        # If the component has changed mark it as dirty
         def values_equal(old: object, new: object) -> bool:
             """
             Used to compare the old and new values of a property. Returns `True`
             if the values are considered equal, `False` otherwise.
             """
-            # Widgets are a special case. Widget attributes are dirty iff the
-            # widget isn't reconciled, i.e. it is a new widget
+            # Components are a special case. Component attributes are dirty iff the
+            # component isn't reconciled, i.e. it is a new component
             if isinstance(new, rio.Component):
-                return old is new or old is reconciled_widgets_new_to_old.get(new, None)
+                return old is new or old is reconciled_components_new_to_old.get(
+                    new, None
+                )
 
             if isinstance(new, list):
                 if not isinstance(old, list):
@@ -979,82 +987,84 @@ class Session(unicall.Unicall):
             except Exception:
                 return old is new
 
-        # Determine which properties will be taken from the new widget
+        # Determine which properties will be taken from the new component
         for prop_name in overridden_values:
-            old_value = getattr(old_widget, prop_name)
-            new_value = getattr(new_widget, prop_name)
+            old_value = getattr(old_component, prop_name)
+            new_value = getattr(new_component, prop_name)
 
             if not values_equal(old_value, new_value):
-                self._register_dirty_widget(
-                    old_widget,
+                self._register_dirty_component(
+                    old_component,
                     include_children_recursively=False,
                 )
                 break
 
         # Override the key now. It should never be preserved, but doesn't make
-        # the widget dirty
-        overridden_values["key"] = new_widget.key
+        # the component dirty
+        overridden_values["key"] = new_component.key
 
         # Now combine the old and new dictionaries
         #
-        # Notice that the widget's `_weak_builder_` is always preserved. So even
-        # widgets whose position in the tree has changed still have the correct
+        # Notice that the component's `_weak_builder_` is always preserved. So even
+        # components whose position in the tree has changed still have the correct
         # builder set.
-        old_widget_dict.update(overridden_values)
+        old_component_dict.update(overridden_values)
 
-    def _find_widgets_for_reconciliation(
+    def _find_components_for_reconciliation(
         self,
         old_build: rio.Component,
         new_build: rio.Component,
     ) -> Iterable[Tuple[rio.Component, rio.Component]]:
         """
-        Given two widget trees, find pairs of widgets which can be
-        reconciled, i.e. which represent the "same" widget. When exactly
-        widgets are considered to be the same is up to the implementation and
+        Given two component trees, find pairs of components which can be
+        reconciled, i.e. which represent the "same" component. When exactly
+        components are considered to be the same is up to the implementation and
         best-effort.
 
-        Returns an iterable over (old_widget, new_widget) pairs, as well as a
-        list of all widgets occurring in the new tree, which did not have a match
+        Returns an iterable over (old_component, new_component) pairs, as well as a
+        list of all components occurring in the new tree, which did not have a match
         in the old tree.
         """
 
-        old_widgets_by_key: Dict[str, rio.Component] = {}
-        new_widgets_by_key: Dict[str, rio.Component] = {}
+        old_components_by_key: Dict[str, rio.Component] = {}
+        new_components_by_key: Dict[str, rio.Component] = {}
 
         matches_by_topology: List[Tuple[rio.Component, rio.Component]] = []
 
-        # First scan all widgets for topological matches, and also keep track of
-        # each widget by its key
-        def register_widget_by_key(
-            widgets_by_key: Dict[str, rio.Component],
-            widget: rio.Component,
+        # First scan all components for topological matches, and also keep track of
+        # each component by its key
+        def register_component_by_key(
+            components_by_key: Dict[str, rio.Component],
+            component: rio.Component,
         ) -> None:
-            if widget.key is None:
+            if component.key is None:
                 return
 
-            if widget.key in widgets_by_key:
+            if component.key in components_by_key:
                 raise RuntimeError(
-                    f'Multiple widgets share the key "{widget.key}": {widgets_by_key[widget.key]} and {widget}'
+                    f'Multiple components share the key "{component.key}": {components_by_key[component.key]} and {component}'
                 )
 
-            widgets_by_key[widget.key] = widget
+            components_by_key[component.key] = component
 
         def key_scan(
-            widgets_by_key: Dict[str, rio.Component],
-            widget: rio.Component,
+            components_by_key: Dict[str, rio.Component],
+            component: rio.Component,
             include_self: bool = True,
         ) -> None:
-            for child in widget._iter_direct_and_indirect_child_containing_attributes(
+            for (
+                child
+            ) in component._iter_direct_and_indirect_child_containing_attributes(
                 include_self=include_self,
-                recurse_into_high_level_widgets=True,
+                recurse_into_high_level_components=True,
             ):
-                register_widget_by_key(widgets_by_key, child)
+                register_component_by_key(components_by_key, child)
 
         def chain_to_children(
-            old_widget: rio.Component,
-            new_widget: rio.Component,
+            old_component: rio.Component,
+            new_component: rio.Component,
         ) -> None:
-            def _extract_widgets(attr: object) -> List[rio.Component]:
+            def _extract_components(attr: object) -> List[rio.Component]:
                 if isinstance(attr, rio.Component):
                     return [attr]
 
@@ -1066,61 +1076,61 @@ class Session(unicall.Unicall):
             # Iterate over the children, but make sure to preserve the topology.
             # Can't just use `iter_direct_children` here, since that would
             # discard topological information.
-            for attr_name in inspection.get_child_widget_containing_attribute_names(
-                type(new_widget)
+            for attr_name in inspection.get_child_component_containing_attribute_names(
+                type(new_component)
             ):
-                old_value = getattr(old_widget, attr_name, None)
-                new_value = getattr(new_widget, attr_name, None)
+                old_value = getattr(old_component, attr_name, None)
+                new_value = getattr(new_component, attr_name, None)
 
-                old_widgets = _extract_widgets(old_value)
-                new_widgets = _extract_widgets(new_value)
+                old_components = _extract_components(old_value)
+                new_components = _extract_components(new_value)
 
                 # Chain to the children
-                common = min(len(old_widgets), len(new_widgets))
-                for old_child, new_child in zip(old_widgets, new_widgets):
+                common = min(len(old_components), len(new_components))
+                for old_child, new_child in zip(old_components, new_components):
                     worker(old_child, new_child)
 
-                for old_child in old_widgets[common:]:
-                    key_scan(old_widgets_by_key, old_child, include_self=True)
+                for old_child in old_components[common:]:
+                    key_scan(old_components_by_key, old_child, include_self=True)
 
-                for new_child in new_widgets[common:]:
-                    key_scan(new_widgets_by_key, new_child, include_self=True)
+                for new_child in new_components[common:]:
+                    key_scan(new_components_by_key, new_child, include_self=True)
 
-        def worker(old_widget: rio.Component, new_widget: rio.Component) -> None:
-            # Register the widget by key
-            register_widget_by_key(old_widgets_by_key, old_widget)
-            register_widget_by_key(new_widgets_by_key, new_widget)
+        def worker(old_component: rio.Component, new_component: rio.Component) -> None:
+            # Register the component by key
+            register_component_by_key(old_components_by_key, old_component)
+            register_component_by_key(new_components_by_key, new_component)
 
-            # Do the widget types match?
-            if type(old_widget) is type(new_widget):
-                matches_by_topology.append((old_widget, new_widget))
-                chain_to_children(old_widget, new_widget)
+            # Do the component types match?
+            if type(old_component) is type(new_component):
+                matches_by_topology.append((old_component, new_component))
+                chain_to_children(old_component, new_component)
                 return
 
             # Otherwise neither they, nor their children can be topological
             # matches.  Just keep track of the children's keys.
-            key_scan(old_widgets_by_key, old_widget, include_self=False)
-            key_scan(new_widgets_by_key, new_widget, include_self=False)
+            key_scan(old_components_by_key, old_component, include_self=False)
+            key_scan(new_components_by_key, new_component, include_self=False)
 
         worker(old_build, new_build)
 
         # Find matches by key. These take priority over topological matches.
-        key_matches = old_widgets_by_key.keys() & new_widgets_by_key.keys()
+        key_matches = old_components_by_key.keys() & new_components_by_key.keys()
 
         for key in key_matches:
-            new_widget = new_widgets_by_key[key]
+            new_component = new_components_by_key[key]
             yield (
-                old_widgets_by_key[key],
-                new_widget,
+                old_components_by_key[key],
+                new_component,
             )
 
         # Yield topological matches, taking care to not those matches which were
         # already matched by key.
-        for old_widget, new_widget in matches_by_topology:
-            if old_widget.key in key_matches or new_widget.key in key_matches:
+        for old_component, new_component in matches_by_topology:
+            if old_component.key in key_matches or new_component.key in key_matches:
                 continue
 
-            yield old_widget, new_widget
+            yield old_component, new_component
 
     def _register_font(self, font: text_style.Font) -> None:
         # Fonts are different from other assets because they need to be
@@ -1373,20 +1383,20 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(
-        name="updateWidgetStates",
+        name="updateComponentStates",
         parameter_format="dict",
         await_response=False,
     )
-    async def _remote_update_widget_states(
+    async def _remote_update_component_states(
         self,
-        # Maps widget ids to serialized widgets. The widgets may be partial,
+        # Maps component ids to serialized components. The components may be partial,
         # i.e. any property may be missing.
         delta_states: Dict[int, Any],
-        # Tells the client to make the given widget the new root widget.
-        root_widget_id: Optional[int],
+        # Tells the client to make the given component the new root component.
+        root_component_id: Optional[int],
     ) -> None:
         """
-        Replace all widgets in the UI with the given one.
+        Replace all components in the UI with the given one.
         """
         raise NotImplementedError
 
@@ -1432,51 +1442,53 @@ document.body.removeChild(a)
     async def _remote_register_font(self, name: str, urls: List[Optional[str]]) -> None:
         raise NotImplementedError
 
-    def _try_get_widget_for_message(self, widget_id: int) -> Optional[rio.Component]:
+    def _try_get_component_for_message(
+        self, component_id: int
+    ) -> Optional[rio.Component]:
         """
-        Attempts to get the widget referenced by `widget_id`. Returns `None` if
-        there is no such widget. This can happen during normal opration, e.g.
-        because a widget has been deleted while the message was in flight.
+        Attempts to get the component referenced by `component_id`. Returns `None` if
+        there is no such component. This can happen during normal opration, e.g.
+        because a component has been deleted while the message was in flight.
         """
 
         try:
-            return self._weak_widgets_by_id[widget_id]
+            return self._weak_components_by_id[component_id]
         except KeyError:
             logging.warn(
-                f"Encountered message for unknown widget {widget_id}. (The widget might have been deleted in the meantime.)"
+                f"Encountered message for unknown component {component_id}. (The component might have been deleted in the meantime.)"
             )
             return None
 
-    @unicall.local(name="widgetStateUpdate")
-    async def _widget_state_update(
+    @unicall.local(name="componentStateUpdate")
+    async def _component_state_update(
         self,
-        widget_id: int,
+        component_id: int,
         delta_state: Any,
     ) -> None:
-        # Get the widget
-        widget = self._try_get_widget_for_message(widget_id)
+        # Get the component
+        component = self._try_get_component_for_message(component_id)
 
-        if widget is None:
+        if component is None:
             return
 
-        # Update the widget's state
-        assert isinstance(widget, component_base.FundamentalComponent), widget
-        await widget._on_state_update(delta_state)
+        # Update the component's state
+        assert isinstance(component, component_base.FundamentalComponent), component
+        await component._on_state_update(delta_state)
 
-    @unicall.local(name="widgetMessage")
-    async def widget_message(
+    @unicall.local(name="componentMessage")
+    async def component_message(
         self,
-        widget_id: int,
+        component_id: int,
         payload: Any,
     ) -> None:
-        # Get the widget
-        widget = self._try_get_widget_for_message(widget_id)
+        # Get the component
+        component = self._try_get_component_for_message(component_id)
 
-        if widget is None:
+        if component is None:
             return
 
-        # Let the widget handle the message
-        await widget._on_message(payload)
+        # Let the component handle the message
+        await component._on_message(payload)
 
     @unicall.local(name="ping")
     async def _ping(self, ping: str) -> str:
@@ -1506,8 +1518,8 @@ document.body.removeChild(a)
         self._window_height = new_height
 
         # Call any registered callbacks
-        for widget, callback in self._on_window_resize_callbacks.items():
+        for component, callback in self._on_window_resize_callbacks.items():
             self._create_task(
-                self._call_event_handler(callback, widget),
+                self._call_event_handler(callback, component),
                 name="`on_window_resize` event handler",
             )

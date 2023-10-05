@@ -47,7 +47,7 @@ class PageView(component_base.Component):
 
     # Routers must not be reconciled completely, because doing so would prevent
     # a rebuild. Rebuilds are necessary so routers can update their location in
-    # the widget tree.
+    # the component tree.
     #
     # This value will never compare equal to that of any other router,
     # preventing reconciliation.
@@ -56,7 +56,7 @@ class PageView(component_base.Component):
         default_factory=object,
     )
 
-    # How many other routers are above this one in the widget tree. Zero for
+    # How many other routers are above this one in the component tree. Zero for
     # top-level routers, 1 for the next level, and so on.
     #
     # This is stored in a list so that modifications don't trigger a rebuild.
@@ -88,7 +88,7 @@ class PageView(component_base.Component):
         while cur_weak is not None:
             cur = cur_weak()
 
-            # Possible if this router has been removed from the widget tree
+            # Possible if this router has been removed from the component tree
             if cur is None:
                 break
 

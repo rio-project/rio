@@ -111,7 +111,7 @@ function convertMarkdown(
         // );
         // const language = languageClass ? languageClass.replace('language-', '') : '';
 
-        // Wrap the code block. This outer element will hold additional widgets
+        // Wrap the code block. This outer element will hold additional components
         // and styling.
         let codeBlockOuter = document.createElement('div');
         codeBlockOuter.classList.add('rio-markdown-code-block');

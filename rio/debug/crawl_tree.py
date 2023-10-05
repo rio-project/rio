@@ -15,7 +15,7 @@ DUMP_PATH = rio.common.PROJECT_ROOT_DIR / "tree-dump.json"
 
 __all__ = [
     "Attribute",
-    "Widget",
+    "Component",
     "dump_tree",
     "TreeDump",
 ]
@@ -31,7 +31,7 @@ class Attribute:
 
 
 @dataclass
-class Widget(uniserde.Serde):
+class Component(uniserde.Serde):
     id: int
     type: str
     parent: Optional[int]
@@ -41,14 +41,14 @@ class Widget(uniserde.Serde):
 
 @dataclass
 class TreeDump(uniserde.Serde):
-    widgets: List[Widget]
+    components: List[Component]
 
 
 # def _get_attr_value(attr_value: Any) -> Union[str, List[int]]:
 #     if prop.name in child_containing_attribute_names:
 #         if attr_value is None:
 #             attr_children = []
-#         elif isinstance(attr_value, rio.Widget):
+#         elif isinstance(attr_value, rio.Component):
 #             attr_children = [attr_value]
 #         elif isinstance(attr_value, (list, tuple)):
 #             attr_children = attr_value
@@ -66,18 +66,18 @@ class TreeDump(uniserde.Serde):
 
 def _dump_worker(
     sess: rio.Session,
-    widget: rio.Component,
+    component: rio.Component,
     parent: Optional[int],
     builder: Optional[int],
-) -> Iterable[Widget]:
-    # Fetch all of the widget's attributes
+) -> Iterable[Component]:
+    # Fetch all of the component's attributes
     attributes: List[Attribute] = []
     # child_containing_attribute_names = (
-    #     rio.inspection.get_child_widget_containing_attribute_names(type(widget))
+    #     rio.inspection.get_child_component_containing_attribute_names(type(component))
     # )
 
-    for prop in type(widget)._state_properties_.values():
-        raw_attr_value = prop.__get__(widget, None)
+    for prop in type(component)._state_properties_.values():
+        raw_attr_value = prop.__get__(component, None)
 
         attributes.append(
             Attribute(
@@ -89,29 +89,29 @@ def _dump_worker(
             )
         )
 
-    # For fundamental widgets, all children are in the tree and need to be
-    # processed. For non-fundamental widgets, fetch the build result
-    if isinstance(widget, FundamentalComponent):
-        children = list(widget._iter_direct_children())
+    # For fundamental components, all children are in the tree and need to be
+    # processed. For non-fundamental components, fetch the build result
+    if isinstance(component, FundamentalComponent):
+        children = list(component._iter_direct_children())
         child_builder = builder
     else:
-        widget_data = sess._weak_widget_data_by_widget[widget]
-        children = [widget_data.build_result]
-        child_builder = widget._id
+        component_data = sess._weak_component_data_by_component[component]
+        children = [component_data.build_result]
+        child_builder = component._id
 
     # Process all children recursively
     for child in children:
         yield from _dump_worker(
             sess=sess,
-            widget=child,
-            parent=widget._id,
+            component=child,
+            parent=component._id,
             builder=child_builder,
         )
 
     # Instantiate the result
-    yield Widget(
-        id=widget._id,
-        type=type(widget).__name__,
+    yield Component(
+        id=component._id,
+        type=type(component).__name__,
         parent=parent,
         builder=builder,
         attributes=attributes,
@@ -122,11 +122,11 @@ def dump_tree(sess: rio.Session) -> TreeDump:
     # Make sure there are no pending changes
     sess._refresh_sync()
 
-    # Dump all widgets
-    widgets = list(
+    # Dump all components
+    components = list(
         _dump_worker(
             sess=sess,
-            widget=sess._root_widget,
+            component=sess._root_component,
             parent=None,
             builder=None,
         )
@@ -134,5 +134,5 @@ def dump_tree(sess: rio.Session) -> TreeDump:
 
     # Instantiate the result
     return TreeDump(
-        widgets=widgets,
+        components=components,
     )

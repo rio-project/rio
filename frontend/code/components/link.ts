@@ -3,7 +3,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 export type LinkState = ComponentState & {
     child_text?: string | null;
-    child_widget?: number | string | null;
+    child_component?: number | string | null;
     targetUrl: string;
     isRoute: boolean;
 };
@@ -56,12 +56,12 @@ export class LinkComponent extends ComponentBase {
             element.classList.add('rio-text-link');
         }
 
-        // Child Widget?
+        // Child Component?
         if (
-            deltaState.child_widget !== undefined &&
-            deltaState.child_widget !== null
+            deltaState.child_component !== undefined &&
+            deltaState.child_component !== null
         ) {
-            replaceOnlyChild(element, deltaState.child_widget);
+            replaceOnlyChild(element, deltaState.child_component);
             element.classList.remove('rio-text-link');
         }
 

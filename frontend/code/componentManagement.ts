@@ -155,12 +155,12 @@ function getCurrentComponentState(
 }
 
 function createLayoutComponentStates(
-    widgetId: number | string,
+    componentId: number | string,
     deltaState: ComponentState,
     message: { [id: string]: ComponentState }
 ): number | string {
-    let entireState = getCurrentComponentState(widgetId, deltaState);
-    let resultId = widgetId;
+    let entireState = getCurrentComponentState(componentId, deltaState);
+    let resultId = componentId;
 
     // Margin
     let margin = entireState['_margin_']!;
@@ -170,7 +170,7 @@ function createLayoutComponentStates(
         margin[2] !== 0 ||
         margin[3] !== 0
     ) {
-        let marginId = `${widgetId}-margin`;
+        let marginId = `${componentId}-margin`;
         message[marginId] = {
             _type_: 'Margin-builtin',
             _python_type_: 'Margin (injected)',
@@ -189,7 +189,7 @@ function createLayoutComponentStates(
     // Align
     let align = entireState['_align_']!;
     if (align[0] !== null || align[1] !== null) {
-        let alignId = `${widgetId}-align`;
+        let alignId = `${componentId}-align`;
         message[alignId] = {
             _type_: 'Align-builtin',
             _python_type_: 'Align (injected)',
@@ -206,7 +206,7 @@ function createLayoutComponentStates(
     return resultId;
 }
 
-function replaceChildrenWithLayoutWidgets(
+function replaceChildrenWithLayoutComponents(
     deltaState: ComponentState,
     childIds: Set<string>,
     message: { [id: string]: ComponentState }
@@ -246,30 +246,34 @@ function replaceChildrenWithLayoutWidgets(
 function preprocessDeltaStates(message: {
     [id: string]: ComponentState;
 }): void {
-    // Fortunately the root widget is created internally by the server, so we
+    // Fortunately the root component is created internally by the server, so we
     // don't need to worry about it having a margin or alignment.
 
-    let originalWidgetIds = Object.keys(message);
+    let originalComponentIds = Object.keys(message);
 
-    // Keep track of which widgets have their parents in the message
+    // Keep track of which components have their parents in the message
     let childIds: Set<string> = new Set();
 
-    // Walk over all widgets in the message and inject layout widgets. The
+    // Walk over all components in the message and inject layout components. The
     // message is modified in-place, so take care to have a copy of all keys
-    for (let widgetId of originalWidgetIds) {
-        replaceChildrenWithLayoutWidgets(message[widgetId], childIds, message);
+    for (let componentId of originalComponentIds) {
+        replaceChildrenWithLayoutComponents(
+            message[componentId],
+            childIds,
+            message
+        );
     }
 
-    // Find all widgets which have had a layout widget injected, and make sure
-    // their parents are updated to point to the new widget.
-    for (let widgetId of originalWidgetIds) {
-        // Child of another widget in the message
-        if (childIds.has(widgetId)) {
+    // Find all components which have had a layout component injected, and make sure
+    // their parents are updated to point to the new component.
+    for (let componentId of originalComponentIds) {
+        // Child of another component in the message
+        if (childIds.has(componentId)) {
             continue;
         }
 
         // The parent isn't contained in the message. Find and add it.
-        let childElement = document.getElementById(`rio-id-${widgetId}`);
+        let childElement = document.getElementById(`rio-id-${componentId}`);
         if (childElement === null) {
             continue;
         }
@@ -282,40 +286,40 @@ function preprocessDeltaStates(message: {
 
         let parentInstance = elementsToInstances.get(parentElement);
         if (parentInstance === undefined) {
-            throw `Parent widget with id ${parentElement} not found`;
+            throw `Parent component with id ${parentElement} not found`;
         }
 
         let parentId = parentElement.id.slice('rio-id-'.length);
         let newParentState = { ...parentInstance.state };
-        replaceChildrenWithLayoutWidgets(newParentState, childIds, message);
+        replaceChildrenWithLayoutComponents(newParentState, childIds, message);
         message[parentId] = newParentState;
     }
 }
 
-export function updateWidgetStates(
+export function updateComponentStates(
     message: { [id: string]: ComponentState },
-    rootWidgetId: string | number | null
+    rootComponentId: string | number | null
 ): void {
     // Preprocess the message. This converts `_align_` and `_margin_` properties
-    // into actual widgets, amongst other things.
+    // into actual components, amongst other things.
     preprocessDeltaStates(message);
 
     // Modifying the DOM makes the keyboard focus get lost. Remember which
     // element had focus, so we can restore it later.
     let focusedElement = document.activeElement;
 
-    // Create a HTML element to hold all latent widgets, so they aren't
+    // Create a HTML element to hold all latent components, so they aren't
     // garbage collected while updating the DOM.
-    let latentWidgets = document.createElement('div');
-    latentWidgets.id = 'rio-latent-widgets';
-    latentWidgets.style.display = 'none';
-    document.body.appendChild(latentWidgets);
+    let latentComponents = document.createElement('div');
+    latentComponents.id = 'rio-latent-components';
+    latentComponents.style.display = 'none';
+    document.body.appendChild(latentComponents);
 
-    // Make sure all widgets mentioned in the message have a corresponding HTML
+    // Make sure all components mentioned in the message have a corresponding HTML
     // element
-    for (let widgetId in message) {
-        let deltaState = message[widgetId];
-        let elementId = `rio-id-${widgetId}`;
+    for (let componentId in message) {
+        let deltaState = message[componentId];
+        let elementId = `rio-id-${componentId}`;
         let element = document.getElementById(elementId);
 
         // This is a reused element, no need to instantiate a new one
@@ -323,82 +327,84 @@ export function updateWidgetStates(
             continue;
         }
 
-        // Get the class for this widget
-        const widgetClass = componentClasses[deltaState._type_!];
+        // Get the class for this component
+        const componentClass = componentClasses[deltaState._type_!];
 
-        // Make sure the widget type is valid (Just helpful for debugging)
-        if (!widgetClass) {
-            throw `Encountered unknown widget type: ${deltaState._type_}`;
+        // Make sure the component type is valid (Just helpful for debugging)
+        if (!componentClass) {
+            throw `Encountered unknown component type: ${deltaState._type_}`;
         }
 
-        // Create an instance for this widget
-        let instance: ComponentBase = new widgetClass(elementId, deltaState);
+        // Create an instance for this component
+        let instance: ComponentBase = new componentClass(elementId, deltaState);
 
-        // Build the widget
+        // Build the component
         element = instance.createElement();
         element.id = elementId;
-        element.classList.add('rio-widget');
+        element.classList.add('rio-component');
 
-        // Store the widget's class name in the element. Used for debugging.
+        // Store the component's class name in the element. Used for debugging.
         element.setAttribute('dbg-py-class', deltaState._python_type_!);
 
-        // Set the widget's key, if it has one. Used for debugging.
+        // Set the component's key, if it has one. Used for debugging.
         let key = deltaState['key'];
         if (key !== undefined) {
             element.setAttribute('dbg-key', `${key}`);
         }
 
-        // Create a mapping from the element to the widget instance
+        // Create a mapping from the element to the component instance
         elementsToInstances.set(element, instance);
 
-        // Keep the widget alive
-        latentWidgets.appendChild(element);
+        // Keep the component alive
+        latentComponents.appendChild(element);
     }
 
-    // Update all widgets mentioned in the message
-    let widgetsNeedingLayoutUpdate = new Set<ComponentBase>();
+    // Update all components mentioned in the message
+    let componentsNeedingLayoutUpdate = new Set<ComponentBase>();
 
     for (let id in message) {
         let deltaState = message[id];
         let element = getElementByComponentId(id);
 
-        // Perform updates common to all widgets
+        // Perform updates common to all components
         commonUpdate(element, deltaState);
 
-        // Perform updates specific to this widget type
+        // Perform updates specific to this component type
         let instance = elementsToInstances.get(element!) as ComponentBase;
         instance.updateElement(element, deltaState);
 
-        // Update the widget's state
+        // Update the component's state
         instance.state = {
             ...instance.state,
             ...deltaState,
         };
 
-        // Queue the widget and its parent for a layout update
-        widgetsNeedingLayoutUpdate.add(instance);
+        // Queue the component and its parent for a layout update
+        componentsNeedingLayoutUpdate.add(instance);
 
-        let parentElement = getParentComponentElementIncludingInjected(element!);
+        let parentElement = getParentComponentElementIncludingInjected(
+            element!
+        );
         if (parentElement) {
             let parentInstance = elementsToInstances.get(parentElement);
 
             if (!parentInstance) {
-                throw `Failed to find parent widget for ${id}`;
+                throw `Failed to find parent component for ${id}`;
             }
 
-            widgetsNeedingLayoutUpdate.add(parentInstance);
+            componentsNeedingLayoutUpdate.add(parentInstance);
         }
     }
 
-    // Widgets that have changed, or had their parents changed need to have
+    // Components that have changed, or had their parents changed need to have
     // their layout updated
-    widgetsNeedingLayoutUpdate.forEach((widget) => {
-        widget.updateChildLayouts();
+    componentsNeedingLayoutUpdate.forEach((component) => {
+        component.updateChildLayouts();
     });
 
-    // Replace the root widget if requested
-    if (rootWidgetId !== null) {
-        let rootElement = getElementByComponentId(rootWidgetId);
+    // Replace the root component if requested
+    if (rootComponentId !== null) {
+        let rootElement = getElementByComponentId(rootComponentId);
         componentTreeRootElement.innerHTML = '';
         componentTreeRootElement.appendChild(rootElement);
     }
@@ -408,8 +414,8 @@ export function updateWidgetStates(
         focusedElement.focus();
     }
 
-    // Remove the latent widgets
-    latentWidgets.remove();
+    // Remove the latent components
+    latentComponents.remove();
 }
 
 function commonUpdate(element: HTMLElement, state: ComponentState) {
@@ -456,11 +462,11 @@ export function replaceOnlyChild(
 
         // Move the child element to a latent container, so it isn't garbage
         // collected
-        let latentWidgets = document.getElementById('rio-latent-widgets');
-        latentWidgets?.appendChild(currentChildElement);
+        let latentComponents = document.getElementById('rio-latent-components');
+        latentComponents?.appendChild(currentChildElement);
     }
 
-    // Add the replacement widget
+    // Add the replacement component
     let newElement = getElementByComponentId(childId);
     parentElement?.appendChild(newElement);
 }
@@ -474,7 +480,7 @@ export function replaceChildren(
     if (childIds === undefined) {
         return;
     }
-    let latentWidgets = document.getElementById('rio-latent-widgets')!;
+    let latentComponents = document.getElementById('rio-latent-components')!;
 
     let curElement = parentElement.firstElementChild;
     let curIdIndex = 0;
@@ -512,7 +518,7 @@ export function replaceChildren(
         if (curIdIndex >= childIds.length) {
             while (curElement !== null) {
                 let nextElement = curElement.nextElementSibling;
-                latentWidgets.appendChild(wrap(curElement));
+                latentComponents.appendChild(wrap(curElement));
                 curElement = nextElement;
             }
             break;

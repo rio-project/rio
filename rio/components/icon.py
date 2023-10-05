@@ -38,7 +38,7 @@ class Icon(component_base.FundamentalComponent):
 
         The icon set is a zip containing SVG files. The SVG files must have a
         `viewBox` attribute, but no height or width. They will be colored by the
-        `fill` property of the `Icon` widget.
+        `fill` property of the `Icon` component.
 
         Files located in the root of the archive can be accessed as
         `set_name/icon_name`. Files located in a subdirectory can be accessed as

@@ -46,7 +46,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
         ),
     ),
     (
-        "Non-Widgets",
+        "Non-Components",
         (
             rio.App,
             rio.URL,
@@ -60,7 +60,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
 # - URL Segment
 # - Section Name
 # - Article Name
-# - Article generation function, or `Widget` class
+# - Article generation function, or `Component` class
 def _compute_linear() -> (
     Tuple[
         Tuple[str, str, str, Union[Callable[[], article.Article], Type[rio.Component]]],
@@ -78,7 +78,7 @@ def _compute_linear() -> (
         section_title, arts = section
 
         # ... where each article is either a tuple of (name, url_segment,
-        # article), or a rio `Widget`
+        # article), or a rio `Component`
         for art in arts:
             if isinstance(art, tuple):
                 for art in arts:

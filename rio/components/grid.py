@@ -26,7 +26,7 @@ class Grid(component_base.FundamentalComponent):
     column_spacing: float
 
     # This must be annotated, otherwise rio won't understand that grids have
-    # child widgets
+    # child components
     _children: List[rio.Component]
 
     def __init__(
@@ -65,14 +65,14 @@ class Grid(component_base.FundamentalComponent):
         self.row_spacing = row_spacing
         self.column_spacing = column_spacing
 
-        # JS can only work with lists of Widgets, so we'll store the widgets and
+        # JS can only work with lists of Components, so we'll store the components and
         # their positions separately
         _children: List[rio.Component] = []
         _child_positions: List[GridChildPosition] = []
 
-        for row_nr, row_widgets in enumerate(children):
-            for col_nr, widget in enumerate(row_widgets):
-                _children.append(widget)
+        for row_nr, row_components in enumerate(children):
+            for col_nr, component in enumerate(row_components):
+                _children.append(component)
                 _child_positions.append(
                     GridChildPosition(
                         row=row_nr,

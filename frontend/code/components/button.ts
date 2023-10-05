@@ -90,10 +90,10 @@ export class ButtonComponent extends ComponentBase {
         }
 
         // The slider stores the coordinates of its rectangle. Since rio
-        // likes to resize and move around widgets, the rectangle must be
+        // likes to resize and move around components, the rectangle must be
         // updated appropriately.
         //
-        // Really, this should be done when the widget is resized or moved, but
+        // Really, this should be done when the component is resized or moved, but
         // there is no hook for that. Update seems to work fine.
         requestAnimationFrame(() => {
             this.mdcRipple.layout();

@@ -26,6 +26,6 @@ class Spacer(class_container.ClassContainer):
         )
 
 
-# Make sure the widget is recognized as `ClassContainer`, rather than a new
-# widget.
+# Make sure the component is recognized as `ClassContainer`, rather than a new
+# component.
 Spacer._unique_id = class_container.ClassContainer._unique_id

@@ -63,7 +63,7 @@ export type Theme = {
     secondaryColorVariant: Color;
     disabledColorVariant: Color;
 
-    // Surface colors are often used for backgrounds. Most widgets are placed on
+    // Surface colors are often used for backgrounds. Most components are placed on
     // top of the surface color.
     backgroundColor: Color;
     surfaceColor: Color;

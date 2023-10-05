@@ -185,7 +185,7 @@ class AppServer(fastapi.FastAPI):
         self.add_api_websocket_route("/rio/ws", self._serve_websocket)
 
         # Because this is a single page application, all other routes should
-        # serve the index page. The session will determine which widgets should
+        # serve the index page. The session will determine which components should
         # be shown.
         self.add_api_route(
             "/{initial_route_str:path}", self._serve_index, methods=["GET"]
@@ -318,7 +318,7 @@ class AppServer(fastapi.FastAPI):
         html = html.replace(
             '"{child_attribute_names}"',
             json.dumps(
-                inspection.get_child_widget_containing_attribute_names_for_builtin_widgets()
+                inspection.get_child_component_containing_attribute_names_for_builtin_components()
             ),
         )
 
@@ -738,18 +738,18 @@ class AppServer(fastapi.FastAPI):
                 # Attach the instance to the session
                 sess.attachments._add(att_instance, synchronize=False)
 
-        # Create the root widget. The root widget is a non-fundamental widget,
+        # Create the root component. The root component is a non-fundamental component,
         # because that has many advantages:
-        # 1. Every widget except for the root widget itself has a valid builder
-        # 2. The JS code is simpler because the root widget can't have an
+        # 1. Every component except for the root component itself has a valid builder
+        # 2. The JS code is simpler because the root component can't have an
         #    alignment or margin
-        # 3. Children of non-fundamental widgets are automatically initialized
+        # 3. Children of non-fundamental components are automatically initialized
         #    correctly, so we don't need to duplicate that logic here
-        global_state.currently_building_widget = None
+        global_state.currently_building_component = None
         global_state.currently_building_session = sess
 
         try:
-            sess._root_widget = RootContainer(self.app.build)
+            sess._root_component = RootContainer(self.app.build)
         finally:
             global_state.currently_building_session = None
 
