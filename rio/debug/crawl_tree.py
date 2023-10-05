@@ -8,7 +8,7 @@ from uniserde import Jsonable
 
 import rio
 import rio.inspection
-from rio.widgets.widget_base import FundamentalWidget
+from rio.components.component_base import FundamentalComponent
 
 DUMP_PATH = rio.common.PROJECT_ROOT_DIR / "tree-dump.json"
 
@@ -66,7 +66,7 @@ class TreeDump(uniserde.Serde):
 
 def _dump_worker(
     sess: rio.Session,
-    widget: rio.Widget,
+    widget: rio.Component,
     parent: Optional[int],
     builder: Optional[int],
 ) -> Iterable[Widget]:
@@ -91,7 +91,7 @@ def _dump_worker(
 
     # For fundamental widgets, all children are in the tree and need to be
     # processed. For non-fundamental widgets, fetch the build result
-    if isinstance(widget, FundamentalWidget):
+    if isinstance(widget, FundamentalComponent):
         children = list(widget._iter_direct_children())
         child_builder = builder
     else:

@@ -6,7 +6,7 @@ import rio
 from .. import theme
 
 
-class NavigationButton(rio.Widget):
+class NavigationButton(rio.Component):
     text: str
     route: str
     is_active: bool = False
@@ -22,7 +22,7 @@ class NavigationButton(rio.Widget):
         except IndexError:
             self.is_active = False
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         if self.is_active:
             color = theme.THEME.primary_color.replace(opacity=0.3)
         else:
@@ -37,8 +37,8 @@ class NavigationButton(rio.Widget):
         )
 
 
-class NavigationBar(rio.Widget):
-    def build(self) -> rio.Widget:
+class NavigationBar(rio.Component):
+    def build(self) -> rio.Component:
         surface_color = theme.THEME.surface_color
         text_color = theme.THEME.text_color_for(surface_color)
 
@@ -109,7 +109,7 @@ class NavigationBar(rio.Widget):
         )
 
 
-class NavigationBarDeadSpace(rio.Widget):
+class NavigationBarDeadSpace(rio.Component):
     """
     The Navigation Bar hovers above other content, necessitating a spacer to
     prevent real content from being obscured.
@@ -120,7 +120,7 @@ class NavigationBarDeadSpace(rio.Widget):
 
     height: float = 8
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Rectangle(
             style=rio.BoxStyle(
                 fill=rio.ImageFill(

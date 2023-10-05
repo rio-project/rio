@@ -27,13 +27,13 @@ from . import (
     app,
     assets,
     common,
+    components,
     debug,
     global_state,
     inspection,
     routing,
     session,
     user_settings_module,
-    widgets,
 )
 
 try:
@@ -760,8 +760,8 @@ class AppServer(fastapi.FastAPI):
         await sess._call_event_handler(self.on_session_start, sess)
 
 
-class RootContainer(widgets.Widget):
-    build_function: Callable[[], widgets.Widget]
+class RootContainer(components.Component):
+    build_function: Callable[[], components.Component]
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return self.build_function()

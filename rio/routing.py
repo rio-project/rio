@@ -10,11 +10,11 @@ from .errors import NavigationFailed
 
 
 @dataclass(frozen=True)
-class Route:
+class Page:
     route_url: str
-    build: Callable[[], rio.Widget]
+    build: Callable[[], rio.Component]
     _: KW_ONLY
-    children: List["Route"] = field(default_factory=list)
+    children: List["Page"] = field(default_factory=list)
     guard: Optional[Callable[[rio.Session], Union[None, rio.URL, str]]] = None
 
     @property
@@ -27,7 +27,7 @@ class Route:
         return tuple()
 
 
-class RouteRedirect(Exception):
+class PageRedirect(Exception):
     """
     Internal exception solely used internally by `_check_route_guards`. You
     should never see this exception pop up anywhere outside of that function.
@@ -41,7 +41,7 @@ def check_route_guards(
     sess: rio.Session,
     target_url_relative: rio.URL,
     target_url_absolute: rio.URL,
-) -> Tuple[List[Route], rio.URL]:
+) -> Tuple[List[Page], rio.URL]:
     """
     Check whether navigation to the given target URL is possible.
 
@@ -69,9 +69,9 @@ def check_route_guards(
     past_redirects = [target_url_absolute]
 
     def check_guard(
-        routes: Iterable[rio.Route],
+        routes: Iterable[rio.Page],
         remaining_segments: Tuple[str, ...],
-    ) -> List[Route]:
+    ) -> List[Page]:
         # Get the route responsible for this segment
         try:
             route_segment = remaining_segments[0]
@@ -99,7 +99,7 @@ def check_route_guards(
                 redirect_route = sess.active_route.join(redirect_route)
 
             if redirect_route is not None and redirect_route != target_url_absolute:
-                raise RouteRedirect(redirect_route)
+                raise PageRedirect(redirect_route)
 
         # Recurse into the children
         sub_routes = check_guard(route.children, remaining_segments[1:])
@@ -112,7 +112,7 @@ def check_route_guards(
             route_stack = check_guard(sess.app.routes, target_url_relative.parts)
 
         # Redirect
-        except RouteRedirect as err:
+        except PageRedirect as err:
             redirect = err.redirect
 
         # Done

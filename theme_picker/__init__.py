@@ -5,13 +5,13 @@ from typing import *  # type: ignore
 
 import rio
 import rio.debug
-from rio.widgets.widget_base import Widget
+from rio.components.component_base import Component
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
 
 
-class ColorPickerPopup(rio.Widget):
+class ColorPickerPopup(rio.Component):
     theme: rio.Theme
     title: str
     property_name: str
@@ -28,7 +28,7 @@ class ColorPickerPopup(rio.Widget):
             rio.ColorChangeEvent(self._color),
         )
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Column(
             rio.ColorPicker(
                 color=ColorPickerPopup._color,
@@ -45,7 +45,7 @@ class ColorPickerPopup(rio.Widget):
         )
 
 
-class ColorSwatch(rio.Widget):
+class ColorSwatch(rio.Component):
     theme: rio.Theme
     description: Optional[str]
     heading_fill: rio.FillLike
@@ -70,7 +70,7 @@ class ColorSwatch(rio.Widget):
         self.theme = self.theme
         self.currently_edited_property_name = None
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         assert len(self.color_property_names) > 0, "Must provide at least one color"
 
         # Create rectangles for each color
@@ -224,12 +224,12 @@ class ColorSwatch(rio.Widget):
         )
 
 
-class Sidebar(rio.Widget):
+class Sidebar(rio.Component):
     theme: rio.Theme
 
     currently_picked_property_name: Optional[str] = None
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Card(
             rio.Column(
                 ColorSwatch(
@@ -330,7 +330,7 @@ class Sidebar(rio.Widget):
         )
 
 
-class PythonCodeView(rio.Widget):
+class PythonCodeView(rio.Component):
     theme: rio.Theme
 
     def _python_code(self) -> str:
@@ -349,7 +349,7 @@ theme = rio.Theme(
 ```
 """
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Card(
             rio.MarkdownView(
                 text=self._markdown_source(),
@@ -358,10 +358,10 @@ theme = rio.Theme(
         )
 
 
-class AppRoot(rio.Widget):
+class AppRoot(rio.Component):
     theme: rio.Theme = field(default_factory=rio.Theme)
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Row(
             Sidebar(
                 theme=self.theme,

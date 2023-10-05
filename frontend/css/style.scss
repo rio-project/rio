@@ -316,7 +316,7 @@ body {
     padding: 0;
 
     // Make the body fill the entire screen. vw/vh units don't play nice with
-    // scroll bars, so we have to use them here instead of in the widget-root
+    // scroll bars, so we have to use them here instead of in the component-root
     // element.
     position: relative;
     width: 100vw;
@@ -337,7 +337,7 @@ code {
 // have to take care to start scrolling before our parent does, because we don't
 // have a parent that can scroll. Hence there's no need for a `postion:
 // absolute` element here.
-.widget-root {
+.component-root {
     overflow: auto;
 
     // Use % instead of vw/vh units, because the latter don't play nice with
@@ -348,7 +348,7 @@ code {
     position: relative;
 }
 
-.widget-root > * {
+.component-root > * {
     min-width: 100%;
     min-height: 100%;
 }

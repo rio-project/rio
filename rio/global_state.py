@@ -14,7 +14,7 @@ __all__ = [
 #
 # - `Widget`: The widget that is currently being built
 # - `None`: The app's build method is currently being called
-currently_building_widget: Optional[rio.Widget] = None
+currently_building_widget: Optional[rio.Component] = None
 
 
 # Same as `currently_building_widget`, but holding that widget's session.

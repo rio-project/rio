@@ -6,7 +6,7 @@ from typing import *  # type: ignore
 
 from introspection import iter_subclasses, safe_is_subclass
 
-from .widgets import widget_base
+from .components import component_base
 
 
 @functools.lru_cache(maxsize=None)
@@ -35,7 +35,9 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
 
 
 @functools.lru_cache(maxsize=None)
-def get_attributes_to_serialize(cls: Type[widget_base.Widget]) -> Mapping[str, Type]:
+def get_attributes_to_serialize(
+    cls: Type[component_base.Component],
+) -> Mapping[str, Type]:
     """
     Returns a dictionary of attribute names to their types that should be
     serialized for the given widget class.
@@ -76,7 +78,7 @@ def get_attributes_to_serialize(cls: Type[widget_base.Widget]) -> Mapping[str, T
 
 @functools.lru_cache(maxsize=None)
 def get_child_widget_containing_attribute_names(
-    cls: Type[widget_base.Widget],
+    cls: Type[component_base.Component],
 ) -> Collection[str]:
     attr_names = []
 
@@ -87,13 +89,13 @@ def get_child_widget_containing_attribute_names(
 
         args = get_args(annotation)
 
-        if safe_is_subclass(origin, widget_base.Widget):
+        if safe_is_subclass(origin, component_base.Component):
             attr_names.append(attr_name)
         elif origin is Union:
-            if any(safe_is_subclass(arg, widget_base.Widget) for arg in args):
+            if any(safe_is_subclass(arg, component_base.Component) for arg in args):
                 attr_names.append(attr_name)
         elif origin is list:
-            if any(safe_is_subclass(arg, widget_base.Widget) for arg in args):
+            if any(safe_is_subclass(arg, component_base.Component) for arg in args):
                 attr_names.append(attr_name)
 
     return tuple(attr_names)
@@ -105,7 +107,7 @@ def get_child_widget_containing_attribute_names_for_builtin_widgets() -> (
 ):
     result = {
         cls._unique_id: get_child_widget_containing_attribute_names(cls)  # type: ignore
-        for cls in iter_subclasses(widget_base.FundamentalWidget)
+        for cls in iter_subclasses(component_base.FundamentalComponent)
         if cls._unique_id.endswith("-builtin")  # type: ignore
     }
 

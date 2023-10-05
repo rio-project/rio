@@ -8,13 +8,13 @@ import rio_docs
 
 from . import article
 from . import components as comps
-from . import structure, theme, views
+from . import pages, structure, theme
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
 
 
-def make_slideshow_placeholder(variant: int) -> rio.Widget:
+def make_slideshow_placeholder(variant: int) -> rio.Component:
     colors = [
         rio.Color.RED,
         rio.Color.GREEN,
@@ -36,8 +36,8 @@ def make_slideshow_placeholder(variant: int) -> rio.Widget:
     )
 
 
-class AppRoot(rio.Widget):
-    def build(self) -> rio.Widget:
+class AppRoot(rio.Component):
+    def build(self) -> rio.Component:
         return rio.Column(
             # Navigation Bar
             rio.Sticky(
@@ -51,7 +51,7 @@ class AppRoot(rio.Widget):
             # Spacer for the navigation bar
             rio.Spacer(height=5.1),
             # Router
-            rio.Router(
+            rio.PageView(
                 width="grow",
                 height="grow",
             ),
@@ -62,10 +62,10 @@ class AppRoot(rio.Widget):
         )
 
 
-class ColumnSample(rio.Widget):
+class ColumnSample(rio.Component):
     spacing: float = 0
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Row(
             rio.Column(
                 comps.SampleA(),
@@ -93,13 +93,13 @@ class ColumnSample(rio.Widget):
         )
 
 
-def get_docs(widget_class: Type) -> rio.Widget:
+def get_docs(widget_class: Type) -> rio.Component:
     # Get the docs class for this class
     docs = rio_docs.ClassDocs.parse(widget_class)
 
     # Generate the article. This is done differently based on whether this is a
     # widget or another class.
-    if issubclass(widget_class, rio.Widget):
+    if issubclass(widget_class, rio.Component):
         rio_docs.custom.postprocess_widget_docs(docs)
 
         art = article.create_widget_api_docs(
@@ -116,7 +116,7 @@ def get_docs(widget_class: Type) -> rio.Widget:
 
 
 # Prepare the list of all documentation routes
-def _make_documentation_routes() -> List[rio.Route]:
+def _make_documentation_routes() -> List[rio.Page]:
     result = []
 
     for (
@@ -141,7 +141,7 @@ def _make_documentation_routes() -> List[rio.Route]:
             make_child = lambda article=article_or_class: article().build()
 
         result.append(
-            rio.Route(
+            rio.Page(
                 url_segment,
                 make_child,
             )
@@ -153,17 +153,17 @@ def _make_documentation_routes() -> List[rio.Route]:
 # Merge all routes
 routes = [
     # Top Level Views
-    rio.Route(
+    rio.Page(
         "",
-        views.HomeView,
+        pages.HomePage,
     ),
-    rio.Route(
+    rio.Page(
         "documentation",
-        views.DocumentationView,
+        pages.DocumentationPage,
         children=[
-            rio.Route(
+            rio.Page(
                 "",
-                views.DocumentationLandingPage,
+                pages.DocumentationLandingPage,
             ),
             *_make_documentation_routes(),
         ],
@@ -183,14 +183,18 @@ rio_app = rio.App(
 
 
 if __name__ == "__main__":
-    rio_app.run_as_web_server(
-        port=8001,
+    rio_app._run_as_web_server(
         external_url_override="http://localhost:8001",
+        host="127.0.0.1",
+        port=8001,
         quiet=False,
-        _validator_factory=rio.debug.Validator,
+        validator_factory=rio.debug.Validator,
+        on_startup=None,
     )
 else:
     app = rio_app._as_fastapi(
         external_url_override="http://localhost:8001",
+        running_in_window=False,
         validator_factory=rio.debug.Validator,
+        on_startup=None,
     )

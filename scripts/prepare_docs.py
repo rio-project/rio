@@ -14,7 +14,7 @@ def main() -> None:
         rio.CursorStyle,
         rio.Font,
         rio.NavigationFailed,
-        rio.Route,
+        rio.Page,
         rio.Session,
         rio.TextStyle,
         rio.Theme,
@@ -24,7 +24,7 @@ def main() -> None:
     # Add classes which should automatically have their children documented
     to_do = [
         rio.Fill,
-        rio.Widget,
+        rio.Component,
     ]
 
     while to_do:
@@ -38,7 +38,7 @@ def main() -> None:
         docs = rio_docs.ClassDocs.parse(cls)
 
         # Postprocess them as needed
-        if isinstance(cls, rio.Widget):
+        if isinstance(cls, rio.Component):
             rio_docs.custom.postprocess_widget_docs(docs)
         else:
             rio_docs.custom.postprocess_class_docs(docs)

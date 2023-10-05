@@ -18,10 +18,10 @@ CARD_STYLE_HOVER = CARD_STYLE.replace(
 )
 
 
-class Card(rio.Widget):
-    child: rio.Widget
+class Card(rio.Component):
+    child: rio.Component
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Rectangle(
             child=rio.Container(
                 self.child,
@@ -33,12 +33,12 @@ class Card(rio.Widget):
         )
 
 
-class ShowcaseCard(rio.Widget):
+class ShowcaseCard(rio.Component):
     title: str
     description: str
-    child: rio.Widget
+    child: rio.Component
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return Card(
             rio.Column(
                 rio.Text(self.title, multiline=True),
@@ -48,13 +48,13 @@ class ShowcaseCard(rio.Widget):
         )
 
 
-class KeyEventTester(rio.Widget):
+class KeyEventTester(rio.Component):
     event: rio.KeyDownEvent = rio.KeyDownEvent("unknown", "unknown", "", frozenset())
 
     def on_key_down(self, event: rio.KeyDownEvent) -> None:
         self.event = event
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.KeyEventListener(
             rio.Text(
                 f"""Hardware key: {self.event.hardware_key}
@@ -66,10 +66,10 @@ Modifiers: {self.event.modifiers}"""
         )
 
 
-class ExtendoItem(rio.Widget):
+class ExtendoItem(rio.Component):
     name: str
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Row(
             rio.Icon("material/archive", width=1, height=1),
             rio.Text(
@@ -81,7 +81,7 @@ class ExtendoItem(rio.Widget):
         )
 
 
-class ExtensibleList(rio.Widget):
+class ExtensibleList(rio.Component):
     child_names: List[str] = field(
         default_factory=lambda: ["Perma 1", "Perma 2"],
     )
@@ -89,7 +89,7 @@ class ExtensibleList(rio.Widget):
     def on_extend(self, _) -> None:
         self.child_names = self.child_names + [f"New {len(self.child_names) + 1}"]
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return rio.Column(
             rio.Button("Extend", on_press=self.on_extend),
             rio.Column(
@@ -99,7 +99,7 @@ class ExtensibleList(rio.Widget):
         )
 
 
-class Sidebar(rio.Widget):
+class Sidebar(rio.Component):
     search_text: str = ""
     expanded: bool = False
     popup_visible: bool = False
@@ -107,7 +107,7 @@ class Sidebar(rio.Widget):
     def _on_toggle_popup(self, _) -> None:
         self.popup_visible = not self.popup_visible
 
-    def build(self) -> rio.Widget:
+    def build(self) -> rio.Component:
         return Card(
             child=rio.ScrollContainer(
                 rio.Column(
@@ -319,8 +319,8 @@ class Sidebar(rio.Widget):
         )
 
 
-class WidgetShowcase(rio.Widget):
-    def build(self) -> rio.Widget:
+class WidgetShowcase(rio.Component):
+    def build(self) -> rio.Component:
         return rio.Row(
             Sidebar(
                 width=30,

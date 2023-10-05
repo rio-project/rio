@@ -32,8 +32,8 @@ __all__ = [
 
 
 def _validate_build_function(
-    build_function: Callable[[], rio.Widget]
-) -> Callable[[], rio.Widget]:
+    build_function: Callable[[], rio.Component]
+) -> Callable[[], rio.Component]:
     assert callable(
         build_function
     ), f"The App requires a function that returns a widget, not {build_function!r}"
@@ -42,7 +42,7 @@ def _validate_build_function(
         widget = build_function()
 
         assert isinstance(
-            widget, rio.Widget
+            widget, rio.Component
         ), f"The `build` function passed to the App must return a `Widget` instance, not {widget!r}."
 
         return widget
@@ -53,11 +53,11 @@ def _validate_build_function(
 class App:
     def __init__(
         self,
-        build: Callable[[], rio.Widget],
+        build: Callable[[], rio.Component],
         *,
         name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
-        routes: Iterable[rio.Route] = tuple(),
+        routes: Iterable[rio.Page] = tuple(),
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),

@@ -13,14 +13,14 @@ import rio.global_state
 from rio.app_server import AppServer
 
 T = TypeVar("T")
-W = TypeVar("W", bound=rio.Widget)
+W = TypeVar("W", bound=rio.Component)
 
 
 async def _make_awaitable(value: T = None) -> T:
     return value
 
 
-def _fake_build_function() -> rio.Widget:
+def _fake_build_function() -> rio.Component:
     assert False, "This function should never be called"
 
 
@@ -98,11 +98,11 @@ class _MockApp:
         return await self._responses.get()
 
     @property
-    def dirty_widgets(self) -> Container[rio.Widget]:
+    def dirty_widgets(self) -> Container[rio.Component]:
         return set(self._session._dirty_widgets)
 
     @property
-    def last_updated_widgets(self) -> Set[rio.Widget]:
+    def last_updated_widgets(self) -> Set[rio.Component]:
         for message in reversed(self.outgoing_messages):
             if message["method"] == "updateWidgetStates":
                 return {
@@ -113,7 +113,7 @@ class _MockApp:
 
         return set()
 
-    def get_root_widget(self) -> rio.Widget:
+    def get_root_widget(self) -> rio.Component:
         sess = self._session
         return sess._weak_widget_data_by_widget[sess._root_widget].build_result
 
@@ -124,7 +124,7 @@ class _MockApp:
 
         raise AssertionError(f"No widget of type {widget_type} found")
 
-    def get_build_output(self, widget: rio.Widget) -> rio.Widget:
+    def get_build_output(self, widget: rio.Component) -> rio.Component:
         return self._session._weak_widget_data_by_widget[widget].build_result
 
     async def refresh(self) -> None:
@@ -133,7 +133,7 @@ class _MockApp:
 
 @contextlib.asynccontextmanager
 async def _create_mockapp(
-    build: Callable[[], rio.Widget],
+    build: Callable[[], rio.Component],
 ) -> AsyncGenerator[_MockApp, None]:
     app = rio.App(build)
     app_server = AppServer(
