@@ -1,3 +1,4 @@
+from typing import *  # type: ignore
 from typing import Optional
 
 from .component_base import Component, FundamentalComponent

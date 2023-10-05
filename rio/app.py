@@ -51,6 +51,12 @@ def _validate_build_function(
 
 
 class App:
+    """
+    Contains all the information needed to run a Rio app.
+
+
+    """
+
     def __init__(
         self,
         build: Callable[[], rio.Component],
@@ -58,6 +64,7 @@ class App:
         name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
         routes: Iterable[rio.Page] = tuple(),
+        on_app_start: rio.EventHandler[rio.Session] = None,
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
@@ -73,6 +80,7 @@ class App:
         self.build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
         self.routes = tuple(routes)
+        self.on_app_start = on_app_start
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = tuple(default_attachments)

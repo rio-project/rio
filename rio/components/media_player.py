@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from pathlib import Path
-from typing import Optional, Union
+from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 from yarl import URL

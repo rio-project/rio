@@ -4,6 +4,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Iterable, Literal, Tuple, Union
 
+from typing_extensions import TypeAlias
 from uniserde import Jsonable
 
 import rio
@@ -19,9 +20,6 @@ __all__ = [
     "LinearGradientFill",
     "SolidFill",
 ]
-
-
-FillLike = Union["Fill", "Color"]
 
 
 class Fill(self_serializing.SelfSerializing, ABC):
@@ -138,3 +136,6 @@ class ImageFill(Fill):
         else:
             # Invalid fill mode
             raise Exception(f"Invalid fill mode for image fill: {self._fill_mode}")
+
+
+FillLike: TypeAlias = Union[Fill, Color]

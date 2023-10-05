@@ -10,6 +10,7 @@ import json
 import logging
 import secrets
 import time
+import traceback
 import weakref
 from datetime import timedelta
 from typing import *  # type: ignore
@@ -128,7 +129,9 @@ class AppServer(fastapi.FastAPI):
         on_session_end: rio.EventHandler[rio.Session],
         default_attachments: Tuple[Any, ...],
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        on_startup: Union[None, Callable[[], None], Callable[[], Awaitable[None]]],
+        on_startup: Union[
+            None, Callable[["app.App"], None], Callable[["app.App"], Awaitable[None]]
+        ],
     ):
         super().__init__(lifespan=__class__._lifespan)
 
@@ -204,12 +207,18 @@ class AppServer(fastapi.FastAPI):
                 name="Periodic session cleanup",
             )
 
-        # Run the user's startup code
-        if self.on_startup is not None:
-            result = self.on_startup()
+        # Trigger the app's startup event
+        if self.app.on_app_start is not None:
+            try:
+                result = self.app.on_app_start(self.app)
 
-            if inspect.isawaitable(result):
-                await result
+                if inspect.isawaitable(result):
+                    await result
+
+            # Display and discard exceptions
+            except Exception:
+                print("Exception in `on_app_start` event handler:")
+                traceback.print_exc()
 
         yield
 

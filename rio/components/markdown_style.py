@@ -1,5 +1,5 @@
 from dataclasses import KW_ONLY, dataclass
-from typing import Literal, Optional, Tuple, Union
+from typing import *  # type: ignore
 
 from typing_extensions import Self
 
