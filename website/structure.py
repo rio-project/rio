@@ -51,6 +51,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
     (
         "Displays",
         (
+            rio.Html,
             rio.Link,
             rio.MarkdownView,
             rio.MediaPlayer,

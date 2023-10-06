@@ -122,6 +122,9 @@ def _str_function_signature(
 ) -> str:
     parts = []
 
+    # TODO: Don't forget the * and **, both for variadic parameters, and for
+    #       positional-/keyword-only parameters
+
     # Name
     if owning_class_name is None:
         parts.append("def " if docs.synchronous else "async def ")
@@ -163,18 +166,13 @@ def _str_function_signature(
 def _append_method_docs_to_article(
     art: Article,
     docs: docmodels.ClassDocs,
+    *,
+    filter: Callable[[docmodels.FunctionDocs], bool] = lambda _: True,
 ) -> None:
-    # Find all functions which will be documented
-    targets = []
+    # Find all methods to document
+    targets = [func for func in docs.functions if filter(func)]
 
-    for func in docs.functions:
-        # Skip the constructor, as it was already handled above
-        if func.name == "__init__":
-            continue
-
-        targets.append(func)
-
-    # Were any functions found?
+    # Are there any methods to document?
     if not targets:
         return
 
@@ -198,42 +196,117 @@ def _append_method_docs_to_article(
         if func.long_description is not None:
             art.markdown(func.long_description)
 
+        # Parameters
+        for param in func.parameters:
+            if param.name == "self":
+                continue
+
+            art.component(
+                rio.Row(
+                    rio.Text(
+                        param.name,
+                        style="heading3",
+                    ),
+                    rio.MarkdownView(
+                        "Unknown" if param.type is None else f"`{esc(param.type)}`",
+                        margin_left=1.0,
+                        default_language="python",
+                    ),
+                    rio.Spacer(),
+                ),
+            )
+
+            if param.description is not None:
+                art.markdown(param.description)
+
     art.end_section()
+
+
+def _append_field_docs_to_article(
+    art: Article,
+    docs: docmodels.ClassDocs,
+) -> None:
+    # Are there any fields to document?
+    if not docs.attributes:
+        return
+
+    art.begin_section()
+    art.text("Attributes", style="heading2")
+
+    for field in docs.attributes:
+        art.component(
+            rio.Row(
+                rio.Text(
+                    field.name,
+                    style="heading3",
+                ),
+                rio.MarkdownView(
+                    f"`{esc(field.type)}`",
+                    margin_left=1.0,
+                    default_language="python",
+                ),
+                rio.Spacer(),
+            ),
+        )
+
+        if field.description is not None:
+            art.markdown(field.description)
+
+    art.end_section()
+
+
+def _append_heading_and_short_description(
+    art: Article,
+    heading: str,
+    short_description: Optional[str],
+) -> None:
+    art.component(
+        rio.Row(
+            rio.Card(
+                child=rio.Column(
+                    rio.Text(
+                        heading,
+                        style="heading1",
+                        align_x=0,
+                    ),
+                    rio.MarkdownView(
+                        short_description or "",
+                        default_language="python",
+                    ),
+                    align_y=0,
+                    margin=2,
+                ),
+                width="grow",
+                corner_radius=theme.THEME.corner_radius_large,
+            ),
+            rio.Image(
+                theme.get_random_material_image(),
+                width="grow",
+                corner_radius=theme.THEME.corner_radius_large,
+                fill_mode="zoom",
+            ),
+            spacing=2,
+            height=20,
+        )
+    )
 
 
 def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
     art = Article()
 
-    # Heading
-    art.text(docs.name, style="heading1")
-
-    # Short description
-    if docs.short_description is not None:
-        art.markdown(docs.short_description)
+    # Heading / short description
+    _append_heading_and_short_description(
+        art,
+        docs.name,
+        docs.short_description,
+    )
 
     # Long description
     if docs.long_description is not None:
         art.markdown(docs.long_description)
 
     # Fields
-    art.begin_section()
-    art.text("Fields", style="heading2")
-
-    if docs.attributes:
-        for field in docs.attributes:
-            art.text(field.name, style="heading3")
-
-            if field.description is not None:
-                art.markdown(field.description)
-
-            art.markdown(f"Type: `{esc(field.type)}`\n\n")
-
-    else:
-        art.markdown(f"`{esc(docs.name)}` has no public fields.")
-
-    art.end_section()
-
-    rio.Spacer(height=1.5)
+    _append_field_docs_to_article(art, docs)
 
     # Functions
     _append_method_docs_to_article(art, docs)
@@ -252,34 +325,10 @@ def create_component_api_docs(
     art = Article()
 
     # Heading / short description
-    art.component(
-        rio.Row(
-            rio.Card(
-                child=rio.Column(
-                    rio.Text(
-                        docs.name,
-                        style="heading1",
-                        align_x=0,
-                    ),
-                    rio.MarkdownView(
-                        docs.short_description or "",
-                        default_language="python",
-                    ),
-                    align_y=0,
-                    margin=2,
-                ),
-                width="grow",
-                corner_radius=theme.THEME.corner_radius_large,
-            ),
-            rio.Image(
-                theme.get_random_material_image(),
-                width="grow",
-                corner_radius=theme.THEME.corner_radius_large,
-                fill_mode="zoom",
-            ),
-            spacing=2,
-            height=20,
-        )
+    _append_heading_and_short_description(
+        art,
+        docs.name,
+        docs.short_description,
     )
 
     # Constructor Signature
@@ -307,31 +356,13 @@ def create_component_api_docs(
     #
     # These are merged into a single section, because developers are unlikely to
     # interact with the attributes anywhere but the constructor.
-    art.begin_section()
-    art.text("Attributes", style="heading2")
-
-    for field in docs.attributes:
-        art.component(
-            rio.Row(
-                rio.Text(
-                    field.name,
-                    style="heading3",
-                ),
-                rio.MarkdownView(
-                    f"`{esc(field.type)}`",
-                    margin_left=1.0,
-                    default_language="python",
-                ),
-                rio.Spacer(),
-            ),
-        )
-
-        if field.description is not None:
-            art.markdown(field.description)
-
-    art.end_section()
+    _append_field_docs_to_article(art, docs)
 
     # Functions
-    _append_method_docs_to_article(art, docs)
+    _append_method_docs_to_article(
+        art,
+        docs,
+        filter=lambda func: func.name != "__init__",
+    )
 
     return art

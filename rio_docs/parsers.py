@@ -14,6 +14,12 @@ from rio.inspection import get_type_annotations
 
 from . import models
 
+valid_section_names: Set[str] = {
+    "args",
+    "attributes",
+    "raises",
+}
+
 
 def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
     """
@@ -43,35 +49,37 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
 
     for raw_line in lines:
         # Strip the line and calculate the indentation
-        line = raw_line.lstrip()
-        indent = len(raw_line) - len(line)
-        line = line.rstrip()
+        strip_line = raw_line.lstrip()
+        indent = len(raw_line) - len(strip_line)
+        strip_line = strip_line.rstrip()
 
         # Start of a new section?
-        if indent == 0 and line.endswith(":"):
-            section_name = line[:-1]
+        if indent == 0 and strip_line.endswith(":"):
+            section_name = strip_line[:-1]
             section_name = section_name.strip().lower()
-            current_section = sections.setdefault(section_name, {})
-            current_value_lines = []
-            section_content_indent = 999999
-            continue
+
+            if section_name in valid_section_names:
+                current_section = sections.setdefault(section_name, {})
+                current_value_lines = []
+                section_content_indent = 999999
+                continue
 
         # If not inside a section, append to the description
         if current_section is None:
-            description += line + "\n"
+            description += raw_line + "\n"
             continue
 
         # Continuation of the previous value
-        if indent > section_content_indent or not line:
-            current_value_lines.append(line)
+        if indent > section_content_indent or not strip_line:
+            current_value_lines.append(strip_line)
             continue
 
         # New value
         section_content_indent = indent
-        parts = line.split(":", 1)
+        parts = strip_line.split(":", 1)
 
         if len(parts) == 1:
-            warning(f'Invalid indentation in docstring: "{line}"')
+            warning(f'Invalid indentation in docstring: "{strip_line}"')
             continue
 
         name, value = parts
@@ -82,7 +90,11 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
 
     # Post-processing function for strings
     def postprocess_string(value: str) -> str:
-        return re.sub("\n\n+", "\n\n", value)
+        # TODO: Remove double lines, strip whitespace, etc, but watch out for
+        # code blocks
+
+        # Is this actually necessary?
+        return value
 
     # Post-process the description
     description = postprocess_string(description)
@@ -114,12 +126,12 @@ def parse_descriptions(description: str) -> Tuple[Optional[str], Optional[str]]:
     long_lines = []
     cur_lines = short_lines
 
-    for line in lines:
-        line = line.strip()
+    for raw_line in lines:
+        strip_line = raw_line.strip()
 
-        cur_lines.append(line)
+        cur_lines.append(raw_line)
 
-        if not line:
+        if not strip_line:
             cur_lines = long_lines
 
     # Join the lines
