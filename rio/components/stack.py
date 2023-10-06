@@ -10,6 +10,18 @@ __all__ = ["Stack"]
 
 
 class Stack(component_base.FundamentalComponent):
+    """
+    A container that stacks its children in the Z direction.
+
+    `Stacks` are similar to rows and columns, but they stack their children in
+    the Z direction instead of the X or Y direction. In other words, the stack's
+    children overlap each other, with the first one at the bottom, the second
+    one above that, and so on.
+
+    Attributes:
+        children: The components to place in this `Stack`.
+    """
+
     children: List[rio.Component]
 
     def __init__(

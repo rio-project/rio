@@ -112,6 +112,29 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
             rio.UserSettings,
         ),
     ),
+    (
+        "Events",
+        (
+            rio.ButtonPressEvent,
+            rio.ColorChangeEvent,
+            rio.DrawerOpenOrCloseEvent,
+            rio.DropdownChangeEvent,
+            rio.KeyDownEvent,
+            rio.KeyPressEvent,
+            rio.KeyUpEvent,
+            rio.MouseDownEvent,
+            rio.MouseEnterEvent,
+            rio.MouseLeaveEvent,
+            rio.MouseMoveEvent,
+            rio.MouseUpEvent,
+            rio.NumberInputChangeEvent,
+            rio.NumberInputConfirmEvent,
+            rio.PopupOpenOrCloseEvent,
+            rio.RevealerChangeEvent,
+            rio.TextInputChangeEvent,
+            rio.TextInputConfirmEvent,
+        ),
+    ),
 )
 
 

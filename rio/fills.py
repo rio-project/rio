@@ -23,8 +23,24 @@ __all__ = [
 
 
 class Fill(self_serializing.SelfSerializing, ABC):
+    """
+    Base class for how shapes are filled.
+
+    This is a base class for all fills. Fills determine how the inside of a
+    shape is colored.
+
+    This class is abstract and cannot be instantiated directly. Instead, use
+    one of its subclasses.
+    """
+
     @staticmethod
     def _try_from(value: FillLike) -> "Fill":
+        """
+        Creates a fill instance from a `FillLike` value.
+
+        Raises:
+            TypeError: If the value is not a valid fill.
+        """
         if isinstance(value, Fill):
             return value
 
@@ -36,6 +52,16 @@ class Fill(self_serializing.SelfSerializing, ABC):
 
 @dataclass(frozen=True, eq=True)
 class SolidFill(Fill):
+    """
+    Fills a shape with a single color.
+
+    `SolidFill` is the simplest of all fills. It fills the entire shape with a
+    single, solid color.
+
+    Attributes:
+        color: The color to fill the shape with.
+    """
+
     color: Color
 
     def _serialize(self, sess: session.Session) -> Jsonable:
@@ -47,6 +73,32 @@ class SolidFill(Fill):
 
 @dataclass(frozen=True, eq=True)
 class LinearGradientFill(Fill):
+    """
+    Fills a shape with a linear gradient.
+
+    `LinearGradientFill` fills the shape with a linear gradient. The gradient
+    can have any number of stops, each with a color and a position. The gradient
+    will smoothly transition between the colors at the given positions. The
+    positions are given as are given as fractions, where 0 is the start of the
+    gradient and 1 is the end.
+
+    Attributes:
+        stops: The different colors that comprise the gradient, along with where
+            they are positioned.
+
+            The stops are given as tuples. Each tuple contains a color and a
+            position. The position is a fraction, where 0 is the start of the
+            gradient and 1 is the end.
+
+            The order of the stops has no effect.
+
+            There must be at least one stop.
+
+        angle_degrees: The angle of the gradient, in degrees. 0 degrees points
+            straight to the right, and the angle increases counterclockwise.
+            (This lines up with how angles are typically used mathematically.)
+    """
+
     stops: Tuple[Tuple[Color, float], ...]
     angle_degrees: float = 0.0
 
@@ -91,12 +143,38 @@ class LinearGradientFill(Fill):
 
 
 class ImageFill(Fill):
+    """
+    Fills a shape with an image.
+
+    `ImageFill` fills the shape's background with an image.
+
+    The image can be scaled to fit the shape in one of three ways:
+
+    - `fit`: The image is scaled to fit entirely inside the shape, while
+      maintaining its aspect ratio. This is the default.
+    - `stretch`: The image is stretched to fill the shape, distorting it if
+      necessary.
+    - `zoom`: The image is scaled to fill the shape entirely, while maintaining
+      its aspect ratio. This may cause the image to overflow the shape.
+    """
+
     def __init__(
         self,
         image: ImageLike,
         *,
-        fill_mode: Literal["fit", "stretch", "tile", "zoom"] = "fit",
+        fill_mode: Literal["fit", "stretch", "zoom"] = "fit",
     ):
+        """
+        Args:
+            image: The image to fill the shape with. fill_mode: How the image should
+                be scaled to fit the shape.
+
+            fill_mode: How the image should be scaled to fit the shape. If `fit`,
+                the image is scaled to fit entirely inside the shape. If `stretch`,
+                the image is stretched to fill the shape exactly, possibly
+                distorting it in the process. If `zoom`, the image is scaled to fill
+                the shape entirely, possibly overflowing.
+        """
         self._image_asset = assets.Asset.from_image(image)
         self._fill_mode = fill_mode
 

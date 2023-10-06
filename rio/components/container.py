@@ -8,6 +8,14 @@ __all__ = ["Container"]
 
 
 class Container(component_base.Component):
+    """
+    A component holding a single child.
+
+    `Container` is a simple container which holds a single child component. It
+    is useful for when you receive a component as child and wish to add
+    additional layout attributes such as a margin.
+    """
+
     child: component_base.Component
 
     def build(self) -> component_base.Component:

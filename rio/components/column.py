@@ -13,12 +13,13 @@ class Column(component_base.FundamentalComponent):
     """
     A container that lays out its children vertically.
 
-    `Column`s are one of the most common components in Rio. They take any number of
-    children and lay them out vertically, with the first one at the top, the
-    second one below that, and so on. All components in `Column`s occupy the full
-    width of their parent.
+    `Column`s are one of the most common components in Rio. They take any number
+    of children and lay them out vertically, with the first one at the top, the
+    second one below that, and so on. All components in `Column`s occupy the
+    full width of their parent.
 
-    The `Column`'s horizontal counterpart is the `Row`.
+    The `Column`'s horizontal counterpart is the `Row`. A similar component, but
+    stacking its children in the Z direction, is the `Stack`.
 
     ### Undefined Space
 
@@ -39,7 +40,7 @@ class Column(component_base.FundamentalComponent):
     alignment.
 
     Attributes:
-        children: The `Component`s to place in this `Column`.
+        children: The components to place in this `Column`.
 
         spacing: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.

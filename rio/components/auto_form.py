@@ -18,6 +18,8 @@ def prettify_name(name: str) -> str:
 
 
 class AutoForm(component_base.Component):
+    # Not yet ready for release - do not use.
+
     _: KW_ONLY
     spacing: float = 0.5
     label_width: float = 15.0

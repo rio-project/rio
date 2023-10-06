@@ -28,10 +28,10 @@ def check_function(
         return
 
     # Run checks
-    if docs.short_description is None:
+    if docs.short_description is None and docs.name != "__init__":
         warning(f"Docstring for `{qualname}` is missing a short description")
 
-    if docs.long_description is None:
+    if docs.long_description is None and docs.name != "__init__":
         warning(f"Docstring for `{qualname}` is missing a long description")
 
     if docs.return_type is None:
