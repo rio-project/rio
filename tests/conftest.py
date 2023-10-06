@@ -38,7 +38,6 @@ def enable_component_instantiation():
     app = rio.App(_fake_build_function)
     app_server = AppServer(
         app,
-        external_url_override="https://unit.test",
         running_in_window=False,
         on_session_start=None,
         on_session_end=None,
@@ -138,7 +137,6 @@ async def _create_mockapp(
     app = rio.App(build)
     app_server = AppServer(
         app,
-        external_url_override="https://unit.test",
         running_in_window=False,
         on_session_start=None,
         on_session_end=None,
