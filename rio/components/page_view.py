@@ -114,9 +114,9 @@ class PageView(component_base.Component):
         # Look up the parent PageView
         level = self._find_page_view_level_and_track_in_session()
 
-        # Fetch the route instance
+        # Fetch the page instance
         try:
-            page = self.session._active_route_instances[level]
+            page = self.session._active_page_instances[level]
         except IndexError:
             if self.fallback_build is None:
                 build_callback = lambda sess=self.session: default_fallback_build(sess)

@@ -71,31 +71,33 @@ class Link(component_base.FundamentalComponent):
         # Navigate to the link. Note that this allows the client to inject a,
         # possibly malicious, link. This is fine, because the client can do so
         # anyway, simply by changing the URL in the browser. Thus the server
-        # has to be equipped to handle malicious routes anyway.
-        target_route = msg["route"]
-        self.session.navigate_to(target_route)
+        # has to be equipped to handle malicious page URLs anyway.
+        target_page = msg["page"]
+        self.session.navigate_to(target_page)
 
     def _custom_serialize(self) -> JsonDoc:
         # Get the full URL to navigate to
-        target_url_absolute = self.session.active_route.join(rio.URL(self.target_url))
+        target_url_absolute = self.session.active_page_url.join(
+            rio.URL(self.target_url)
+        )
 
-        # Is the link a URL or route?
+        # Is the link a URL or page?
         #
-        # The URL is a route, if it starts with the session's base URL
+        # The URL is a page, if it starts with the session's base URL
         try:
             common.make_url_relative(
                 self.session._base_url,
                 target_url_absolute,
             )
         except ValueError:
-            is_route = False
+            is_page = False
         else:
-            is_route = True
+            is_page = True
 
         # Serialize everything
         return {
             "targetUrl": str(target_url_absolute),
-            "isRoute": is_route,
+            "isPage": is_page,
         }
 
 

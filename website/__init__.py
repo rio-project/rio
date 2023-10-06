@@ -115,8 +115,8 @@ def get_docs(component_class: Type) -> rio.Component:
     return art.build()
 
 
-# Prepare the list of all documentation routes
-def _make_documentation_routes() -> List[rio.Page]:
+# Prepare the list of all documentation pages
+def _make_documentation_pages() -> List[rio.Page]:
     result = []
 
     for (
@@ -150,8 +150,8 @@ def _make_documentation_routes() -> List[rio.Page]:
     return result
 
 
-# Merge all routes
-routes = [
+# Merge all pages
+pages = [
     # Top Level Views
     rio.Page(
         "",
@@ -165,7 +165,7 @@ routes = [
                 "",
                 pages.DocumentationLandingPage,
             ),
-            *_make_documentation_routes(),
+            *_make_documentation_pages(),
         ],
     ),
 ]
@@ -174,7 +174,7 @@ routes = [
 rio_app = rio.App(
     name="Rio",
     build=AppRoot,
-    routes=routes,
+    pages=pages,
     default_attachments=[
         theme.THEME,
     ],
@@ -189,12 +189,12 @@ if __name__ == "__main__":
         port=8001,
         quiet=False,
         validator_factory=rio.debug.Validator,
-        on_startup=None,
+        internal_on_app_start=None,
     )
 else:
     app = rio_app._as_fastapi(
         external_url_override="http://localhost:8001",
         running_in_window=False,
         validator_factory=rio.debug.Validator,
-        on_startup=None,
+        internal_on_app_start=None,
     )

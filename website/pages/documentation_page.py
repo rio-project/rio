@@ -10,8 +10,8 @@ from .. import structure, theme
 
 
 class Outliner(rio.Component):
-    @rio.event.on_route_change
-    async def on_route_change(self) -> Any:
+    @rio.event.on_page_change
+    async def _on_page_change(self) -> Any:
         await self.force_refresh()
 
     def build(self) -> rio.Component:
@@ -38,7 +38,7 @@ class Outliner(rio.Component):
 
                 # Highlight the button as active?
                 try:
-                    part = self.session.active_route.parts[2]
+                    part = self.session.active_page_url.parts[2]
                 except IndexError:
                     part = ""
                 is_active = part == url_segment

@@ -129,9 +129,7 @@ class AppServer(fastapi.FastAPI):
         on_session_end: rio.EventHandler[rio.Session],
         default_attachments: Tuple[Any, ...],
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        on_startup: Union[
-            None, Callable[["app.App"], None], Callable[["app.App"], Awaitable[None]]
-        ],
+        internal_on_app_start: Optional[Callable[[], None]],
     ):
         super().__init__(lifespan=__class__._lifespan)
 
@@ -148,7 +146,7 @@ class AppServer(fastapi.FastAPI):
         self.on_session_end = on_session_end
         self.default_attachments = default_attachments
         self.validator_factory = validator_factory
-        self.on_startup = on_startup
+        self.internal_on_app_start = internal_on_app_start
 
         # Initialized lazily, when the favicon is first requested.
         self._icon_as_ico_blob: Optional[bytes] = None
@@ -208,6 +206,10 @@ class AppServer(fastapi.FastAPI):
             )
 
         # Trigger the app's startup event
+        #
+        # This will be done blockingly, so the user can prepare any state before
+        # connections are accepted. This is also why it's called before the
+        # internal event.
         if self.app.on_app_start is not None:
             try:
                 result = self.app.on_app_start(self.app)
@@ -219,6 +221,10 @@ class AppServer(fastapi.FastAPI):
             except Exception:
                 print("Exception in `on_app_start` event handler:")
                 traceback.print_exc()
+
+        # Trigger any internal startup event
+        if self.internal_on_app_start is not None:
+            self.internal_on_app_start()
 
         yield
 
@@ -255,12 +261,12 @@ class AppServer(fastapi.FastAPI):
         base_url = rio.URL(str(request.base_url))
         assert base_url.is_absolute(), base_url
 
-        initial_route_absolute = rio.URL(str(request.url))
-        assert initial_route_absolute.is_absolute(), initial_route_absolute
+        initial_page_url_absolute = rio.URL(str(request.url))
+        assert initial_page_url_absolute.is_absolute(), initial_page_url_absolute
 
-        initial_route_relative = common.make_url_relative(
+        initial_page_url_relative = common.make_url_relative(
             base_url,
-            initial_route_absolute,
+            initial_page_url_absolute,
         )
 
         # Create a session instance to hold all of this state in an organized
@@ -274,30 +280,30 @@ class AppServer(fastapi.FastAPI):
         sess = session.Session(
             app_server_=self,
             base_url=rio.URL(str(request.base_url)),
-            initial_route=initial_route_absolute,
+            initial_page=initial_page_url_absolute,
         )
 
         self._active_session_tokens[session_token] = sess
 
-        # Run any route guards for the initial route
+        # Run any page guards for the initial page
         try:
             (
-                initial_route_instances,
-                initial_route_absolute,
+                initial_page_instances,
+                initial_page_url_absolute,
             ) = routing.check_page_guards(
                 sess,
-                target_url_relative=initial_route_relative,
-                target_url_absolute=initial_route_absolute,
+                target_url_relative=initial_page_url_relative,
+                target_url_absolute=initial_page_url_absolute,
             )
         except routing.NavigationFailed:
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Navigation to initial route "{initial_route_absolute}" has failed.',
+                detail=f'Navigation to initial page "{initial_page_url_absolute}" has failed.',
             ) from None
 
-        # Update the session's active route
-        sess._active_route = initial_route_absolute
-        sess._active_route_instances = tuple(initial_route_instances)
+        # Update the session's active page
+        sess._active_page_url = initial_page_url_absolute
+        sess._active_page_instances = tuple(initial_page_instances)
 
         # Add any attachments, except for user settings. These are deserialized
         # later on, once the client has sent the initial message.

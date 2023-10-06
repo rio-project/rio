@@ -30,7 +30,7 @@ class Counter(rio.Component):
 
 app = rio.App(
     rio.PageView,
-    routes=[
+    pages=[
         rio.Page(
             "",
             Counter,

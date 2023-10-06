@@ -34,7 +34,7 @@ class NotificationBar(component_base.Component):
             text_color = thm.text_color_for(background_color)
         elif self.level == "info":
             background_color = thm.secondary_color
-            text_color = thm.text_on_secondary_color
+            text_color = thm.text_color_for(thm.secondary_color)
         elif self.level == "warning":
             background_color = thm.warning_color
             text_color = thm.text_color_for(background_color)

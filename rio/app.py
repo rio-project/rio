@@ -54,6 +54,8 @@ class App:
     """
     Contains all the information needed to run a Rio app.
 
+    Apps group all the information needed to run a Rio app, such as the app's
+    name, icon and pages.
 
     """
 
@@ -63,8 +65,8 @@ class App:
         *,
         name: Optional[str] = None,
         icon: Optional[ImageLike] = None,
-        routes: Iterable[rio.Page] = tuple(),
-        on_app_start: rio.EventHandler[rio.Session] = None,
+        pages: Iterable[rio.Page] = tuple(),
+        on_app_start: rio.EventHandler["App"] = None,
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
@@ -79,7 +81,7 @@ class App:
         self.name = name
         self.build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
-        self.routes = tuple(routes)
+        self.pages = tuple(pages)
         self.on_app_start = on_app_start
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
@@ -97,7 +99,7 @@ class App:
         external_url_override: Optional[str],
         running_in_window: bool,
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        on_startup: Union[None, Callable[[], None], Callable[[], Awaitable[None]]],
+        internal_on_app_start: Optional[Callable[[], None]],
     ) -> fastapi.FastAPI:
         return app_server.AppServer(
             self,
@@ -107,7 +109,7 @@ class App:
             on_session_end=self.on_session_end,
             default_attachments=self.default_attachments,
             validator_factory=validator_factory,
-            on_startup=on_startup,
+            internal_on_app_start=internal_on_app_start,
         )
 
     def as_fastapi(
@@ -119,7 +121,7 @@ class App:
             external_url_override=external_url_override,
             running_in_window=False,
             validator_factory=None,
-            on_startup=None,
+            internal_on_app_start=None,
         )
 
     def _run_as_web_server(
@@ -130,7 +132,7 @@ class App:
         port: int,
         quiet: bool,
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        on_startup: Union[None, Callable[[], None], Callable[[], Awaitable[None]]],
+        internal_on_app_start: Optional[Callable[[], None]],
     ) -> None:
         port = _ensure_valid_port(host, port)
 
@@ -151,7 +153,7 @@ class App:
             external_url_override=external_url_override,
             running_in_window=False,
             validator_factory=validator_factory,
-            on_startup=on_startup,
+            internal_on_app_start=internal_on_app_start,
         )
 
         # Serve
@@ -176,7 +178,7 @@ class App:
             port=port,
             quiet=quiet,
             validator_factory=None,
-            on_startup=None,
+            internal_on_app_start=None,
         )
 
     def run_in_browser(
@@ -189,7 +191,7 @@ class App:
     ):
         port = _ensure_valid_port(host, port)
 
-        async def on_startup() -> None:
+        def on_startup() -> None:
             webbrowser.open(f"http://{host}:{port}")
 
         self._run_as_web_server(
@@ -198,7 +200,7 @@ class App:
             port=port,
             quiet=quiet,
             validator_factory=None,
-            on_startup=on_startup,
+            internal_on_app_start=on_startup,
         )
 
     def run_in_window(
@@ -231,7 +233,7 @@ class App:
                 external_url_override=url,
                 running_in_window=True,
                 validator_factory=_validator_factory,
-                on_startup=None,
+                internal_on_app_start=None,
             )
             fastapi_app.add_event_handler("startup", lock.release)
 

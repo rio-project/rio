@@ -22,7 +22,7 @@ class Image(component_base.FundamentalComponent):
     corner_radius: Union[float, Tuple[float, float, float, float]] = 0
 
     @rio.event.on_create
-    def on_create(self) -> None:
+    def _on_create(self) -> None:
         self._image_asset = assets.Asset.from_image(self.image)
 
     def _custom_serialize(self) -> JsonDoc:

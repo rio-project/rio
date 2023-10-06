@@ -458,8 +458,8 @@ class Component(metaclass=ComponentMeta):
 
         # Some events need support from the session. Register them
         for event_tag, event_handler in self._rio_event_handlers_.items():
-            if event_tag == event.EventTag.ON_ROUTE_CHANGE:
-                session._route_change_callbacks[self] = event_handler
+            if event_tag == event.EventTag.ON_PAGE_CHANGE:
+                session._page_change_callbacks[self] = event_handler
 
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)
@@ -479,13 +479,6 @@ class Component(metaclass=ComponentMeta):
         self.margin_top = elvis("margin_top", "margin_y", "margin")
         self.margin_right = elvis("margin_right", "margin_x", "margin")
         self.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
-
-    def on_create(self) -> None:
-        """
-        Called after the `__init__` method has finished executing and the
-        component's state bindings have been created.
-        """
-        pass
 
     def _create_state_bindings(self) -> None:
         self._state_bindings_initialized_ = True
@@ -900,12 +893,6 @@ class Component(metaclass=ComponentMeta):
             result += " -" + "".join(child_strings)
 
         return result + ">"
-
-    # Event Handler Templates
-    #
-    # Users may override these synchronously or asynchronously
-    def on_route_change(self) -> Any:
-        pass
 
 
 # Most classes have their state properties initialized in
