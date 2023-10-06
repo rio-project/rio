@@ -1,4 +1,9 @@
-import { JsonRpcMessage, callRemoteMethodDiscardResponse, initWebsocket, processMessageReturnResponse } from './rpc';
+import {
+    JsonRpcMessage,
+    callRemoteMethodDiscardResponse,
+    initWebsocket,
+    processMessageReturnResponse,
+} from './rpc';
 
 export const sessionToken: string = '{session_token}';
 
@@ -6,14 +11,14 @@ export const sessionToken: string = '{session_token}';
 export const pingPongIntervalSeconds: number = '{ping_pong_interval}';
 
 // @ts-ignore
-const childAttributeNames: { [id: string]: string[] } = '{child_attribute_names}';
+const childAttributeNames: { [id: string]: string[] } =
+    '{child_attribute_names}';
 globalThis.childAttributeNames = childAttributeNames;
 
 // @ts-ignore
 const INITIAL_MESSAGES: Array<JsonRpcMessage> = '{initial_messages}';
 
 export let pixelsPerEm = 16;
-
 
 function main() {
     // Connect to the websocket
@@ -26,7 +31,7 @@ function main() {
     pixelsPerEm = measure.offsetHeight / 10;
     document.body.removeChild(measure);
 
-    // Listen for URL changes, so the session can switch route
+    // Listen for URL changes, so the session can switch page
     window.addEventListener('popstate', (event) => {
         console.log(`URL changed to ${window.location.href}`);
         callRemoteMethodDiscardResponse('onUrlChange', {

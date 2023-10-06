@@ -5,7 +5,7 @@ from . import pages
 app = rio.App(
     name="My Portfolio",
     build=rio.PageView,
-    routes=[
+    pages=[
         rio.Page("", pages.PortfolioView),
     ],
 )

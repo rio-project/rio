@@ -11,7 +11,7 @@ from .errors import NavigationFailed
 
 @dataclass(frozen=True)
 class Page:
-    route_url: str
+    page_url: str
     build: Callable[[], rio.Component]
     _: KW_ONLY
     children: List["Page"] = field(default_factory=list)
@@ -19,17 +19,17 @@ class Page:
 
     @property
     def segements(self) -> Tuple[str, ...]:
-        route_url = self.route_url.strip("/")
+        page_url = self.page_url.strip("/")
 
-        if route_url:
-            return tuple(self.route_url.split("/"))
+        if page_url:
+            return tuple(self.page_url.split("/"))
 
         return tuple()
 
 
 class PageRedirect(Exception):
     """
-    Internal exception solely used internally by `_check_route_guards`. You
+    Internal exception solely used internally by `_check_page_guards`. You
     should never see this exception pop up anywhere outside of that function.
     """
 
@@ -45,71 +45,71 @@ def check_page_guards(
     """
     Check whether navigation to the given target URL is possible.
 
-    This finds the routes that would be activated by this navigation and runs
+    This finds the pages that would be activated by this navigation and runs
     their guards. If the guards effect a redirect, it instead attempts to
     navigate to the redirect target, and so on.
 
     Raises `NavigationFailed` if navigation to the target URL is not possible
     because of an error, such as an exception in a guard.
 
-    If the URL points to a route which doesn't exist that is not considered an
+    If the URL points to a page which doesn't exist that is not considered an
     error. The result will still be valid. That is because navigation is
     possible, it's just that some PageViews will display a 404 page.
 
     This function does not perform any actual navigation. It simply checks
-    whether navigation to the target route is possible.
+    whether navigation to the target page is possible.
     """
 
     assert not target_url_relative.is_absolute(), target_url_relative
     assert target_url_absolute.is_absolute(), target_url_absolute
 
-    # Is any guard opposed to this route?
+    # Is any guard opposed to this page?
     initial_target_url = target_url_absolute
     visited_redirects = {target_url_absolute}
     past_redirects = [target_url_absolute]
 
     def check_guard(
-        routes: Iterable[rio.Page],
+        pages: Iterable[rio.Page],
         remaining_segments: Tuple[str, ...],
     ) -> List[Page]:
-        # Get the route responsible for this segment
+        # Get the page responsible for this segment
         try:
-            route_segment = remaining_segments[0]
+            page_segment = remaining_segments[0]
         except IndexError:
-            route_segment = ""
+            page_segment = ""
 
-        for route in routes:
-            if route.route_url == route_segment:
+        for page in pages:
+            if page.page_url == page_segment:
                 break
         else:
             return []
 
         # Run the guard
-        if route.guard is not None:
+        if page.guard is not None:
             try:
-                redirect_route = route.guard(sess)
+                redirect_page = page.guard(sess)
             except Exception as err:
-                raise NavigationFailed("Uncaught exception in route guard") from err
+                raise NavigationFailed("Uncaught exception in page guard") from err
 
             # If a redirect was requested stop recursing
-            if isinstance(redirect_route, str):
-                redirect_route = rio.URL(redirect_route)
+            if isinstance(redirect_page, str):
+                redirect_page = rio.URL(redirect_page)
 
-            if isinstance(redirect_route, rio.URL):
-                redirect_route = sess.active_route.join(redirect_route)
+            if isinstance(redirect_page, rio.URL):
+                redirect_page = sess.active_page_url.join(redirect_page)
 
-            if redirect_route is not None and redirect_route != target_url_absolute:
-                raise PageRedirect(redirect_route)
+            if redirect_page is not None and redirect_page != target_url_absolute:
+                raise PageRedirect(redirect_page)
 
         # Recurse into the children
-        sub_routes = check_guard(route.children, remaining_segments[1:])
-        return [route] + sub_routes
+        sub_pages = check_guard(page.children, remaining_segments[1:])
+        return [page] + sub_pages
 
     while True:
-        # Find all routes which would by activated by this navigation, and
+        # Find all pages which would by activated by this navigation, and
         # check their guards
         try:
-            route_stack = check_guard(sess.app.routes, target_url_relative.parts)
+            page_stack = check_guard(sess.app.pages, target_url_relative.parts)
 
         # Redirect
         except PageRedirect as err:
@@ -117,22 +117,20 @@ def check_page_guards(
 
         # Done
         else:
-            return route_stack, target_url_absolute
+            return page_stack, target_url_absolute
 
         assert redirect.is_absolute(), redirect
 
         # Detect infinite loops and break them
         if redirect in visited_redirects:
-            route_strings = [
-                str(route_url) for route_url in past_redirects + [redirect]
-            ]
-            route_strings_list = "\n -> ".join(route_strings)
+            page_strings = [str(page_url) for page_url in past_redirects + [redirect]]
+            page_strings_list = "\n -> ".join(page_strings)
 
-            message = f"Rejecting navigation to `{initial_target_url}` because route guards have created an infinite loop:\n\n    {route_strings_list}"
+            message = f"Rejecting navigation to `{initial_target_url}` because page guards have created an infinite loop:\n\n    {page_strings_list}"
             logging.warning(message)
             raise NavigationFailed(message)
 
-        # Remember that this route has been visited before
+        # Remember that this page has been visited before
         visited_redirects.add(redirect)
         past_redirects.append(redirect)
 

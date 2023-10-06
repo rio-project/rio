@@ -8,17 +8,17 @@ from .. import theme
 
 class NavigationButton(rio.Component):
     text: str
-    route: str
+    page: str
     is_active: bool = False
 
     @rio.event.on_create
-    def on_create(self) -> None:
-        self.on_route_change()
+    def _on_create(self) -> None:
+        self._on_page_change()
 
-    @rio.event.on_route_change
-    def on_route_change(self) -> None:
+    @rio.event.on_page_change
+    def _on_page_change(self) -> None:
         try:
-            self.is_active = self.session.active_route.parts[1] == self.route
+            self.is_active = self.session.active_page_url.parts[1] == self.page
         except IndexError:
             self.is_active = False
 
@@ -33,7 +33,7 @@ class NavigationButton(rio.Component):
             color=color,
             width=5,
             align_y=0.5,
-            on_press=lambda _: self.session.navigate_to("/" + self.route),
+            on_press=lambda _: self.session.navigate_to("/" + self.page),
         )
 
 

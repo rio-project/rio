@@ -19,7 +19,7 @@ class ColorPickerPopup(rio.Component):
 
     _color: rio.Color = field(init=False)
 
-    def on_create(self) -> None:
+    def _on_create(self) -> None:
         self._color = getattr(self.theme, self.property_name)
 
     async def _on_confirm(self, event: rio.ButtonPressEvent) -> None:

@@ -6,7 +6,7 @@ export type LinkState = ComponentState & {
     child_text?: string | null;
     child_component?: number | string | null;
     targetUrl: string;
-    isRoute: boolean;
+    isPage: boolean;
 };
 
 export class LinkComponent extends SingleContainer {
@@ -22,14 +22,14 @@ export class LinkComponent extends SingleContainer {
 
         // Listen for clicks
         //
-        // This only needs to handle routes, since regular links will be handled
+        // This only needs to handle pages, since regular links will be handled
         // by the browser.
         containerElement.addEventListener(
             'click',
             (event) => {
-                if (this.state.isRoute) {
+                if (this.state.isPage) {
                     this.sendMessageToBackend({
-                        route: this.state.targetUrl,
+                        page: this.state.targetUrl,
                     });
 
                     event.stopPropagation();

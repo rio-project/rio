@@ -155,7 +155,7 @@ class Session(unicall.Unicall):
         self,
         app_server_: app_server.AppServer,
         base_url: rio.URL,
-        initial_route: rio.URL,
+        initial_page: rio.URL,
     ):
         super().__init__(
             send_message=dummy_send_message,
@@ -174,17 +174,17 @@ class Session(unicall.Unicall):
         # client. After a while with no communication we close the session.
         self._last_interaction_timestamp = time.monotonic()
 
-        # The URL to the app's root directory. The current route will always
+        # The URL to the app's root/index page. The current page url will always
         # start with this.
         assert base_url.is_absolute(), base_url
         self._base_url = base_url
 
-        # The current route. This is publicly accessible as property
-        assert initial_route.is_absolute(), initial_route
-        self._active_route: rio.URL = initial_route
+        # The current page. This is publicly accessible as property
+        assert initial_page.is_absolute(), initial_page
+        self._active_page_url: rio.URL = initial_page
 
-        # Also the current route, but as stack of the actual route instances
-        self._active_route_instances: Tuple[rio.Page, ...] = ()
+        # Also the current page url, but as stack of the actual page instances
+        self._active_page_instances: Tuple[rio.Page, ...] = ()
 
         # Keeps track of running asyncio tasks. This is used to make sure that
         # the tasks are cancelled when the session is closed.
@@ -197,12 +197,12 @@ class Session(unicall.Unicall):
             rio.PageView, Optional[int]
         ] = weakref.WeakKeyDictionary()
 
-        # All components / methods which should be called when the session's route
-        # has changed.
+        # All components / methods which should be called when the session's
+        # page has changed.
         #
         # The methods don't have the component bound yet, so they don't unduly
         # prevent the component from being garbage collected.
-        self._route_change_callbacks: weakref.WeakKeyDictionary[
+        self._page_change_callbacks: weakref.WeakKeyDictionary[
             rio.Component, Callable[[rio.Component], None]
         ] = weakref.WeakKeyDictionary()
 
@@ -318,22 +318,22 @@ class Session(unicall.Unicall):
         return self._base_url
 
     @property
-    def active_route(self) -> rio.URL:
+    def active_page_url(self) -> rio.URL:
         """
-        Returns the current route as a tuple of strings.
+        Returns the current page as a tuple of strings.
 
-        This property is read-only. To change the route, use `Session.navigate_to`.
+        This property is read-only. To change the page, use `Session.navigate_to`.
         """
-        return self._active_route
+        return self._active_page_url
 
     @property
-    def active_route_instances(self) -> Tuple[rio.Page, ...]:
+    def active_page_instances(self) -> Tuple[rio.Page, ...]:
         """
-        Returns the current route as a tuple of `Route` instances.
+        Returns the current page as a tuple of `Page` instances.
 
-        This property is read-only. To change the route, use `Session.navigate_to`.
+        This property is read-only. To change the page, use `Session.navigate_to`.
         """
-        return self._active_route_instances
+        return self._active_page_instances
 
     @overload
     async def _call_event_handler(
@@ -391,19 +391,19 @@ class Session(unicall.Unicall):
         replace: bool = False,
     ) -> None:
         """
-        Switches the app to display the given route.
+        Switches the app to display the given page URL.
 
         If `replace` is `True`, the browser's most recent history entry is
-        replaced with the new route. This means that the user can't go back to
-        the previous route using the browser's back button. If `False`, a new
+        replaced with the new page. This means that the user can't go back to
+        the previous page using the browser's back button. If `False`, a new
         history entry is created, allowing the user to go back to the previous
-        route.
+        page.
         """
 
-        # Determine the full route to navigate to
-        target_url_absolute = self.active_route.join(rio.URL(target_url))
+        # Determine the full page to navigate to
+        target_url_absolute = self.active_page_url.join(rio.URL(target_url))
 
-        # Is this a route, or a full URL to another site?
+        # Is this a page, or a full URL to another site?
         try:
             target_url_relative = common.make_url_relative(
                 self._base_url,
@@ -421,16 +421,16 @@ class Session(unicall.Unicall):
             self._create_task(history_worker(), name="history worker")
             return
 
-        # Is any guard opposed to this route?
-        active_route_instances, active_route = routing.check_page_guards(
+        # Is any guard opposed to this page?
+        active_page_instances, active_page = routing.check_page_guards(
             self,
             target_url_relative,
             target_url_absolute,
         )
 
-        # Update the current route
-        self._active_route = active_route
-        self._active_route_instances = tuple(active_route_instances)
+        # Update the current page
+        self._active_page_url = active_page
+        self._active_page_instances = tuple(active_page_instances)
 
         # Dirty all PageViews to force a rebuild
         for page_view in self._page_views:
@@ -449,12 +449,12 @@ class Session(unicall.Unicall):
 
         self._create_task(history_worker())
 
-        # Trigger the `on_route_change` event
+        # Trigger the `on_page_change` event
         async def event_worker() -> None:
-            for component, callback in self._route_change_callbacks.items():
+            for component, callback in self._page_change_callbacks.items():
                 self._create_task(
                     self._call_event_handler(callback, component),
-                    name="`on_route_change` event handler",
+                    name="`on_page_change` event handler",
                 )
 
         self._create_task(event_worker())
@@ -1501,9 +1501,9 @@ document.body.removeChild(a)
     @unicall.local(name="onUrlChange")
     async def _on_url_change(self, new_url: str) -> None:
         """
-        Called by the client when the route changes.
+        Called by the client when the page changes.
         """
-        # Try to navigate to the new route
+        # Try to navigate to the new page
         self.navigate_to(
             new_url,
             replace=True,

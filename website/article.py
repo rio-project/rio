@@ -94,7 +94,7 @@ class Article:
     def build(self) -> rio.Component:
         return rio.Column(
             *self._parts,
-            spacing=2,
+            spacing=4,
         )
 
 
@@ -164,32 +164,39 @@ def _append_method_docs_to_article(
     art: Article,
     docs: docmodels.ClassDocs,
 ) -> None:
+    # Find all functions which will be documented
+    targets = []
+
+    for func in docs.functions:
+        # Skip the constructor, as it was already handled above
+        if func.name == "__init__":
+            continue
+
+        targets.append(func)
+
+    # Were any functions found?
+    if not targets:
+        return
+
+    # Document them
     art.begin_section()
     art.text("Functions", style="heading2")
 
-    if docs.functions:
-        for func in docs.functions:
-            # Skip the constructor, as it was already handled above
-            if func.name == "__init__":
-                continue
+    for func in targets:
+        # Heading
+        art.spacer(1)
+        art.text(f"{docs.name}.{func.name}", style="heading3")
 
-            # Heading
-            art.spacer(1)
-            art.text(f"{docs.name}.{func.name}", style="heading3")
+        # Signature
+        art.code_block(_str_function_signature(func))
 
-            # Signature
-            art.code_block(_str_function_signature(func))
+        # Short description
+        if func.short_description is not None:
+            art.markdown(func.short_description)
 
-            # Short description
-            if func.short_description is not None:
-                art.markdown(func.short_description)
-
-            # Long description
-            if func.long_description is not None:
-                art.markdown(func.long_description)
-
-    else:
-        art.markdown(f"`{esc(docs.name)}` has no public functions.")
+        # Long description
+        if func.long_description is not None:
+            art.markdown(func.long_description)
 
     art.end_section()
 
@@ -214,7 +221,7 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
 
     if docs.attributes:
         for field in docs.attributes:
-            art.text(es(field.name), style="heading3")
+            art.text(field.name, style="heading3")
 
             if field.description is not None:
                 art.markdown(field.description)
@@ -270,13 +277,12 @@ def create_component_api_docs(
                 corner_radius=theme.THEME.corner_radius_large,
                 fill_mode="zoom",
             ),
-            spacing=1,
+            spacing=2,
             height=20,
         )
     )
 
     # Constructor Signature
-    art.begin_section()
     for init_function in docs.functions:
         if init_function.name == "__init__":
             break
@@ -289,10 +295,21 @@ def create_component_api_docs(
     )
     art.code_block(init_signature)
 
+    # Details
+    if docs.long_description is not None:
+        art.markdown(docs.long_description)
+
+    # Interactive example
+    if interactive_example is not None:
+        art.component(interactive_example())
+
     # Attributes / Constructor arguments
     #
     # These are merged into a single section, because developers are unlikely to
     # interact with the attributes anywhere but the constructor.
+    art.begin_section()
+    art.text("Attributes", style="heading2")
+
     for field in docs.attributes:
         art.component(
             rio.Row(
@@ -311,19 +328,6 @@ def create_component_api_docs(
 
         if field.description is not None:
             art.markdown(field.description)
-
-    art.end_section()
-
-    # Interactive example
-    if interactive_example is not None:
-        art.component(interactive_example())
-
-    # Details
-    art.begin_section()
-    art.text("Details", style="heading2")
-
-    if docs.long_description is not None:
-        art.markdown(docs.long_description)
 
     art.end_section()
 

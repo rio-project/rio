@@ -25,7 +25,7 @@ __all__ = [
 
 class Plot(component_base.FundamentalComponent):
     """
-    Displays the given figure in the website.
+    Displays a graph.
 
     The `style` argument can be used to customize the appearance of the plot.
     The following attributes are supported:
