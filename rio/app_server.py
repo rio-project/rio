@@ -210,9 +210,9 @@ class AppServer(fastapi.FastAPI):
         # This will be done blockingly, so the user can prepare any state before
         # connections are accepted. This is also why it's called before the
         # internal event.
-        if self.app.on_app_start is not None:
+        if self.app._on_app_start is not None:
             try:
-                result = self.app.on_app_start(self.app)
+                result = self.app._on_app_start(self.app)
 
                 if inspect.isawaitable(result):
                     await result
@@ -346,7 +346,7 @@ class AppServer(fastapi.FastAPI):
 
         html = html.replace(
             '"{ping_pong_interval}"',
-            str(self.app.ping_pong_interval.total_seconds()),
+            str(self.app._ping_pong_interval.total_seconds()),
         )
 
         # Merge everything into one HTML
@@ -775,7 +775,7 @@ class AppServer(fastapi.FastAPI):
         global_state.currently_building_session = sess
 
         try:
-            sess._root_component = RootContainer(self.app.build)
+            sess._root_component = RootContainer(self.app._build)
         finally:
             global_state.currently_building_session = None
 

@@ -27,12 +27,28 @@ def check_function(
     if docs.name == "__init__" and owning_cls is not None and issubclass(owning_cls, rio.Component):  # type: ignore
         return
 
-    # Fetch the docs
+    # Run checks
     if docs.short_description is None:
         warning(f"Docstring for `{qualname}` is missing a short description")
 
     if docs.long_description is None:
         warning(f"Docstring for `{qualname}` is missing a long description")
+
+    if docs.return_type is None:
+        warning(f"`{qualname}` is missing a return type hint")
+
+    # Chain to parameters
+    for param in docs.parameters:
+        if param.name == "self":
+            continue
+
+        if param.type is None:
+            warning(f"`{qualname}` is missing a type hint for parameter `{param.name}`")
+
+        if param.description is None:
+            warning(
+                f"Docstring for `{qualname}` is missing a description for parameter `{param.name}`"
+            )
 
 
 def check_class(cls: Type, docs: rio_docs.ClassDocs) -> None:
@@ -53,11 +69,15 @@ def check_class(cls: Type, docs: rio_docs.ClassDocs) -> None:
 
 def main() -> None:
     # Find all items that should be documented
+    print_chapter("Looking for items needing documentation")
     target_items: List[Union[Type, Callable]] = list(
         rio_docs.custom.find_items_needing_documentation()
     )
 
+    print(f"Found {len(target_items)} items")
+
     # Make sure they're all properly documented
+    print_chapter("Making you depressed")
     for item in target_items:
         # Classes / Components
         if inspect.isclass(item):

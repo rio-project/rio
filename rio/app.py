@@ -54,10 +54,62 @@ class App:
     """
     Contains all the information needed to run a Rio app.
 
-    Apps group all the information needed to run a Rio app, such as the app's
-    name, icon and pages.
+    Apps group all the information needed for Rio to run your application, such
+    as its name, icon and, and the pages it contains. Apps also expose several
+    lifetime events that you can use to perform tasks such as initialization and
+    cleanup.
 
+    If you're serving your app as a website, all users share the same `App`
+    instance. If running in a window, there's only one window, and thus `App`,
+    anyway.
+
+    A basic setup may look like this:
+
+    ```py
+    rio_app = rio.App(
+        name="My App",
+        build=MyAppRoot,
+    )
+    ```
+
+    You can then run this app, either as a local application in a window:
+
+    ```py
+    rio_app.run_in_window()
+    ```
+
+    Or you can create and run a webserver:
+
+    ```py
+    rio_app.run_as_web_server()
+    ```
+
+    Or create a server, without running it. This allows you to start the script
+    externally with tools such as uvicorn:
+
+    ```py
+    fastapi_app = rio_app.as_fastapi()
+    ```
+
+    Attributes:
+        name: The name to display for this app. This can show up in window
+            titles, error messages and wherever else the app needs to be
+            referenced in a nice, human-readable way.
+
+        pages: The pages that make up this app. You can navigate between these
+            using `Session.navigate_to` or using `Link` components. If running
+            as website the user can also access these pages directly via their
+            URL.
+
+        assets_dir: The directory where the app's assets are stored. This allows
+            you to conveniently access any images or other files that are needed
+            by your app.
     """
+
+    # Type annotations so the documentation generator knows which fields exist
+    name: str
+    pages: Tuple[rio.Page, ...]
+    assets_dir: Path
 
     def __init__(
         self,
@@ -73,25 +125,88 @@ class App:
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
     ):
+        """
+        Args:
+            build: A function that returns the root component of the app. This
+                function will be called whenever a new session is created. Note
+                that since classes are callable in Python, you can pass a class
+                here instead of a function, so long as the class doesn't require
+                any arguments.
+
+            name: The name to display for this app. This can show up in window
+                titles, error messages and wherever else the app needs to be
+                referenced in a nice, human-readable way. If not specified,
+                `Rio` name will try to guess a name based on the name of the
+                main Python file.
+
+            icon: The icon to display for this app. This can show up in window
+                the title bars of windows, browser tabs, or similar.
+
+            pages: The pages that make up this app. You can navigate between
+                these using `Session.navigate_to` or using `Link` components. If
+                running as website the user can also access these pages directly
+                via their URL.
+
+            on_app_start: A function that will be called when the app is first
+                started. You can use this to perform any initialization tasks
+                that need to happen before the app is ready to use.
+
+                The app start will be delayed until this function returns. This
+                makes sure initialization is complete before the app is
+                displayed to the user. If you would prefer to perform
+                initialization in the background try using `asyncio.create_task`
+                to run your code in a separate task.
+
+            on_session_start: A function that will be called each time a new
+                session is created. In the context of a website that would be
+                each time a new user visits the site. In the context of a window
+                there is only one session, so this will only be called once.
+
+                This function does not block the creation of the session. This
+                is to make sure initialization code doesn't accidentally make
+                the user wait.
+
+            on_session_end: A function that will be called each time a session
+                ends. In the context of a website that would be each time a user
+                closes their browser tab. In the context of a window this will
+                only be called once, when the window is closed.
+
+            default_attachments: A list of attachments that will be attached to
+                every new session.
+
+            ping_pong_interval: Rio periodically sends ping-pong messages
+                between the client and server to prevent overzealous proxies
+                from closing the connection. The default value should be fine
+                for most deployments, but feel free to change it if your hosting
+                provider deploys a particularly obnoxious proxy.
+
+            assets_dir: The directory where the app's assets are stored. This
+                allows you to conveniently access any images or other files that
+                are needed by your app. If not specified, Rio will assume the
+                assets are stored in a directory called "assets" in the same
+                directory as the main Python file.
+        """
         main_file = _get_main_file()
 
         if name is None:
             name = _get_default_app_name(main_file)
 
         self.name = name
-        self.build = _validate_build_function(build)
+        self._build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
         self.pages = tuple(pages)
-        self.on_app_start = on_app_start
-        self.on_session_start = on_session_start
-        self.on_session_end = on_session_end
-        self.default_attachments = tuple(default_attachments)
-        self.assets_dir = main_file.parent / (assets_dir or "")
+        self._on_app_start = on_app_start
+        self._on_session_start = on_session_start
+        self._on_session_end = on_session_end
+        self._default_attachments = tuple(default_attachments)
+        self.assets_dir = main_file.parent / (
+            "assets" if assets_dir is None else assets_dir
+        )
 
         if isinstance(ping_pong_interval, timedelta):
-            self.ping_pong_interval = ping_pong_interval
+            self._ping_pong_interval = ping_pong_interval
         else:
-            self.ping_pong_interval = timedelta(seconds=ping_pong_interval)
+            self._ping_pong_interval = timedelta(seconds=ping_pong_interval)
 
     def _as_fastapi(
         self,
@@ -101,13 +216,16 @@ class App:
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
         internal_on_app_start: Optional[Callable[[], None]],
     ) -> fastapi.FastAPI:
+        """
+        Internal equivalent of `as_fastapi` that takes additional arguments.
+        """
         return app_server.AppServer(
             self,
             running_in_window=running_in_window,
             external_url_override=external_url_override,
-            on_session_start=self.on_session_start,
-            on_session_end=self.on_session_end,
-            default_attachments=self.default_attachments,
+            on_session_start=self._on_session_start,
+            on_session_end=self._on_session_end,
+            default_attachments=self._default_attachments,
             validator_factory=validator_factory,
             internal_on_app_start=internal_on_app_start,
         )
@@ -117,6 +235,27 @@ class App:
         *,
         external_url_override: Optional[str] = None,
     ):
+        """
+        Return a FastAPI instance that serves this app.
+
+        This method returns a FastAPI instance that serves this app. This allows
+        you to run the app with a custom server, such as uvicorn:
+
+        ```py
+        rio_app = rio.App(
+            name="My App",
+            build=MyAppRoot,
+        )
+
+        fastapi_app = rio_app.as_fastapi()
+        ```
+
+        You can then run this app with uvicorn:
+
+        ```sh
+        uvicorn my_app:fastapi_app
+        ```
+        """
         return self._as_fastapi(
             external_url_override=external_url_override,
             running_in_window=False,
@@ -134,6 +273,10 @@ class App:
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
         internal_on_app_start: Optional[Callable[[], None]],
     ) -> None:
+        """
+        Internal equivalent of `run_as_web_server` that takes additional
+        arguments.
+        """
         port = _ensure_valid_port(host, port)
 
         # Suppress stdout messages if requested
@@ -172,6 +315,23 @@ class App:
         port: int = 8000,
         quiet: bool = False,
     ) -> None:
+        """
+        Creates and runs a webserver that serves this app.
+
+        This method creates and immediately runs a webserver that serves this
+        app. This is the simplest way to run a Rio app.
+
+        ```py
+        rio_app = rio.App(
+            name="My App",
+            build=MyAppRoot,
+        )
+
+        rio_app.run_as_web_server()
+        ```
+
+        The will synchronously block until the server is shut down.
+        """
         self._run_as_web_server(
             external_url_override=external_url_override,
             host=host,
@@ -188,7 +348,23 @@ class App:
         host: str = "localhost",
         port: Optional[int] = None,
         quiet: bool = False,
-    ):
+    ) -> None:
+        """
+        Runs an internal webserver and opens the app in the default browser.
+
+        This method creates and immediately runs a webserver that serves this
+        app, and then opens the app in the default browser. This is a quick and easy
+        way to access your app.
+
+        ```py
+        rio_app = rio.App(
+            name="My App",
+            build=MyAppRoot,
+        )
+
+        rio_app.run_in_browser()
+        ```
+        """
         port = _ensure_valid_port(host, port)
 
         def on_startup() -> None:
@@ -206,8 +382,33 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
-        _validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
-    ):
+    ) -> None:
+        """
+        Runs the app in a local window.
+
+        This method creates a window and displays the app in it. This is great
+        if you don't want the complexity of running a web server, or wish to
+        package your app as a standalone executable.
+
+        ```py
+        rio_app = rio.App(
+            name="My App",
+            build=MyAppRoot,
+        )
+
+        rio_app.run_in_window()
+        ```
+
+        This method requires the `window` extra. If you don't have it installed,
+        you can install it with:
+
+        ```sh
+        pip install rio-ui[window]
+        ```
+
+        This method will synchronously block until the window is closed.  <!-- TODO is that correct? -->
+        """
+
         if webview is None:
             raise Exception(
                 "The `window` extra is required to use `App.run_in_window`. Run `pip install rio[window]` to install it."
@@ -232,7 +433,7 @@ class App:
             fastapi_app = self._as_fastapi(
                 external_url_override=url,
                 running_in_window=True,
-                validator_factory=_validator_factory,
+                validator_factory=None,
                 internal_on_app_start=None,
             )
             fastapi_app.add_event_handler("startup", lock.release)

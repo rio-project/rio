@@ -39,6 +39,9 @@ def find_items_needing_documentation() -> Iterable[Union[Type, Callable]]:
     while to_do:
         cur = to_do.pop()
 
+        # Queue the children
+        to_do.extend(cur.__subclasses__())
+
         # Hardcoded items that DON'T need documentation
         if cur.__name__ in (
             "ClassContainer",
@@ -54,9 +57,6 @@ def find_items_needing_documentation() -> Iterable[Union[Type, Callable]]:
         # Internal
         if not cur.__name__.startswith("_"):
             yield cur
-
-        # Found one
-        to_do.extend(cur.__subclasses__())
 
 
 def postprocess_class_docs(docs: models.ClassDocs) -> None:
@@ -119,6 +119,12 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
         else:
             del docs.functions[index]
 
+    # Inject a short description for `__init__` if there is none.
+    for func_docs in docs.functions:
+        if func_docs.name == "__init__" and func_docs.short_description is None:
+            func_docs.short_description = f"Creates a new `{docs.name}` instance."
+
 
 def postprocess_component_docs(docs: models.ClassDocs) -> None:
-    return postprocess_class_docs(docs)
+    # Apply the standard class post-processing
+    postprocess_class_docs(docs)
