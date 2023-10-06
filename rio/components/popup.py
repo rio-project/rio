@@ -11,6 +11,7 @@ from . import component_base
 
 __all__ = [
     "Popup",
+    "PopupOpenOrCloseEvent",
 ]
 
 

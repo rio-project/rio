@@ -20,7 +20,8 @@ class Row(component_base.FundamentalComponent):
     second one to its right, and so on. All components in `Row`s occupy the full
     height of their parent.
 
-    The `Row`'s horizontal counterpart is the `Column`.
+    The `Row`'s horizontal counterpart is the `Column`. A similar component, but
+    stacking its children in the Z direction, is the `Stack`.
 
     ### Undefined Space
 
@@ -41,7 +42,7 @@ class Row(component_base.FundamentalComponent):
     alignment.
 
     Attributes:
-        children: The `Component`s to place in this `Row`.
+        children: The components to place in this `Row`.
 
         spacing: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.

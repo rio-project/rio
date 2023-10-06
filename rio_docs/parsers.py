@@ -351,9 +351,14 @@ def parse_class(cls: Type) -> models.ClassDocs:
         fields_by_name[name] = models.ClassField(
             name=name,
             type=str_type_hint(typ),
-            default=None,  # TODO
-            description=None,  # TODO
+            default=None,
+            description=None,
         )
+
+    # Properties are also fields
+    for name, prop in inspect.getmembers(cls, inspect.isdatadescriptor):
+        if name in fields_by_name:
+            continue
 
     # Is this a dataclass? If so, get the fields from there
     if is_dataclass(cls):
@@ -391,12 +396,24 @@ def parse_class(cls: Type) -> models.ClassDocs:
 
         result_field.description = field_details
 
-    # Treat properties as fields
-    #
-    # TODO
+    # If `__init__` is missing documentation for any parameters, try to copy the
+    # values from matching fields.
+    for func_docs in functions:
+        if func_docs.name != "__init__":
+            continue
 
-    # TODO: If this is a dataclass, the docs for the fields should also be used
-    #       for documenting parameters in `__init__`
+        for param in func_docs.parameters:
+            if param.description is not None:
+                continue
+
+            try:
+                field = fields_by_name[param.name]
+            except KeyError:
+                continue
+
+            param.description = field.description
+
+        break
 
     # Build the result
     return models.ClassDocs(

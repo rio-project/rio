@@ -106,7 +106,7 @@ class App:
             by your app.
     """
 
-    # Type annotations so the documentation generator knows which fields exist
+    # Type hints so the documentation generator knows which fields exist
     name: str
     pages: Tuple[rio.Page, ...]
     assets_dir: Path
@@ -228,9 +228,7 @@ class App:
             internal_on_app_start=internal_on_app_start,
         )
 
-    def as_fastapi(
-        self,
-    ):
+    def as_fastapi(self):
         """
         Return a FastAPI instance that serves this app.
 
@@ -323,6 +321,16 @@ class App:
         ```
 
         The will synchronously block until the server is shut down.
+
+        Args:
+            host: Which IP address to serve the webserver on. `localhost` will
+                make the service only available on your local machine. This is
+                the recommended setting if running behind a proxy like nginx.
+
+            port: Which port the webserver should listen to.
+
+            quiet: If `True` Rio won't send any routine messages to `stdout`.
+                Error messages will be printed regardless of this setting.
         """
         self._run_as_web_server(
             host=host,
@@ -354,6 +362,17 @@ class App:
 
         rio_app.run_in_browser()
         ```
+
+        Args:
+            host: Which IP address to serve the webserver on. `localhost` will
+                make the service only available on your local machine. This is
+                the recommended setting if running behind a proxy like nginx.
+
+            port: Which port the webserver should listen to. If not specified,
+                Rio will choose a random free port.
+
+            quiet: If `True` Rio won't send any routine messages to `stdout`.
+                Error messages will be printed regardless of this setting.
         """
         port = _ensure_valid_port(host, port)
 
@@ -396,6 +415,10 @@ class App:
         ```
 
         This method will synchronously block until the window is closed.  <!-- TODO is that correct? -->
+
+        Args:
+            quiet: If `True` Rio won't send any routine messages to `stdout`.
+                Error messages will be printed regardless of this setting.
         """
 
         if webview is None:
