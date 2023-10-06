@@ -184,7 +184,6 @@ rio_app = rio.App(
 
 if __name__ == "__main__":
     rio_app._run_as_web_server(
-        external_url_override="http://localhost:8001",
         host="127.0.0.1",
         port=8001,
         quiet=False,
@@ -193,7 +192,6 @@ if __name__ == "__main__":
     )
 else:
     app = rio_app._as_fastapi(
-        external_url_override="http://localhost:8001",
         running_in_window=False,
         validator_factory=rio.debug.Validator,
         internal_on_app_start=None,

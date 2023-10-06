@@ -124,7 +124,6 @@ class AppServer(fastapi.FastAPI):
         self,
         app_: app.App,
         running_in_window: bool,
-        external_url_override: Optional[str],
         on_session_start: rio.EventHandler[rio.Session],
         on_session_end: rio.EventHandler[rio.Session],
         default_attachments: Tuple[Any, ...],
@@ -133,15 +132,8 @@ class AppServer(fastapi.FastAPI):
     ):
         super().__init__(lifespan=__class__._lifespan)
 
-        # TODO: Maybe parse the url and remove the backslash? Document this?
-        # Something?
-        assert external_url_override is None or not external_url_override.endswith(
-            "/"
-        ), external_url_override
-
         self.app = app_
         self.running_in_window = running_in_window
-        self.external_url_override = external_url_override
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
         self.default_attachments = default_attachments
@@ -697,13 +689,7 @@ class AppServer(fastapi.FastAPI):
 
         # Publish the external URL via the session
         sess.external_url = (
-            None
-            if self.running_in_window
-            else (
-                initial_message.website_url
-                if self.external_url_override is None
-                else self.external_url_override
-            )
+            None if self.running_in_window else initial_message.website_url
         )
 
         # Deserialize the user settings

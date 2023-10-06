@@ -211,7 +211,6 @@ class App:
     def _as_fastapi(
         self,
         *,
-        external_url_override: Optional[str],
         running_in_window: bool,
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
         internal_on_app_start: Optional[Callable[[], None]],
@@ -222,7 +221,6 @@ class App:
         return app_server.AppServer(
             self,
             running_in_window=running_in_window,
-            external_url_override=external_url_override,
             on_session_start=self._on_session_start,
             on_session_end=self._on_session_end,
             default_attachments=self._default_attachments,
@@ -232,8 +230,6 @@ class App:
 
     def as_fastapi(
         self,
-        *,
-        external_url_override: Optional[str] = None,
     ):
         """
         Return a FastAPI instance that serves this app.
@@ -257,7 +253,6 @@ class App:
         ```
         """
         return self._as_fastapi(
-            external_url_override=external_url_override,
             running_in_window=False,
             validator_factory=None,
             internal_on_app_start=None,
@@ -266,7 +261,6 @@ class App:
     def _run_as_web_server(
         self,
         *,
-        external_url_override: Optional[str],
         host: str,
         port: int,
         quiet: bool,
@@ -293,7 +287,6 @@ class App:
 
         # Create the FastAPI server
         fastapi_app = self._as_fastapi(
-            external_url_override=external_url_override,
             running_in_window=False,
             validator_factory=validator_factory,
             internal_on_app_start=internal_on_app_start,
@@ -310,7 +303,6 @@ class App:
     def run_as_web_server(
         self,
         *,
-        external_url_override: Optional[str] = None,
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = False,
@@ -333,7 +325,6 @@ class App:
         The will synchronously block until the server is shut down.
         """
         self._run_as_web_server(
-            external_url_override=external_url_override,
             host=host,
             port=port,
             quiet=quiet,
@@ -344,7 +335,6 @@ class App:
     def run_in_browser(
         self,
         *,
-        external_url_override: Optional[str] = None,
         host: str = "localhost",
         port: Optional[int] = None,
         quiet: bool = False,
@@ -371,7 +361,6 @@ class App:
             webbrowser.open(f"http://{host}:{port}")
 
         self._run_as_web_server(
-            external_url_override=external_url_override,
             host=host,
             port=port,
             quiet=quiet,
@@ -431,7 +420,6 @@ class App:
         # Start the server, and release the lock once it's running
         def run_web_server():
             fastapi_app = self._as_fastapi(
-                external_url_override=url,
                 running_in_window=True,
                 validator_factory=None,
                 internal_on_app_start=None,
