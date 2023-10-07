@@ -219,6 +219,8 @@ def _append_method_docs_to_article(
             if param.description is not None:
                 art.markdown(param.description)
 
+    # TODO: Don't ignore the `raises` section
+
     art.end_section()
 
 
