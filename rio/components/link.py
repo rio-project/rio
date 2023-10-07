@@ -15,6 +15,13 @@ __all__ = [
 
 
 class Link(component_base.FundamentalComponent):
+    """
+    Navigate to a page or URL when clicked.
+
+    Links display a short text, or arbitrary component, and navigate to a page
+    or URL when clicked.
+    """
+
     # Exactly one of these will be set, the other `None`
     child_text: Optional[str]
     child_component: Optional[component_base.Component]
@@ -41,6 +48,12 @@ class Link(component_base.FundamentalComponent):
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):
+        """
+        Args:
+            child: The text or component to display inside the link.
+
+            target_url: The page or URL to navigate to when clicked.
+        """
         super().__init__(
             key=key,
             margin=margin,

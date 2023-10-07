@@ -167,7 +167,7 @@ class Theme:
             fill=self.primary_color,
         )
         self.heading2_style = self.heading1_style.replace(font_size=1.8)
-        self.heading3_style = self.heading1_style.replace(font_size=1.3)
+        self.heading3_style = self.heading1_style.replace(font_size=1.2)
         self.text_style = self.heading1_style.replace(
             font_size=1,
             fill=self.text_on_surface_color,

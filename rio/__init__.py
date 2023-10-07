@@ -9,7 +9,13 @@ from . import event, font
 from .app import *
 from .box_style import *
 from .color import *
-from .common import EventHandler, ImageLike, escape_markdown, escape_markdown_code
+from .common import (
+    EventHandler,
+    FileInfo,
+    ImageLike,
+    escape_markdown,
+    escape_markdown_code,
+)
 from .components import *
 from .cursor_style import CursorStyle
 from .errors import *

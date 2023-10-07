@@ -75,6 +75,13 @@ class Icon(component_base.FundamentalComponent):
         Files located in the root of the archive can be accessed as
         `set_name/icon_name`. Files located in a subdirectory can be accessed as
         `set_name/icon_name:variant`.
+
+        Args:
+            set_name: The name of the new icon set. This will be used to access
+                the icons.
+
+            icon_set_zip_path: The path to the zip archive containing the icon
+                set.
         """
         registry = Icon._get_registry()
 

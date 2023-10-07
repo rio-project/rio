@@ -40,7 +40,7 @@ class AppRoot(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
             # Navigation Bar
-            rio.Sticky(
+            rio.Overlay(
                 comps.NavigationBar(
                     height=4,
                     width="grow",

@@ -19,9 +19,51 @@ class ButtonPressEvent:
 
 
 class Button(component_base.Component):
+    """
+    A clickable button.
+
+    The `Button` component allows the user to trigger an action by clicking on
+    it. You can use it to trigger a function call, navigate to a different page,
+    or perform other actions.
+
+    A similar, but more customizable component is `CustomButton`. Use that if
+    you need more control over the button's visuals, e.g. for creating a
+    navigation button.
+
+    Attributes:
+        text: The text to display on the button.
+
+        icon: The name of an icon to display on the button, in the form
+            "set/name:variant". See the `Icon` component for details of how
+            icons work in Rio.
+
+        child: A component to display inside the button. This can be used to
+            create more complex buttons than just icons and text.
+
+        shape: The shape of the button. This can be one of:
+            - `pill`: A rectangle where the left and right sides are completely
+              round.
+            - `rounded`: A rectangle with rounded corners.
+            - `rectangle`: A rectangle with sharp corners.
+            - `circle`: An ellipse. Make sure to control the button's width and
+              height to make it a perfect circle.
+
+        style: Controls the button's appearance. This can be one of:
+            - `major`: A highly visible button with bold visuals.
+            - `minor`: A less visible button that blends into the background.
+
+        color: The color scheme to use for the button.
+
+        is_sensitive: Whether the button should respond to user input.
+
+        is_loading: Whether the button should display a loading indicator. Use
+            this to indicate to the user that an action is currently running.
+
+        on_press: Triggered when the user clicks on the button.
+    """
+
     text: str = ""
     _: KW_ONLY
-    on_press: rio.EventHandler[ButtonPressEvent] = None
     icon: Optional[str] = None
     child: Optional[rio.Component] = None
     shape: Literal["pill", "rounded", "rectangle", "circle"] = "pill"
@@ -29,6 +71,7 @@ class Button(component_base.Component):
     color: rio.ColorSet = "primary"
     is_sensitive: bool = True
     is_loading: bool = False
+    on_press: rio.EventHandler[ButtonPressEvent] = None
 
     def build(self) -> rio.Component:
         # Prepare the child

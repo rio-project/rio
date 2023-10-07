@@ -41,6 +41,50 @@ def default_fallback_build(sess: rio.Session) -> rio.Component:
 
 
 class PageView(component_base.Component):
+    """
+    Placeholders for pages.
+
+    Rio apps can consist of many pages. You might have a welcome page, a
+    settings page, a login, and so on. Page views act as placeholders, that
+    don't have an appearance of their own, but instead look up the currently
+    active page, and display that.
+
+    A minimal example:
+
+    ```python
+    import rio
+
+    app = rio.App(
+        build=lambda: rio.Column(
+            rio.Text("Welcome to my page!"), rio.PageView(
+                width="grow", height="grow",
+            ),
+        ), pages=[
+            rio.Page(
+                "", build=lambda: rio.Text("This is the home page"),
+            ), rio.Page(
+                "subpage", build=lambda: rio.Text("This is a subpage"),
+            ),
+        ],
+    )
+
+    app.run_in_browser()
+    ```
+
+    This will display "This is the home page" when navigating to the root URL,
+    but "This is a subpage" when navigating to "/subpage". Note that on both
+    pages the text "Welcome to my page!" is displayed above the page content.
+    That's because it's not part of the `PageView`.
+
+    # TODO: Link to the routing/multipage how-to page
+
+    Attributes:
+        fallback_build: A callback that is called if the current URL does not
+            correspond to any page in the application. It should return a Rio
+            component that is displayed instead. If not specified Rio will
+            display a default error page.
+    """
+
     _: KW_ONLY
 
     fallback_build: Optional[Callable[[], rio.Component]] = None

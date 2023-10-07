@@ -61,6 +61,32 @@ class MouseLeaveEvent(_MousePositionedEvent):
 
 
 class MouseEventListener(component_base.FundamentalComponent):
+    """
+    Allows you to listen for mouse events on a component.
+
+    `MouseEventListeners` take a single child component and display it. They
+    then listen for any mouse activity on the child component and report it
+    through their event handlers.
+
+    Attributes:
+        child: The child component to display.
+
+        on_mouse_down: Triggered when a mouse button is pressed down while
+            the mouse is placed over the child component.
+
+        on_mouse_up: Triggered when a mouse button is released while the
+            mouse is placed over the child component.
+
+        on_mouse_move: Triggered when the mouse is moved while located over
+            the child component.
+
+        on_mouse_enter: Triggered when the mouse previously was not located
+            over the child component, but now is.
+
+        on_mouse_leave: Triggered when the mouse previously was located over
+            the child component, but now is not.
+    """
+
     child: component_base.Component
     _: KW_ONLY
     on_mouse_down: rio.EventHandler[MouseDownEvent] = None
