@@ -20,7 +20,7 @@ class IconRegistry:
     def __init__(self, cache_dir: Path):
         self.cache_dir = cache_dir
 
-        # Maps icon names (set/icon/variant) to the icon's SVG string. The icon
+        # Maps icon names (set/icon:variant) to the icon's SVG string. The icon
         # names are canonical form.
         self.cached_icons: Dict[str, str] = {}
 
@@ -50,26 +50,33 @@ class IconRegistry:
     def parse_icon_name(icon_name: str) -> Tuple[str, str, Optional[str]]:
         """
         Given a name for an icon, return the three parts of the name: set, icon,
-        variant.If the name is syntactically invalid (e.g. too many slashes),
+        variant. If the name is syntactically invalid (e.g. too many slashes),
         raise an `AssetError`.
         """
+        # Determine the icon set
         sections = icon_name.split("/")
 
-        # Implicit set name
         if len(sections) == 1:
-            return "material", icon_name, None
+            icon_set = "material"
+            icon_name = sections[0]
+        elif len(sections) == 2:
+            icon_set, icon_name = sections
+        else:
+            raise AssetError(
+                f"Invalid icon name `{icon_name}`. Icons names must be of the form `set/icon:variant`"
+            )
 
-        # Implicit variant
+        # Determine the icon name and variant
+        sections = icon_name.split(":")
+
+        if len(sections) == 1:
+            return icon_set, sections[0], None
+
         if len(sections) == 2:
-            return sections[0], sections[1], None
+            return icon_set, sections[0], sections[1]
 
-        # Everything explicit
-        if len(sections) == 3:
-            return sections[0], sections[1], sections[2]
-
-        # Too long
         raise AssetError(
-            f"Invalid icon name `{icon_name}`. Icons names must be of the form `set/icon/variant`"
+            f"Invalid icon name `{icon_name}`. Icons names must be of the form `set/icon:variant`"
         )
 
     @staticmethod
@@ -80,12 +87,12 @@ class IconRegistry:
         `AssetError`.
         """
 
-        sections = IconRegistry.parse_icon_name(icon_name)
+        set, name, section = IconRegistry.parse_icon_name(icon_name)
 
-        if sections[2] is None:
-            sections = sections[:2]
+        if section is None:
+            return f"{set}/{name}"
 
-        return "/".join(sections)  # type: ignore
+        return f"{set}/{name}:{section}"
 
     def _get_icon_svg_path(
         self,

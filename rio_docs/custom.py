@@ -137,8 +137,20 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
         else:
             del docs.functions[index]
 
-    # Inject a short description for `__init__` if there is none.
+    # Additional per-function post-processing
     for func_docs in docs.functions:
+        # Strip the ridiculous default docstring created by dataclasses
+        #
+        # FIXME: Not working for some reason
+        if (
+            func_docs.name == "__init__"
+            and func_docs.short_description
+            == "Initialize self. See help(type(self)) for accurate signature."
+        ):
+            func_docs.short_description = None
+            func_docs.long_description = None
+
+        # Inject a short description for `__init__` if there is none.
         if func_docs.name == "__init__" and func_docs.short_description is None:
             func_docs.short_description = f"Creates a new `{docs.name}` instance."
 

@@ -21,6 +21,40 @@ class DrawerOpenOrCloseEvent:
 
 
 class Drawer(component_base.FundamentalComponent):
+    """
+    A container which slides in from the edge of the screen.
+
+    Drawers are containers which can either be completely hidden from view, or
+    be made visible by sliding in from the edge of the screen. They are commonly
+    used for navigation on smaller displays.
+
+    Drawers take two children: The `anchor` is always visible and positions the
+    drawer. The `content` is located inside the drawer and is only visible when
+    the drawer is open.
+
+    Drawers have the ability to be `modal`. Modal drawers draw attention to
+    themselves and prevent interaction with the anchor while open.
+
+    Attributes:
+        anchor: A component which is always visible and positions the drawer.
+
+        content: A component which is only visible when the drawer is open.
+
+        on_open_or_close: Triggered whenever the user opens or closes the
+            drawer.
+
+        side: The side of the screen from which the drawer slides in.
+
+        is_modal: Whether the drawer should prevent interaction with the anchor
+            while open.
+
+        is_open: Whether the drawer is currently open.
+
+        is_user_openable: Whether the user can open or close the drawer. If this
+            is `False`, the drawer can only be opened or closed
+            programmatically.
+    """
+
     anchor: rio.Component
     content: rio.Component
     _: KW_ONLY

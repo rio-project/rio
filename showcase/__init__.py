@@ -171,7 +171,7 @@ class Sidebar(rio.Component):
                             height=3.0,
                         ),
                         rio.Icon(
-                            "material/archive/fill",
+                            "material/archive:fill",
                             fill=rio.LinearGradientFill(
                                 (rio.Color.RED, 0),
                                 (rio.Color.BLUE, 1),
@@ -204,7 +204,7 @@ class Sidebar(rio.Component):
                     ),
                     rio.Button(
                         "Bar",
-                        icon="material/castle/fill",
+                        icon="material/castle:fill",
                         shape="rounded",
                         style="minor",
                         color="danger",
@@ -212,7 +212,7 @@ class Sidebar(rio.Component):
                     ),
                     rio.Button(
                         "Baz",
-                        icon="material/archive/fill",
+                        icon="material/archive:fill",
                         shape="rectangle",
                         color="warning",
                     ),

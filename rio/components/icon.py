@@ -17,6 +17,38 @@ __all__ = [
 
 
 class Icon(component_base.FundamentalComponent):
+    """
+    Displays one of many pre-bundled icons.
+
+    Icons are a great way to add polish to your app. A good icon can help your
+    users understand your app and immediately recognize what a component does.
+
+    Rio includes hundreds of free icons, allowing you to easily add them to your
+    app without having to find or create your own. The `Icon` component displays
+    one of these icons.
+
+    Note that unlike most components in Rio, `Icon` does not have a `natural`
+    size, they can be easily be scaled to fit any size. Therefore it defaults to
+    a width and height of 1, which is a great size when mixing icons with text.
+
+    Icon names are in the format `set_name/icon_name:variant`. Rio already ships
+    with the `material` icon set, which contains icons in the style of Google's
+    Material Design. You can browse all available icons on [the Rio website](
+    https://todo.com/icons).  # TODO: Add actual link
+
+    The set name and variant can be omitted. If no set name is specified, it
+    defaults to `material`. If not variant is specified, the default version of
+    the icon, i.e. no variant, is used.
+
+    Attributes:
+        icon: The name of the icon to display, in the format
+            `icon-set/name:variant`. You can browse all available icons on [the
+            Rio website](https://todo.com/icons).  # TODO: Add actual link
+
+        fill: The color scheme of the icon. The text color is used if no fill is
+            specified.
+    """
+
     icon: str
     _: KW_ONLY
     fill: Union[rio.FillLike, color.ColorSet]
@@ -32,17 +64,17 @@ class Icon(component_base.FundamentalComponent):
     ) -> None:
         """
         Add an icon set to the global registry. This allows the icons to be
-        accessed as `set_name/icon_name` or `set_name/icon_name/variant`.
+        accessed as `set_name/icon_name` or `set_name/icon_name:variant`.
 
         There must not already be a set with the given name.
 
-        The icon set is a zip containing SVG files. The SVG files must have a
-        `viewBox` attribute, but no height or width. They will be colored by the
-        `fill` property of the `Icon` component.
+        The icon set is a zip archive containing SVG files. The SVG files must
+        have a `viewBox` attribute, but no height or width. They will be colored
+        by the `fill` property of the `Icon` component.
 
         Files located in the root of the archive can be accessed as
         `set_name/icon_name`. Files located in a subdirectory can be accessed as
-        `set_name/icon_name/variant`.
+        `set_name/icon_name:variant`.
         """
         registry = Icon._get_registry()
 
