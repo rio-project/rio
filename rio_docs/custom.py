@@ -116,7 +116,7 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
 
         # Some methods in components are meant to be used by the user, but only
         # when they're the one creating the component. For example, the `build`
-        # method is only intended to be used by the widget itself, and
+        # method is only intended to be used by the component itself, and
         # documenting it would be pointless at best, and confusing at worst.
         is_inherited_protected_method = docs.name != "Component" and func.name in (
             "build",
