@@ -15,6 +15,40 @@ __all__ = ["Image"]
 
 
 class Image(component_base.FundamentalComponent):
+    """
+    Displays an image file.
+
+    `Image` does just what you'd expect: it displays a single image. The image
+    can be loaded from a URL, or a local file.
+
+    The image can be scaled to fit the shape in one of three ways:
+
+    - `fit`: The image is scaled to fit entirely inside the shape, while
+      maintaining its aspect ratio. This is the default.
+    - `stretch`: The image is stretched to fill the shape, distorting it if
+      necessary.
+    - `zoom`: The image is scaled to fill the shape entirely, while maintaining
+      its aspect ratio. This may cause the image to overflow the shape.
+
+
+    Attributes:
+        image: The image to display.
+
+        fill_mode: How the image should be scaled to fit the shape. If `fit`,
+            the image is scaled to fit entirely inside the shape. If `stretch`,
+            the image is stretched to fill the shape exactly, possibly
+            distorting it in the process. If `zoom`, the image is scaled to fill
+            the shape entirely, possibly overflowing.
+
+        on_error: Triggered when the image fails to load.
+
+        corner_radius: How round to make the corners of the image. If a single
+            number is given, all four corners will be rounded equally. If a
+            tuple of four numbers is given, they will be interpreted as the
+            radii of the top-left, top-right, bottom-right, and bottom-left
+            corners, in that order.
+    """
+
     image: ImageLike
     _: KW_ONLY
     fill_mode: Literal["fit", "stretch", "zoom"] = "fit"

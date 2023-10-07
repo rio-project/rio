@@ -21,6 +21,23 @@ class GridChildPosition:
 
 
 class Grid(component_base.FundamentalComponent):
+    """
+    A container which arranges its children in a table-like grid.
+
+    Grids arrange their children in a table-like grid. Each child is placed in
+    one or more cells of the grid.
+
+    Example:
+    ```python
+    # TODO
+    ```
+
+    Attributes:
+        row_spacing: The amount of space between rows of the grid.
+
+        column_spacing: The amount of space between columns of the grid.
+    """
+
     _: KW_ONLY
     row_spacing: float
     column_spacing: float

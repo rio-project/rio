@@ -24,6 +24,28 @@ class DropdownChangeEvent(Generic[T]):
 
 
 class Dropdown(component_base.FundamentalComponent, Generic[T]):
+    """
+    A dropdown menu allowing the user to select one of several options.
+
+    Dropdowns present the user with a list of options, allowing them to select
+    exactly one. In their default state dropdowns are compact and display the
+    currently selected option. When activated, a popup menu appears with a list
+    of all available options.
+
+    Attributes:
+        options: A mapping from option names to values. The names are displayed
+            in the dropdown menu, and the corresponding value is returned when
+            the user selects the option. The values must be comparable.
+
+        label: A short text to display next to the dropdown.
+
+        selected_value: The value of the currently selected option.
+
+        on_change: Triggered whenever the user selects an option.
+
+        is_sensitive: Whether the dropdown should respond to user input.
+    """
+
     options: Mapping[str, T]
     _: KW_ONLY
     label: str
