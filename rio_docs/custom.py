@@ -26,6 +26,9 @@ def find_items_needing_documentation() -> Iterable[Union[Type, Callable]]:
     yield rio.CursorStyle
     yield rio.DrawerOpenOrCloseEvent
     yield rio.DropdownChangeEvent
+    yield rio.escape_markdown_code
+    yield rio.escape_markdown
+    yield rio.FileInfo
     yield rio.Font
     yield rio.KeyDownEvent
     yield rio.KeyPressEvent
@@ -131,6 +134,18 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
         # Make sure to keep the constructor
         keep = keep or func.name == "__init__"
 
+        # Some classes are not meant to be constructed by the user. Strip their
+        # constructor.
+        if (
+            docs.name
+            in (
+                "FileInfo",
+                "Session",
+            )
+            and func.name == "__init__"
+        ):
+            keep = False
+
         # Strip it out, if necessary
         if keep:
             index += 1
@@ -153,6 +168,8 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
         # Inject a short description for `__init__` if there is none.
         if func_docs.name == "__init__" and func_docs.short_description is None:
             func_docs.short_description = f"Creates a new `{docs.name}` instance."
+
+    # TODO: Strip out anything `Session` inherits from `unicall`
 
 
 def postprocess_component_docs(docs: models.ClassDocs) -> None:

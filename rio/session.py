@@ -129,7 +129,7 @@ class SessionAttachments:
 
             # Trigger a resync
             if synchronize:
-                self._session._create_task(
+                self._session.create_task(
                     value._synchronize_now(self._session),
                     name="write back user settings (entire settings instance changed)",
                 )
@@ -147,8 +147,14 @@ class SessionAttachments:
 
 class Session(unicall.Unicall):
     """
+    Represents a single client connection to the app.
+
     A session corresponds to a single connection to a client. It maintains all
-    state related to this client including the GUI.
+    state related to this client including local settings, the currently active
+    page, and others.
+
+    Sessions are created automatically by the app and should not be created
+    manually.
     """
 
     def __init__(
@@ -368,9 +374,24 @@ class Session(unicall.Unicall):
             print("Exception in event handler:")
             traceback.print_exc()
 
-    def _create_task(self, coro: Coroutine, name: Optional[str] = None) -> asyncio.Task:
+    def create_task(
+        self,
+        coro: Coroutine,
+        *,
+        name: Optional[str] = None,
+    ) -> asyncio.Task:
         """
         Creates an `asyncio.Task` that is cancelled when the session is closed.
+
+        This is identical to `asyncio.create_task`, except that any tasks are
+        automatically cancelled when the session is closed. This makes sure that
+        old tasks don't keep piling up long after they are no longer needed.
+
+        Args:
+            coro: The coroutine to run.
+
+            name: An optional name for the task. Assigning descriptive names can
+                be helpful when debugging.
         """
         task = asyncio.create_task(coro, name=name)
 
@@ -393,11 +414,18 @@ class Session(unicall.Unicall):
         """
         Switches the app to display the given page URL.
 
-        If `replace` is `True`, the browser's most recent history entry is
-        replaced with the new page. This means that the user can't go back to
-        the previous page using the browser's back button. If `False`, a new
-        history entry is created, allowing the user to go back to the previous
-        page.
+        Switches the app to display the given page URL. If `replace` is `True`,
+        the browser's most recent history entry is replaced with the new page.
+        This means that the user can't go back to the previous page using the
+        browser's back button. If `False`, a new history entry is created,
+        allowing the user to go back to the previous page.
+
+        Args:
+            target_url: The URL of the page to navigate to.
+
+            replace: If `True`, the browser's most recent history entry is
+                replaced with the new page. If `False`, a new history entry is
+                created, allowing the user to go back to the previous page.
         """
 
         # Determine the full page to navigate to
@@ -418,7 +446,7 @@ class Session(unicall.Unicall):
                     f"window.location.href = {json.dumps(str(target_url))}",
                 )
 
-            self._create_task(history_worker(), name="history worker")
+            self.create_task(history_worker(), name="history worker")
             return
 
         # Is any guard opposed to this page?
@@ -438,7 +466,7 @@ class Session(unicall.Unicall):
                 page_view, include_children_recursively=False
             )
 
-        self._create_task(self._refresh())
+        self.create_task(self._refresh())
 
         # Update the browser's history
         async def history_worker() -> None:
@@ -447,17 +475,17 @@ class Session(unicall.Unicall):
                 f"window.history.{method}(null, null, {json.dumps(str(target_url))})",
             )
 
-        self._create_task(history_worker())
+        self.create_task(history_worker())
 
         # Trigger the `on_page_change` event
         async def event_worker() -> None:
             for component, callback in self._page_change_callbacks.items():
-                self._create_task(
+                self.create_task(
                     self._call_event_handler(callback, component),
                     name="`on_page_change` event handler",
                 )
 
-        self._create_task(event_worker())
+        self.create_task(event_worker())
 
     def _register_dirty_component(
         self,
@@ -1162,7 +1190,7 @@ class Session(unicall.Unicall):
 
             font_assets.append(asset)
 
-        self._create_task(self._remote_register_font(font.name, urls))  # type: ignore
+        self.create_task(self._remote_register_font(font.name, urls))  # type: ignore
 
         self._registered_font_assets[font.name] = font_assets
 
@@ -1192,6 +1220,22 @@ class Session(unicall.Unicall):
     ) -> Union[common.FileInfo, Tuple[common.FileInfo]]:
         """
         Open a file chooser dialog.
+
+        This function opens a file chooser dialog, allowing the user to select a
+        file. The selected file is returned, allowing you to access its
+        contents.
+
+        See also `save_file`, if you want to save a file instead of opening one.
+
+        Args:
+            file_extensions: A list of file extensions which the user is allowed
+                to select. Defaults to `None`, which means that the user may
+                select any file.
+
+            multiple: Whether the user should pick a single file, or multiple.
+
+        Raises:
+            NoFileSelectedError: If the user did not select a file.
         """
         # Create a secret id and register the file upload with the app server
         upload_id = secrets.token_urlsafe()
@@ -1239,6 +1283,24 @@ class Session(unicall.Unicall):
         *,
         media_type: Optional[str] = None,
     ) -> None:
+        """
+        Save a file to the user's device.
+
+        This function allows you to save a file to the user's device. The user
+        will be prompted to select a location to save the file to.
+
+        See also `file_chooser`, if you want to open a file instead of saving
+        one.
+
+        Args:
+            file_name: The name of the file to save.
+
+            file_contents: The contents of the file to save. This can be a
+                string, bytes, or a path to a file on the server.
+
+            media_type: The media type of the file. Defaults to `None`, which
+                means that the media type will be guessed from the file name.
+        """
         # Create an asset for the file
         if isinstance(file_contents, Path):
             as_asset = assets.PathAsset(file_contents, media_type)
@@ -1283,7 +1345,7 @@ document.body.removeChild(a)
             holdonewellgethelp = as_asset
             await asyncio.sleep(60)
 
-        self._create_task(keepaliver())
+        self.create_task(keepaliver())
 
     async def _apply_theme(self, thm: theme.Theme) -> None:
         """
@@ -1480,7 +1542,7 @@ document.body.removeChild(a)
         await component._on_state_update(delta_state)
 
     @unicall.local(name="componentMessage")
-    async def component_message(
+    async def _component_message(
         self,
         component_id: int,
         payload: Any,
@@ -1523,7 +1585,7 @@ document.body.removeChild(a)
 
         # Call any registered callbacks
         for component, callback in self._on_window_resize_callbacks.items():
-            self._create_task(
+            self.create_task(
                 self._call_event_handler(callback, component),
                 name="`on_window_resize` event handler",
             )

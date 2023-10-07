@@ -18,6 +18,7 @@ from .media_player import *
 from .mouse_event_listener import *
 from .notification_bar import *
 from .number_input import *
+from .overlay import *
 from .page_view import *
 from .plot import *
 from .popup import *
@@ -33,7 +34,6 @@ from .slider import *
 from .slideshow import *
 from .spacer import *
 from .stack import *
-from .sticky import *
 from .switch import *
 from .text import *
 from .text_input import *

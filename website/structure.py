@@ -78,7 +78,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
             rio.ScrollContainer,
             rio.Spacer,
             rio.Stack,
-            rio.Sticky,
+            rio.Overlay,
         ),
     ),
     (
@@ -98,6 +98,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
             rio.BoxStyle,
             rio.Color,
             rio.CursorStyle,
+            rio.FileInfo,
             rio.Fill,
             rio.Font,
             rio.ImageFill,

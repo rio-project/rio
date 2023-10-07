@@ -7,11 +7,28 @@ import rio
 from . import class_container, component_base
 
 __all__ = [
-    "Sticky",
+    "Overlay",
 ]
 
 
-class Sticky(component_base.Component):
+class Overlay(component_base.Component):
+    """
+    Displays its child above all other components.
+
+    The overlay component takes a single child widget, and displays it above all
+    other components on the page. The child will not scroll with the rest of the
+    page and is exempt from layouting.
+
+    Components inside of overlays are allocated the entire screen, and are
+    themselves responsible for positioning themselves as required. You can
+    easily achieve this using the child's `align_x` and `align_y` properties.
+
+    Attributes:
+        child: The component to display in the overlay. It will take up the
+        entire size of the screen, so make sure to use properties such as
+        `align_x` and `align_y` to position it as needed.
+    """
+
     def __init__(
         self,
         child: rio.Component,
@@ -30,7 +47,7 @@ class Sticky(component_base.Component):
         align_y: Optional[float] = None,
     ):
         # Passing the layout values through to `Component` would ignore them,
-        # because the HTML `Sticky` element will force itself to span the entire
+        # because the HTML `Overlay` element will force itself to span the entire
         # screen.
         #
         # Instead, simply keep track of the values, then pass them on to a
@@ -38,7 +55,7 @@ class Sticky(component_base.Component):
         #
         # Furthermore, another, outer `Container` is needed to ensure that the
         # layouting system doesn't apply any problematic CSS attributes to the
-        # `Sticky` div.
+        # `Overlay` div.
 
         super().__init__(
             key=key,
@@ -59,14 +76,14 @@ class Sticky(component_base.Component):
 
     def build(self) -> rio.Component:
         # Outer: This container absorbs any CSS attributes assigned by the
-        # layouting system, so that they don't interfere with the `Sticky`
+        # layouting system, so that they don't interfere with the `Overlay`
         # element.
         return rio.Container(
-            # Sticky: This is the actual sticky element. It spans the entire
+            # Overlay: This is the actual overlay element. It spans the entire
             # screen and doesn't scroll.
             class_container.ClassContainer(
                 # Inner: This container is used to apply any layouting
-                # attributes passed to the `Sticky` component.
+                # attributes passed to the `Overlay` component.
                 rio.Container(
                     margin=self._passthrough_margin,
                     margin_x=self._passthrough_margin_x,
@@ -84,7 +101,7 @@ class Sticky(component_base.Component):
                     ),
                 ),
                 classes=[
-                    "rio-sticky",
+                    "rio-overlay",
                 ],
             ),
         )

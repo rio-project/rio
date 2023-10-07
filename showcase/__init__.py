@@ -268,7 +268,7 @@ class Sidebar(rio.Component):
                     ),
                     rio.NumberInput(
                         3.0,
-                        placeholder="Number",
+                        label="Number",
                         prefix_text="$",
                         decimals=2,
                     ),

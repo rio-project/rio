@@ -27,11 +27,13 @@ class Plot(component_base.FundamentalComponent):
     """
     Displays a graph.
 
-    The `style` argument can be used to customize the appearance of the plot.
-    The following attributes are supported:
 
-    - `fill`
-    - `corner_radius`
+    Attributes:
+        figure: The plotly figure to display.
+
+        style: Controls the appearance of the plot. The following attributes are supported:
+            - `fill`
+            - `corner_radius`
     """
 
     figure: plotly.graph_objects.Figure

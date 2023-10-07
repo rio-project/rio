@@ -11,20 +11,73 @@ from .errors import NavigationFailed
 
 @dataclass(frozen=True)
 class Page:
+    """
+    A routable page in a Rio app.
+
+    Rio apps can consist of many pages. You might have a welcome page, a
+    settings page, a login, and so on. `Page` components contain all information
+    needed to display those pages, as well as to navigate between them.
+
+    A minimal example:
+
+    ```python
+    import rio
+
+    app = rio.App(
+        build=lambda: rio.Column(
+            rio.Text("Welcome to my page!"), rio.PageView(
+                width="grow", height="grow",
+            ),
+        ), pages=[
+            rio.Page(
+                "", build=lambda: rio.Text("This is the home page"),
+            ), rio.Page(
+                "subpage", build=lambda: rio.Text("This is a subpage"),
+            ),
+        ],
+    )
+
+    app.run_in_browser()
+    ```
+
+    This will display "This is the home page" when navigating to the root URL,
+    but "This is a subpage" when navigating to "/subpage". Note that on both
+    pages the text "Welcome to my page!" is displayed above the page content.
+    That's because it's not part of the `PageView`.
+
+    # TODO: Link to the routing/multipage how-to page
+
+    Attributes:
+        page_url: The URL segment at which this page should be displayed. For
+            example, if this is "subpage", then the page will be displayed at
+            "https://yourapp.com/subpage". If this is "", then the page will be
+            displayed at the root URL.
+
+        build: A callback that is called when this page is displayed. It should
+            return a Rio component.
+
+        children: A list of child pages. These pages will be displayed when
+            navigating to a sub-URL of this page. For example, if this page's
+            `page_url` is "page1", and it has a child page with `page_url`
+            "page2", then the child page will be displayed at
+            "https://yourapp.com/page1/page2".
+
+        guard: A callback that is called before this page is displayed. It
+            can prevent users from accessing pages which they are not allowed to
+            see. For example, you may want to redirect users to your login page
+            if they are trying to access their profile page without being
+            logged in.
+
+            The callback should return `None` if the user is allowed to access
+            the page, or a string or `rio.URL` if the user should be redirected
+            to a different page.
+    """
+
     page_url: str
     build: Callable[[], rio.Component]
     _: KW_ONLY
     children: List["Page"] = field(default_factory=list)
     guard: Optional[Callable[[rio.Session], Union[None, rio.URL, str]]] = None
-
-    @property
-    def segements(self) -> Tuple[str, ...]:
-        page_url = self.page_url.strip("/")
-
-        if page_url:
-            return tuple(self.page_url.split("/"))
-
-        return tuple()
 
 
 class PageRedirect(Exception):

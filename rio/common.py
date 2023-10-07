@@ -69,15 +69,46 @@ def secure_string_hash(*values: str, hash_length: int = 32) -> str:
 
 @dataclass(frozen=True)
 class FileInfo:
+    """
+    Contains information about a file.
+
+    When asking the user to select a file, this class is used to represent the
+    file. It contains metadata about the file, and can also be used to access
+    the file's contents.
+
+    Be careful when running your app as a webserver, since files will need to be
+    uploaded by the user, which is a potentially very slow operation.
+
+    Attributes:
+        name: The name of the file, including the extension.
+
+        size_in_bytes: The size of the file, in bytes.
+
+        media_type: The MIMe type of the file, such as `text/plain` or `image/png`.
+    """
+
     name: str
     size_in_bytes: int
     media_type: str
     _contents: bytes
 
     async def read_bytes(self) -> bytes:
+        """
+        Asynchronously reads the entire file as `bytes`.
+
+        Reads and returns the entire file as a `bytes` object. If you know that
+        the file is text, consider using `read_text` instead.
+        """
         return self._contents
 
     async def read_text(self, *, encoding: str = "utf-8") -> str:
+        """
+        Asynchronously reads the entire file as text.
+
+        Reads and returns the entire file as a `str` object. The file is decoded
+        using the given `encoding`. If you don't know that the file is valid
+        text, use `read_bytes` instead.
+        """
         return self._contents.decode(encoding)
 
 

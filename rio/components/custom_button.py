@@ -13,8 +13,55 @@ __all__ = [
 
 
 class CustomButton(component_base.Component):
+    """
+    A clickable button, with customizable visuals.
+
+    Most buttons in apps should fit the main Theme and are well served by the
+    `Button` component. However, sometimes you need more control over the
+    button's appearance. For example, you might want to create a navigation
+    button that integrates well with the rest of the navigation bar.
+
+    For those use cases, the `CustomButton` component is available. It gives you
+    full control about the button's appearance, while still providing the
+    same functionality as regular buttons.
+
+    Attributes:
+        text: The text to display on the button.
+
+        is_sensitive: Whether the button should respond to user input.
+
+        style_default: The background style to use when the button is not
+            hovered or pressed.
+
+        style_hover: The background style to use when the cursor is hovering
+            above the button.
+
+        style_press: The background style to use when the button is pressed.
+
+        style_insensitive: The background style to use when the button is
+            not sensitive.
+
+        text_style_default: The text style to use when the button is not
+            hovered or pressed.
+
+        text_style_hover: The text style to use when the cursor is hovering
+            above the button.
+
+        text_style_press: The text style to use when the button is pressed.
+
+        text_style_insensitive: The text style to use when the button is
+            not sensitive.
+
+        transition_speed: How many seconds it takes for the button to transition
+            between styles.
+
+        ripple: Whether the button should display a Material Design ripple
+            effect when hovered or clicked.
+
+        on_press: Triggered when the user clicks on the button.
+    """
+
     text: str
-    on_press: rio.EventHandler[button.ButtonPressEvent] = None
     _: KW_ONLY
     is_sensitive: bool = True
     style_default: rio.BoxStyle
@@ -27,6 +74,7 @@ class CustomButton(component_base.Component):
     text_style_insensitive: rio.TextStyle
     transition_speed: float
     ripple: bool = True
+    on_press: rio.EventHandler[button.ButtonPressEvent] = None
 
     # Internals
     _is_pressed: bool = field(init=False, default=False)

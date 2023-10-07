@@ -33,11 +33,45 @@ class NumberInputConfirmEvent:
 class NumberInput(component_base.Component):
     """
     Like `TextInput`, but specifically for inputting numbers.
+
+    `NumberInput` allows the user to enter a number. This is similar to the
+    `TextInput` component, but with some goodies for handling numbers. The value
+    is automatically parsed and formatted according to the user's locale, and
+    you can specify minimum and maximum values to limit the user's input.
+
+    Number inputs go way beyond just parsing the input using `int` or `float`.
+    They try their best to understand what the user is trying to enter, and also
+    support suffixes such as "k" and "m" to represent thousands and millions
+    respectively.
+
+    Attributes:
+        value: The number currently entered by the user.
+
+        label: A short text to display next to the text input.
+
+        prefix_text: A short text to display before the text input. Useful for
+            displaying currency symbols or other prefixed units.
+
+        suffix_text: A short text to display after the text input. Useful for
+            displaying currency names or units.
+
+        minimum: The minimum value the number can be set to.
+
+        maximum: The maximum value the number can be set to.
+
+        decimals: The number of decimals to accept. If the user enters more
+            decimals, they will be rounded off. If this value is equal to `0`,
+            the input's `value` is guaranteed to be an integer, rather than
+            float.
+
+        on_change: Triggered when the user changes the number.
+
+        on_confirm: Triggered when the user explicitly confirms their input,
     """
 
     value: float = 0
     _: KW_ONLY
-    placeholder: str = ""
+    label: str = ""
     prefix_text: str = ""
     suffix_text: str = ""
     minimum: Optional[float] = None
@@ -144,7 +178,7 @@ class NumberInput(component_base.Component):
         # Build the component
         return rio.TextInput(
             text=value_str,
-            label=self.placeholder,
+            label=self.label,
             prefix_text=self.prefix_text,
             suffix_text=self.suffix_text,
             on_change=self._on_change,

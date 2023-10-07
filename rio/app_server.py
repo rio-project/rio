@@ -628,7 +628,7 @@ class AppServer(fastapi.FastAPI):
             # This is done in a task, because the server is not yet running, so
             # the method would never receive a response, and thus would hang
             # indefinitely.
-            sess._create_task(init_coro, name=f"Session {sess} init")
+            sess.create_task(init_coro, name=f"Session {sess} init")
 
             # Serve the socket
             await sess.serve()

@@ -87,7 +87,7 @@ class Outliner(rio.Component):
 class DocumentationPage(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
-            rio.Sticky(
+            rio.Overlay(
                 Outliner(
                     align_x=0,
                     align_y=0.4,
