@@ -14,6 +14,9 @@ class Container(component_base.Component):
     `Container` is a simple container which holds a single child component. It
     is useful for when you receive a component as child and wish to add
     additional layout attributes such as a margin.
+
+    Attributes:
+        child: The component to place inside the container.
     """
 
     child: component_base.Component

@@ -25,7 +25,6 @@ import { RectangleComponent } from './components/rectangle';
 import { RevealerComponent } from './components/revealer';
 import { ScrollContainerComponent } from './components/scrollContainer';
 import { ScrollTargetComponent } from './components/scrollTarget';
-import { SizeTripSwitchComponent } from './components/sizeTripSwitch';
 import { SliderComponent } from './components/slider';
 import { SlideshowComponent } from './components/slideshow';
 import { StackComponent } from './components/stack';
@@ -62,7 +61,6 @@ const componentClasses = {
     'Row-builtin': RowComponent,
     'ScrollContainer-builtin': ScrollContainerComponent,
     'ScrollTarget-builtin': ScrollTargetComponent,
-    'SizeTripSwitch-builtin': SizeTripSwitchComponent,
     'Slider-builtin': SliderComponent,
     'Slideshow-builtin': SlideshowComponent,
     'Stack-builtin': StackComponent,

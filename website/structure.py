@@ -87,7 +87,6 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
             rio.Component,
             rio.PageView,
             rio.ScrollTarget,
-            rio.SizeTripSwitch,
         ),
     ),
     (

@@ -40,6 +40,11 @@ class UserSettings:
     Warning! Since settings are stored on the user's device, you should never
     trust them to be valid. A malicious actor could modify them to intentionally
     trigger bugs in your app. Always validate the values before using them.
+
+    Attributes:
+        section_name: If provided, the settings file will contain a section with
+            this name. This allows you to keep the configuration file organized.
+            If `None`, the settings will be stored outside of any section.
     """
 
     # Any values from this class will be stored in the configuration file under
