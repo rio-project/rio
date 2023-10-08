@@ -109,7 +109,7 @@ class FileInfo:
         using the given `encoding`. If you don't know that the file is valid
         text, use `read_bytes` instead.
 
-        Arguments:
+        Args:
             encoding: The encoding to use when decoding the file.
 
         Raises:
