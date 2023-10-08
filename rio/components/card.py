@@ -86,6 +86,8 @@ class Card(component_base.Component):
         else:
             margin = max(corner_radius)
 
+        margin = margin * 0.6
+
         style = rio.BoxStyle(
             fill=thm.surface_color,
             corner_radius=corner_radius,
