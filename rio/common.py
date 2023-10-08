@@ -108,6 +108,13 @@ class FileInfo:
         Reads and returns the entire file as a `str` object. The file is decoded
         using the given `encoding`. If you don't know that the file is valid
         text, use `read_bytes` instead.
+
+        Arguments:
+            encoding: The encoding to use when decoding the file.
+
+        Raises:
+            UnicodeDecodeError: The file could not be decoded using the given
+                `encoding`.
         """
         return self._contents.decode(encoding)
 
@@ -161,8 +168,10 @@ def make_url_relative(base: URL, other: URL) -> URL:
 
 def escape_markdown(text: str) -> str:
     """
+    Escape text such that it appears as-is when rendered as markdown.
+
     Given any text, this function returns a string which, when rendered as
-    markdown, will display the same text.
+    markdown, will look identical to the original text.
     """
     # TODO: Find a proper function for this. The current one is a total hack.
     return re.sub(MARKDOWN_ESCAPE, r"\\\1", text)
@@ -170,8 +179,10 @@ def escape_markdown(text: str) -> str:
 
 def escape_markdown_code(text: str) -> str:
     """
-    Given any text, this function returns a string which, when rendered inside a
-    markdown code block, will display the same text.
+    Escape text such that it appears as-is inside a markdown code block.
+
+    Given any text, this function returns a string which, when rendered inside
+    a markdown code block, will look identical to the original text.
     """
     # TODO: Find a proper function for this. The current one is a total hack.
     return re.sub(MARKDOWN_CODE_ESCAPE, r"\\\1", text)

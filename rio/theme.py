@@ -37,6 +37,19 @@ class Palette:
 
 
 class Theme:
+    """
+    Defines the visual style of the application.
+
+    The `Theme` contains all colors, text styles, and other visual properties
+    that are used throughout the application. If you wish to change the
+    appearance of your app, this is the place to do it.
+
+    TODO: Finalize themeing and document it
+
+    TODO: Give an example for how to create a theme and attach it to the
+        session.
+    """
+
     _: KW_ONLY
 
     # The main theme colors
