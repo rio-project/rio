@@ -62,40 +62,15 @@ class AppRoot(rio.Component):
         )
 
 
-class ColumnSample(rio.Component):
-    spacing: float = 0
-
-    def build(self) -> rio.Component:
-        return rio.Row(
-            rio.Column(
-                comps.SampleA(),
-                comps.SampleB(),
-                comps.SampleC(),
-                spacing=ColumnSample.spacing,
-                width="grow",
-                align_x=0.5,
-            ),
-            rio.Card(
-                rio.Column(
-                    rio.Text("Spacing", style="heading3"),
-                    rio.Slider(
-                        min=0,
-                        max=3,
-                        value=ColumnSample.spacing,
-                    ),
-                    width=12,
-                ),
-                align_y=0,
-                elevate_on_hover=True,
-            ),
-            spacing=2,
-            width="grow",
-        )
-
-
 def get_docs(component_class: Type) -> rio.Component:
     # Get the docs class for this class
     docs = rio_docs.ClassDocs.parse(component_class)
+
+    # Get the interactive examples for this class
+    try:
+        example = getattr(comps, f"{component_class.__name__}Example")
+    except AttributeError:
+        example = None
 
     # Generate the article. This is done differently based on whether this is a
     # component or another class.
@@ -104,7 +79,7 @@ def get_docs(component_class: Type) -> rio.Component:
 
         art = article.create_component_api_docs(
             docs,
-            ColumnSample,
+            example,
         )
 
     else:
