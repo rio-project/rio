@@ -7,6 +7,7 @@ import inspect
 import json
 import logging
 import secrets
+import shutil
 import time
 import traceback
 import typing
@@ -16,6 +17,7 @@ from datetime import tzinfo
 from pathlib import Path
 from typing import *  # type: ignore
 
+import aiofiles
 import babel
 import introspection
 import unicall
@@ -699,7 +701,7 @@ class Session(unicall.Unicall):
     def _serialize_and_host_value(
         self,
         value: Any,
-        type_: Type,
+        type_: type,
     ) -> Jsonable:
         """
         Which values are serialized for state depends on the annotated
@@ -1278,8 +1280,8 @@ class Session(unicall.Unicall):
 
     async def save_file(
         self,
-        file_name: str,
         file_contents: Union[Path, str, bytes],
+        destination: Union[Path, str],
         *,
         media_type: Optional[str] = None,
     ) -> None:
@@ -1293,14 +1295,35 @@ class Session(unicall.Unicall):
         one.
 
         Args:
-            file_name: The name of the file to save.
-
             file_contents: The contents of the file to save. This can be a
                 string, bytes, or a path to a file on the server.
+
+            destination: The path where the file will be saved. If the user is
+                viewing the app in a browser, everything except for the file
+                name is ignored.
 
             media_type: The media type of the file. Defaults to `None`, which
                 means that the media type will be guessed from the file name.
         """
+        if self.running_in_window:
+            if isinstance(file_contents, Path):
+                await asyncio.to_thread(shutil.copy, file_contents, destination)
+
+            elif isinstance(file_contents, str):
+                async with aiofiles.open(destination, "w", encoding="utf8") as file:
+                    await file.write(file_contents)
+
+            elif isinstance(file_contents, bytes):
+                async with aiofiles.open(destination, "wb") as file:
+                    await file.write(file_contents)
+
+            else:
+                raise ValueError(
+                    f"The file contents must be a Path, str or bytes, not {file_contents!r}"
+                )
+
+            return
+
         # Create an asset for the file
         if isinstance(file_contents, Path):
             as_asset = assets.PathAsset(file_contents, media_type)
@@ -1323,7 +1346,9 @@ class Session(unicall.Unicall):
             )
 
         # Host the asset
-        url = as_asset._serialize(self)
+        url = self._app_server.host_asset_with_timeout(as_asset, 60)
+
+        file_name = Path(destination).name
 
         # Tell the frontend to download the file
         await self._evaluate_javascript(
@@ -1337,15 +1362,6 @@ a.click()
 document.body.removeChild(a)
 """
         )
-
-        # Keep the asset alive for some time
-        #
-        # TODO: Is there a better way to do this
-        async def keepaliver() -> None:
-            holdonewellgethelp = as_asset
-            await asyncio.sleep(60)
-
-        self.create_task(keepaliver())
 
     async def _apply_theme(self, thm: theme.Theme) -> None:
         """

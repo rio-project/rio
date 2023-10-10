@@ -1,6 +1,4 @@
-import { ComponentId } from "../models";
 import { callRemoteMethodDiscardResponse } from "../rpc";
-import { getInstanceByComponentId } from "../componentManagement";
 
 /// Base for all component states. Updates received from the backend are
 /// partial, hence most properties may be undefined.
@@ -31,9 +29,9 @@ export abstract class ComponentBase {
     protected _minSizeComponentImpl: [string | null, string | null];
     protected _minSizeContainer: [string | null, string | null];
 
-    constructor(elementId: string, state: ComponentState) {
+    constructor(elementId: string, state: Required<ComponentState>) {
         this.elementId = elementId;
-        this.state = state as Required<ComponentState>;
+        this.state = state;
         this.layoutCssProperties = {};
 
         this._minSizeUser = [null, null];
@@ -144,9 +142,9 @@ export abstract class ComponentBase {
 
     abstract _updateElement(element: HTMLElement, deltaState: ComponentState): void;
 
-    /// This method is called at the end of each `updateComponentStates` command.
-    /// It is called for every component that was updated and every container that
-    /// has a child that was updated.
+    /// This method is called at the end of each `updateComponentStates`
+    /// command. It is called for every component that was updated and every
+    /// container that has a child that was updated.
     ///
     /// It is intended for containers that need to update the CSS of their
     /// children depending on the state of the children. For example, a `Row`
