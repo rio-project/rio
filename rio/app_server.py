@@ -37,6 +37,7 @@ from . import (
     session,
     user_settings_module,
 )
+from .common import URL
 
 try:
     import plotly
@@ -230,6 +231,22 @@ class AppServer(fastapi.FastAPI):
         replaced.
         """
         self._assets[asset.secret_id] = asset
+
+    def host_asset_with_timeout(self, asset: assets.HostedAsset, timeout: float) -> URL:
+        """
+        Hosts an asset for a limited time. Returns the asset's url.
+        """
+        self.weakly_host_asset(asset)
+
+        async def keep_alive():
+            await asyncio.sleep(timeout)
+            _ = asset
+
+        asyncio.create_task(
+            keep_alive(), name=f"Keep asset {asset} alive for {timeout} sec"
+        )
+
+        return asset.url
 
     async def _serve_index(
         self,

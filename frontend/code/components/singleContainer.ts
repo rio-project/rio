@@ -13,7 +13,7 @@ import { ComponentBase, ComponentState } from "./componentBase";
 /// This class automatically knows in which attribute the child is stored thanks
 /// to `globalThis.childAttributeNames`.
 export abstract class SingleContainer extends ComponentBase {
-    constructor(elementId: string, state: ComponentState) {
+    constructor(elementId: string, state: Required<ComponentState>) {
         super(elementId, state);
 
         this._minSizeComponentImpl[0] = 'fit-content';

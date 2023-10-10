@@ -72,6 +72,7 @@ export class ScrollContainerComponent extends ComponentBase {
         let minWidth: string | null = null;
         let minHeight: string | null = null;
 
+        // FIXME: If a scroll bar is visible, include the space it takes up
         if (this.state.scroll_x === 'never') {
             minWidth = `${child.scrollWidth}px`;
         }
@@ -101,7 +102,7 @@ export class ScrollContainerComponent extends ComponentBase {
 
             let child = getInstanceByComponentId(deltaState.child);
             child.replaceLayoutCssProperties({});
-            child.setMinSizeContainer('100%', '100%');
+
             this._resizeToFitChild(child.element());
         }
 
