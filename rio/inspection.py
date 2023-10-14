@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import sys
+import types
 from typing import *  # type: ignore
 
 from introspection import iter_subclasses, safe_is_subclass
@@ -15,7 +16,7 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
     Reimplementation of `typing.get_type_hints` because it has a stupid bug in
     python 3.10 where it dies if something is annotated as `dataclasses.KW_ONLY`.
     """
-    type_hints = {}
+    type_hints: Dict[str, type] = {}
 
     for cls in cls.__mro__:
         for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
@@ -25,7 +26,7 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
             if isinstance(annotation, ForwardRef):
                 annotation = annotation.__forward_code__
 
-            if isinstance(annotation, str):
+            if isinstance(annotation, (str, types.CodeType)):
                 globs = vars(sys.modules[cls.__module__])
                 annotation = eval(annotation, globs)
 
@@ -37,12 +38,12 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
 @functools.lru_cache(maxsize=None)
 def get_attributes_to_serialize(
     cls: Type[component_base.Component],
-) -> Mapping[str, Type]:
+) -> Mapping[str, type]:
     """
     Returns a dictionary of attribute names to their types that should be
     serialized for the given component class.
     """
-    result = {}
+    result: Dict[str, type] = {}
 
     for attr_name, annotation in get_type_annotations(cls).items():
         if attr_name in {
@@ -80,7 +81,7 @@ def get_attributes_to_serialize(
 def get_child_component_containing_attribute_names(
     cls: Type[component_base.Component],
 ) -> Collection[str]:
-    attr_names = []
+    attr_names: List[str] = []
 
     for attr_name, annotation in get_type_annotations(cls).items():
         origin = get_origin(annotation)

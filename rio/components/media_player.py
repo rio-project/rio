@@ -15,6 +15,36 @@ __all__ = ["MediaPlayer"]
 
 
 class MediaPlayer(component_base.FundamentalComponent):
+    """
+    Plays audio and video.
+
+    Attributes:
+        media: The media to play. This can be a file path, URL, or bytes.
+
+        media_type: The mime type of the media file. May help the browser to
+            play the file correctly.
+
+        loop: Whether to automatically restart from the beginning when the
+            playback ends.
+
+        autoplay: Whether to start playing the media automatically, without
+            requiring the user to press "Play".
+
+        controls: Whether to display controls like a Play/Pause button, volume
+            slider, etc.
+
+        muted: Whether to mute the audio.
+
+        volume: The volume to play the audio at. 1.0 is the native volume;
+            larger numbers increase the volume, smaller numbers decrease it.
+
+        on_playback_end: An event handler to call when the media finishes
+            playing.
+
+        on_error: An event handler to call when an error occurs, for example if
+            the file format isn't supported.
+    """
+
     media: Union[Path, URL, bytes]
     media_type: Optional[str] = None
     _: KW_ONLY

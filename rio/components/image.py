@@ -19,7 +19,11 @@ class Image(component_base.FundamentalComponent):
     Displays an image file.
 
     `Image` does just what you'd expect: it displays a single image. The image
-    can be loaded from a URL, or a local file.
+    can be loaded from a URL or a local file.
+
+    Note that the resolution of the image does not affect the size at which it
+    is displayed. The `Image` component doesn't reserve any space for itself, it
+    simply makes do with the space it is given by its parent component.
 
     The image can be scaled to fit the shape in one of three ways:
 

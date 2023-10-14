@@ -7,7 +7,7 @@ from uniserde import JsonDoc
 
 import rio
 
-from .. import app_server, color
+from .. import color
 from . import component_base
 
 __all__ = [

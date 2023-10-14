@@ -445,9 +445,8 @@ class App:
             fastapi_app = self._as_fastapi(
                 running_in_window=True,
                 validator_factory=None,
-                internal_on_app_start=None,
+                internal_on_app_start=lock.release,
             )
-            fastapi_app.add_event_handler("startup", lock.release)
 
             # Suppress stdout messages if requested
             kwargs = {}
