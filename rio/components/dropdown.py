@@ -98,11 +98,11 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         self.is_sensitive = is_sensitive
 
         # This is an unsafe assignment, because the value could be `None`. This
-        # will be fixed in `__post_init__`, once the state bindings have been
+        # will be fixed in `on_create`, once the state bindings have been
         # initialized.
         self.selected_value = selected_value  # type: ignore
 
-    def __post_init__(self) -> None:
+    def on_create(self) -> None:
         # Make sure a value is selected
         if self.selected_value is None:
             self.selected_value = next(iter(self.options.values()))

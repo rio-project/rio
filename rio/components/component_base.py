@@ -402,21 +402,21 @@ class Component(metaclass=ComponentMeta):
                 setattr(cls, attr_name, field)
                 continue
 
+            field: dataclasses.Field[object] = field_or_default
+
             # If it doesn't have a default value, we can ignore it
-            if field_or_default.default is dataclasses.MISSING:
+            if field.default is dataclasses.MISSING:
                 continue
 
-            field_or_default.default_factory = make_default_factory_for_value(
-                field_or_default.default
-            )
-            field_or_default.default = dataclasses.MISSING
+            field.default_factory = make_default_factory_for_value(field.default)
+            field.default = dataclasses.MISSING
 
     @staticmethod
     def _determine_explicitly_set_properties(
-        original_init,
+        original_init: Callable[Concatenate[Component, P], None],
         self: "Component",
-        *args,
-        **kwargs,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ):
         # Chain up to the original `__init__`
         original_init(self, *args, **kwargs)
@@ -427,10 +427,10 @@ class Component(metaclass=ComponentMeta):
 
     @staticmethod
     def _init_component(
-        original_init,
+        original_init: Callable[Concatenate[Component, P], None],
         self: "Component",
-        *args,
-        **kwargs,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ):
         # Fetch the session this component is part of
         if global_state.currently_building_session is None:
@@ -732,6 +732,8 @@ class Component(metaclass=ComponentMeta):
                 yield value
 
             if isinstance(value, list):
+                value = cast(List[object], value)
+
                 for item in value:
                     if isinstance(item, Component):
                         yield item
@@ -842,8 +844,8 @@ class Component(metaclass=ComponentMeta):
 
     async def call_event_handler(
         self,
-        handler,
-        *event_data,
+        handler: rio.EventHandler[...],
+        *event_data: object,
     ) -> None:
         """
         Calls an even handler, awaiting it if necessary.

@@ -89,27 +89,38 @@ export abstract class ComponentBase {
 
     private _updateMinSize(): void {
         let element = this.element();
-        element.style.setProperty('min-width', this._buildMinSizeString(0));
-        element.style.setProperty('min-height', this._buildMinSizeString(1));
+
+        let minWidth = this._buildMinSizeString(0);
+        element.style.minWidth = minWidth;
+        if (!element.style.minWidth) {
+            console.error(`Invalid min-width for component #${this.elementId}: ${minWidth}`);
+        }
+
+        let minHeight = this._buildMinSizeString(1);
+        element.style.minHeight = minHeight;
+        if (!element.style.minHeight) {
+            console.error(`Invalid min-height for component #${this.elementId}: ${minHeight}`);
+        }
     }
 
     private _buildMinSizeString(index: number): string {
-        // This function could be simpler, but for debugging purposes it's nice
-        // to see the values of all 3 sizes.
+        // Unfortunately, the string must be valid or it will be ignored. And a
+        // lot of values can't be mixed, for example, `max(100%, 100px)` and
+        // `max(100px, min-content)` are invalid. For debugging it would be nice
+        // to see all 3 values, but unfortunately that's very difficult to do.
         let sizes = [
             this._minSizeUser[index],
             this._minSizeComponentImpl[index],
             this._minSizeContainer[index],
-        ];
+        ].filter(size => size !== null) as string[];
 
-        if (sizes.every(size => size === null)) {
+        if (sizes.length === 0) {
             return 'unset';
         }
 
-        // Unfortunately, the string must be valid or it will be ignored. So we
-        // can't just represent unset values as "null". We'll use "-1px"
-        // instead.
-        sizes = sizes.map(size => size ?? '-1px');
+        if (sizes.length === 1) {
+            return sizes[0];
+        }
 
         return `max(${sizes.join(', ')})`;
     }

@@ -97,7 +97,7 @@ def _host_and_get_fill_as_css_variables(
 class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
-        self._attachments = {}
+        self._attachments: Dict[type, object] = {}
 
     def __contains__(self, typ: type) -> bool:
         return typ in self._attachments
@@ -196,7 +196,7 @@ class Session(unicall.Unicall):
 
         # Keeps track of running asyncio tasks. This is used to make sure that
         # the tasks are cancelled when the session is closed.
-        self._running_tasks: Set[asyncio.Task] = set()
+        self._running_tasks: Set[asyncio.Task[object]] = set()
 
         # Maps all PageViews to the id of the PageView one higher up in the component
         # tree. Root PageViews are mapped to None. This map is kept up to date by
@@ -359,7 +359,11 @@ class Session(unicall.Unicall):
     ) -> None:
         ...
 
-    async def _call_event_handler(self, handler, *event_data) -> None:
+    async def _call_event_handler(
+        self,
+        handler: common.EventHandler[...],
+        *event_data: object,
+    ) -> None:
         # Event handlers are optional
         if handler is None:
             return
@@ -378,10 +382,10 @@ class Session(unicall.Unicall):
 
     def create_task(
         self,
-        coro: Coroutine,
+        coro: Coroutine[Any, Any, T],
         *,
         name: Optional[str] = None,
-    ) -> asyncio.Task:
+    ) -> asyncio.Task[T]:
         """
         Creates an `asyncio.Task` that is cancelled when the session is closed.
 
@@ -565,7 +569,7 @@ class Session(unicall.Unicall):
                 global_state.currently_building_session = None
 
             # Sanity check
-            if not isinstance(build_result, rio.Component):
+            if not isinstance(build_result, rio.Component):  # type: ignore[unnecessary-isinstance]
                 raise ValueError(
                     f"The output of `build` methods must be instances of `rio.Component`, but `{component}` returned `{build_result}`"
                 )
@@ -687,7 +691,7 @@ class Session(unicall.Unicall):
 
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
-            visited_components = set()
+            visited_components: Set[component_base.Component] = set()
             delta_states = {}
 
             for component in self._root_component._iter_component_tree():
@@ -902,6 +906,8 @@ class Session(unicall.Unicall):
 
                 # List / Collection
                 elif isinstance(attr_value, list):
+                    attr_value = cast(List[object], attr_value)
+
                     for ii, item in enumerate(attr_value):
                         if isinstance(item, rio.Component):
                             try:
@@ -949,7 +955,7 @@ class Session(unicall.Unicall):
             return
 
         # Determine which properties will be taken from the new component
-        overridden_values = {}
+        overridden_values: Dict[str, object] = {}
         old_component_dict = vars(old_component)
         new_component_dict = vars(new_component)
 
@@ -1005,6 +1011,9 @@ class Session(unicall.Unicall):
             if isinstance(new, list):
                 if not isinstance(old, list):
                     return False
+
+                old = cast(List[object], old)
+                new = cast(List[object], new)
 
                 if len(old) != len(new):
                     return False
@@ -1103,6 +1112,8 @@ class Session(unicall.Unicall):
                     return [attr]
 
                 if isinstance(attr, list):
+                    attr = cast(List[object], attr)
+
                     return [item for item in attr if isinstance(item, rio.Component)]
 
                 return []
@@ -1241,7 +1252,7 @@ class Session(unicall.Unicall):
         """
         # Create a secret id and register the file upload with the app server
         upload_id = secrets.token_urlsafe()
-        future = asyncio.Future()
+        future = asyncio.Future[List[common.FileInfo]]()
 
         self._app_server._pending_file_uploads[upload_id] = future
 
@@ -1313,7 +1324,7 @@ class Session(unicall.Unicall):
                 async with aiofiles.open(destination, "w", encoding="utf8") as file:
                     await file.write(file_contents)
 
-            elif isinstance(file_contents, bytes):
+            elif isinstance(file_contents, bytes):  # type: ignore[unnecessary-isinstance]
                 async with aiofiles.open(destination, "wb") as file:
                     await file.write(file_contents)
 
@@ -1334,7 +1345,7 @@ class Session(unicall.Unicall):
                 "text/plain" if media_type is None else media_type,
             )
 
-        elif isinstance(file_contents, bytes):
+        elif isinstance(file_contents, bytes):  # type: ignore[unnecessary-isinstance]
             as_asset = assets.BytesAsset(
                 file_contents,
                 "application/octet-stream" if media_type is None else media_type,

@@ -33,6 +33,7 @@ import { TextInputComponent } from './components/textInput';
 import { TextComponent } from './components/text';
 import { ComponentId } from "./models";
 import { HtmlComponent } from "./components/html";
+import { WebsiteComponent } from "./components/website";
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -67,6 +68,7 @@ const componentClasses = {
     'Switch-builtin': SwitchComponent,
     'Text-builtin': TextComponent,
     'TextInput-builtin': TextInputComponent,
+    'Website-builtin': WebsiteComponent,
     Placeholder: PlaceholderComponent,
 };
 

@@ -83,7 +83,7 @@ class Button(component_base.Component):
                 color="secondary",
             )
         else:
-            children = []
+            children: List[component_base.Component] = []
 
             if self.icon is not None:
                 children.append(

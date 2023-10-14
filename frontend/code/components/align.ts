@@ -27,23 +27,24 @@ export class AlignComponent extends ComponentBase {
         let align_y: number = this.state['align_y']!;
 
         let cssProperties = {};
+        let width: string, height: string;
 
-        let transform_x;
+        let transform_x: number;
         if (align_x === null) {
-            cssProperties['width'] = '100%';
+            width = '100%';
             transform_x = 0;
         } else {
-            cssProperties['width'] = 'min-content';
+            width = 'min-content';
             cssProperties['left'] = `${align_x * 100}%`;
             transform_x = align_x * -100;
         }
 
-        let transform_y;
+        let transform_y: number;
         if (align_y === null) {
-            cssProperties['height'] = '100%';
+            height = '100%';
             transform_y = 0;
         } else {
-            cssProperties['height'] = 'min-content';
+            height = 'min-content';
             cssProperties['top'] = `${align_y * 100}%`;
             transform_y = align_y * -100;
         }
@@ -55,8 +56,8 @@ export class AlignComponent extends ComponentBase {
         }
 
         // Apply the CSS properties to the child
-        getInstanceByComponentId(
-            this.state['child']
-        ).replaceLayoutCssProperties(cssProperties);
+        let child = getInstanceByComponentId(this.state['child']);
+        child.replaceLayoutCssProperties(cssProperties);
+        child.setMinSizeContainer(width, height);
     }
 }
