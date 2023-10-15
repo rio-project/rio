@@ -23,9 +23,19 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
         "Getting Started",
         (
             (
-                "First Steps",
-                "first-steps",
-                articles.first_steps.generate,
+                "Rio Setup",
+                "tutorial-1-rio-setup",
+                articles.tutorial_1_rio_setup.generate,
+            ),
+            (
+                "Application Overview",
+                "tutorial-2-application-overview",
+                articles.tutorial_2_application_overview,
+            ),
+            (
+                "Setting-up your App",
+                "tutorial-3-application-setup",
+                articles.tutorial_3_app_setup,
             ),
         ),
     ),
@@ -115,7 +125,6 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
     (
         "Events",
         (
-            rio.ButtonPressEvent,
             rio.ColorChangeEvent,
             rio.DrawerOpenOrCloseEvent,
             rio.DropdownChangeEvent,

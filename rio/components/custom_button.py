@@ -74,7 +74,7 @@ class CustomButton(component_base.Component):
     text_style_insensitive: rio.TextStyle
     transition_speed: float
     ripple: bool = True
-    on_press: rio.EventHandler[button.ButtonPressEvent] = None
+    on_press: rio.EventHandler[[]] = None
 
     # Internals
     _is_pressed: bool = field(init=False, default=False)
@@ -98,10 +98,7 @@ class CustomButton(component_base.Component):
         if event.button != rio.MouseButton.LEFT or not self.is_sensitive:
             return
 
-        await self.call_event_handler(
-            self.on_press,
-            button.ButtonPressEvent(),
-        )
+        await self.call_event_handler(self.on_press)
 
         self._is_pressed = False
 

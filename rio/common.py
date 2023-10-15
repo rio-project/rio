@@ -24,6 +24,8 @@ GENERATED_DIR = PACKAGE_ROOT_DIR / "generated"
 RIO_ASSETS_DIR = PACKAGE_ROOT_DIR / "assets"
 HOSTED_ASSETS_DIR = RIO_ASSETS_DIR / "hosted"
 
+SNIPPETS_DIR = PACKAGE_ROOT_DIR / "snippets" / "snippet-files"
+
 if os.name == "nt":
     USER_CACHE_DIR = Path.home() / "AppData" / "Local" / "Cache"
     USER_CONFIG_DIR = Path.home() / "AppData" / "Roaming"

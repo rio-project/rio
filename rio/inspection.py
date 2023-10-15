@@ -108,7 +108,7 @@ def get_child_component_containing_attribute_names_for_builtin_components() -> (
 ):
     result = {
         cls._unique_id: get_child_component_containing_attribute_names(cls)  # type: ignore
-        for cls in iter_subclasses(component_base.FundamentalComponent)
+        for cls in iter_subclasses(component_base.FundamentalComponent)  # type: ignore
         if cls._unique_id.endswith("-builtin")  # type: ignore
     }
 

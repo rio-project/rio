@@ -6,6 +6,7 @@ as sequences of `Union[rio.Component, str]`. Strings are rendered as markdown.
 from typing import *  # type: ignore
 
 import rio
+import rio.snippets
 from rio import escape_markdown as es
 from rio import escape_markdown_code as esc
 from rio_docs import models as docmodels
@@ -90,6 +91,13 @@ class Article:
 
         # Build the component
         self.markdown(markdown)
+
+    def snippet(self, snippet: str, *, section: Optional[str] = None) -> None:
+        # Get the snippet
+        code = rio.snippets.get_snippet_section(snippet, section)
+
+        # Add it
+        self.code_block(code)
 
     def build(self) -> rio.Component:
         return rio.Column(

@@ -50,7 +50,7 @@ class Outliner(rio.Component):
                         color=theme.THEME.primary_color.replace(opacity=0.3)
                         if is_active
                         else rio.Color.TRANSPARENT,
-                        on_press=lambda _, segment=url_segment: self.session.navigate_to(
+                        on_press=lambda segment=url_segment: self.session.navigate_to(
                             f"/documentation/{segment}"
                         ),
                     ),

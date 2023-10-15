@@ -1,4 +1,4 @@
-import { callRemoteMethodDiscardResponse } from "../rpc";
+import { callRemoteMethodDiscardResponse } from '../rpc';
 
 /// Base for all component states. Updates received from the backend are
 /// partial, hence most properties may be undefined.
@@ -69,7 +69,10 @@ export abstract class ComponentBase {
         this._updateMinSize();
     }
 
-    setMinSizeComponentImpl(minWidth: string | null, minHeight: string | null): void {
+    setMinSizeComponentImpl(
+        minWidth: string | null,
+        minHeight: string | null
+    ): void {
         if (minWidth === '0' || minHeight === '0') {
             throw new Error(`Bare "0" is not allowed. You must add a unit.`);
         }
@@ -78,7 +81,10 @@ export abstract class ComponentBase {
         this._updateMinSize();
     }
 
-    setMinSizeContainer(minWidth: string | null, minHeight: string | null): void {
+    setMinSizeContainer(
+        minWidth: string | null,
+        minHeight: string | null
+    ): void {
         if (minWidth === '0' || minHeight === '0') {
             throw new Error(`Bare "0" is not allowed. You must add a unit.`);
         }
@@ -93,13 +99,17 @@ export abstract class ComponentBase {
         let minWidth = this._buildMinSizeString(0);
         element.style.minWidth = minWidth;
         if (!element.style.minWidth) {
-            console.error(`Invalid min-width for component #${this.elementId}: ${minWidth}`);
+            console.error(
+                `Invalid min-width for component #${this.elementId}: ${minWidth}`
+            );
         }
 
         let minHeight = this._buildMinSizeString(1);
         element.style.minHeight = minHeight;
         if (!element.style.minHeight) {
-            console.error(`Invalid min-height for component #${this.elementId}: ${minHeight}`);
+            console.error(
+                `Invalid min-height for component #${this.elementId}: ${minHeight}`
+            );
         }
     }
 
@@ -112,7 +122,7 @@ export abstract class ComponentBase {
             this._minSizeUser[index],
             this._minSizeComponentImpl[index],
             this._minSizeContainer[index],
-        ].filter(size => size !== null) as string[];
+        ].filter((size) => size !== null) as string[];
 
         if (sizes.length === 0) {
             return 'unset';
@@ -121,6 +131,22 @@ export abstract class ComponentBase {
         if (sizes.length === 1) {
             return sizes[0];
         }
+
+        if (sizes.every((size) => size === null)) {
+            return 'unset';
+        }
+
+        // Workaround: Just return the first non-null value
+        for (let size of sizes) {
+            if (size !== null) {
+                return size;
+            }
+        }
+
+        // Unfortunately, the string must be valid or it will be ignored. So we
+        // can't just represent unset values as "null". We'll use "-1px"
+        // instead.
+        sizes = sizes.map((size) => size ?? '-1px');
 
         return `max(${sizes.join(', ')})`;
     }
@@ -151,7 +177,10 @@ export abstract class ComponentBase {
         this._updateElement(element, deltaState);
     }
 
-    abstract _updateElement(element: HTMLElement, deltaState: ComponentState): void;
+    abstract _updateElement(
+        element: HTMLElement,
+        deltaState: ComponentState
+    ): void;
 
     /// This method is called at the end of each `updateComponentStates`
     /// command. It is called for every component that was updated and every
@@ -167,7 +196,7 @@ export abstract class ComponentBase {
     /// automatically unset if the child is reparented by
     /// `replaceOnlyChildAndResetCssProperties` or
     /// `replaceChildrenAndResetCssProperties`.
-    updateChildLayouts(): void { }
+    updateChildLayouts(): void {}
 
     /// Used by the parent for assigning the layout relevant CSS attributes to a
     /// child's HTML element. This function keeps track of the assigned

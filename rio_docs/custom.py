@@ -20,7 +20,6 @@ def find_items_needing_documentation() -> Iterable[Union[Type, Callable]]:
     yield rio.App
     yield rio.AssetError
     yield rio.BoxStyle
-    yield rio.ButtonPressEvent
     yield rio.Color
     yield rio.ColorChangeEvent
     yield rio.CursorStyle

@@ -35,14 +35,15 @@ async def _fake_receive_message() -> Jsonable:
 
 @pytest.fixture()
 def enable_component_instantiation():
-    app = rio.App(_fake_build_function)
+    app = rio.App(build=_fake_build_function)
     app_server = AppServer(
-        app,
+        app_=app,
         running_in_window=False,
         on_session_start=None,
         on_session_end=None,
         default_attachments=tuple(),
         validator_factory=None,
+        internal_on_app_start=None,
     )
     session = rio.Session(
         app_server,
@@ -134,7 +135,7 @@ class _MockApp:
 async def _create_mockapp(
     build: Callable[[], rio.Component],
 ) -> AsyncGenerator[_MockApp, None]:
-    app = rio.App(build)
+    app = rio.App(build=build)
     app_server = AppServer(
         app,
         running_in_window=False,
@@ -142,6 +143,7 @@ async def _create_mockapp(
         on_session_end=None,
         default_attachments=tuple(),
         validator_factory=None,
+        internal_on_app_start=None,
     )
 
     # Emulate the process of creating a session as closely as possible

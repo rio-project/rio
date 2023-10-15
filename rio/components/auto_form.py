@@ -44,7 +44,7 @@ class AutoForm(component_base.Component):
         """
         pass
 
-    async def _on_submit(self, ev: button.ButtonPressEvent) -> None:
+    async def _on_submit(self) -> None:
         # Display the loading indicator
         self._is_loading = True
         await self.force_refresh()
@@ -72,7 +72,7 @@ class AutoForm(component_base.Component):
         self,
         *,
         text: str,
-        on_press: rio.EventHandler[button.ButtonPressEvent],
+        on_press: rio.EventHandler[[]],
         is_sensitive: bool,
         is_loading: bool,
         is_major: bool,

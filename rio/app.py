@@ -113,9 +113,9 @@ class App:
 
     def __init__(
         self,
-        build: Callable[[], rio.Component],
         *,
         name: Optional[str] = None,
+        build: Optional[Callable[[], rio.Component]] = None,
         icon: Optional[ImageLike] = None,
         pages: Iterable[rio.Page] = tuple(),
         on_app_start: rio.EventHandler["App"] = None,
@@ -132,6 +132,9 @@ class App:
                 that since classes are callable in Python, you can pass a class
                 here instead of a function, so long as the class doesn't require
                 any arguments.
+
+                If no build method is passed, the app will create a `PageView`
+                as the root component.
 
             name: The name to display for this app. This can show up in window
                 titles, error messages and wherever else the app needs to be
@@ -190,6 +193,9 @@ class App:
 
         if name is None:
             name = _get_default_app_name(main_file)
+
+        if build is None:
+            build = rio.PageView
 
         self.name = name
         self._build = _validate_build_function(build)
