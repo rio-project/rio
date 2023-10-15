@@ -22,7 +22,7 @@ class ColorPickerPopup(rio.Component):
     def _on_create(self) -> None:
         self._color = getattr(self.theme, self.property_name)
 
-    async def _on_confirm(self, event: rio.ButtonPressEvent) -> None:
+    async def _on_confirm(self) -> None:
         await self._call_event_handler(
             self.on_color_change,
             rio.ColorChangeEvent(self._color),

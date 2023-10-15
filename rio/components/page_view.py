@@ -31,7 +31,7 @@ def default_fallback_build(sess: rio.Session) -> rio.Component:
         ),
         rio.Button(
             "Take me home",
-            on_press=lambda _: sess.navigate_to("/"),
+            on_press=lambda: sess.navigate_to("/"),
         ),
         spacing=3,
         width=20,

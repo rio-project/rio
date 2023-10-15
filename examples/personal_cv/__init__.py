@@ -6,9 +6,9 @@ app = rio.App(
     name="My Portfolio",
     build=rio.PageView,
     pages=[
-        rio.Page("", pages.PortfolioView),
+        rio.Page("", pages.CvView),
     ],
 )
 
 
-fa_app = app.as_fastapi()
+fastapi_app = app.as_fastapi()

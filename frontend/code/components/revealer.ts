@@ -3,8 +3,8 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';
-    label?: string;
-    child?: number | string;
+    header?: string | null;
+    content?: number | string;
     is_expanded: boolean;
 };
 
@@ -75,7 +75,9 @@ export class RevealerComponent extends ComponentBase {
     <div class="rio-revealer-content-inner rio-single-container"></div>
 </div>
 `;
-        let header = element.querySelector('.rio-revealer-header') as HTMLElement;
+        let header = element.querySelector(
+            '.rio-revealer-header'
+        ) as HTMLElement;
 
         // Listen for presses
         header.onmouseup = (e) => {
@@ -107,20 +109,31 @@ export class RevealerComponent extends ComponentBase {
     }
 
     _updateElement(element: HTMLElement, deltaState: RevealerState): void {
-        // Update the label
-        if (deltaState.label !== undefined) {
-            let label = element.querySelector(
+        // Update the header
+        if (deltaState.header === null) {
+            let header = element.querySelector(
+                '.rio-revealer-header'
+            ) as HTMLElement;
+
+            header.style.display = 'none';
+        } else if (deltaState.header !== undefined) {
+            let header = element.querySelector(
+                '.rio-revealer-header'
+            ) as HTMLElement;
+
+            let label = header.querySelector(
                 '.rio-revealer-label'
             ) as HTMLElement;
 
-            label.innerText = deltaState.label;
+            header.style.removeProperty('display');
+            label.innerText = deltaState.header;
         }
 
         // Update the child
         let contentInner = element.querySelector(
             '.rio-revealer-content-inner'
         ) as HTMLElement;
-        replaceOnlyChildAndResetCssProperties(contentInner, deltaState.child);
+        replaceOnlyChildAndResetCssProperties(contentInner, deltaState.content);
 
         // Expand / collapse
         if (deltaState.is_expanded === true) {

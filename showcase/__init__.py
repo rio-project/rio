@@ -86,7 +86,7 @@ class ExtensibleList(rio.Component):
         default_factory=lambda: ["Perma 1", "Perma 2"],
     )
 
-    def on_extend(self, _) -> None:
+    def on_extend(self) -> None:
         self.child_names = self.child_names + [f"New {len(self.child_names) + 1}"]
 
     def build(self) -> rio.Component:
@@ -104,7 +104,7 @@ class Sidebar(rio.Component):
     expanded: bool = False
     popup_visible: bool = False
 
-    def _on_toggle_popup(self, _) -> None:
+    def _on_toggle_popup(self) -> None:
         self.popup_visible = not self.popup_visible
 
     def build(self) -> rio.Component:
@@ -197,7 +197,7 @@ class Sidebar(rio.Component):
                     rio.Slider(value=0.1),
                     rio.Button(
                         "Foo",
-                        on_press=lambda _: print("Button Pressed"),
+                        on_press=lambda: print("Button Pressed"),
                         shape="pill",
                         style="major",
                         is_loading=True,
@@ -354,8 +354,8 @@ def validator_factory(sess: rio.Session) -> rio.debug.Validator:
 
 
 rio_app = rio.App(
-    ComponentShowcase,
     name="Rio Showcase",
+    build=ComponentShowcase,
     on_session_start=lambda sess: print("Session Started"),
     on_session_end=lambda sess: print("Session Ended"),
     default_attachments=[

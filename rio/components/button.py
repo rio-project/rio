@@ -9,13 +9,7 @@ from . import component_base, progress_circle
 
 __all__ = [
     "Button",
-    "ButtonPressEvent",
 ]
-
-
-@dataclass
-class ButtonPressEvent:
-    pass
 
 
 class Button(component_base.Component):
@@ -71,7 +65,7 @@ class Button(component_base.Component):
     color: rio.ColorSet = "primary"
     is_sensitive: bool = True
     is_loading: bool = False
-    on_press: rio.EventHandler[ButtonPressEvent] = None
+    on_press: rio.EventHandler[[]] = None
 
     def build(self) -> rio.Component:
         # Prepare the child
@@ -86,11 +80,16 @@ class Button(component_base.Component):
             children: List[component_base.Component] = []
 
             if self.icon is not None:
+                if self.shape == "circle":
+                    icon_size = 2.2
+                else:
+                    icon_size = 1.2
+
                 children.append(
                     rio.Icon(
                         self.icon,
-                        height=1.2,
-                        width=1.2,
+                        height=icon_size,
+                        width=icon_size,
                     )
                 )
 
@@ -130,9 +129,54 @@ class Button(component_base.Component):
         return f"<Button id:{self._id} text:{self.text!r}>"
 
 
+class FloatingActionButton(component_base.Component):
+    """
+    A round, clickable button with shadow.
+
+    The `FloatingActionButton` component is similar to the `Button` component,
+    but has a different visual style. It is round and has a shadow, making it
+    appear to hover above the rest of the page. It is typically used to make the
+    most important action on a page stand out. For example, an e-mail client
+    might use a floating action button to compose a new e-mail. A note taking
+    app might use it to create a new note.
+
+    The `FloatingActionButton` itself doesn't perform any special layouting.
+    Combine it with `rio.Stack` or `rio.Overlay` to make it float above other
+    components.
+    """
+
+    icon: str
+    _: KW_ONLY
+    color: rio.ColorSet = "primary"
+    is_sensitive: bool = True
+    on_press: rio.EventHandler[[]] = None
+
+    def build(self) -> rio.Component:
+        return _ButtonInternal(
+            on_press=self.on_press,
+            style="major",
+            child=rio.Icon(
+                self.icon,
+                height=2.5,
+                width=2.5,
+                align_x=1,
+                align_y=1,
+            ),
+            shape="circle",
+            color=self.color,
+            is_sensitive=self.is_sensitive,
+            width=4,
+            height=4,
+            margin_right=3,
+            margin_bottom=3,
+            align_x=1,
+            align_y=1,
+        )
+
+
 class _ButtonInternal(component_base.FundamentalComponent):
     _: KW_ONLY
-    on_press: rio.EventHandler[ButtonPressEvent]
+    on_press: rio.EventHandler[[]]
     child: rio.Component
     shape: Literal["pill", "rounded", "rectangle", "circle"]
     style: Literal["major", "minor"]
@@ -152,10 +196,7 @@ class _ButtonInternal(component_base.FundamentalComponent):
             return
 
         # Trigger the press event
-        await self.call_event_handler(
-            self.on_press,
-            ButtonPressEvent(),
-        )
+        await self.call_event_handler(self.on_press)
 
         # Refresh the session
         await self.session._refresh()

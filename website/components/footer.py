@@ -64,21 +64,21 @@ class Footer(rio.Component):
                             ("About", "#"),
                             ("Blog", "#"),
                             ("Contact", "#"),
-                        ],
+                        ],  # type: ignore
                     ),
                     FooterColumn(
                         entries=[
                             ("Twitter", "#"),
                             ("LinkedIn", "#"),
                             ("GitHub", "https://github.com/rio-project/rio"),
-                        ],
+                        ],  # type: ignore
                     ),
                     FooterColumn(
                         entries=[
                             ("Privacy", rio.URL("http://google.com")),
                             ("Terms", "ddg.gg"),
                             ("Docs", "/documentation"),
-                        ],
+                        ],  # type: ignore
                     ),
                     spacing=8.0,
                     align_x=0.5,

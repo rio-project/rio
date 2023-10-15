@@ -32,7 +32,7 @@ class NavigationButton(rio.Component):
             color=color,
             width=5,
             align_y=0.5,
-            on_press=lambda _: self.session.navigate_to("/" + self.page),
+            on_press=lambda: self.session.navigate_to("/" + self.page),
         )
 
 

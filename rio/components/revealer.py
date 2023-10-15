@@ -23,8 +23,8 @@ class RevealerChangeEvent:
 
 
 class Revealer(component_base.FundamentalComponent):
-    label: str
-    child: component_base.Component
+    header: Optional[str]
+    content: component_base.Component
     _: KW_ONLY
     is_expanded: bool = False
     on_change: rio.EventHandler[RevealerChangeEvent] = None
