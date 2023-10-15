@@ -59,9 +59,14 @@ class Image(component_base.FundamentalComponent):
     on_error: EventHandler[[]] = None
     corner_radius: Union[float, Tuple[float, float, float, float]] = 0
 
-    @rio.event.on_create
-    def _on_create(self) -> None:
-        self._image_asset = assets.Asset.from_image(self.image)
+    def _get_image_asset(self) -> assets.Asset:
+        image = self.image
+
+        if getattr(self, "_image_for_cached_asset", None) != image:
+            self._cached_image_asset = assets.Asset.from_image(image)
+            self._image_for_cached_asset = image
+
+        return self._cached_image_asset
 
     def _custom_serialize(self) -> JsonDoc:
         if isinstance(self.corner_radius, (int, float)):
@@ -70,7 +75,7 @@ class Image(component_base.FundamentalComponent):
             corner_radius = self.corner_radius
 
         return {
-            "imageUrl": self._image_asset._serialize(self.session),
+            "imageUrl": self._get_image_asset()._serialize(self.session),
             "reportError": self.on_error is not None,
             "corner_radius": corner_radius,
         }

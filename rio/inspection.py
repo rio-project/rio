@@ -55,7 +55,7 @@ def get_attributes_to_serialize(
             "_session_",
             "_state_properties_",
             "_weak_builder_",
-            "_state_bindings_initialized",
+            "_state_bindings_initialized_",
             "align_x",
             "align_y",
             "grow_x",

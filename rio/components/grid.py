@@ -48,7 +48,7 @@ class Grid(component_base.FundamentalComponent):
 
     def __init__(
         self,
-        *children: Iterable[rio.Component],
+        *rows: Iterable[rio.Component],
         row_spacing: float = 0.0,
         column_spacing: float = 0.0,
         key: Optional[str] = None,
@@ -82,12 +82,12 @@ class Grid(component_base.FundamentalComponent):
         self.row_spacing = row_spacing
         self.column_spacing = column_spacing
 
-        # JS can only work with lists of Components, so we'll store the components and
-        # their positions separately
+        # JS can only work with lists of Components, so we'll store the
+        # components and their positions separately
         _children: List[rio.Component] = []
         _child_positions: List[GridChildPosition] = []
 
-        for row_nr, row_components in enumerate(children):
+        for row_nr, row_components in enumerate(rows):
             for col_nr, component in enumerate(row_components):
                 _children.append(component)
                 _child_positions.append(
