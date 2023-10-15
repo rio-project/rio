@@ -1292,9 +1292,10 @@ class Session(unicall.Unicall):
     async def save_file(
         self,
         file_contents: Union[Path, str, bytes],
-        destination: Union[Path, str],
+        file_name: str = "Unnamed File",
         *,
         media_type: Optional[str] = None,
+        directory: Optional[Path] = None,
     ) -> None:
         """
         Save a file to the user's device.
@@ -1302,21 +1303,34 @@ class Session(unicall.Unicall):
         This function allows you to save a file to the user's device. The user
         will be prompted to select a location to save the file to.
 
-        See also `file_chooser`, if you want to open a file instead of saving
+        See also `file_chooser` if you want to open a file instead of saving
         one.
 
         Args:
             file_contents: The contents of the file to save. This can be a
                 string, bytes, or a path to a file on the server.
 
-            destination: The path where the file will be saved. If the user is
-                viewing the app in a browser, everything except for the file
-                name is ignored.
+            file_name: The default file name that will be displayed in the file
+                dialog. The user can freely change it.
 
             media_type: The media type of the file. Defaults to `None`, which
                 means that the media type will be guessed from the file name.
+
+            directory: The directory where the file dialog should open. This has
+                no effect if the user is visiting the app in a browser.
         """
         if self.running_in_window:
+            # FIXME: Find (1) a better way to get the active window and (2) a
+            # way to open a file dialog without blocking the event loop.
+            import webview
+
+            active_window = webview.active_window()
+            destination = active_window.create_file_dialog(
+                webview.SAVE_DIALOG,
+                directory=directory,
+                save_filename=file_name,
+            )
+
             if isinstance(file_contents, Path):
                 await asyncio.to_thread(shutil.copy, file_contents, destination)
 
@@ -1359,14 +1373,13 @@ class Session(unicall.Unicall):
         # Host the asset
         url = self._app_server.host_asset_with_timeout(as_asset, 60)
 
-        file_name = Path(destination).name
-
         # Tell the frontend to download the file
         await self._evaluate_javascript(
             f"""
 const a = document.createElement('a')
 a.href = {json.dumps(url)}
 a.download = {json.dumps(file_name)}
+a.type = {json.dumps(media_type)}
 a.target = "_blank"
 document.body.appendChild(a)
 a.click()
