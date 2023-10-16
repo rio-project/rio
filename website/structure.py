@@ -30,12 +30,12 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
             (
                 "Application Overview",
                 "tutorial-2-application-overview",
-                articles.tutorial_2_application_overview,
+                articles.tutorial_2_application_overview.generate,
             ),
             (
                 "Setting-up your App",
                 "tutorial-3-application-setup",
-                articles.tutorial_3_app_setup,
+                articles.tutorial_3_app_setup.generate,
             ),
         ),
     ),

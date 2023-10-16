@@ -92,12 +92,96 @@ class Article:
         # Build the component
         self.markdown(markdown)
 
-    def snippet(self, snippet: str, *, section: Optional[str] = None) -> None:
+    def snippet(
+        self,
+        snippet: str,
+        *,
+        section: Optional[str] = None,
+    ) -> None:
         # Get the snippet
-        code = rio.snippets.get_snippet_section(snippet, section)
+        code = rio.snippets.get_snippet_section(snippet, section=section)
 
         # Add it
         self.code_block(code)
+
+    def box(self, level: Literal["info", "warning", "danger"], text: str) -> None:
+        if level == "info":
+            color = theme.THEME.secondary_color
+            icon = "info"
+        elif level == "warning":
+            color = theme.THEME.warning_color
+            icon = "warning"
+        elif level == "danger":
+            color = theme.THEME.danger_color
+            icon = "error"
+        else:
+            assert False, f"Unknown box level: {level}"
+
+        self.component(
+            rio.Rectangle(
+                child=rio.Row(
+                    rio.Icon(
+                        icon,
+                        width=3,
+                        height=3,
+                        align_y=0,
+                    ),
+                    rio.MarkdownView(
+                        text,
+                        default_language=self.default_language,
+                        width="grow",
+                    ),
+                    spacing=1.5,
+                    margin=1.5,
+                ),
+                style=rio.BoxStyle(
+                    fill=color,
+                    corner_radius=theme.THEME.corner_radius_medium,
+                ),
+            ),
+        )
+
+    def navigation(
+        self,
+        prev_title: str,
+        prev_link: Optional[rio.URL],
+        next_title: str,
+        next_link: Optional[rio.URL],
+    ) -> None:
+        # Navigation to the previous article
+        if prev_link is None:
+            prev_child = rio.Spacer()
+        else:
+            prev_child = rio.Link(
+                rio.Button(
+                    prev_title,
+                    icon="arrow-back",
+                ),
+                target_url=prev_link,
+            )
+
+        # Navigation to the next article
+        if next_link is None:
+            next_child = rio.Spacer()
+        else:
+            next_child = rio.Link(
+                rio.Button(
+                    next_title,
+                    icon="arrow-forward",
+                ),
+                target_url=next_link,
+            )
+
+        # Combine everything
+        self.component(
+            rio.Row(
+                prev_child,
+                rio.Spacer(),
+                next_child,
+                spacing=2,
+                margin_y=2,
+            )
+        )
 
     def build(self) -> rio.Component:
         return rio.Column(

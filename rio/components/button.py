@@ -9,6 +9,7 @@ from . import component_base, progress_circle
 
 __all__ = [
     "Button",
+    "CircularButton",
 ]
 
 
@@ -129,7 +130,7 @@ class Button(component_base.Component):
         return f"<Button id:{self._id} text:{self.text!r}>"
 
 
-class FloatingActionButton(component_base.Component):
+class CircularButton(component_base.Component):
     """
     A round, clickable button with shadow.
 

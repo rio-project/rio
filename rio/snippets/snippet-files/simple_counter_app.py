@@ -1,6 +1,7 @@
 import rio
 
 
+# <circular-button>
 class CircularButton(rio.Button):
     text: str
     on_press: rio.EventHandler[[]] = None
@@ -15,6 +16,10 @@ class CircularButton(rio.Button):
         )
 
 
+# </circular-button>
+
+
+# <counter>
 class Counter(rio.Component):
     value: int = 0
 
@@ -56,6 +61,10 @@ class Counter(rio.Component):
         )
 
 
+# </counter>
+
+
+# <app>
 app = rio.App(
     pages=[
         rio.Page(
@@ -64,5 +73,8 @@ app = rio.App(
         )
     ],
 )
+# </app>
 
+# <run>
 app.run_in_browser()
+# </run>
