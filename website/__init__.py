@@ -126,24 +126,23 @@ def _make_documentation_pages() -> List[rio.Page]:
         article_or_class,
     ) in structure.DOCUMENTATION_STRUCTURE_LINEAR:
         if inspect.isclass(article_or_class):
-            make_child = lambda rio_class=article_or_class: rio.Column(
-                get_docs(rio_class),
-                rio.Spacer(),
-                margin_left=23,
-                margin_bottom=4,
-                spacing=3,
-                width=65,
-                height="grow",
-                align_x=0.5,
-            )
-
+            make_child = lambda rio_class=article_or_class: get_docs(rio_class)
         else:
             make_child = lambda article=article_or_class: article().build()
 
         result.append(
             rio.Page(
                 url_segment,
-                make_child,
+                lambda make_child=make_child: rio.Column(
+                    make_child(),
+                    rio.Spacer(),
+                    margin_left=23,
+                    margin_bottom=4,
+                    spacing=3,
+                    width=65,
+                    height="grow",
+                    align_x=0.5,
+                ),
             )
         )
 

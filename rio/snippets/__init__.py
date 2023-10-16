@@ -9,7 +9,7 @@ import uniserde
 
 from .. import common
 
-SECTION_PATTERN = re.compile(r"#\s*<(\/?\w+)>")
+SECTION_PATTERN = re.compile(r"#\s*<(\/?[\w-]+)>")
 
 
 class Snippet(uniserde.Serde):
@@ -74,11 +74,11 @@ def get_raw_snippet(name: str) -> Snippet:
     """
 
     # Try to read the metadata. Fall back to an empty dict if it doesn't exist.
-    with (common.SNIPPETS_DIR / f"{name}.json").open() as json_path:
-        try:
+    try:
+        with (common.SNIPPETS_DIR / f"{name}.json").open() as json_path:
             metadata = json.load(json_path)
-        except FileNotFoundError:
-            metadata = {}
+    except FileNotFoundError:
+        metadata = {}
 
     # Read the snippet code
     snippet_path = common.SNIPPETS_DIR / f"{name}.py"
@@ -95,7 +95,7 @@ def get_raw_snippet(name: str) -> Snippet:
 def get_snippet_section(
     snippet_name: str,
     *,
-    section_name: Optional[str] = None,
+    section: Optional[str] = None,
 ) -> str:
     """
     Returns the contents of the specified section in the given snippet. Raises a
@@ -104,8 +104,8 @@ def get_snippet_section(
     snippet = get_raw_snippet(snippet_name)
 
     # If no section name was given, return the entire snippet
-    if section_name is None:
+    if section is None:
         return snippet.stripped_code()
 
     # Otherwise, return the specified section
-    return snippet.get_section(section_name)
+    return snippet.get_section(section)
