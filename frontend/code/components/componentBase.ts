@@ -128,6 +128,8 @@ export abstract class ComponentBase {
             return 'unset';
         }
 
+        return sizes[0];
+
         if (sizes.length === 1) {
             return sizes[0];
         }
@@ -162,6 +164,11 @@ export abstract class ComponentBase {
     }
 
     abstract _createElement(): HTMLElement;
+
+    /// This method is called after the component's HTML element has been
+    /// created. It is intended for components that need to do some additional
+    /// initialization once they know their initial state.
+    onCreation(element: HTMLElement, state: Required<ComponentState>): void { }
 
     /// Given a partial state update, this function updates the component's HTML
     /// element to reflect the new state.
