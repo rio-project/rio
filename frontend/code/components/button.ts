@@ -6,16 +6,21 @@ import { SingleContainer } from './singleContainer';
 
 export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
-    shape: 'pill' | 'rounded' | 'rectangle' | 'circle';
-    style: 'major' | 'minor';
-    color: ColorSet;
+    shape?: 'pill' | 'rounded' | 'rectangle' | 'circle';
+    style?: 'major' | 'minor';
+    color?: ColorSet;
     child?: number | string;
-    is_sensitive: boolean;
+    is_sensitive?: boolean;
+    initially_disabled_for?: number;
 };
 
 export class ButtonComponent extends SingleContainer {
     state: Required<ButtonState>;
     private mdcRipple: MDCRipple;
+
+    // In order to prevent a newly created button from being clicked on
+    // accident, it starts out disabled and enables itself after a short delay.
+    private isStillInitiallyDisabled: boolean = true;
 
     _createElement(): HTMLElement {
         // Create the element
@@ -28,7 +33,7 @@ export class ButtonComponent extends SingleContainer {
         // Detect button presses
         element.onmouseup = (e) => {
             // Do nothing if the button isn't sensitive
-            if (!this.state['is_sensitive']) {
+            if (!this.state['is_sensitive'] || this.isStillInitiallyDisabled) {
                 return;
             }
 
@@ -43,6 +48,17 @@ export class ButtonComponent extends SingleContainer {
         });
 
         return element;
+    }
+
+    onCreation(element: HTMLElement, state: Required<ButtonState>): void {
+        setTimeout(() => {
+            this.isStillInitiallyDisabled = false;
+
+            // this._updateElement(element, {
+            //     _type_: 'Button-builtin',
+            //     is_sensitive: this.state.is_sensitive,
+            // });
+        }, state.initially_disabled_for * 1000);
     }
 
     _updateElement(element: HTMLElement, deltaState: ButtonState): void {
@@ -75,8 +91,11 @@ export class ButtonComponent extends SingleContainer {
             deltaState.color !== undefined ||
             deltaState.is_sensitive !== undefined
         ) {
-            let is_sensitive: boolean =
-                deltaState.is_sensitive || this.state['is_sensitive'];
+            // It looks ugly if every new button is initially greyed out, so
+            // for the styling we ignore `self.isStillInitiallyDisabled`.
+            let is_sensitive: boolean = (
+                deltaState.is_sensitive || this.state['is_sensitive']
+            );
 
             let colorSet = is_sensitive
                 ? deltaState.color || this.state['color']

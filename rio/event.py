@@ -5,8 +5,8 @@ from typing import *  # type: ignore
 
 import rio
 
-T = TypeVar("T", bound="rio.Component")
-U = TypeVar("U")
+C = TypeVar("C", bound="rio.Component")
+R = TypeVar("R")
 
 
 class EventTag(enum.Enum):
@@ -14,11 +14,11 @@ class EventTag(enum.Enum):
     ON_PAGE_CHANGE = enum.auto()
 
 
-def on_create(handler: Callable[[T], None]) -> Callable[[T], None]:
+def on_create(handler: Callable[[C], None]) -> Callable[[C], None]:
     handler._rio_event_tag_ = EventTag.ON_CREATE
     return handler
 
 
-def on_page_change(handler: Callable[[T], U]) -> Callable[[T], U]:
+def on_page_change(handler: Callable[[C], R]) -> Callable[[C], R]:
     handler._rio_event_tag_ = EventTag.ON_PAGE_CHANGE
     return handler

@@ -345,6 +345,9 @@ export function updateComponentStates(
             element.setAttribute('dbg-key', `${key}`);
         }
 
+        // Let the component do any post-creation initialization
+        instance.onCreation(element, deltaState as Required<ComponentState>);
+
         // Create a mapping from the element to the component instance
         elementsToInstances.set(element, instance);
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY, dataclass
+from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
 import rio
@@ -11,6 +11,9 @@ __all__ = [
     "Button",
     "CircularButton",
 ]
+
+
+INITIALLY_DISABLED_FOR = 0.25
 
 
 class Button(component_base.Component):
@@ -66,6 +69,7 @@ class Button(component_base.Component):
     color: rio.ColorSet = "primary"
     is_sensitive: bool = True
     is_loading: bool = False
+    initially_disabled_for: float = INITIALLY_DISABLED_FOR
     on_press: rio.EventHandler[[]] = None
 
     def build(self) -> rio.Component:
@@ -124,6 +128,7 @@ class Button(component_base.Component):
             style=self.style,
             color=self.color,
             is_sensitive=self.is_sensitive and not self.is_loading,
+            initially_disabled_for=self.initially_disabled_for,
         )
 
     def __str__(self) -> str:
@@ -151,6 +156,7 @@ class CircularButton(component_base.Component):
     color: rio.ColorSet = "primary"
     is_sensitive: bool = True
     on_press: rio.EventHandler[[]] = None
+    initially_disabled_for: float = INITIALLY_DISABLED_FOR
 
     def build(self) -> rio.Component:
         return _ButtonInternal(
@@ -172,6 +178,7 @@ class CircularButton(component_base.Component):
             margin_bottom=3,
             align_x=1,
             align_y=1,
+            initially_disabled_for=self.initially_disabled_for,
         )
 
 
@@ -183,13 +190,14 @@ class _ButtonInternal(component_base.FundamentalComponent):
     style: Literal["major", "minor"]
     color: rio.ColorSet
     is_sensitive: bool
+    initially_disabled_for: float
 
     async def _on_message(self, msg: Any) -> None:
         # Parse the message
         assert isinstance(msg, dict), msg
         assert msg["type"] == "press", msg
 
-        msg_type = msg["type"]
+        msg_type: str = msg["type"]
         assert isinstance(msg_type, str), msg_type
 
         # Is the button sensitive?
