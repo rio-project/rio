@@ -186,7 +186,7 @@ class Article:
     def build(self) -> rio.Component:
         return rio.Column(
             *self._parts,
-            spacing=4,
+            spacing=2,
         )
 
 
