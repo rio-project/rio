@@ -2,12 +2,9 @@ import dataclasses
 from typing import List
 
 import pytest
+from utils import create_mockapp
 
 import rio
-
-# @pytest.fixture(autouse=True)
-# def _enable_component_instantiation(enable_component_instantiation):
-#     pass
 
 
 def test_fields_with_defaults(enable_component_instantiation):
@@ -15,7 +12,7 @@ def test_fields_with_defaults(enable_component_instantiation):
         foo: List[str] = dataclasses.field(init=False, default_factory=list)
         bar: int = dataclasses.field(init=False, default=5)
 
-        def build(self):
+        def build(self) -> rio.Component:
             raise NotImplementedError()
 
     component = TestComponent()
@@ -23,7 +20,7 @@ def test_fields_with_defaults(enable_component_instantiation):
     assert component.bar == 5
 
 
-async def test_init_cannot_read_state_properties(create_mockapp):
+async def test_init_cannot_read_state_properties():
     # Accessing state properties in `__init__` is not allowed because state
     # bindings aren't initialized yet at that point. In development mode, trying
     # to access a state property in `__init__` should raise an exception.

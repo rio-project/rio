@@ -16,9 +16,9 @@ __all__ = [
 
 class Link(component_base.FundamentalComponent):
     """
-    Navigate to a page or URL when clicked.
+    Navigates to a page or URL when clicked.
 
-    Links display a short text, or arbitrary component, and navigate to a page
+    `Link`s display a short text, or arbitrary component, and navigate to a page
     or URL when clicked.
     """
 

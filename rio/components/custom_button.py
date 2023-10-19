@@ -5,7 +5,7 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import button, component_base
+from . import component_base
 
 __all__ = [
     "CustomButton",

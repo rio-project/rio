@@ -135,23 +135,23 @@ export function getParentComponentElementExcludingInjected(
 }
 
 function getCurrentComponentState(
-    id: number | string,
+    id: ComponentId,
     deltaState: ComponentState
 ): ComponentState {
-    let parentElement = document.getElementById(`rio-id-${id}`);
+    let element = document.getElementById(`rio-id-${id}`);
 
-    if (parentElement === null) {
+    if (element === null) {
         return deltaState;
     }
 
-    let parentInstance = elementsToInstances.get(parentElement);
+    let instance = elementsToInstances.get(element);
 
-    if (parentInstance === undefined) {
+    if (instance === undefined) {
         return deltaState;
     }
 
     return {
-        ...parentInstance.state,
+        ...instance.state,
         ...deltaState,
     };
 }
@@ -166,6 +166,9 @@ function createLayoutComponentStates(
 
     // Margin
     let margin = entireState['_margin_']!;
+    if (margin === undefined) {
+        console.error(`Got incomplete state for component ${componentId}`);
+    }
     if (
         margin[0] !== 0 ||
         margin[1] !== 0 ||

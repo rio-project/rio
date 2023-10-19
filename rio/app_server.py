@@ -323,11 +323,11 @@ class AppServer(fastapi.FastAPI):
             sess.attachments.add(copy.deepcopy(attachment))
 
         # Make sure a theme is attached
-        if rio.Theme not in sess.attachments:
+        if rio.Theme in sess.attachments:
+            thm = sess.attachments[rio.Theme]
+        else:
             thm = rio.Theme()
             sess.attachments.add(thm)
-        else:
-            thm = sess.attachments[rio.Theme]
 
         # Create a list of initial messages for the client to process
         initial_messages = await _build_initial_messages(sess, thm)
@@ -521,7 +521,7 @@ class AppServer(fastapi.FastAPI):
             )
 
         # Parse the file sizes
-        parsed_file_sizes = []
+        parsed_file_sizes: List[int] = []
         for file_size in file_sizes:
             try:
                 parsed = int(file_size)
@@ -642,7 +642,7 @@ class AppServer(fastapi.FastAPI):
             init_coro = sess._refresh()
 
         try:
-            # This is done in a task, because the server is not yet running, so
+            # This is done in a task because the server is not yet running, so
             # the method would never receive a response, and thus would hang
             # indefinitely.
             sess.create_task(init_coro, name=f"Session {sess} init")
@@ -678,7 +678,7 @@ class AppServer(fastapi.FastAPI):
         sess.window_height = initial_message.window_height
 
         # Parse the preferred locales
-        preferred_locales = []
+        preferred_locales: List[babel.Locale] = []
 
         for raw_locale_string in initial_message.preferred_languages:
             try:
@@ -710,62 +710,7 @@ class AppServer(fastapi.FastAPI):
         )
 
         # Deserialize the user settings
-        visited_settings: Dict[str, user_settings_module.UserSettings] = {}
-
-        for att_defaults in self.default_attachments:
-            if not isinstance(att_defaults, user_settings_module.UserSettings):
-                continue
-
-            # Create the instance for this attachment. Bypass the constructor so
-            # the instance doesn't immediately try to synchronize with the
-            # frontend.
-            att_instance = user_settings_module.UserSettings()
-            object.__setattr__(
-                att_instance,
-                "__class__",
-                type(att_defaults),
-            )
-
-            section_prefix = (
-                f"{att_instance.section_name}:" if att_instance.section_name else ""
-            )
-
-            for py_field_name, field_type in inspection.get_type_annotations(
-                type(att_instance)
-            ).items():
-                # Skip internal fields
-                if py_field_name in user_settings_module.UserSettings.__annotations__:
-                    continue
-
-                # Make sure this field isn't clashing with another attachment
-                doc_field_name = f"{section_prefix}{py_field_name}"
-
-                try:
-                    att_other = visited_settings[doc_field_name]
-                except KeyError:
-                    visited_settings[doc_field_name] = att_instance
-                else:
-                    raise RuntimeError(
-                        f'The field "{py_field_name}" is used by multiple `UserSetting` attachments:\n'
-                        f"- `{att_instance.__class__.__name__}` and \n"
-                        f"- `{att_other.__class__.__name__}`.\n\n"
-                        f"Rename one of the fields, or assign a `section_name` to one of the classes."
-                    ) from None
-
-                # Try to parse the field value
-                try:
-                    field_value = uniserde.from_json(
-                        initial_message.user_settings[doc_field_name],
-                        field_type,
-                    )
-                except (KeyError, uniserde.SerdeError):
-                    field_value = copy.deepcopy(getattr(att_defaults, py_field_name))
-
-                # Set the field value
-                vars(att_instance)[py_field_name] = field_value
-
-                # Attach the instance to the session
-                sess.attachments._add(att_instance, synchronize=False)
+        await sess._load_user_settings(initial_message.user_settings)
 
         # Create the root component. The root component is a non-fundamental component,
         # because that has many advantages:

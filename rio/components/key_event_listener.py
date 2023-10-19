@@ -596,12 +596,23 @@ class KeyPressEvent(_KeyUpDownEvent):
 
 class KeyEventListener(component_base.FundamentalComponent):
     """
-    `on_key_down` is called when a key is pressed down.
+    Calls an event handler when a key is pressed or released.
 
-    `on_key_up` is called when a key is released.
+    `KeyEventListener` is a container for a single child component. It listens
+    for keyboard events and calls corresponding event handlers when they occur.
 
-    `on_key_press` is called when a key is pressed down, and repeatedly called
-    again while the key is held down.
+    Keep in mind that `KeyEventListener` will only report events that have not
+    been handled by a child component. For example, typing into a `TextInput`
+    will not trigger a `KeyEventListener`.
+
+    Attributes:
+        child: The child component.
+
+        on_key_down: A function to call when a key is pressed down.
+
+        on_key_up: A function to call when a key is released.
+
+        on_key_press: A function to call repeatedly while a key is held down.
     """
 
     child: component_base.Component

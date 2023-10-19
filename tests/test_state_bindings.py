@@ -1,3 +1,7 @@
+from typing import cast
+
+from utils import create_mockapp
+
 import rio
 
 StateBinding = rio.component_base.StateBinding
@@ -18,7 +22,7 @@ class Grandparent(rio.Component):
         return Parent(Grandparent.text)
 
 
-async def test_bindings_arent_created_too_early(create_mockapp):
+async def test_bindings_arent_created_too_early():
     # There was a time when state bindings were created in `Component.__init__`.
     # Make sure they're created after *all* `__init__`s have run.
     class IHaveACustomInit(rio.Component):
@@ -47,7 +51,7 @@ async def test_bindings_arent_created_too_early(create_mockapp):
         assert child_component.text == "bye"
 
 
-async def test_init_receives_state_properties_as_input(create_mockapp):
+async def test_init_receives_state_properties_as_input():
     # For a while we considered initializing state bindings before calling a
     # component's `__init__` and passing the values of the bindings as arguments
     # into `__init__`. But ultimately we decided against it, because some
@@ -72,10 +76,10 @@ async def test_init_receives_state_properties_as_input(create_mockapp):
         pass
 
 
-async def test_binding_assignment_on_child(create_mockapp):
+async def test_binding_assignment_on_child():
     async with create_mockapp(Parent) as app:
-        root_component = app.get_root_component()
-        text_component: rio.Text = app.get_build_output(root_component)
+        root_component = app.get_component(Parent)
+        text_component = app.get_build_output(root_component, rio.Text)
 
         assert not app.dirty_components
 
@@ -86,7 +90,7 @@ async def test_binding_assignment_on_child(create_mockapp):
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_parent(create_mockapp):
+async def test_binding_assignment_on_parent():
     async with create_mockapp(Parent) as app:
         root_component = app.get_component(Parent)
         text_component = app.get_build_output(root_component)
@@ -100,7 +104,7 @@ async def test_binding_assignment_on_parent(create_mockapp):
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_sibling(create_mockapp):
+async def test_binding_assignment_on_sibling():
     class Root(rio.Component):
         text: str = ""
 
@@ -112,7 +116,7 @@ async def test_binding_assignment_on_sibling(create_mockapp):
 
     async with create_mockapp(Root) as app:
         root_component = app.get_root_component()
-        text1, text2 = app.get_build_output(root_component).children
+        text1, text2 = app.get_build_output(root_component, rio.Column).children
 
         assert not app.dirty_components
 
@@ -124,10 +128,10 @@ async def test_binding_assignment_on_sibling(create_mockapp):
         assert text2.text == "Hello"
 
 
-async def test_binding_assignment_on_grandchild(create_mockapp):
+async def test_binding_assignment_on_grandchild():
     async with create_mockapp(Grandparent) as app:
-        root_component = app.get_root_component()
-        parent: Parent = app.get_build_output(root_component)
+        root_component = app.get_component(Grandparent)
+        parent = cast(Parent, app.get_build_output(root_component))
         text_component: rio.Text = app.get_build_output(parent)
 
         assert not app.dirty_components
@@ -140,7 +144,7 @@ async def test_binding_assignment_on_grandchild(create_mockapp):
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_middle(create_mockapp):
+async def test_binding_assignment_on_middle():
     async with create_mockapp(Grandparent) as app:
         root_component = app.get_root_component()
         parent: Parent = app.get_build_output(root_component)
@@ -156,7 +160,7 @@ async def test_binding_assignment_on_middle(create_mockapp):
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_child_after_reconciliation(create_mockapp):
+async def test_binding_assignment_on_child_after_reconciliation():
     async with create_mockapp(Parent) as app:
         root_component = app.get_root_component()
         text_component: rio.Text = app.get_build_output(root_component)
@@ -173,7 +177,7 @@ async def test_binding_assignment_on_child_after_reconciliation(create_mockapp):
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_parent_after_reconciliation(create_mockapp):
+async def test_binding_assignment_on_parent_after_reconciliation():
     async with create_mockapp(Parent) as app:
         root_component = app.get_root_component()
         text_component: rio.Text = app.get_build_output(root_component)
@@ -190,7 +194,7 @@ async def test_binding_assignment_on_parent_after_reconciliation(create_mockapp)
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_sibling_after_reconciliation(create_mockapp):
+async def test_binding_assignment_on_sibling_after_reconciliation():
     class Root(rio.Component):
         text: str = ""
 
@@ -217,7 +221,7 @@ async def test_binding_assignment_on_sibling_after_reconciliation(create_mockapp
         assert text2.text == "Hello"
 
 
-async def test_binding_assignment_on_grandchild_after_reconciliation(create_mockapp):
+async def test_binding_assignment_on_grandchild_after_reconciliation():
     async with create_mockapp(Grandparent) as app:
         root_component = app.get_root_component()
         parent: Parent = app.get_build_output(root_component)
@@ -236,7 +240,7 @@ async def test_binding_assignment_on_grandchild_after_reconciliation(create_mock
         assert text_component.text == "Hello"
 
 
-async def test_binding_assignment_on_middle_after_reconciliation(create_mockapp):
+async def test_binding_assignment_on_middle_after_reconciliation():
     async with create_mockapp(Grandparent) as app:
         root_component = app.get_root_component()
         parent: Parent = app.get_build_output(root_component)
