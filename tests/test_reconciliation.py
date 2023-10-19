@@ -129,7 +129,7 @@ async def test_reconcile_by_key():
         toggle: bool = False
 
         def build(self):
-            if self.toggle:
+            if not self.toggle:
                 return rio.Text("Hello", key="foo")
             else:
                 return rio.Container(rio.Text("World", key="foo"))
@@ -142,3 +142,47 @@ async def test_reconcile_by_key():
         await app.refresh()
 
         assert text.text == "World"
+
+
+async def test_key_interrupts_structure():
+    class Toggler(rio.Component):
+        key_: str = "abc"
+
+        def build(self):
+            return rio.Container(rio.Text(self.key_), key=self.key_)
+
+    async with create_mockapp(Toggler) as app:
+        root_component = app.get_component(Toggler)
+        text = app.get_component(rio.Text)
+
+        root_component.key_ = "123"
+        await app.refresh()
+
+        # The container's key changed, so even though the structure is the same,
+        # the old Text component should be unchanged.
+        assert text.text == "abc"
+
+
+async def test_structural_matching_inside_keyed_component():
+    class Toggler(rio.Component):
+        toggle: bool = False
+
+        def build(self):
+            if not self.toggle:
+                return rio.Row(rio.Container(rio.Text("A"), key="foo"))
+            else:
+                return rio.Row(
+                    rio.Container(rio.Text("B")),
+                    rio.Container(rio.Text("C"), key="foo"),
+                )
+
+    async with create_mockapp(Toggler) as app:
+        root_component = app.get_component(Toggler)
+        text = app.get_component(rio.Text)
+
+        root_component.toggle = True
+        await app.refresh()
+
+        # The container with key "foo" has moved. Make sure the structure inside
+        # of it was reconciled correctly.
+        assert text.text == "C"
