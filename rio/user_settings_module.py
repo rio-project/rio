@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import copy
+import json
 from dataclasses import dataclass, field
 from typing import *  # type: ignore
 
@@ -52,35 +54,106 @@ class UserSettings:
     # set outside of any sections.
     section_name: ClassVar[str] = ""
 
+    _rio_type_hints_cache_: ClassVar[Mapping[str, Any]]
+
     _rio_session_: Optional[session.Session] = field(default=None, init=False)
     _rio_dirty_attribute_names_: Set[str] = field(default_factory=set, init=False)
-    _rio_synchronization_task_: Optional[asyncio.Task] = field(default=None, init=False)
-    _rio_type_hints_cache_: ClassVar[Mapping[str, Any]]
+    _rio_synchronization_task_: Optional[asyncio.Task[None]] = field(
+        default=None, init=False
+    )
 
     def __init_subclass__(cls) -> None:
         dataclass(cls)
         cls._rio_type_hints_cache_ = inspection.get_type_annotations(cls)
 
-    async def _synchronize_now(self, sess: session.Session) -> None:
-        prefix = f"{self.section_name}:" if self.section_name else ""
+        if cls.section_name.startswith("section:"):
+            raise ValueError(f"Section names may not start with 'section:'")
 
-        async with sess._settings_sync_lock:
-            # Get the dirty attributes
-            dirty_attributes = {
-                f"{prefix}{name}": uniserde.as_json(
-                    getattr(self, name),
-                    as_type=self._rio_type_hints_cache_[name],
+    @classmethod
+    def _from_json(
+        cls, sess: session.Session, settings_json: Dict[str, object], defaults: Self
+    ) -> Self:
+        # Create the instance for this attachment. Bypass the constructor so
+        # the instance doesn't immediately try to synchronize with the
+        # frontend.
+        self = object.__new__(cls)
+        settings_vars = vars(self)
+
+        if cls.section_name:
+            section = cast(
+                Dict[str, object],
+                settings_json.get("section:" + cls.section_name, {}),
+            )
+        else:
+            section = settings_json
+
+        for field_name, field_type in inspection.get_type_annotations(cls).items():
+            # Skip internal fields
+            if field_name in UserSettings.__annotations__:
+                continue
+
+            # Try to parse the field value
+            try:
+                field_value = uniserde.from_json(
+                    section[field_name],
+                    field_type,
                 )
-                for name in self._rio_dirty_attribute_names_
-            }
-            self._rio_dirty_attribute_names_.clear()
+            except (KeyError, uniserde.SerdeError):
+                field_value = copy.deepcopy(getattr(defaults, field_name))
 
+            # Set the field value
+            settings_vars[field_name] = field_value
+
+        return self
+
+    async def _synchronize_now(self, sess: session.Session) -> None:
+        async with sess._settings_sync_lock:
             # Nothing to do
-            if not dirty_attributes:
+            if not self._rio_dirty_attribute_names_:
                 return
 
-            # Sync them with the client
-            await sess._set_user_settings(dirty_attributes)
+            if sess.running_in_window:
+                await self._synchronize_now_in_window(sess)
+            else:
+                await self._synchronize_now_in_browser(sess)
+
+            self._rio_dirty_attribute_names_.clear()
+
+    async def _synchronize_now_in_window(self, sess: session.Session) -> None:
+        if self.section_name:
+            section = cast(
+                Dict[str, object],
+                sess._settings_json.setdefault("section:" + self.section_name, {}),
+            )
+        else:
+            section = sess._settings_json
+
+        for name in self._rio_dirty_attribute_names_:
+            section[name] = uniserde.as_json(
+                getattr(self, name),
+                as_type=self._rio_type_hints_cache_[name],
+            )
+
+        json_data = json.dumps(sess._settings_json, indent="\t")
+        config_path = sess._get_settings_file_path()
+
+        async with aiofiles.open(config_path, "w") as file:
+            await file.write(json_data)
+
+    async def _synchronize_now_in_browser(self, sess: session.Session) -> None:
+        prefix = f"{self.section_name}:" if self.section_name else ""
+
+        # Get the dirty attributes
+        dirty_attributes = {
+            f"{prefix}{name}": uniserde.as_json(
+                getattr(self, name),
+                as_type=self._rio_type_hints_cache_[name],
+            )
+            for name in self._rio_dirty_attribute_names_
+        }
+
+        # Sync them with the client
+        await sess._set_user_settings(dirty_attributes)
 
     async def _start_synchronization_task(self) -> None:
         # Wait some time to see if more attributes are marked as dirty

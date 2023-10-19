@@ -5,8 +5,6 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-import rio
-
 from .. import assets
 from ..common import EventHandler, ImageLike
 from . import component_base

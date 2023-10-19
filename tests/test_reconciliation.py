@@ -1,13 +1,15 @@
 from typing import Tuple
 
+from utils import create_mockapp
+
 import rio
 
 
-async def test_default_values_arent_considered_explicitly_set(create_mockapp):
+async def test_default_values_arent_considered_explicitly_set():
     class SquareComponent(rio.Component):
         label: str
 
-        def __init__(self, label, size=5):
+        def __init__(self, label: str, size: float = 5):
             super().__init__(width=size, height=size)
 
             self.label = label
@@ -23,7 +25,7 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
             return rio.Container(square_component)
 
     async with create_mockapp(lambda: RootComponent("Hello")) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(RootComponent)
         square_component = app.get_component(SquareComponent)
 
         # Create a new SquareComponent with the default size. Since we aren't
@@ -37,7 +39,7 @@ async def test_default_values_arent_considered_explicitly_set(create_mockapp):
         assert square_component.height == 10
 
 
-async def test_reconcile_same_component_instance(create_mockapp):
+async def test_reconcile_same_component_instance():
     def build():
         return rio.Container(rio.Text("Hello"))
 
@@ -57,7 +59,7 @@ async def test_reconcile_same_component_instance(create_mockapp):
         }
 
 
-async def test_reconcile_not_dirty_high_level_component(create_mockapp):
+async def test_reconcile_not_dirty_high_level_component():
     # Situation:
     # HighLevelComponent1 contains HighLevelComponent2
     # HighLevelComponent2 contains LowLevelContainer
@@ -96,7 +98,7 @@ async def test_reconcile_not_dirty_high_level_component(create_mockapp):
         )
 
 
-async def test_reconcile_unusual_types(create_mockapp):
+async def test_reconcile_unusual_types():
     class Container(rio.Component):
         def build(self) -> rio.Component:
             return CustomComponent(
@@ -120,3 +122,23 @@ async def test_reconcile_unusual_types(create_mockapp):
 
         # As long as this doesn't crash, it's fine
         await root_component.force_refresh()
+
+
+async def test_reconcile_by_key():
+    class Toggler(rio.Component):
+        toggle: bool = False
+
+        def build(self):
+            if self.toggle:
+                return rio.Text("Hello", key="foo")
+            else:
+                return rio.Container(rio.Text("World", key="foo"))
+
+    async with create_mockapp(Toggler) as app:
+        root_component = app.get_component(Toggler)
+        text = app.get_component(rio.Text)
+
+        root_component.toggle = True
+        await app.refresh()
+
+        assert text.text == "World"

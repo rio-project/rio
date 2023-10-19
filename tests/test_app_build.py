@@ -1,7 +1,9 @@
+from utils import create_mockapp
+
 import rio
 
 
-async def test_fundamental_container_as_root(create_mockapp):
+async def test_fundamental_container_as_root():
     def build():
         return rio.Row(rio.Text("Hello"))
 

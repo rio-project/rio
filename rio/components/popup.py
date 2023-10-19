@@ -63,6 +63,7 @@ class Popup(component_base.FundamentalComponent):
     alignment: float = 0.5
     gap: float = 0.0
     is_open: bool = False
+    on_open_or_close: rio.EventHandler[PopupOpenOrCloseEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_open_or_close event

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import collections
+import copy
 import enum
 import inspect
 import json
@@ -242,9 +243,15 @@ class Session(unicall.Unicall):
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
 
-        # Weak dictionaries to hold additional information about components. These
-        # are split in two to avoid the dictionaries keeping the components alive.
-        # Notice how both dictionaries are weak on the actual component.
+        # If `running_in_window`, this contains all the settings loaded from the
+        # json file. We need to keep this around so that we can update the
+        # settings that have changed and write everything back to the file.
+        self._settings_json: Dict[str, object] = {}
+
+        # Weak dictionaries to hold additional information about components.
+        # These are split in two to avoid the dictionaries keeping the
+        # components alive. Notice how both dictionaries are weak on the actual
+        # component.
         #
         # Never access these directly. Instead, use helper functions
         # - `lookup_component`
@@ -1163,10 +1170,9 @@ class Session(unicall.Unicall):
         key_matches = old_components_by_key.keys() & new_components_by_key.keys()
 
         for key in key_matches:
-            new_component = new_components_by_key[key]
             yield (
                 old_components_by_key[key],
-                new_component,
+                new_components_by_key[key],
             )
 
         # Yield topological matches, taking care to not those matches which were
@@ -1206,6 +1212,74 @@ class Session(unicall.Unicall):
         self.create_task(self._remote_register_font(font.name, urls))  # type: ignore
 
         self._registered_font_assets[font.name] = font_assets
+
+    def _get_settings_file_path(self) -> Path:
+        """
+        The path to the settings file. Only used if `running_in_window`.
+        """
+        import platformdirs
+
+        return (
+            Path(
+                platformdirs.user_data_dir(
+                    appname=self._app_server.app.name,
+                    roaming=True,
+                    ensure_exists=True,
+                )
+            )
+            / "settings.json"
+        )
+
+    async def _load_user_settings(
+        self, settings_sent_by_client: Dict[str, object]
+    ) -> None:
+        # If `running_in_window`, load the settings from the config file.
+        # Otherwise, parse the settings sent by the browser.
+        #
+        # Keys in this dict can be attributes of the "root" section or names of
+        # sections. To prevent name clashes, section names are prefixed with
+        # "section:".
+        settings_json: Dict[str, object]
+
+        if self.running_in_window:
+            async with aiofiles.open(self._get_settings_file_path()) as file:
+                settings_text = await file.read()
+
+            settings_json = json.loads(settings_text)
+            self._settings_json = settings_json
+        else:
+            # Browsers send us a flat dict where the keys are prefixed with the
+            # section name. We will convert each section into a dict.
+            settings_json = {}
+
+            for key, value in settings_sent_by_client.items():
+                # Find the section name
+                section_name, _, key = key.rpartition(":")
+
+                if section_name:
+                    section = settings_json.setdefault("section:" + section_name, {})
+                    section[key] = value  # type: ignore
+                else:
+                    settings_json[key] = value
+
+        # If `running_in_window`, we need to store the settings JSON so that
+        # we can update the changed keys and write the whole thing to a file.
+        if self.running_in_window:
+            self._settings_json = settings_json
+
+        # Instantiate and attach the settings
+        for default_settings in self._app_server.default_attachments:
+            if not isinstance(default_settings, user_settings_module.UserSettings):
+                continue
+
+            settings = type(default_settings)._from_json(
+                self,
+                settings_json,
+                default_settings,
+            )
+
+            # Attach the instance to the session
+            self.attachments._add(settings, synchronize=False)
 
     @overload
     async def file_chooser(

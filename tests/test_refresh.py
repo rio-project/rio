@@ -1,7 +1,9 @@
+from utils import create_mockapp
+
 import rio
 
 
-async def test_refresh_with_nothing_to_do(create_mockapp):
+async def test_refresh_with_nothing_to_do():
     def build():
         return rio.Text("Hello")
 
@@ -13,7 +15,7 @@ async def test_refresh_with_nothing_to_do(create_mockapp):
         assert not app.last_updated_components
 
 
-async def test_refresh_with_clean_root_component(create_mockapp):
+async def test_refresh_with_clean_root_component():
     def build():
         text_component = rio.Text("Hello")
         return rio.Container(text_component)
@@ -27,7 +29,7 @@ async def test_refresh_with_clean_root_component(create_mockapp):
         assert app.last_updated_components == {text_component}
 
 
-async def test_rebuild_component_with_dead_parent(create_mockapp):
+async def test_rebuild_component_with_dead_parent():
     class ComponentWithState(rio.Component):
         state: str
 
