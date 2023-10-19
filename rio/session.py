@@ -1090,7 +1090,13 @@ class Session(unicall.Unicall):
             if component.key is None:
                 return
 
-            if component.key in components_by_key:
+            # It's possible that the same component is registered twice, once
+            # from a key_scan caused by a failed structural match, and once from
+            # recursing into a successful key match.
+            if (
+                component.key in components_by_key
+                and components_by_key[component.key] is not component
+            ):
                 raise RuntimeError(
                     f'Multiple components share the key "{component.key}": {components_by_key[component.key]} and {component}'
                 )
@@ -1181,6 +1187,11 @@ class Session(unicall.Unicall):
             for key in new_key_matches:
                 old_component = old_components_by_key[key]
                 new_component = new_components_by_key[key]
+
+                # If the components have different types, even the same key
+                # can't make them match
+                if type(old_component) is not type(new_component):
+                    continue
 
                 yield (old_component, new_component)
 

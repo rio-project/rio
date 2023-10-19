@@ -144,6 +144,26 @@ async def test_reconcile_by_key():
         assert text.text == "World"
 
 
+async def test_key_prevents_structural_match():
+    class Toggler(rio.Component):
+        toggle: bool = False
+
+        def build(self):
+            if not self.toggle:
+                return rio.Text("Hello")
+            else:
+                return rio.Text("World", key="foo")
+
+    async with create_mockapp(Toggler) as app:
+        root_component = app.get_component(Toggler)
+        text = app.get_component(rio.Text)
+
+        root_component.toggle = True
+        await app.refresh()
+
+        assert text.text == "Hello"
+
+
 async def test_key_interrupts_structure():
     class Toggler(rio.Component):
         key_: str = "abc"
@@ -186,3 +206,60 @@ async def test_structural_matching_inside_keyed_component():
         # The container with key "foo" has moved. Make sure the structure inside
         # of it was reconciled correctly.
         assert text.text == "C"
+
+
+async def test_key_matching_inside_keyed_component():
+    class Toggler(rio.Component):
+        toggle: bool = False
+
+        def build(self):
+            if not self.toggle:
+                return rio.Container(
+                    rio.Row(
+                        rio.Container(rio.Text("A"), key="container"),
+                        key="row",
+                    ),
+                )
+            else:
+                return rio.Row(
+                    rio.Text("B"),
+                    rio.Container(rio.Text("C"), key="container"),
+                    key="row",
+                )
+
+    async with create_mockapp(Toggler) as app:
+        root_component = app.get_component(Toggler)
+        text = app.get_component(rio.Text)
+
+        root_component.toggle = True
+        await app.refresh()
+
+        # The container with key "foo" has moved. Make sure the structure inside
+        # of it was reconciled correctly.
+        assert text.text == "C"
+
+
+async def test_same_key_on_different_component_type():
+    class WidgetWithText(rio.Component):
+        text: str
+
+        def build(self) -> rio.Component:
+            return rio.Text(self.text)
+
+    class Toggler(rio.Component):
+        toggle: bool = False
+
+        def build(self):
+            if not self.toggle:
+                return rio.Text("Hello", key="foo")
+            else:
+                return WidgetWithText("World", key="foo")
+
+    async with create_mockapp(Toggler) as app:
+        root_component = app.get_component(Toggler)
+        text = app.get_component(rio.Text)
+
+        root_component.toggle = True
+        await app.refresh()
+
+        assert text.text == "Hello"
