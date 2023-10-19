@@ -1153,34 +1153,48 @@ class Session(unicall.Unicall):
             register_component_by_key(old_components_by_key, old_component)
             register_component_by_key(new_components_by_key, new_component)
 
-            # Do the component types match?
-            if type(old_component) is type(new_component):
-                matches_by_topology.append((old_component, new_component))
-                chain_to_children(old_component, new_component)
+            # If the components' types or keys don't match, stop looking for
+            # topological matches. Just keep track of the children's keys.
+            if (
+                type(old_component) is not type(new_component)
+                or old_component.key != new_component.key
+            ):
+                key_scan(old_components_by_key, old_component, include_self=False)
+                key_scan(new_components_by_key, new_component, include_self=False)
                 return
 
-            # Otherwise neither they, nor their children can be topological
-            # matches.  Just keep track of the children's keys.
-            key_scan(old_components_by_key, old_component, include_self=False)
-            key_scan(new_components_by_key, new_component, include_self=False)
+            # Key matches are handled elsewhere, so if the key is not `None`, do
+            # nothing. We'd just end up doing the same work twice.
+            if old_component.key is not None:
+                return
+
+            matches_by_topology.append((old_component, new_component))
+            chain_to_children(old_component, new_component)
 
         worker(old_build, new_build)
 
-        # Find matches by key. These take priority over topological matches.
-        key_matches = old_components_by_key.keys() & new_components_by_key.keys()
+        # Find matches by key and reconcile their children. This can produce new
+        # key matches, so we do it in a loop.
+        new_key_matches = old_components_by_key.keys() & new_components_by_key.keys()
 
-        for key in key_matches:
-            yield (
-                old_components_by_key[key],
-                new_components_by_key[key],
+        while new_key_matches:
+            for key in new_key_matches:
+                old_component = old_components_by_key[key]
+                new_component = new_components_by_key[key]
+
+                yield (old_component, new_component)
+
+                # Recurse into these two components
+                chain_to_children(old_component, new_component)
+
+            # If any new key matches were found, repeat the process
+            new_key_matches = (
+                old_components_by_key.keys()
+                & new_components_by_key.keys() - new_key_matches
             )
 
-        # Yield topological matches, taking care to not those matches which were
-        # already matched by key.
+        # Yield topological matches
         for old_component, new_component in matches_by_topology:
-            if old_component.key in key_matches or new_component.key in key_matches:
-                continue
-
             yield old_component, new_component
 
     def _register_font(self, font: text_style.Font) -> None:
