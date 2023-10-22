@@ -73,7 +73,8 @@ async def dummy_receive_message() -> JsonDoc:
 
 
 def _host_and_get_fill_as_css_variables(
-    fill: rio.FillLike, sess: "Session"
+    fill: rio.FillLike,
+    sess: "Session",
 ) -> Dict[str, str]:
     # Convert the fill
     fill = rio.Fill._try_from(fill)
@@ -88,7 +89,7 @@ def _host_and_get_fill_as_css_variables(
 
     assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill
     return {
-        "text-color": "var(--rio-local-text-color)",
+        "text-color": "var(--rio-local-plain-fg)",
         "text-background": fill._as_css_background(sess),
         "text-background-clip": "text",
         "text-fill-color": "transparent",

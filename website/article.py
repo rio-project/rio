@@ -106,19 +106,19 @@ class Article:
 
     def box(self, level: Literal["info", "warning", "danger"], text: str) -> None:
         if level == "info":
-            color = theme.THEME.secondary_palette.background
+            style = "secondary"
             icon = "info"
         elif level == "warning":
-            color = theme.THEME.warning_palette.background
+            style = "warning"
             icon = "warning"
         elif level == "danger":
-            color = theme.THEME.danger_palette.background
+            style = "danger"
             icon = "error"
         else:
             assert False, f"Unknown box level: {level}"
 
         self.component(
-            rio.Rectangle(
+            rio.Card(
                 child=rio.Row(
                     rio.Icon(
                         icon,
@@ -134,10 +134,8 @@ class Article:
                     spacing=1.5,
                     margin=1.5,
                 ),
-                style=rio.BoxStyle(
-                    fill=color,
-                    corner_radius=theme.THEME.corner_radius_medium,
-                ),
+                style=style,
+                corner_radius=theme.THEME.corner_radius_medium,
             ),
         )
 

@@ -99,11 +99,11 @@ export class TextInputComponent extends ComponentBase {
 
         if (deltaState.is_valid === false) {
             element.style.setProperty(
-                '--rio-local-text-color',
-                'var(--rio-global-danger-color)'
+                '--rio-local-plain-fg',
+                'var(--rio-global-danger-fg)'
             );
         } else if (deltaState.is_valid === true) {
-            element.style.removeProperty('--rio-local-text-color');
+            element.style.removeProperty('--rio-local-plain-fg');
         }
     }
 }
