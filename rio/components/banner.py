@@ -37,7 +37,7 @@ class Banner(component_base.Component):
     """
 
     text: Optional[str]
-    level: Literal["success", "info", "warning", "error"]
+    style: Literal["success", "info", "warning", "error"]
 
     _: KW_ONLY
 
@@ -51,24 +51,24 @@ class Banner(component_base.Component):
         # Determine the color
         thm = self.session.attachments[rio.Theme]
 
-        if self.level == "success":
+        if self.style == "success":
             background_color = thm.success_color
             text_color = thm.text_color_for(background_color)
             context_name = "success"
-        elif self.level == "info":
+        elif self.style == "info":
             background_color = thm.secondary_color
             text_color = thm.text_color_for(thm.secondary_color)
             context_name = "secondary"
-        elif self.level == "warning":
+        elif self.style == "warning":
             background_color = thm.warning_color
             text_color = thm.text_color_for(background_color)
             context_name = "warning"
-        elif self.level == "error":
+        elif self.style == "error":
             background_color = thm.danger_color
             text_color = thm.text_color_for(background_color)
             context_name = "danger"
         else:
-            raise ValueError(f"Invalid level: {self.level!r}")
+            raise ValueError(f"Invalid level: {self.style!r}")
 
         # Build the result
         return rio.StyleContext(

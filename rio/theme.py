@@ -126,8 +126,8 @@ class Theme:
 
             neutral_palette = Palette(
                 background=rio.Color.from_grey(0.97).blend(primary_color, 0.04),
-                background_variant=rio.Color.from_grey(0.92).blend(primary_color, 0.04),
-                background_active=rio.Color.from_grey(0.92).blend(primary_color, 0.10),
+                background_variant=rio.Color.from_grey(0.94).blend(primary_color, 0.04),
+                background_active=rio.Color.from_grey(0.94).blend(primary_color, 0.10),
                 foreground=rio.Color.from_grey(0.1),
             )
 
@@ -173,7 +173,7 @@ class Theme:
             corner_radius_small=corner_radius_small,
             corner_radius_medium=corner_radius_medium,
             corner_radius_large=corner_radius_large,
-            shadow_color=rio.Color.from_rgb(0.1, 0.1, 0.3, 0.3),
+            shadow_color=rio.Color.from_rgb(0.1, 0.1, 0.4, 0.3),
             heading1_style=heading1_style,
             heading2_style=heading2_style,
             heading3_style=heading3_style,

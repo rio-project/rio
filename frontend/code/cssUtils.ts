@@ -78,10 +78,7 @@ export function textStyleToCss(
     // Predefined style from theme
     if (typeof style === 'string') {
         // Local values
-        result['color'] =
-            style === 'text'
-                ? 'var(--rio-local-plain-fg)'
-                : 'var(--rio-global-heading-color-TODO)';
+        result['color'] = `var(--rio-global-${style}-color)`;
 
         // Global values
         let cssPrefix = `var(--rio-global-${style}-`;
