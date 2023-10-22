@@ -1259,7 +1259,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-markdown-view {
     h1 {
         font-family: var(--rio-global-heading1-font-name);
-        color: var(--rio-local-heading-color);
+        color: var(--rio-local-heading1-color);
         font-size: var(--rio-global-heading1-font-size);
         font-style: var(--rio-global-heading1-italic);
         font-weight: var(--rio-global-heading1-font-weight);
@@ -1275,7 +1275,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
     h2 {
         font-family: var(--rio-global-heading2-font-name);
-        color: var(--rio-local-heading-color);
+        color: var(--rio-local-heading2-color);
         font-size: var(--rio-global-heading2-font-size);
         font-style: var(--rio-global-heading2-italic);
         font-weight: var(--rio-global-heading2-font-weight);
@@ -1291,7 +1291,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
     h3 {
         font-family: var(--rio-global-heading3-font-name);
-        color: var(--rio-local-heading-color);
+        color: var(--rio-local-heading3-color);
         font-size: var(--rio-global-heading3-font-size);
         font-style: var(--rio-global-heading3-italic);
         font-weight: var(--rio-global-heading3-font-weight);
