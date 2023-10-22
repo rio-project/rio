@@ -47,7 +47,9 @@ class Outliner(rio.Component):
                 buttons.append(
                     rio.Button(
                         name,
-                        color=theme.THEME.primary_color.replace(opacity=0.3)
+                        color=theme.THEME.primary_palette.background.replace(
+                            opacity=0.3
+                        )
                         if is_active
                         else rio.Color.TRANSPARENT,
                         on_press=lambda segment=url_segment: self.session.navigate_to(
@@ -61,7 +63,7 @@ class Outliner(rio.Component):
                     title,
                     rio.Column(
                         *buttons,
-                        spacing=theme.THEME.base_spacing,
+                        spacing=0.8,
                     ),
                 ),
             )
@@ -71,6 +73,7 @@ class Outliner(rio.Component):
                 *chapter_expanders,
                 width=13,
                 align_y=0,
+                margin=1.5,
             ),
             corner_radius=(
                 0,

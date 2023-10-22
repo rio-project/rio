@@ -1,5 +1,5 @@
-import { ComponentBase, ComponentState } from "./components/componentBase";
-import { ComponentId } from "./models";
+import { ComponentBase, ComponentState } from './components/componentBase';
+import { ComponentId } from './models';
 
 import { AlignComponent } from './components/align';
 import { ButtonComponent } from './components/button';
@@ -32,11 +32,13 @@ import { StackComponent } from './components/stack';
 import { SwitchComponent } from './components/switch';
 import { TextInputComponent } from './components/textInput';
 import { TextComponent } from './components/text';
-import { HtmlComponent } from "./components/html";
+import { HtmlComponent } from './components/html';
+import { CardComponent } from './components/card';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
     'Button-builtin': ButtonComponent,
+    'Card-builtin': CardComponent,
     'ClassContainer-builtin': ClassContainerComponent,
     'ColorPicker-builtin': ColorPickerComponent,
     'Column-builtin': ColumnComponent,
@@ -72,11 +74,9 @@ const componentClasses = {
 
 globalThis.componentClasses = componentClasses;
 
-
 const componentTreeRootElement = document.body.firstElementChild as HTMLElement;
 
 const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
-
 
 export function getElementByComponentId(id: ComponentId): HTMLElement {
     let element = document.getElementById(`rio-id-${id}`);
@@ -216,7 +216,8 @@ function replaceChildrenWithLayoutComponents(
     childIds: Set<string>,
     message: { [id: string]: ComponentState }
 ): void {
-    let propertyNamesWithChildren = globalThis.childAttributeNames[deltaState['_type_']!] || [];
+    let propertyNamesWithChildren =
+        globalThis.childAttributeNames[deltaState['_type_']!] || [];
 
     function cleanId(id: string): string {
         return id.split('-')[0];
@@ -247,7 +248,9 @@ function replaceChildrenWithLayoutComponents(
     }
 }
 
-function preprocessDeltaStates(message: { [id: string]: ComponentState }): void {
+function preprocessDeltaStates(message: {
+    [id: string]: ComponentState;
+}): void {
     // Fortunately the root component is created internally by the server, so we
     // don't need to worry about it having a margin or alignment.
 
@@ -259,7 +262,11 @@ function preprocessDeltaStates(message: { [id: string]: ComponentState }): void 
     // Walk over all components in the message and inject layout components. The
     // message is modified in-place, so take care to have a copy of all keys
     for (let componentId of originalComponentIds) {
-        replaceChildrenWithLayoutComponents(message[componentId], childIds, message);
+        replaceChildrenWithLayoutComponents(
+            message[componentId],
+            childIds,
+            message
+        );
     }
 
     // Find all components which have had a layout component injected, and make sure
@@ -378,7 +385,9 @@ export function updateComponentStates(
         // Queue the component and its parent for a layout update
         componentsNeedingLayoutUpdate.add(instance);
 
-        let parentElement = getParentComponentElementIncludingInjected(element!);
+        let parentElement = getParentComponentElementIncludingInjected(
+            element!
+        );
         if (parentElement) {
             let parentInstance = elementsToInstances.get(parentElement);
 
@@ -411,7 +420,6 @@ export function updateComponentStates(
     // Remove the latent components
     latentComponents.remove();
 }
-
 
 export function replaceOnlyChildAndResetCssProperties(
     parentElement: HTMLElement,

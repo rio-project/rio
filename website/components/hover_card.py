@@ -28,7 +28,7 @@ class HoverCard(rio.Component):
                     style=rio.BoxStyle(
                         fill=rio.Color.TRANSPARENT
                         if self._is_hovered
-                        else theme.THEME.surface_color,
+                        else theme.THEME.neutral_palette.background,
                     ),
                     transition_time=1.5,
                 ),
@@ -40,7 +40,7 @@ class HoverCard(rio.Component):
             rio.Rectangle(
                 child=rio.Text("Sample Text"),
                 style=rio.BoxStyle(
-                    fill=theme.THEME.surface_color,
+                    fill=theme.THEME.neutral_palette.background,
                     corner_radius=theme.THEME.corner_radius_large,
                     shadow_color=theme.THEME.shadow_color,
                     shadow_radius=1.0 if self._is_hovered else 0,

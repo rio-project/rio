@@ -1,24 +1,37 @@
 import { Color, ColorSet, Fill } from './models';
 import { colorToCssString } from './cssUtils';
 
-
 export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
+    // Remove all switcheroos
+    element.classList.remove(
+        'rio-switcheroo-background',
+        'rio-switcheroo-neutral',
+        'rio-switcheroo-primary',
+        'rio-switcheroo-secondary',
+        'rio-switcheroo-success',
+        'rio-switcheroo-warning',
+        'rio-switcheroo-danger',
+        'rio-switcheroo-custom'
+    );
+
+    // If no colorset is desired don't apply any new one
+    if (colorSet === null) {
+        return;
+    }
+
+    // Otherwise find and apply the correct switcheroo
     let switcheroo: string;
 
     // Is this a color instance?
     if (typeof colorSet !== 'string') {
         // Expose the color as CSS variables
         element.style.setProperty(
-            '--rio-local-custom-color',
-            colorToCssString(colorSet.color)
+            '--rio-local-custom-bg',
+            colorToCssString(colorSet.background)
         );
         element.style.setProperty(
-            '--rio-local-custom-color-variant',
-            colorToCssString(colorSet.colorVariant)
-        );
-        element.style.setProperty(
-            '--rio-local-custom-color-variant',
-            colorToCssString(colorSet.textColor)
+            '--rio-local-custom-fg',
+            colorToCssString(colorSet.foreground)
         );
 
         // Select the custom switcheroo
@@ -26,19 +39,6 @@ export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
     } else {
         switcheroo = colorSet;
     }
-
-    // Remove all switcheroos
-    element.classList.remove(
-        'rio-switcheroo-primary',
-        'rio-switcheroo-secondary',
-        'rio-switcheroo-success',
-        'rio-switcheroo-warning',
-        'rio-switcheroo-danger',
-        'rio-switcheroo-custom',
-        'rio-switcheroo-disabled',
-        'rio-switcheroo-text',
-        'rio-switcheroo-default'
-    );
 
     // Add the new switcheroo
     element.classList.add(`rio-switcheroo-${switcheroo}`);

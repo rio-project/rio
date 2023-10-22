@@ -29,8 +29,8 @@ class CvView(rio.Component):
             rio.Rectangle(
                 style=rio.BoxStyle(
                     fill=rio.LinearGradientFill(
-                        (thm.primary_color, 0),
-                        (thm.primary_color.brighter(0.2), 1),
+                        (thm.primary_palette.background, 0),
+                        (thm.primary_palette.background.brighter(0.2), 1),
                     )
                 ),
                 height=1.0,

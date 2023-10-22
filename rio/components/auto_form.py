@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 import rio
 
 from .. import inspection
-from . import button, component_base, notification_bar, number_input, switch, text
+from . import banner, button, component_base, number_input, switch, text
 
 __all__ = ["AutoForm"]
 
@@ -60,7 +60,7 @@ class AutoForm(component_base.Component):
         text: str,
         level: Literal["info", "warning", "error"],
     ) -> rio.Component:
-        return notification_bar.NotificationBar(
+        return banner.Banner(
             text=text,
             level=level,
         )

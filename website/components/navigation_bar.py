@@ -23,7 +23,7 @@ class NavigationButton(rio.Component):
 
     def build(self) -> rio.Component:
         if self.is_active:
-            color = theme.THEME.primary_color.replace(opacity=0.3)
+            color = theme.THEME.primary_palette.background.replace(opacity=0.3)
         else:
             color = rio.Color.TRANSPARENT
 
@@ -38,7 +38,7 @@ class NavigationButton(rio.Component):
 
 class NavigationBar(rio.Component):
     def build(self) -> rio.Component:
-        surface_color = theme.THEME.surface_color
+        surface_color = theme.THEME.neutral_palette.background
         text_color = theme.THEME.text_color_for(surface_color)
 
         # If the page is narrow, fill most of the width with the navigation bar.
@@ -61,7 +61,7 @@ class NavigationBar(rio.Component):
                         width=3.0,
                         height=3.0,
                         margin_left=2,
-                        fill=theme.THEME.primary_color,
+                        fill=theme.THEME.primary_palette.background,
                     ),
                     rio.Text(
                         "rio",

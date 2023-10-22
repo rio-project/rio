@@ -36,37 +36,62 @@ $z-index-error-popup: 10002;
 $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
 // Theme Switcheroos
+.rio-switcheroo-background {
+    // surface := primary
+    //
+    // -> All others follow.
+
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-background-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-background-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-background-bg-active);
+    --rio-local-plain-fg: var(--rio-global-background-fg);
+
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
+
+    // Material Design Web
+    --mdc-theme-primary: var(--rio-global-primary-bg);
+    --mdc-theme-secondary: var(--rio-global-secondary-bg);
+    --mdc-theme-background: var(--rio-global-background-bg);
+    --mdc-theme-surface: var(--rio-global-neutral-bg);
+
+    --mdc-theme-on-primary: var(--rio-global-primary-fg);
+    --mdc-theme-on-secondary: var(--rio-global-secondary-fg);
+    --mdc-theme-on-surface: var(--rio-global-background-fg);
+}
+
+.rio-switcheroo-neutral {
+    // surface := neutral
+    //
+    // -> All others follow.
+
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-neutral-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-neutral-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-neutral-bg-active);
+    --rio-local-plain-fg: var(--rio-global-neutral-fg);
+
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
+
+    // Material Design Web
+    // TODO
+}
+
 .rio-switcheroo-primary {
     // surface := primary
     //
     // -> All others follow.
 
-    // Surface
-    --rio-local-surface-color: var(--rio-global-primary-color);
-    --rio-local-surface-color-variant: var(--rio-global-primary-color-variant);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-primary-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-primary-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-primary-bg-active);
+    --rio-local-plain-fg: var(--rio-global-primary-fg);
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-secondary-color);
-    --rio-local-accent-color-variant: var(--rio-global-secondary-color-variant);
-
-    // Text styles
-    --rio-local-text-color: var(--rio-global-text-on-primary-color);
-    --rio-local-text-background: var(--rio-global-text-on-primary-background);
-    --rio-local-text-background-clip: var(
-        --rio-global-text-on-primary-background-clip
-    );
-    --rio-local-text-fill-color: var(--rio-global-text-on-primary-fill-color);
-
-    --rio-local-text-on-accent-color: var(--rio-global-text-on-secondary-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-secondary-background
-    );
-    --rio-local-text-on-accent-background-clip: var(
-        --rio-global-text-on-secondary-background-clip
-    );
-    --rio-local-text-on-accent-fill-color: var(
-        --rio-global-text-on-secondary-fill-color
-    );
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
 
     // Material Design Web
     // TODO
@@ -77,177 +102,122 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     //
     // -> All others follow.
 
-    // Surface
-    --rio-local-surface-color: var(--rio-global-secondary-color);
-    --rio-local-surface-color-variant: var(
-        --rio-global-secondary-color-variant
-    );
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-secondary-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-secondary-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-secondary-bg-active);
+    --rio-local-plain-fg: var(--rio-global-secondary-fg);
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-primary-color);
-    --rio-local-accent-color-variant: var(--rio-global-primary-color-variant);
-
-    // Text styles
-    --rio-local-heading-color: var(--rio-global-heading-on-secondary-color);
-    --rio-local-heading-background: var(
-        --rio-global-heading-on-secondary-background
-    );
-    --rio-local-text-color: var(--rio-global-text-on-secondary-color);
-    --rio-local-text-background: var(--rio-global-text-on-secondary-background);
-    --rio-local-text-on-accent-color: var(--rio-global-text-on-primary-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-primary-background
-    );
+    --rio-local-accent-bg: var(--rio-global-primary-bg);
+    --rio-local-accent-fg: var(--rio-global-primary-fg);
 
     // Material Design Web
     // TODO
 }
 
 .rio-switcheroo-success {
-    // accent := success
+    // surface := success
     //
-    // Surface remains unchanged.
+    // -> All others follow.
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-success-color);
-    --rio-local-accent-color-variant: var(--rio-global-success-color-variant);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-success-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-success-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-success-bg-active);
+    --rio-local-plain-fg: var(--rio-global-success-fg);
 
-    // Text styles
-    // --rio-local-heading-color: var(--rio-global-text-on-success-color);
-    // --rio-local-text-color: var(--rio-global-text-on-success-color);
-    --rio-local-text-on-accent-color: var(--rio-global-text-on-success-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-success-background
-    );
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
 
     // Material Design Web
     // TODO
 }
 
 .rio-switcheroo-warning {
-    // accent := warning
+    // surface := warning
     //
-    // Surface remains unchanged.
+    // -> All others follow.
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-warning-color);
-    --rio-local-accent-color-variant: var(--rio-global-warning-color-variant);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-warning-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-warning-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-warning-bg-active);
+    --rio-local-plain-fg: var(--rio-global-warning-fg);
 
-    // Text styles
-    // --rio-local-heading-color: var(--rio-global-text-on-warning-color);
-    // --rio-local-text-color: var(--rio-global-text-on-warning-color);
-    --rio-local-text-on-accent-color: var(--rio-global-text-on-warning-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-warning-background
-    );
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
 
     // Material Design Web
     // TODO
 }
 
 .rio-switcheroo-danger {
-    // accent := danger
+    // surface := danger
     //
-    // Surface remains unchanged.
+    // -> All others follow.
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-danger-color);
-    --rio-local-accent-color-variant: var(--rio-global-danger-color-variant);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-danger-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-danger-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-danger-bg-active);
+    --rio-local-plain-fg: var(--rio-global-danger-fg);
 
-    // Text styles
-    // --rio-local-heading-color: var(--rio-global-text-on-danger-color);
-    // --rio-local-text-color: var(--rio-global-text-on-danger-color);
-    --rio-local-text-on-accent-color: var(--rio-global-text-on-danger-color);
-    --rio-local-text-on-accent-background: var(
-        --rio-global-text-on-danger-background
-    );
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
 
     // Material Design Web
     // TODO
-}
-
-.rio-switcheroo-text {
-    // text := accent
-    //
-    // Useful to change the color of components which use the text color, to the
-    // current accent color. E.g. Allows to display text or icons as danger.
-
-    // Theme colors
-    --rio-local-accent-color: var(--rio-local-text-color);
-    --rio-local-accent-color-variant: var(--rio-local-text-color);
-
-    // Text styles
-    --rio-local-heading-color: var(--rio-local-text-color);
-    --rio-local-heading-background: var(--rio-local-text-background);
-    --rio-local-text-color: var(--rio-local-text-color);
-    --rio-local-text-background: var(--rio-local-text-background);
-
-    // Material Design Web
-    // TODO
-}
-
-.rio-switcheroo-default {
-    // surface := surface
-    // accent := primary
-    //
-    // This is simply the default arrangement.
-
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-secondary-color);
-    --rio-local-accent-color-variant: var(--rio-global-secondary-color-variant);
-
-    // Surface
-    --rio-local-surface-color: var(--rio-global-surface-color);
-    --rio-local-surface-color-variant: var(--rio-global-surface-color-variant);
-
-    // Text styles
-    --rio-local-heading-color: var(--rio-global-heading-on-surface-color);
-    --rio-local-heading-background: var(
-        --rio-global-heading-on-surface-background
-    );
-    --rio-local-text-color: var(--rio-global-text-on-surface-color);
-    --rio-local-text-background: var(--rio-global-text-on-surface-background);
-
-    // Material Design Web
-    --mdc-theme-primary: var(--rio-global-secondary-color);
-    --mdc-theme-secondary: var(--rio-global-secondary-color-variant);
-    --mdc-theme-surface: var(--rio-global-surface-color);
-    --mdc-theme-background: var(--rio-global-background-color);
-
-    --mdc-theme-on-primary: var(--rio-global-text-on-surface-color);
-    --mdc-theme-on-secondary: var(--rio-global-text-on-surface-color);
-    --mdc-theme-on-surface: var(--rio-global-text-on-surface-color);
 }
 
 .rio-switcheroo-disabled {
-    // accent := disabled
+    // surface := disabled
+    //
+    // -> All others follow.
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-global-disabled-color);
-    --rio-local-accent-color-variant: var(--rio-global-disabled-color-variant);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-disabled-bg);
+    --rio-local-plain-fg: var(--rio-global-disabled-fg);
 
-    // Text styles
-    --rio-local-text-color: var(--rio-global-text-on-surface-color);
-    --rio-local-text-background: var(--rio-global-text-on-surface-background);
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
 
     // Material Design Web
     // TODO
 }
 
 .rio-switcheroo-custom {
-    // accent := custom (read from CSS variables)
+    // plain := accent := custom (read from CSS variables)
 
-    // Theme colors
-    --rio-local-accent-color: var(--rio-local-custom-color);
-    --rio-local-accent-color-variant: var(--rio-local-custom-color-variant);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-local-custom-bg);
+    --rio-local-plain-fg: var(--rio-local-custom-fg);
 
-    // Text styles
-    --rio-local-text-color: var(--rio-local-custom-text-color);
-    --rio-local-text-background: var(--rio-local-custom-text-background);
+    --rio-local-accent-bg: var(--rio-local-custom-bg);
+    --rio-local-accent-fg: var(--rio-local-custom-fg);
 
     // Material Design Web
     // TODO
 }
+
+// .rio-switcheroo-text {
+//     // text := accent
+//     //
+//     // Useful to change the color of components which use the text color, to the
+//     // current accent color. E.g. Allows to display text or icons as danger.
+
+//     // Theme colors
+//     --rio-local-accent-color: var(--rio-local-text-color);
+//     --rio-local-accent-color-variant: var(--rio-local-text-color);
+
+//     // Text styles
+//     --rio-local-heading-color: var(--rio-local-text-color);
+//     --rio-local-heading-background: var(--rio-local-text-background);
+//     --rio-local-text-color: var(--rio-local-text-color);
+//     --rio-local-text-background: var(--rio-local-text-background);
+
+//     // Material Design Web
+//     // TODO
+// }
 
 // "Placeholder element"/"content loading" animation
 @keyframes content-loading {
@@ -1496,6 +1466,25 @@ $drawer-side-margin: 0.7rem;
 
     max-width: 100%;
     max-height: 100%;
+}
+
+// Card
+.rio-card {
+    pointer-events: auto;
+    background-color: var(--rio-local-plain-bg);
+    box-shadow: 0 0 0 var(--rio-global-shadow-color);
+
+    transition:
+        box-shadow 0.15s ease-in-out,
+        background-color 0.15s ease-in-out;
+}
+
+.rio-card-elevate-on-hover:hover {
+    box-shadow: 0 0.15rem 0.3rem var(--rio-global-shadow-color);
+}
+
+.rio-card-colorize-on-hover:hover {
+    background-color: var(--rio-local-plain-bg-active);
 }
 
 // SVG Images

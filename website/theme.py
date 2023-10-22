@@ -4,7 +4,7 @@ import rio
 
 from . import common
 
-THEME = rio.Theme(
+THEME = rio.Theme.from_color(
     # primary_color=rio.Color.from_rgb(0.9, 0.7, 0),
     # light=False,
 )

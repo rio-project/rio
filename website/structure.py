@@ -65,7 +65,7 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
             rio.Link,
             rio.MarkdownView,
             rio.MediaPlayer,
-            rio.NotificationBar,
+            rio.Banner,
             rio.Plot,
             rio.ProgressBar,
             rio.ProgressCircle,
