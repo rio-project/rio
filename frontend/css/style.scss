@@ -327,10 +327,10 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // -> All others follow.
 
     // Rio locals
-    --rio-local-plain-bg: var(--rio-global-disabled-bg);
+    --rio-local-plain-bg: red;
 
-    --rio-local-accent-bg: var(--rio-global-secondary-bg);
-    --rio-local-accent-fg: var(--rio-global-secondary-fg);
+    --rio-local-accent-bg: red;
+    --rio-local-accent-fg: red;
 
     // Text Styles
     // TODO

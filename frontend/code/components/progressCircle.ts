@@ -1,11 +1,11 @@
 import { colorToCssString } from '../cssUtils';
 import { applyColorSet } from '../designApplication';
-import { ColorSet } from '../models';
+import { ColorSetOrNull } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ProgressCircleState = ComponentState & {
     _type_: 'progressCircle';
-    color: ColorSet;
+    color: ColorSetOrNull;
     background_color?: [number, number, number, number];
     progress?: number | null;
 };
@@ -29,7 +29,10 @@ export class ProgressCircleComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: ProgressCircleState): void {
+    _updateElement(
+        element: HTMLElement,
+        deltaState: ProgressCircleState
+    ): void {
         if (deltaState.color !== undefined) {
             applyColorSet(element, deltaState.color);
         }

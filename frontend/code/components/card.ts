@@ -1,5 +1,5 @@
 import { applyColorSet } from '../designApplication';
-import { ColorSet as ColorSetOrNull, ComponentId } from '../models';
+import { ColorSetOrNull, ComponentId } from '../models';
 import { ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
 import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';

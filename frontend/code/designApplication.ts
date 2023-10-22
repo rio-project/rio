@@ -1,7 +1,10 @@
-import { Color, ColorSet, Fill } from './models';
+import { Color, ColorSetOrNull, Fill } from './models';
 import { colorToCssString } from './cssUtils';
 
-export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
+export function applyColorSet(
+    element: HTMLElement,
+    colorSet: ColorSetOrNull
+): void {
     // Remove all switcheroos
     element.classList.remove(
         'rio-switcheroo-background',

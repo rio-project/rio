@@ -30,17 +30,18 @@ class Banner(component_base.Component):
         text: The text to display. If set to `None`, the banner will disappear
         entirely.
 
-        level: How severe the message is. The appearance of the banner will be
-        adjusted according to the level.
+        style: Controls the appearance of the banner. The style is one of
+        `info`, `success`, `warning` and `danger`. Depending on the value the
+        banner may change its colors and icon.
 
         multiline: Whether long text may be wrapped over multiple lines.
     """
 
     text: Optional[str]
-    style: Literal["success", "info", "warning", "error"]
+    style: Literal["info", "success", "warning", "danger"]
 
     _: KW_ONLY
-
+    markup: bool = False
     multiline: bool = False
 
     def build(self) -> rio.Component:
@@ -48,43 +49,57 @@ class Banner(component_base.Component):
         if self.text is None:
             return rio.Column()
 
-        # Determine the color
-        thm = self.session.attachments[rio.Theme]
-
-        if self.style == "success":
-            background_color = thm.success_color
-            text_color = thm.text_color_for(background_color)
-            context_name = "success"
-        elif self.style == "info":
-            background_color = thm.secondary_color
-            text_color = thm.text_color_for(thm.secondary_color)
-            context_name = "secondary"
+        # Prepare the style
+        if self.style == "info":
+            style_name = "secondary"
+            icon = "info"
+        elif self.style == "success":
+            style_name = "success"
+            icon = "check-circle"
         elif self.style == "warning":
-            background_color = thm.warning_color
-            text_color = thm.text_color_for(background_color)
-            context_name = "warning"
-        elif self.style == "error":
-            background_color = thm.danger_color
-            text_color = thm.text_color_for(background_color)
-            context_name = "danger"
+            style_name = "warning"
+            icon = "warning"
+        elif self.style == "danger":
+            style_name = "danger"
+            icon = "error"
         else:
-            raise ValueError(f"Invalid level: {self.style!r}")
+            raise ValueError(f"Invalid style: {self.style}")
+
+        # Prepare the child
+        if self.markup:
+            text_child = rio.MarkdownView(
+                self.text,
+                width="grow",
+            )
+        else:
+            text_child = rio.Text(
+                self.text,
+                width="grow",
+                multiline=self.multiline,
+            )
+
+        if self.multiline:
+            child = rio.Row(
+                rio.Icon(
+                    icon,
+                    width=2.5,
+                    height=2.5,
+                    align_y=0,
+                ),
+                text_child,
+                spacing=1.5,
+                margin=1.5,
+            )
+        else:
+            child = rio.Row(
+                rio.Icon(icon),
+                text_child,
+                spacing=0.8,
+                margin=0.8,
+            )
 
         # Build the result
-        return rio.StyleContext(
-            child=rio.Rectangle(
-                child=text.Text(
-                    self.text,
-                    margin=0.8,
-                    multiline=self.multiline,
-                    style=thm.text_style.replace(
-                        fill=text_color,
-                    ),
-                ),
-                style=rio.BoxStyle(
-                    fill=background_color,
-                    corner_radius=thm.corner_radius_small,
-                ),
-            ),
-            context=context_name,
+        return rio.Card(
+            child=child,
+            style=style_name,
         )

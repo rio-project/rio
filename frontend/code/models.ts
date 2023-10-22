@@ -2,7 +2,7 @@ export type ComponentId = number | string;
 
 export type Color = [number, number, number, number];
 
-export type ColorSet =
+export type ColorSetOrNull =
     | null
     | 'background'
     | 'neutral'

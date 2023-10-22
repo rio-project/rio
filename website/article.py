@@ -104,39 +104,36 @@ class Article:
         # Add it
         self.code_block(code)
 
-    def box(self, level: Literal["info", "warning", "danger"], text: str) -> None:
-        if level == "info":
-            style = "secondary"
-            icon = "info"
-        elif level == "warning":
-            style = "warning"
-            icon = "warning"
-        elif level == "danger":
-            style = "danger"
-            icon = "error"
-        else:
-            assert False, f"Unknown box level: {level}"
+    def box(self, style: Literal["info", "warning", "danger"], text: str) -> None:
+        # self.component(
+        #     rio.Card(
+        #         child=rio.Row(
+        #             rio.Icon(
+        #                 icon,
+        #                 width=3,
+        #                 height=3,
+        #                 align_y=0,
+        #             ),
+        #             rio.MarkdownView(
+        #                 text,
+        #                 default_language=self.default_language,
+        #                 width="grow",
+        #             ),
+        #             spacing=1.5,
+        #             margin=1.5,
+        #         ),
+        #         style=style,
+        #         corner_radius=theme.THEME.corner_radius_medium,
+        #     ),
+        # )
 
         self.component(
-            rio.Card(
-                child=rio.Row(
-                    rio.Icon(
-                        icon,
-                        width=3,
-                        height=3,
-                        align_y=0,
-                    ),
-                    rio.MarkdownView(
-                        text,
-                        default_language=self.default_language,
-                        width="grow",
-                    ),
-                    spacing=1.5,
-                    margin=1.5,
-                ),
+            rio.Banner(
+                text=text,
                 style=style,
-                corner_radius=theme.THEME.corner_radius_medium,
-            ),
+                markup=True,
+                multiline=True,
+            )
         )
 
     def navigation(
