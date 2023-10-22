@@ -69,7 +69,7 @@ export class SliderComponent extends ComponentBase {
         // updated appropriately.
         //
         // Really, this should be done when the component is resized or moved, but
-        // there is no hook for that. Update seems to work fine.
+        // there is no hook for that. Update seems to work fine for now.
         requestAnimationFrame(() => {
             this.mdcSlider.layout();
         });

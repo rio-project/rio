@@ -252,6 +252,34 @@ class Color(SelfSerializing):
 
         return cls.from_rgb(grey, grey, grey, opacity)
 
+    @classmethod
+    def _from_material_argb(cls, argb: int) -> "Color":
+        """
+        Creates a new color from the argb value, as used by the
+        `material-color-utilities-python` package.
+        """
+
+        return cls.from_rgb(
+            red=((argb >> 16) & 0xFF) / 255,
+            green=((argb >> 8) & 0xFF) / 255,
+            blue=(argb & 0xFF) / 255,
+            opacity=((argb >> 24) & 0xFF) / 255,
+        )
+
+    @property
+    def _as_material_argb(self) -> int:
+        """
+        Returns the argb value, as used by the `material-color-utilities-python`
+        package.
+        """
+
+        return (
+            int(round(self.opacity * 255)) << 24
+            | int(round(self.red * 255)) << 16
+            | int(round(self.green * 255)) << 8
+            | int(round(self.blue * 255))
+        )
+
     @property
     def red(self) -> float:
         """
@@ -609,13 +637,13 @@ Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)
 # Like color, but also allows referencing theme colors
 ColorSet: TypeAlias = Union[
     Literal[
+        "background",
+        "neutral",
         "primary",
         "secondary",
         "success",
         "warning",
         "danger",
-        "text",
-        "default",
     ],
     Color,
 ]
@@ -623,4 +651,4 @@ ColorSet: TypeAlias = Union[
 
 # Cache so the session can quickly determine whether a type annotation is
 # `ColorSet`
-_color_spec_args = set(get_args(ColorSet))
+_color_set_args = set(get_args(ColorSet))

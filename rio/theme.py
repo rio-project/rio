@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
+import material_color_utilities_python
+from typing_extensions import Self
 from uniserde import Jsonable
 
 import rio
@@ -10,32 +12,49 @@ import rio
 from . import color
 
 __all__ = [
+    "Palette",
     "Theme",
 ]
 
 # TODO: Consider really noticeable, memorable primary color: #e80265
 
 
-def _make_variant_color(base: rio.Color) -> rio.Color:
-    return rio.Color.from_hsv(
-        base.hue,
-        base.saturation * 0.5,
-        min(base.value * 1.5, 1),
-    )
+class TonalPalette:
+    def __init__(self, hue: int, chroma: int):
+        self._material_palette = material_color_utilities_python.TonalPalette(
+            hue, chroma
+        )
+
+    def __getitem__(self, tone: int) -> rio.Color:
+        return rio.Color._from_material_argb(self._material_palette.tone(tone))
 
 
+@dataclass(frozen=True)
 class Palette:
-    surface_color: rio.Fill
-    surface_color_variant_1: rio.Fill
-    surface_color_variant_2: rio.Fill
-    surface_color_variant_3: rio.Fill
+    background: rio.Color
+    background_variant: rio.Color
+    background_active: rio.Color
 
-    heading1_style: rio.TextStyle
-    heading2_style: rio.TextStyle
-    heading3_style: rio.TextStyle
-    text_style: rio.TextStyle
+    foreground: rio.Color
+
+    @classmethod
+    def _from_color(
+        cls,
+        color: rio.Color,
+        is_light_theme: bool,
+    ) -> Self:
+        as_hct = material_color_utilities_python.Hct.fromInt(color._as_material_argb)
+        hct_palette = TonalPalette(as_hct.hue, as_hct.chroma)
+
+        return Palette(
+            background=color,
+            background_variant=hct_palette[as_hct.tone + 5],
+            background_active=hct_palette[as_hct.tone + 10],
+            foreground=hct_palette[10 if as_hct.tone > 50 else 90],
+        )
 
 
+@dataclass(frozen=True)
 class Theme:
     """
     Defines the visual style of the application.
@@ -44,7 +63,7 @@ class Theme:
     that are used throughout the application. If you wish to change the
     appearance of your app, this is the place to do it.
 
-    TODO: Finalize themeing and document it
+    TODO: Finalize theming and document it
 
     TODO: Give an example for how to create a theme and attach it to the
         session.
@@ -52,37 +71,21 @@ class Theme:
 
     _: KW_ONLY
 
-    # The main theme colors
-    primary_color: rio.Color
-    secondary_color: rio.Color
-    disabled_color: rio.Color
+    primary_palette: Palette
+    secondary_palette: Palette
 
-    primary_color_variant: rio.Color
-    secondary_color_variant: rio.Color
-    disabled_color_variant: rio.Color
+    background_palette: Palette
+    neutral_palette: Palette
 
-    # Surface colors are often used for backgrounds. Most components are placed on
-    # top of the surface color.
-    background_color: rio.Color
-    surface_color: rio.Color
-    surface_color_variant: rio.Color
-    surface_active_color: rio.Color
-
-    # Semantic colors express a meaning, such as positive or negative outcomes
-    success_color: rio.Color
-    warning_color: rio.Color
-    danger_color: rio.Color
-
-    success_color_variant: rio.Color
-    warning_color_variant: rio.Color
-    danger_color_variant: rio.Color
+    success_palette: Palette
+    warning_palette: Palette
+    danger_palette: Palette
 
     # Other
     corner_radius_small: float
     corner_radius_medium: float
     corner_radius_large: float
 
-    base_spacing: float
     shadow_color: rio.Color
 
     # Text styles
@@ -91,23 +94,16 @@ class Theme:
     heading3_style: rio.TextStyle
     text_style: rio.TextStyle
 
-    text_color_on_light: rio.Color
-    text_color_on_dark: rio.Color
-
-    def __init__(
-        self,
-        *,
+    @classmethod
+    def from_color(
+        cls,
         primary_color: Optional[rio.Color] = None,
         secondary_color: Optional[rio.Color] = None,
-        success_color: Optional[rio.Color] = None,
-        warning_color: Optional[rio.Color] = None,
-        danger_color: Optional[rio.Color] = None,
         corner_radius_small: float = 0.6,
         corner_radius_medium: float = 1.6,
         corner_radius_large: float = 2.6,
-        base_spacing: float = 0.5,
         light: bool = True,
-    ) -> None:
+    ) -> Self:
         # Impute defaults
         if primary_color is None:
             # Consider "ee3f59"
@@ -116,87 +112,73 @@ class Theme:
         if secondary_color is None:
             secondary_color = rio.Color.from_hex("329afc")
 
-        # Main theme colors
-        self.primary_color = primary_color
-        self.secondary_color = secondary_color
-        self.disabled_color = rio.Color.from_grey(0.6 if light else 0.3)
+        # Extract palettes from the material theme
+        primary_palette = Palette._from_color(primary_color, light)
+        secondary_palette = Palette._from_color(secondary_color, light)
 
-        # Create variants for them
-        self.primary_color_variant = _make_variant_color(primary_color)
-        self.secondary_color_variant = _make_variant_color(secondary_color)
-        self.disabled_color_variant = _make_variant_color(self.disabled_color)
-
-        # Determine the background colors based on whether the theme is light or
-        # dark
         if light:
-            self.background_color = rio.Color.from_grey(1.0)
-            self.surface_color = rio.Color.from_grey(0.98).blend(primary_color, 0.03)
-            self.surface_color_variant = self.surface_color.darker(0.02)
-            self.surface_active_color = self.surface_color.blend(primary_color, 0.06)
+            background_palette = Palette(
+                background=rio.Color.WHITE,
+                background_variant=rio.Color.from_grey(0.97).blend(primary_color, 0.03),
+                background_active=rio.Color.from_grey(0.97).blend(primary_color, 0.09),
+                foreground=rio.Color.from_grey(0.1),
+            )
+
+            neutral_palette = Palette(
+                background=rio.Color.from_grey(0.97).blend(primary_color, 0.03),
+                background_variant=rio.Color.from_grey(0.94).blend(primary_color, 0.03),
+                background_active=rio.Color.from_grey(0.94).blend(primary_color, 0.09),
+                foreground=rio.Color.from_grey(0.1),
+            )
+
         else:
-            self.background_color = rio.Color.from_grey(0.12)
-            self.surface_color = rio.Color.from_grey(0.19).blend(primary_color, 0.025)
-            self.surface_color_variant = self.surface_color.darker(0.06)
-            self.surface_active_color = self.surface_color.blend(primary_color, 0.05)
+            background_palette = Palette(
+                background=rio.Color.from_grey(0.1),
+                background_variant=rio.Color.from_grey(0.2).blend(primary_color, 0.02),
+                background_active=rio.Color.from_grey(0.3).blend(primary_color, 0.04),
+                foreground=rio.Color.from_grey(0.9),
+            )
 
-        # Semantic colors
-        if success_color is None:
-            self.success_color = rio.Color.from_hex("66bb6a")
-        else:
-            self.success_color = success_color
+            neutral_palette = Palette(
+                background=rio.Color.from_grey(0.2).blend(primary_color, 0.02),
+                background_variant=rio.Color.from_grey(0.3).blend(primary_color, 0.02),
+                background_active=rio.Color.from_grey(0.3).blend(primary_color, 0.04),
+                foreground=rio.Color.from_grey(0.9),
+            )
 
-        if warning_color is None:
-            self.warning_color = rio.Color.from_hex("f57c00")
-        else:
-            self.warning_color = warning_color
-
-        if danger_color is None:
-            self.danger_color = rio.Color.from_hex("93000a")
-        else:
-            self.danger_color = danger_color
-
-        # Create variants for them
-        self.success_color_variant = _make_variant_color(self.success_color)
-        self.warning_color_variant = _make_variant_color(self.warning_color)
-        self.danger_color_variant = _make_variant_color(self.danger_color)
-
-        # Other
-        self.corner_radius_small = corner_radius_small
-        self.corner_radius_medium = corner_radius_medium
-        self.corner_radius_large = corner_radius_large
-        self.base_spacing = base_spacing
-        self.shadow_color = rio.Color.BLACK.replace(opacity=0.4)
+        success_palette = Palette._from_color(rio.Color.from_hex("1E8E3E"), light)
+        warning_palette = Palette._from_color(rio.Color.from_hex("F9A825"), light)
+        danger_palette = Palette._from_color(rio.Color.from_hex("B3261E"), light)
 
         # Text styles
-
-        # These are filled out first, so the remaining colors may access them
-        # via `self._text_color_for`.
-        self.text_color_on_light = rio.Color.from_grey(0.1)
-        self.text_color_on_dark = rio.Color.from_grey(0.9)
-        self.text_on_surface_color = self.text_color_for(self.surface_color)
-
-        self.heading1_style = rio.TextStyle(
+        heading1_style = rio.TextStyle(
             font_size=3.0,
-            fill=self.primary_color,
+            fill=primary_color,
         )
-        self.heading2_style = self.heading1_style.replace(font_size=1.8)
-        self.heading3_style = self.heading1_style.replace(font_size=1.2)
-        self.text_style = self.heading1_style.replace(
+        heading2_style = heading1_style.replace(font_size=1.8)
+        heading3_style = heading1_style.replace(font_size=1.2)
+        text_style = heading1_style.replace(
             font_size=1,
-            fill=self.text_on_surface_color,
+            fill=rio.Color.from_grey(0.1 if light else 0.9),
         )
 
-    @property
-    def text_on_success_color(self) -> rio.Color:
-        return self.text_color_for(self.success_color)
-
-    @property
-    def text_on_warning_color(self) -> rio.Color:
-        return self.text_color_for(self.warning_color)
-
-    @property
-    def text_on_danger_color(self) -> rio.Color:
-        return self.text_color_for(self.danger_color)
+        return cls(
+            primary_palette=primary_palette,
+            secondary_palette=secondary_palette,
+            background_palette=background_palette,
+            neutral_palette=neutral_palette,
+            success_palette=success_palette,
+            warning_palette=warning_palette,
+            danger_palette=danger_palette,
+            corner_radius_small=corner_radius_small,
+            corner_radius_medium=corner_radius_medium,
+            corner_radius_large=corner_radius_large,
+            shadow_color=rio.Color.from_rgb(0, 0, 0.3, 0.3),
+            heading1_style=heading1_style,
+            heading2_style=heading2_style,
+            heading3_style=heading3_style,
+            text_style=text_style,
+        )
 
     def text_color_for(self, color: rio.Color) -> rio.Color:
         """
@@ -204,9 +186,9 @@ class Theme:
         text on top of it.
         """
         if color.perceived_brightness > 0.5:
-            return self.text_color_on_light
+            return rio.Color.from_grey(0.1)
         else:
-            return self.text_color_on_dark
+            return rio.Color.from_grey(0.9)
 
     def _serialize_colorset(self, color: color.ColorSet) -> Jsonable:
         # If the color is a string, just pass it through
@@ -215,7 +197,6 @@ class Theme:
 
         # If it is a custom color, return it, along with related ones
         return {
-            "color": color.rgba,
-            "colorVariant": _make_variant_color(color).rgba,
-            "textColor": self.text_color_for(color).rgba,
+            "background": color.rgba,
+            "foreground": self.text_color_for(color).rgba,
         }

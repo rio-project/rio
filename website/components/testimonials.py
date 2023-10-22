@@ -32,7 +32,6 @@ class Testimonial(rio.Component):
                         style=rio.TextStyle(
                             font_size=1.0,
                             font_weight="bold",
-                            fill=theme.THEME.text_color_for(theme.THEME.surface_color),
                         ),
                     ),
                     width="grow",

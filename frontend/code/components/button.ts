@@ -53,11 +53,6 @@ export class ButtonComponent extends SingleContainer {
     onCreation(element: HTMLElement, state: Required<ButtonState>): void {
         setTimeout(() => {
             this.isStillInitiallyDisabled = false;
-
-            // this._updateElement(element, {
-            //     _type_: 'Button-builtin',
-            //     is_sensitive: this.state.is_sensitive,
-            // });
         }, state.initially_disabled_for * 1000);
     }
 
@@ -93,9 +88,8 @@ export class ButtonComponent extends SingleContainer {
         ) {
             // It looks ugly if every new button is initially greyed out, so
             // for the styling we ignore `self.isStillInitiallyDisabled`.
-            let is_sensitive: boolean = (
-                deltaState.is_sensitive || this.state['is_sensitive']
-            );
+            let is_sensitive: boolean =
+                deltaState.is_sensitive || this.state['is_sensitive'];
 
             let colorSet = is_sensitive
                 ? deltaState.color || this.state['color']
@@ -104,12 +98,12 @@ export class ButtonComponent extends SingleContainer {
             applyColorSet(element, colorSet);
         }
 
-        // The slider stores the coordinates of its rectangle. Since rio
-        // likes to resize and move around components, the rectangle must be
-        // updated appropriately.
+        // The ripple stores the coordinates of its rectangle. Since rio likes
+        // to resize and move around components, the rectangle must be updated
+        // appropriately.
         //
-        // Really, this should be done when the component is resized or moved, but
-        // there is no hook for that. Update seems to work fine.
+        // Really, this should be done when the component is resized or moved,
+        // but there is no hook for that. Update seems to work fine for now.
         requestAnimationFrame(() => {
             this.mdcRipple.layout();
         });

@@ -106,13 +106,13 @@ class Article:
 
     def box(self, level: Literal["info", "warning", "danger"], text: str) -> None:
         if level == "info":
-            color = theme.THEME.secondary_color
+            color = theme.THEME.secondary_palette.background
             icon = "info"
         elif level == "warning":
-            color = theme.THEME.warning_color
+            color = theme.THEME.warning_palette.background
             icon = "warning"
         elif level == "danger":
-            color = theme.THEME.danger_color
+            color = theme.THEME.danger_palette.background
             icon = "error"
         else:
             assert False, f"Unknown box level: {level}"

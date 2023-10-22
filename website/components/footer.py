@@ -9,16 +9,11 @@ class FooterColumn(rio.Component):
     entries: List[Tuple[str, Union[str, rio.URL]]]
 
     def build(self) -> rio.Component:
-        text_style = rio.TextStyle(
-            fill=theme.THEME.text_color_on_dark,
-        )
-
         return rio.Column(
             *[
                 rio.Link(
                     child=entry[0],
                     target_url=entry[1],
-                    # style=text_style,
                 )
                 for entry in self.entries
             ],
@@ -45,7 +40,7 @@ class Footer(rio.Component):
                 rio.Text(
                     "Made with ❤️ in Vienna",
                     style=rio.TextStyle(
-                        fill=theme.THEME.background_color,
+                        fill=theme.THEME.background_palette.background,
                         font_size=1.1,
                     ),
                     margin_top=4,
@@ -87,6 +82,6 @@ class Footer(rio.Component):
                 margin_bottom=7,
             ),
             style=rio.BoxStyle(
-                fill=theme.THEME.surface_color.darker(0.8),
+                fill=theme.THEME.neutral_palette.background.darker(0.8),
             ),
         )

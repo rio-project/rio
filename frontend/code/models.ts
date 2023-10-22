@@ -3,18 +3,17 @@ export type ComponentId = number | string;
 export type Color = [number, number, number, number];
 
 export type ColorSet =
+    | null
+    | 'background'
+    | 'neutral'
     | 'primary'
     | 'secondary'
     | 'success'
     | 'warning'
     | 'danger'
-    | 'disabled'
-    | 'text'
-    | 'default'
     | {
-          color: Color;
-          colorVariant: Color;
-          textColor: Color;
+          background: Color;
+          foreground: Color;
       };
 
 export type Fill =

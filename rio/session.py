@@ -749,7 +749,7 @@ class Session(unicall.Unicall):
         # ColorSet
         # Important: This must happen before the SelfSerializing check, because
         # `value` might be a `Color`
-        if origin is Union and set(args) == color._color_spec_args:
+        if origin is Union and set(args) == color._color_set_args:
             thm = self.attachments[theme.Theme]
             return thm._serialize_colorset(value)
 
@@ -1421,7 +1421,7 @@ class Session(unicall.Unicall):
         if self.running_in_window:
             # FIXME: Find (1) a better way to get the active window and (2) a
             # way to open a file dialog without blocking the event loop.
-            import webview
+            import webview  # type: ignore
 
             active_window = webview.active_window()
             destination = active_window.create_file_dialog(
@@ -1490,42 +1490,39 @@ document.body.removeChild(a)
         """
         Updates the client's theme to match the given one.
         """
-        # Build the set of all variables
+        # Build the set of all CSS variables that must be set
 
         # Miscellaneous
         variables: Dict[str, str] = {
             "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
+            "--rio-global-corner-radius-medium": f"{thm.corner_radius_medium}rem",
             "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",
+            "--rio-global-shadow-color": f"#{thm.shadow_color.hex}",
         }
 
-        # Theme Colors
-        color_names = (
-            "primary_color",
-            "secondary_color",
-            "disabled_color",
-            "primary_color_variant",
-            "secondary_color_variant",
-            "disabled_color_variant",
-            "background_color",
-            "surface_color",
-            "surface_color_variant",
-            "surface_active_color",
-            "success_color",
-            "warning_color",
-            "danger_color",
-            "success_color_variant",
-            "warning_color_variant",
-            "danger_color_variant",
-            "shadow_color",
-            "text_color_on_light",
-            "text_color_on_dark",
+        # Palettes
+        palette_names = (
+            "primary",
+            "secondary",
+            "background",
+            "neutral",
+            "success",
+            "warning",
+            "danger",
         )
 
-        for py_color_name in color_names:
-            css_color_name = f'--rio-global-{py_color_name.replace("_", "-")}'
-            color = getattr(thm, py_color_name)
-            assert isinstance(color, rio.Color), color
-            variables[css_color_name] = f"#{color.hex}"
+        for palette_name in palette_names:
+            palette = getattr(thm, f"{palette_name}_palette")
+            assert isinstance(palette, theme.Palette), palette
+
+            variables[f"--rio-global-{palette_name}-bg"] = f"#{palette.background.hex}"
+            variables[
+                f"--rio-global-{palette_name}-bg-variant"
+            ] = f"#{palette.background_variant.hex}"
+            variables[
+                f"--rio-global-{palette_name}-bg-active"
+            ] = f"#{palette.background_active.hex}"
+            variables[f"--rio-global-{palette_name}-fg"] = f"#{palette.foreground.hex}"
 
         # Text styles
         style_names = (
@@ -1557,22 +1554,12 @@ document.body.removeChild(a)
             for var, value in fill_variables.items():
                 variables[f"{css_prefix}-{var}"] = value
 
-        # Colors derived from, but not stored in the theme
-        derived_colors = {
-            "text-on-primary-color": thm.text_color_for(thm.primary_color),
-            "text-on-secondary-color": thm.text_color_for(thm.secondary_color),
-            "text-on-success-color": thm.text_color_for(thm.success_color),
-            "text-on-warning-color": thm.text_color_for(thm.warning_color),
-            "text-on-danger-color": thm.text_color_for(thm.danger_color),
-        }
-
-        for css_name, color in derived_colors.items():
-            variables[f"--rio-global-{css_name}"] = f"#{color.hex}"
-
         # Update the variables client-side
         await self._remote_apply_theme(
             variables,
-            "light" if thm.background_color.perceived_brightness > 0.5 else "dark",
+            "light"
+            if thm.neutral_palette.background.perceived_brightness > 0.5
+            else "dark",
         )
 
     @unicall.remote(
