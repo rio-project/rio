@@ -1,13 +1,14 @@
-import { Color, Fill, TextStyle } from "./models";
-
+import { Color, Fill, TextStyle } from './models';
 
 export function colorToCssString(color: Color): string {
     const [r, g, b, a] = color;
     return `rgba(${r * 255}, ${g * 255}, ${b * 255}, ${a})`;
 }
 
-
-function gradientToCssString(angleDegrees: number, stops: [Color, number][]): string {
+function gradientToCssString(
+    angleDegrees: number,
+    stops: [Color, number][]
+): string {
     let stopStrings: string[] = [];
 
     for (let i = 0; i < stops.length; i++) {
@@ -16,9 +17,10 @@ function gradientToCssString(angleDegrees: number, stops: [Color, number][]): st
         stopStrings.push(`${colorToCssString(color)} ${position * 100}%`);
     }
 
-    return `linear-gradient(${90 - angleDegrees}deg, ${stopStrings.join(', ')})`
+    return `linear-gradient(${90 - angleDegrees}deg, ${stopStrings.join(
+        ', '
+    )})`;
 }
-
 
 export function fillToCssString(fill: Fill): string {
     // Solid Color
@@ -59,28 +61,27 @@ export function fillToCssString(fill: Fill): string {
     throw `Invalid fill type: ${fill.type}`;
 }
 
-
-export function fillToCss(fill: Fill): { 'background': string } {
+export function fillToCss(fill: Fill): { background: string } {
     return {
-        'background': fillToCssString(fill),
+        background: fillToCssString(fill),
     };
 }
-
 
 export function textStyleToCss(
     style: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle
 ): object {
     let result = {
-        'background': 'none',
-        'color': 'unset',  // FIXME
+        background: 'none',
+        color: 'unset', // FIXME
     };
 
     // Predefined style from theme
     if (typeof style === 'string') {
-        let textOrHeading = style === 'text' ? 'text' : 'heading';
-
         // Local values
-        result['color'] = `var(--rio-local-${textOrHeading}-color)`;
+        result['color'] =
+            style === 'text'
+                ? 'var(--rio-local-plain-fg)'
+                : 'var(--rio-global-heading-color-TODO)';
 
         // Global values
         let cssPrefix = `var(--rio-global-${style}-`;

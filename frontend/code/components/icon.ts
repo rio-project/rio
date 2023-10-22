@@ -19,7 +19,7 @@ function createSVGPath(
 
     // If the fill is a string apply the appropriate theme color.
     if (typeof fill === 'string') {
-        svgRoot.style.fill = 'var(--rio-local-text-color)';
+        svgRoot.style.fill = `var(--rio-global-${fill}-fg)`;
         return;
     }
 
