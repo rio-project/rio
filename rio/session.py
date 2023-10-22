@@ -89,7 +89,7 @@ def _host_and_get_fill_as_css_variables(
 
     assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill
     return {
-        "text-color": "var(--rio-local-plain-fg)",
+        "text-color": "var(--rio-local-text-color)",
         "text-background": fill._as_css_background(sess),
         "text-background-clip": "text",
         "text-fill-color": "transparent",

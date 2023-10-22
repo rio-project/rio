@@ -62,7 +62,7 @@ class AutoForm(component_base.Component):
     ) -> rio.Component:
         return banner.Banner(
             text=text,
-            level=level,
+            style=level,
         )
 
     def make_switch(self, is_on: bool) -> rio.Component:
