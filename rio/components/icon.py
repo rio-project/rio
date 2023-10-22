@@ -51,7 +51,7 @@ class Icon(component_base.FundamentalComponent):
 
     icon: str
     _: KW_ONLY
-    fill: Union[rio.FillLike, color.ColorSet]
+    fill: Union[rio.FillLike, color.ColorSet, Literal["keep"]]
 
     @staticmethod
     def _get_registry() -> icon_registry.IconRegistry:
@@ -94,7 +94,7 @@ class Icon(component_base.FundamentalComponent):
         self,
         icon: str,
         *,
-        fill: Union[rio.FillLike, color.ColorSet] = "default",
+        fill: Union[rio.FillLike, color.ColorSet, Literal["keep"]] = "keep",
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -140,11 +140,6 @@ class Icon(component_base.FundamentalComponent):
         else:
             assert isinstance(self.fill, str), f"Unsupported fill type: {self.fill}"
             fill = self.fill
-
-        # Serialize the width and height, as specified in Python. These will be
-        # used to force the actual graphic to be the correct height, while the
-        # rest is empty space.
-        width = self.width if isinstance(self.width, float) else None
 
         # Serialize
         return {

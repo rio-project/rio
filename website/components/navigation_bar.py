@@ -21,18 +21,33 @@ class NavigationButton(rio.Component):
         except IndexError:
             self.is_active = False
 
+    def _on_press(self, ev: rio.MouseUpEvent) -> None:
+        if ev.button == rio.MouseButton.LEFT:
+            self.session.navigate_to("/" + self.page)
+
     def build(self) -> rio.Component:
         if self.is_active:
             color = theme.THEME.primary_palette.background.replace(opacity=0.3)
         else:
             color = rio.Color.TRANSPARENT
 
-        return rio.Button(
-            self.text,
-            color=color,
+        return rio.MouseEventListener(
+            child=rio.Rectangle(
+                child=rio.Text(
+                    self.text,
+                    margin=0.5,
+                ),
+                style=rio.BoxStyle(
+                    fill=color,
+                    corner_radius=999,
+                ),
+                ripple=True,
+                transition_time=0.1,
+                cursor=rio.CursorStyle.POINTER,
+            ),
+            on_mouse_up=self._on_press,
             width=5,
             align_y=0.5,
-            on_press=lambda: self.session.navigate_to("/" + self.page),
         )
 
 

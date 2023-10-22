@@ -1,21 +1,27 @@
-import { ColorSet, Fill } from '../models';
+import { ColorSetOrNull, Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyFillToSVG } from '../designApplication';
 import { pixelsPerEm } from '../app';
 
 export type IconState = ComponentState & {
     svgSource: string;
-    fill: Fill | ColorSet;
+    fill: Fill | ColorSetOrNull | 'keep';
 };
 
 function createSVGPath(
     div: HTMLElement,
     svgSource: string,
-    fill: Fill | ColorSet
+    fill: Fill | ColorSetOrNull
 ) {
     // Create an SVG element
     div.innerHTML = svgSource;
     let svgRoot = div.firstChild as SVGSVGElement;
+
+    // If not fill was provided, use the default foreground color.
+    if (fill === null) {
+        svgRoot.style.fill = 'var(--rio-local-text-color)';
+        return;
+    }
 
     // If the fill is a string apply the appropriate theme color.
     if (typeof fill === 'string') {
@@ -51,7 +57,11 @@ export class IconComponent extends ComponentBase {
         element.innerHTML = '';
 
         // Add the SVG
-        createSVGPath(element, deltaState.svgSource, deltaState.fill);
+        createSVGPath(
+            element,
+            deltaState.svgSource,
+            deltaState.fill === 'keep' ? null : deltaState.fill
+        );
 
         // Size
         //

@@ -81,18 +81,18 @@ def _host_and_get_fill_as_css_variables(
 
     if isinstance(fill, rio.SolidFill):
         return {
-            "text-color": f"#{fill.color.hex}",
-            "text-background": "none",
-            "text-background-clip": "border-box",
-            "text-fill-color": "transparent",
+            "color": f"#{fill.color.hex}",
+            "background": "none",
+            "background-clip": "border-box",
+            "fill-color": "transparent",
         }
 
     assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill
     return {
-        "text-color": "var(--rio-local-text-color)",
-        "text-background": fill._as_css_background(sess),
-        "text-background-clip": "text",
-        "text-fill-color": "transparent",
+        "color": "var(--rio-local-text-color)",
+        "background": fill._as_css_background(sess),
+        "background-clip": "text",
+        "fill-color": "transparent",
     }
 
 
