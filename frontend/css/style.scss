@@ -1700,10 +1700,10 @@ $drawer-side-margin: 0.7rem;
     border-radius: $infinite-corner-radius;
 
     transition:
-        left 0.3s $transition-timing-overshoot,
-        top 0.3s $transition-timing-overshoot,
-        right 0.3s $transition-timing-overshoot,
-        bottom 0.3s $transition-timing-overshoot;
+        left 0.4s $transition-timing-overshoot,
+        top 0.4s $transition-timing-overshoot,
+        right 0.4s $transition-timing-overshoot,
+        bottom 0.4s $transition-timing-overshoot;
 }
 
 // SVG Images

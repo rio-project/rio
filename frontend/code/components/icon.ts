@@ -18,14 +18,17 @@ function createSVGPath(
     let svgRoot = div.firstChild as SVGSVGElement;
 
     // If not fill was provided, use the default foreground color.
-    if (fill === null) {
+    if (fill === 'keep') {
         svgRoot.style.fill = 'var(--rio-local-text-color)';
         return;
     }
 
-    // If the fill is a string apply the appropriate theme color.
+    // If the fill is a string apply the appropriate theme color. Note that this
+    // uses the background rather than foreground color. The foreground is
+    // intended to be used if the background was already set to background
+    // color.
     if (typeof fill === 'string') {
-        svgRoot.style.fill = `var(--rio-global-${fill}-fg)`;
+        svgRoot.style.fill = `var(--rio-global-${fill}-bg)`;
         return;
     }
 
@@ -60,7 +63,7 @@ export class IconComponent extends ComponentBase {
         createSVGPath(
             element,
             deltaState.svgSource,
-            deltaState.fill === 'keep' ? null : deltaState.fill
+            deltaState.fill
         );
 
         // Size

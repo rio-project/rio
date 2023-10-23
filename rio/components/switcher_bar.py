@@ -11,10 +11,16 @@ import rio
 from . import component_base
 
 __all__ = [
+    "SwitcherBarChangeEvent",
     "SwitcherBar",
 ]
 
 T = TypeVar("T")
+
+
+@dataclass
+class SwitcherBarChangeEvent(Generic[T]):
+    value: T
 
 
 class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
@@ -24,7 +30,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
     orientation: Literal["horizontal", "vertical"]
     spacing: float
     selected_value: T
-    on_change: rio.EventHandler[[]]
+    on_change: rio.EventHandler[SwitcherBarChangeEvent[T]]
 
     def __init__(
         self,
@@ -34,7 +40,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
         orientation: Literal["horizontal", "vertical"] = "horizontal",
         spacing: float = 1.0,
         selected_value: Optional[T] = None,
-        on_change: rio.EventHandler[[]] = None,
+        on_change: rio.EventHandler[SwitcherBarChangeEvent[T]] = None,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -121,6 +127,11 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
             # Invalid names may be sent due to lag between the frontend and
             # backend. Ignore them.
             return
+
+        # Trigger the event
+        await self.call_event_handler(
+            self.on_change, SwitcherBarChangeEvent(self.selected_value)
+        )
 
         # Refresh the session
         await self.session._refresh()

@@ -20,7 +20,7 @@ T = TypeVar("T")
 
 @dataclass
 class DropdownChangeEvent(Generic[T]):
-    value: Optional[T]
+    value: T
 
 
 class Dropdown(component_base.FundamentalComponent, Generic[T]):
@@ -144,6 +144,11 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
             # Invalid names may be sent due to lag between the frontend and
             # backend. Ignore them.
             return
+
+        # Trigger the event
+        await self.call_event_handler(
+            self.on_change, DropdownChangeEvent(self.selected_value)
+        )
 
         # Refresh the session
         await self.session._refresh()
