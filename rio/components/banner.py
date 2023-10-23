@@ -101,5 +101,5 @@ class Banner(component_base.Component):
         # Build the result
         return rio.Card(
             child=child,
-            style=style_name,
+            color=style_name,
         )

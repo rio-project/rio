@@ -644,6 +644,7 @@ ColorSet: TypeAlias = Union[
         "success",
         "warning",
         "danger",
+        "keep",
     ],
     Color,
 ]

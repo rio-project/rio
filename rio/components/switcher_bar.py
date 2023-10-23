@@ -11,56 +11,30 @@ import rio
 from . import component_base
 
 __all__ = [
-    "Dropdown",
-    "DropdownChangeEvent",
+    "SwitcherBar",
 ]
 
 T = TypeVar("T")
 
 
-@dataclass
-class DropdownChangeEvent(Generic[T]):
-    value: Optional[T]
-
-
-class Dropdown(component_base.FundamentalComponent, Generic[T]):
-    """
-    A dropdown menu allowing the user to select one of several options.
-
-    Dropdowns present the user with a list of options, allowing them to select
-    exactly one. In their default state dropdowns are compact and display the
-    currently selected option. When activated, a popup menu appears with a list
-    of all available options.
-
-    Attributes:
-        options: A mapping from option names to values. The names are displayed
-            in the dropdown menu, and the corresponding value is returned when
-            the user selects the option. The values must be comparable.
-
-        label: A short text to display next to the dropdown.
-
-        selected_value: The value of the currently selected option.
-
-        on_change: Triggered whenever the user selects an option.
-
-        is_sensitive: Whether the dropdown should respond to user input.
-    """
-
+class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
     options: Mapping[str, T]
     _: KW_ONLY
-    label: str
+    color: rio.ColorSet
+    orientation: Literal["horizontal", "vertical"]
+    spacing: float
     selected_value: T
-    on_change: rio.EventHandler[DropdownChangeEvent[T]]
-    is_sensitive: bool = True
+    on_change: rio.EventHandler[[]]
 
     def __init__(
         self,
         options: Mapping[str, T],
         *,
-        label: str = "",
+        color: rio.ColorSet = "keep",
+        orientation: Literal["horizontal", "vertical"] = "horizontal",
+        spacing: float = 1.0,
         selected_value: Optional[T] = None,
-        on_change: rio.EventHandler[DropdownChangeEvent[T]] = None,
-        is_sensitive: bool = True,
+        on_change: rio.EventHandler[[]] = None,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -75,7 +49,7 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         align_y: Optional[float] = None,
     ):
         if not options:
-            raise ValueError("`Dropdown` must have at least one option.")
+            raise ValueError("`SwitcherBar` must have at least one option.")
 
         super().__init__(
             key=key,
@@ -93,9 +67,10 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         )
 
         self.options = options
-        self.label = label
+        self.color = color
+        self.orientation = orientation
+        self.spacing = spacing
         self.on_change = on_change
-        self.is_sensitive = is_sensitive
 
         # This is an unsafe assignment, because the value could be `None`. This
         # will be fixed in `on_create`, once the state bindings have been
@@ -125,9 +100,11 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
             )
 
     def _custom_serialize(self) -> JsonDoc:
+        thm = self.session.attachments[rio.Theme]
         result = {
             "optionNames": list(self.options.keys()),
             "selectedName": self._fetch_selected_name(),
+            "color": thm._serialize_colorset(self.color),
         }
 
         return result
@@ -149,4 +126,4 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         await self.session._refresh()
 
 
-Dropdown._unique_id = "Dropdown-builtin"
+SwitcherBar._unique_id = "SwitcherBar-builtin"

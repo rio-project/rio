@@ -5,10 +5,10 @@ from typing import *  # type: ignore
 import rio
 import rio.debug
 
-theme = rio.Theme()
+theme = rio.Theme.from_color()
 
 CARD_STYLE = rio.BoxStyle(
-    fill=theme.surface_color,
+    fill=theme.neutral_palette.background,
     corner_radius=theme.corner_radius_small,
     # shadow_color=theme.active_color.replace(opacity=0.1),
 )
@@ -286,6 +286,14 @@ class Sidebar(rio.Component):
                         rio.Switch(
                             is_on=Sidebar.expanded,
                         ),
+                    ),
+                    rio.SwitcherBar(
+                        {
+                            "Short": "hello",
+                            "Very, very long!": "world",
+                        },
+                        orientation="horizontal",
+                        color="danger",
                     ),
                     rio.Stack(
                         rio.Rectangle(

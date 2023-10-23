@@ -17,11 +17,14 @@ def default_fallback_build(sess: rio.Session) -> rio.Component:
         rio.Row(
             rio.Icon(
                 "material/error",
-                fill="warning",
+                fill="primary",
                 width=4,
                 height=4,
             ),
-            rio.Text("This page does not exist", style="heading1"),
+            rio.Text(
+                "This page does not exist",
+                style="heading1",
+            ),
             spacing=2,
             align_x=0.5,
         ),

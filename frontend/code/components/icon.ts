@@ -1,17 +1,17 @@
-import { ColorSetOrNull, Fill } from '../models';
+import { ColorSet, Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyFillToSVG } from '../designApplication';
 import { pixelsPerEm } from '../app';
 
 export type IconState = ComponentState & {
     svgSource: string;
-    fill: Fill | ColorSetOrNull | 'keep';
+    fill: Fill | ColorSet | 'keep';
 };
 
 function createSVGPath(
     div: HTMLElement,
     svgSource: string,
-    fill: Fill | ColorSetOrNull
+    fill: Fill | ColorSet
 ) {
     // Create an SVG element
     div.innerHTML = svgSource;

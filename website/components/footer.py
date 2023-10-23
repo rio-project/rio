@@ -27,7 +27,7 @@ class Footer(rio.Component):
             child=rio.Column(
                 rio.Rectangle(
                     style=rio.BoxStyle(
-                        fill=rio.Color.WHITE,
+                        fill=theme.THEME.background_palette.background,
                         corner_radius=(
                             0,
                             0,

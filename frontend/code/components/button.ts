@@ -1,5 +1,5 @@
 import { applyColorSet } from '../designApplication';
-import { ColorSetOrNull } from '../models';
+import { ColorSet } from '../models';
 import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { SingleContainer } from './singleContainer';
@@ -8,7 +8,7 @@ export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
     shape?: 'pill' | 'rounded' | 'rectangle' | 'circle';
     style?: 'major' | 'minor';
-    color?: ColorSetOrNull;
+    color?: ColorSet;
     child?: number | string;
     is_sensitive?: boolean;
     initially_disabled_for?: number;

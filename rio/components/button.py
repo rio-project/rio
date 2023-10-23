@@ -66,7 +66,7 @@ class Button(component_base.Component):
     child: Optional[rio.Component] = None
     shape: Literal["pill", "rounded", "rectangle", "circle"] = "pill"
     style: Literal["major", "minor"] = "major"
-    color: rio.ColorSet = "primary"
+    color: rio.ColorSet = "keep"
     is_sensitive: bool = True
     is_loading: bool = False
     initially_disabled_for: float = INITIALLY_DISABLED_FOR
@@ -153,7 +153,7 @@ class CircularButton(component_base.Component):
 
     icon: str
     _: KW_ONLY
-    color: rio.ColorSet = "primary"
+    color: rio.ColorSet = "keep"
     is_sensitive: bool = True
     on_press: rio.EventHandler[[]] = None
     initially_disabled_for: float = INITIALLY_DISABLED_FOR

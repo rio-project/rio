@@ -50,7 +50,7 @@ class Palette:
             background=color,
             background_variant=hct_palette[as_hct.tone + 5],
             background_active=hct_palette[as_hct.tone + 10],
-            foreground=hct_palette[10 if as_hct.tone > 50 else 90],
+            foreground=hct_palette[15 if as_hct.tone > 50 else 85],
         )
 
 
@@ -126,23 +126,23 @@ class Theme:
 
             neutral_palette = Palette(
                 background=rio.Color.from_grey(0.97).blend(primary_color, 0.04),
-                background_variant=rio.Color.from_grey(0.94).blend(primary_color, 0.04),
-                background_active=rio.Color.from_grey(0.94).blend(primary_color, 0.10),
+                background_variant=rio.Color.from_grey(0.93).blend(primary_color, 0.05),
+                background_active=rio.Color.from_grey(0.93).blend(primary_color, 0.10),
                 foreground=rio.Color.from_grey(0.1),
             )
 
         else:
             background_palette = Palette(
                 background=rio.Color.from_grey(0.1),
-                background_variant=rio.Color.from_grey(0.14).blend(primary_color, 0.02),
-                background_active=rio.Color.from_grey(0.14).blend(primary_color, 0.05),
+                background_variant=rio.Color.from_grey(0.14).blend(primary_color, 0.03),
+                background_active=rio.Color.from_grey(0.14).blend(primary_color, 0.06),
                 foreground=rio.Color.from_grey(0.9),
             )
 
             neutral_palette = Palette(
                 background=rio.Color.from_grey(0.16).blend(primary_color, 0.02),
-                background_variant=rio.Color.from_grey(0.2).blend(primary_color, 0.02),
-                background_active=rio.Color.from_grey(0.2).blend(primary_color, 0.05),
+                background_variant=rio.Color.from_grey(0.2).blend(primary_color, 0.03),
+                background_active=rio.Color.from_grey(0.2).blend(primary_color, 0.06),
                 foreground=rio.Color.from_grey(0.9),
             )
 
