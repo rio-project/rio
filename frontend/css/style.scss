@@ -32,6 +32,9 @@ $z-index-overlay: 10000;
 $z-index-popup: 10001;
 $z-index-error-popup: 10002;
 
+// "Infinite" corner radius, for creating pill shapes
+$infinite-corner-radius: 99999px;
+
 // Nonstandard transition timing function
 $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
@@ -1005,7 +1008,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 // Shapes
 .rio-shape-pill {
-    border-radius: 99999px;
+    border-radius: $infinite-corner-radius;
 }
 
 .rio-shape-rounded {
@@ -1103,7 +1106,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     color: var(--rio-global-danger-bg);
     background: var(--rio-global-neutral-bg);
     padding: 1.5rem;
-    border-radius: 99999px;
+    border-radius: $infinite-corner-radius;
     box-shadow: 0 0 1rem var(--rio-global-shadow-color);
 
     // This is immediately changed by JavaScript to effect a fade-in
@@ -1659,6 +1662,48 @@ $drawer-side-margin: 0.7rem;
 
 .rio-card-colorize-on-hover:hover {
     background-color: var(--rio-local-plain-bg-active);
+}
+
+// SwitcherBar
+.rio-switcher-bar {
+    pointer-events: auto;
+    display: flex;
+    align-items: stretch;
+    gap: 1;
+}
+
+.rio-switcher-bar > * {
+    position: relative;
+    padding: 0.4rem;
+
+    cursor: pointer;
+
+    // MDC Ripple
+    // overflow: hidden;
+    border-radius: $infinite-corner-radius;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.rio-switcher-bar-marker {
+    background: var(--rio-local-accent-bg);
+    opacity: 0.3;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    border-radius: $infinite-corner-radius;
+
+    transition:
+        left 0.3s $transition-timing-overshoot,
+        top 0.3s $transition-timing-overshoot,
+        right 0.3s $transition-timing-overshoot,
+        bottom 0.3s $transition-timing-overshoot;
 }
 
 // SVG Images

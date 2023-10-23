@@ -53,7 +53,7 @@ class Card(component_base.FundamentalComponent):
     on_press: rio.EventHandler[[]] = None
     elevate_on_hover: Optional[bool] = None
     colorize_on_hover: Optional[bool] = None
-    style: Union[Literal["keep"], rio.ColorSet] = "neutral"
+    color: rio.ColorSet = "neutral"
 
     async def _on_message(self, msg: Any) -> None:
         # Trigger the press event
@@ -63,11 +63,8 @@ class Card(component_base.FundamentalComponent):
         await self.session._refresh()
 
     def _custom_serialize(self) -> JsonDoc:
-        if self.style == "keep":
-            style = None
-        else:
-            thm = self.session.attachments[rio.Theme]
-            style = thm._serialize_colorset(self.style)
+        thm = self.session.attachments[rio.Theme]
+        color = thm._serialize_colorset(self.color)
 
         report_press = self.on_press is not None
 
@@ -80,7 +77,7 @@ class Card(component_base.FundamentalComponent):
             "colorize_on_hover": report_press
             if self.colorize_on_hover is None
             else self.colorize_on_hover,
-            "style": style,
+            "color": color,
         }
 
 

@@ -1,11 +1,11 @@
 import { colorToCssString } from '../cssUtils';
 import { applyColorSet } from '../designApplication';
-import { ColorSetOrNull } from '../models';
+import { ColorSet } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ProgressCircleState = ComponentState & {
     _type_: 'progressCircle';
-    color: ColorSetOrNull;
+    color: ColorSet;
     background_color?: [number, number, number, number];
     progress?: number | null;
 };

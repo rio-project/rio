@@ -1,5 +1,5 @@
 import { applyColorSet } from '../designApplication';
-import { ColorSetOrNull, ComponentId } from '../models';
+import { ColorSet, ComponentId } from '../models';
 import { ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
 import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
@@ -11,7 +11,7 @@ export type CardState = ComponentState & {
     reportPress?: boolean;
     elevate_on_hover?: boolean;
     colorize_on_hover?: boolean;
-    style?: ColorSetOrNull;
+    color?: ColorSet;
 };
 
 export class CardComponent extends SingleContainer {
@@ -74,8 +74,8 @@ export class CardComponent extends SingleContainer {
         }
 
         // Style
-        if (deltaState.style !== undefined) {
-            applyColorSet(element, deltaState.style);
+        if (deltaState.color !== undefined) {
+            applyColorSet(element, deltaState.color);
         }
     }
 }
