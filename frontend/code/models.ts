@@ -11,6 +11,7 @@ export type ColorSet =
     | 'success'
     | 'warning'
     | 'danger'
+    | 'accent-to-plain'
     | {
           background: Color;
           foreground: Color;

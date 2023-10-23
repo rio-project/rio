@@ -56,7 +56,12 @@ export class SwitcherBarComponent extends ComponentBase {
 
         // Color
         if (deltaState.color !== undefined) {
-            applyColorSet(element, deltaState.color);
+            applyColorSet(
+                element,
+                deltaState.color === 'keep'
+                    ? 'accent-to-plain'
+                    : deltaState.color
+            );
         }
 
         // Orientation
