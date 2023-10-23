@@ -293,7 +293,7 @@ class Sidebar(rio.Component):
                             "Very, very long!": "world",
                         },
                         orientation="horizontal",
-                        color="danger",
+                        color="primary",
                     ),
                     rio.Stack(
                         rio.Rectangle(

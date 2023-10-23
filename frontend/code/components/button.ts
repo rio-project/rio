@@ -95,6 +95,10 @@ export class ButtonComponent extends SingleContainer {
                 ? deltaState.color || this.state['color']
                 : 'disabled';
 
+            if (colorSet === 'keep') {
+                colorSet = 'accent-to-plain';
+            }
+
             applyColorSet(element, colorSet);
         }
 

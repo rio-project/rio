@@ -11,7 +11,8 @@ export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
         'rio-switcheroo-success',
         'rio-switcheroo-warning',
         'rio-switcheroo-danger',
-        'rio-switcheroo-custom'
+        'rio-switcheroo-custom',
+        'rio-switcheroo-accent-to-plain'
     );
 
     // If no colorset is desired don't apply any new one

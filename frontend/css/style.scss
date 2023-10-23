@@ -376,25 +376,25 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // TODO
 }
 
-// .rio-switcheroo-text {
-//     // text := accent
-//     //
-//     // Useful to change the color of components which use the text color, to the
-//     // current accent color. E.g. Allows to display text or icons as danger.
+.rio-switcheroo-accent-to-plain {
+    // plain := accent
+    //
+    // Allows components to access the accent color via the regular plain
+    // variables. This can make sense for when components allow changing their
+    // color via switcheroos. For example, if a button were to set it's
+    // background to the "accent" background, this would show the secondary
+    // color, even when applying the "danger" switcheroo.
+    //
+    // Using this switcheroo buttons can instead use the plain color and get
+    // the desired result.
 
-//     // Theme colors
-//     --rio-local-accent-bg: var(--rio-local-text-color);
-//     --rio-local-accent-bg-variant: var(--rio-local-text-color);
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-local-accent-bg);
+    --rio-local-text-color: var(--rio-local-accent-fg);
 
-//     // Text styles
-//     --rio-local-heading-color: var(--rio-local-text-color);
-//     --rio-local-heading-background: var(--rio-local-text-background);
-//     --rio-local-text-color: var(--rio-local-text-color);
-//     --rio-local-text-background: var(--rio-local-text-background);
-
-//     // Material Design Web
-//     // TODO
-// }
+    // Material Design Web
+    // TODO
+}
 
 // "Placeholder element"/"content loading" animation
 @keyframes content-loading {
@@ -1688,7 +1688,7 @@ $drawer-side-margin: 0.7rem;
 }
 
 .rio-switcher-bar-marker {
-    background: var(--rio-local-accent-bg);
+    background: var(--rio-local-plain-bg);
     opacity: 0.3;
 
     position: absolute;
