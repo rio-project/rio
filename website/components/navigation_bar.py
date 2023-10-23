@@ -5,53 +5,10 @@ import rio
 from .. import theme
 
 
-class NavigationButton(rio.Component):
-    text: str
-    page: str
-    is_active: bool = False
-
-    @rio.event.on_create
-    def _on_create(self) -> None:
-        self._on_page_change()
-
-    @rio.event.on_page_change
-    def _on_page_change(self) -> None:
-        try:
-            self.is_active = self.session.active_page_url.parts[1] == self.page
-        except IndexError:
-            self.is_active = False
-
-    def _on_press(self, ev: rio.MouseUpEvent) -> None:
-        if ev.button == rio.MouseButton.LEFT:
-            self.session.navigate_to("/" + self.page)
-
-    def build(self) -> rio.Component:
-        if self.is_active:
-            color = theme.THEME.primary_palette.background.replace(opacity=0.3)
-        else:
-            color = rio.Color.TRANSPARENT
-
-        return rio.MouseEventListener(
-            child=rio.Rectangle(
-                child=rio.Text(
-                    self.text,
-                    margin=0.5,
-                ),
-                style=rio.BoxStyle(
-                    fill=color,
-                    corner_radius=999,
-                ),
-                ripple=True,
-                transition_time=0.1,
-                cursor=rio.CursorStyle.POINTER,
-            ),
-            on_mouse_up=self._on_press,
-            width=5,
-            align_y=0.5,
-        )
-
-
 class NavigationBar(rio.Component):
+    def _on_navigation_button_press(self, ev: rio.SwitcherBarChangeEvent[str]) -> None:
+        self.session.navigate_to("/" + ev.value)
+
     def build(self) -> rio.Component:
         surface_color = theme.THEME.neutral_palette.background
         text_color = theme.THEME.text_color_for(surface_color)
@@ -67,6 +24,12 @@ class NavigationBar(rio.Component):
         else:
             bar_width = "grow"
             bar_align_x = None
+
+        # Which navigation button is active?
+        try:
+            active_url_fragment = self.session.active_page_url.parts[1]
+        except IndexError:
+            active_url_fragment = ""
 
         return rio.Rectangle(
             child=rio.Row(
@@ -89,25 +52,18 @@ class NavigationBar(rio.Component):
                     spacing=0.7,
                 ),
                 rio.Spacer(),
-                rio.Row(
-                    NavigationButton(
-                        "Home",
-                        "",
-                    ),
-                    NavigationButton(
-                        "Docs",
-                        "documentation",
-                    ),
-                    NavigationButton(
-                        "Tools",
-                        "tools",
-                    ),
-                    NavigationButton(
-                        "About Us",
-                        "about",
-                    ),
-                    spacing=1.5,
+                rio.SwitcherBar(
+                    {
+                        "Home": "",
+                        "Docs": "documentation",
+                        "Tools": "tools",
+                        "About Us": "about",
+                    },
+                    selected_value=active_url_fragment,
+                    color="primary",
+                    on_change=self._on_navigation_button_press,
                     margin_right=4.0,
+                    align_y=0.5,
                 ),
             ),
             style=rio.BoxStyle(

@@ -13,17 +13,22 @@ __all__ = [
 
 
 def default_fallback_build(sess: rio.Session) -> rio.Component:
+    thm = sess.attachments[rio.Theme]
+
     return rio.Column(
         rio.Row(
             rio.Icon(
                 "material/error",
-                fill="primary",
+                fill="warning",
                 width=4,
                 height=4,
             ),
             rio.Text(
                 "This page does not exist",
-                style="heading1",
+                style=rio.TextStyle(
+                    font_size=3,
+                    fill=thm.warning_palette.background,
+                ),
             ),
             spacing=2,
             align_x=0.5,
