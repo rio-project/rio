@@ -25,6 +25,7 @@ export class TextInputComponent extends ComponentBase {
             <div class="rio-text-input-hint-text rio-text-input-prefix-text" style="order: 1"></div>
             <div class="rio-text-input-hint-text rio-text-input-suffix-text" style="order: 3"></div>
             <div class="rio-text-input-label"></div>
+            <div class="rio-text-input-plain-bar"></div>
             <div class="rio-text-input-color-bar"></div>
         `;
 

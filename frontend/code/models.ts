@@ -3,15 +3,16 @@ export type ComponentId = number | string;
 export type Color = [number, number, number, number];
 
 export type ColorSet =
-    | 'keep'
-    | 'background'
-    | 'neutral'
     | 'primary'
     | 'secondary'
+    | 'background'
+    | 'neutral'
+    | 'disabled'
     | 'success'
     | 'warning'
     | 'danger'
     | 'accent-to-plain'
+    | 'keep'
     | {
           background: Color;
           foreground: Color;

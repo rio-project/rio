@@ -77,8 +77,6 @@ export function textStyleToCss(
 
     // Predefined style from theme
     if (typeof style === 'string') {
-        result['color'] = `var(--rio-global-${style}-color)`;
-
         let cssPrefix = `var(--rio-local-${style}-`;
         result['font-family'] = cssPrefix + 'font-name)';
         result['font-size'] = cssPrefix + 'font-size)';
@@ -86,6 +84,11 @@ export function textStyleToCss(
         result['text-italic'] = cssPrefix + 'font-italic)';
         result['text-decoration'] = cssPrefix + 'underlined)';
         result['text-transform'] = cssPrefix + 'all-caps)';
+
+        result['color'] = `var(--rio-local-${style}-color)`;
+        result['background'] = `var(--rio-local-${style}-background)`;
+        result['background-clip'] = `var(--rio-local-${style}-background-clip)`;
+        result['fill-color'] = `var(--rio-local-${style}-fill-color)`;
     }
 
     // Explicitly defined style
@@ -100,11 +103,20 @@ export function textStyleToCss(
         // The fill could be a Color or a Fill
         if (Array.isArray(style.fill)) {
             result['color'] = colorToCssString(style.fill);
+            result['background'] = 'none';
+            result['background-clip'] = 'unset';
+            result['fill-color'] = 'unset';
         } else {
             if (style.fill.type === 'solid') {
                 result['color'] = colorToCssString(style.fill.color);
+                result['background'] = 'none';
+                result['background-clip'] = 'unset';
+                result['fill-color'] = 'unset';
             } else {
+                result['color'] = 'unset';
                 result['background'] = fillToCssString(style.fill);
+                result['background-clip'] = 'unset';
+                result['fill-color'] = 'unset';
             }
         }
     }

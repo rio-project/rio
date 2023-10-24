@@ -4,10 +4,11 @@ import { colorToCssString } from './cssUtils';
 export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
     // Remove all switcheroos
     element.classList.remove(
-        'rio-switcheroo-background',
-        'rio-switcheroo-neutral',
         'rio-switcheroo-primary',
         'rio-switcheroo-secondary',
+        'rio-switcheroo-background',
+        'rio-switcheroo-neutral',
+        'rio-switcheroo-disabled',
         'rio-switcheroo-success',
         'rio-switcheroo-warning',
         'rio-switcheroo-danger',
