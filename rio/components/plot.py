@@ -45,7 +45,7 @@ class Plot(component_base.FundamentalComponent):
         if self.style is None:
             thm = self.session.attachments[rio.Theme]
             box_style = rio.BoxStyle(
-                fill=thm.surface_color_variant,
+                fill=thm.neutral_palette.background_variant,
                 corner_radius=thm.corner_radius_small,
             )
         else:

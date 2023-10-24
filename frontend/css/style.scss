@@ -615,7 +615,7 @@ body {
 
     transition-timing-function: ease; // The transition time is set via JS
 
-    overflow: hidden;
+    // overflow: hidden; // Correct, but causes issues with dropdowns
 
     /*
     The following attributes are controlled via variables, to allow JavaScript
@@ -670,9 +670,6 @@ body {
 
     border-radius: var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small) 0 0;
-    border-bottom: 0.2rem solid rgba(0, 0, 0, 0.2);
-
-    transition: border-bottom 0.13s linear;
 }
 
 .rio-text-input:not(.rio-disabled-input) {
@@ -686,7 +683,6 @@ body {
 
 .rio-text-input:focus-within {
     outline: none;
-    border-bottom: 0.2rem solid var(--rio-local-accent-bg);
     background-color: var(--rio-local-plain-bg-active);
 }
 
@@ -754,11 +750,20 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     color: var(--rio-local-accent-bg);
 }
 
+.rio-text-input-plain-bar,
 .rio-text-input-color-bar {
     position: absolute;
     bottom: 0;
-    height: 0.12rem;
+    height: 0.17rem;
+}
 
+.rio-text-input-plain-bar {
+    background-color: rgba(0, 0, 0, 0.2);
+    left: 0;
+    right: 0;
+}
+
+.rio-text-input-color-bar {
     background-color: var(--rio-local-accent-bg);
 
     left: 40%;
@@ -793,7 +798,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: 1.54rem;
     margin: auto;
     border-radius: 4.3rem;
-    background-color: var(--rio-global-disabled-color-variant);
+    background-color: var(--rio-global-disabled-bg-variant);
     transition: 0.3s ease all;
     z-index: 1;
 }
@@ -821,7 +826,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     width: 0.86rem;
     height: 0.43rem;
     padding: 0.39em 0.17rem;
-    background-color: var(--rio-global-disabled-color);
+    background-color: var(--rio-global-disabled-bg);
     border-radius: 50%;
     transition:
         0.3s ease all,
@@ -861,8 +866,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     left: 0;
     width: 100%;
 
-    background-color: var(--rio-global-background-color);
-    color: var(--rio-global-text-on-surface-color);
+    background-color: var(--rio-global-background-bg);
+    color: var(--rio-global-text-color);
     border-radius: 0 0 var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small);
 
@@ -999,7 +1004,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 .rio-buttonstyle-major {
     background: var(--rio-local-plain-bg);
-    --rio-local-text-color: var(--rio-local-plain-fg);
+    --rio-local-text-color: var(--rio-local-text-color);
     --rio-local-text-font-weight: bold;
 
     box-shadow: 0 0 0 transparent;
@@ -1020,7 +1025,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 .rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
     background: var(--rio-local-plain-bg);
-    --rio-local-text-color: var(--rio-local-plain-fg);
+    --rio-local-text-color: var(--rio-local-text-color);
     cursor: pointer;
 }
 

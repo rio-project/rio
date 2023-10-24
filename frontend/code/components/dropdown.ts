@@ -8,11 +8,11 @@ export type DropdownState = ComponentState & {
     is_sensitive?: boolean;
 };
 
-export function showPopup(popup: HTMLElement): void {
+function showPopup(popup: HTMLElement): void {
     popup.style.maxHeight = popup.scrollHeight + 'px';
 }
 
-export function hidePopup(popup: HTMLElement): void {
+function hidePopup(popup: HTMLElement): void {
     popup.style.maxHeight = '0px';
 }
 
@@ -24,6 +24,8 @@ export class DropdownComponent extends ComponentBase {
     private textInputElement: HTMLElement;
     private inputElement: HTMLInputElement;
 
+    private isOpen: boolean = false;
+
     _createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
@@ -34,8 +36,9 @@ export class DropdownComponent extends ComponentBase {
         <div class="rio-text-input">
             <input type="text" placeholder="" style="pointer-events: none" disabled>
             <div class="rio-text-input-label"></div>
-            <div class="rio-text-input-color-bar"></div>
             <div class="rio-icon-revealer-arrow"></div>
+            <div class="rio-text-input-plain-bar"></div>
+            <div class="rio-text-input-color-bar"></div>
         </div>
 
         <div class='rio-dropdown-popup'>
@@ -60,21 +63,30 @@ export class DropdownComponent extends ComponentBase {
 
         // Connect events
         let outsideClickListener = (event) => {
-            // Check if the click was outside of the dropdown component
+            // Clicks into the dropdown are handled elsewhere
             if (event.target === element || element.contains(event.target)) {
                 return;
             }
 
             // Hide the popup
             hidePopup(this.popupElement);
+            this.isOpen = false;
 
             // De-register the event listener
             document.removeEventListener('click', outsideClickListener);
         };
 
         this.textInputElement.addEventListener('click', () => {
-            console.log('click');
+            // Hide if open
+            if (this.isOpen) {
+                hidePopup(this.popupElement);
+                this.isOpen = false;
+                return;
+            }
+
+            // Show the popup
             showPopup(this.popupElement);
+            this.isOpen = true;
             document.addEventListener('click', outsideClickListener);
         });
 
