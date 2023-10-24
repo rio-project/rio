@@ -34,6 +34,8 @@ class Banner(component_base.Component):
         banner may change its colors and icon.
 
         multiline: Whether long text may be wrapped over multiple lines.
+            Multiline banners are also styled slightly differently to make
+            the icon fit their larger size.
     """
 
     text: Optional[str]
@@ -64,7 +66,7 @@ class Banner(component_base.Component):
         else:
             raise ValueError(f"Invalid style: {self.style}")
 
-        # Prepare the child
+        # Prepare the text child
         if self.markup:
             text_child = rio.MarkdownView(
                 self.text,
@@ -77,28 +79,30 @@ class Banner(component_base.Component):
                 multiline=self.multiline,
             )
 
+        # Build the result
         if self.multiline:
-            child = rio.Row(
-                rio.Icon(
-                    icon,
-                    width=2.5,
-                    height=2.5,
-                    align_y=0,
+            return rio.Card(
+                child=rio.Row(
+                    rio.Icon(
+                        icon,
+                        width=2.5,
+                        height=2.5,
+                        align_y=0,
+                    ),
+                    text_child,
+                    spacing=1.5,
+                    margin=1.5,
                 ),
-                text_child,
-                spacing=1.5,
-                margin=1.5,
+                color=style_name,
             )
-        else:
-            child = rio.Row(
+
+        return rio.Card(
+            child=rio.Row(
                 rio.Icon(icon),
                 text_child,
                 spacing=0.8,
                 margin=0.8,
-            )
-
-        # Build the result
-        return rio.Card(
-            child=child,
+                align_x=0.5,
+            ),
             color=style_name,
         )

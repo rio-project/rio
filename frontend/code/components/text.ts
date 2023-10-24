@@ -23,17 +23,19 @@ export class TextComponent extends ComponentBase {
     _updateElement(containerElement: HTMLElement, deltaState: TextState): void {
         let textElement = containerElement.firstElementChild as HTMLElement;
 
+        // Text content
         if (deltaState.text !== undefined) {
             textElement.innerText = deltaState.text;
         }
 
+        // Multiline
         if (deltaState.multiline !== undefined) {
             textElement.style.whiteSpace = deltaState.multiline
                 ? 'normal'
                 : 'nowrap';
         }
 
-        // Text style: No change
+        // Text style
         if (deltaState.style !== undefined) {
             let styleValues = textStyleToCss(deltaState.style);
             Object.assign(textElement.style, styleValues);

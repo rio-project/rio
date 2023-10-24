@@ -330,13 +330,31 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // -> All others follow.
 
     // Rio locals
-    --rio-local-plain-bg: red;
+    --rio-local-plain-bg: var(--rio-global-disabled-bg);
 
-    --rio-local-accent-bg: red;
-    --rio-local-accent-fg: red;
+    --rio-local-accent-bg: var(--rio-global-disabled-bg);
+    --rio-local-accent-fg: var(--rio-global-disabled-fg);
 
     // Text Styles
-    // TODO
+    --rio-local-heading1-color: var(--rio-global-disabled-fg);
+    --rio-local-heading1-background: 'none';
+    --rio-local-heading1-background-clip: 'border-box';
+    --rio-local-heading1-fill-color: 'transparent';
+
+    --rio-local-heading2-color: var(--rio-global-disabled-fg);
+    --rio-local-heading2-background: 'none';
+    --rio-local-heading2-background-clip: 'border-box';
+    --rio-local-heading2-fill-color: 'transparent';
+
+    --rio-local-heading3-color: var(--rio-global-disabled-fg);
+    --rio-local-heading3-background: 'none';
+    --rio-local-heading3-background-clip: 'border-box';
+    --rio-local-heading3-fill-color: 'transparent';
+
+    --rio-local-text-color: var(--rio-global-disabled-fg);
+    --rio-local-text-background: 'none';
+    --rio-local-text-background-clip: 'border-box';
+    --rio-local-text-fill-color: 'transparent';
 
     // Material Design Web
     // TODO
@@ -652,7 +670,7 @@ body {
 
     border-radius: var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small) 0 0;
-    border-bottom: 1px solid var(--rio-local-text-color);
+    border-bottom: 0.2rem solid rgba(0, 0, 0, 0.2);
 
     transition: border-bottom 0.13s linear;
 }
@@ -668,7 +686,7 @@ body {
 
 .rio-text-input:focus-within {
     outline: none;
-    border-bottom: 1px solid var(--rio-local-accent-bg);
+    border-bottom: 0.2rem solid var(--rio-local-accent-bg);
     background-color: var(--rio-local-plain-bg-active);
 }
 
@@ -980,29 +998,29 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-buttonstyle-major {
-    background: var(--rio-local-accent-bg);
-    font-weight: bold;
-    --rio-local-text-color: var(--rio-local-accent-fg);
+    background: var(--rio-local-plain-bg);
+    --rio-local-text-color: var(--rio-local-plain-fg);
+    --rio-local-text-font-weight: bold;
 
     box-shadow: 0 0 0 transparent;
     transition: box-shadow 0.2s ease-in-out;
 }
 
 .rio-buttonstyle-major:hover:not(.rio-switcheroo-disabled) {
-    background: var(--rio-local-accent-bg);
+    background: var(--rio-local-plain-bg);
     cursor: pointer;
 
     box-shadow: 0 0.1rem 0.22rem rgba(0, 0, 0, 0.35);
 }
 
 .rio-buttonstyle-minor {
-    outline: 0.1em solid var(--rio-local-accent-bg);
-    --rio-local-text-color: var(--rio-local-accent-bg);
+    outline: 0.1em solid var(--rio-local-plain-bg);
+    --rio-local-text-color: var(--rio-local-plain-bg);
 }
 
 .rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
-    background: var(--rio-local-accent-bg);
-    --rio-local-text-color: var(--rio-local-accent-fg);
+    background: var(--rio-local-plain-bg);
+    --rio-local-text-color: var(--rio-local-plain-fg);
     cursor: pointer;
 }
 

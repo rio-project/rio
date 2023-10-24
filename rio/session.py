@@ -1507,6 +1507,7 @@ document.body.removeChild(a)
             "secondary",
             "background",
             "neutral",
+            "disabled",
             "success",
             "warning",
             "danger",
