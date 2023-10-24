@@ -29,7 +29,8 @@ class Icon(component_base.FundamentalComponent):
 
     Note that unlike most components in Rio, `Icon` does not have a `natural`
     size, they can be easily be scaled to fit any size. Therefore it defaults to
-    a width and height of 1, which is a great size when mixing icons with text.
+    a width and height of 1.3, which is a great size when mixing icons with
+    text.
 
     Icon names are in the format `set_name/icon_name:variant`. Rio already ships
     with the `material` icon set, which contains icons in the style of Google's
@@ -103,8 +104,8 @@ class Icon(component_base.FundamentalComponent):
         margin_top: Optional[float] = None,
         margin_right: Optional[float] = None,
         margin_bottom: Optional[float] = None,
-        width: Union[Literal["grow"], float] = 1,
-        height: Union[Literal["grow"], float] = 1,
+        width: Union[Literal["grow"], float] = 1.3,
+        height: Union[Literal["grow"], float] = 1.3,
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):

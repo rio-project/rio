@@ -77,11 +77,9 @@ export function textStyleToCss(
 
     // Predefined style from theme
     if (typeof style === 'string') {
-        // Local values
         result['color'] = `var(--rio-global-${style}-color)`;
 
-        // Global values
-        let cssPrefix = `var(--rio-global-${style}-`;
+        let cssPrefix = `var(--rio-local-${style}-`;
         result['font-family'] = cssPrefix + 'font-name)';
         result['font-size'] = cssPrefix + 'font-size)';
         result['font-weight'] = cssPrefix + 'font-weight)';

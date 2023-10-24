@@ -90,6 +90,7 @@ class Theme:
 
     background_palette: Palette
     neutral_palette: Palette
+    disabled_palette: Palette
 
     success_palette: Palette
     warning_palette: Palette
@@ -113,6 +114,9 @@ class Theme:
         cls,
         primary_color: Optional[rio.Color] = None,
         secondary_color: Optional[rio.Color] = None,
+        success_color: Optional[rio.Color] = None,
+        warning_color: Optional[rio.Color] = None,
+        danger_color: Optional[rio.Color] = None,
         corner_radius_small: float = 0.6,
         corner_radius_medium: float = 1.6,
         corner_radius_large: float = 2.6,
@@ -160,9 +164,21 @@ class Theme:
                 foreground=rio.Color.from_grey(0.9),
             )
 
-        success_palette = Palette._from_color(rio.Color.from_hex("1E8E3E"), light)
-        warning_palette = Palette._from_color(rio.Color.from_hex("F9A825"), light)
-        danger_palette = Palette._from_color(rio.Color.from_hex("B3261E"), light)
+        disabled_palette = Palette._from_color(rio.Color.from_grey(0.5), light)
+
+        # Semantic colors
+        if success_color is None:
+            success_color = rio.Color.from_hex("1E8E3E")
+
+        if warning_color is None:
+            warning_color = rio.Color.from_hex("F9A825")
+
+        if danger_color is None:
+            danger_color = rio.Color.from_hex("B3261E")
+
+        success_palette = Palette._from_color(success_color, light)
+        warning_palette = Palette._from_color(warning_color, light)
+        danger_palette = Palette._from_color(danger_color, light)
 
         # Text styles
         heading1_style = rio.TextStyle(
@@ -181,6 +197,7 @@ class Theme:
             secondary_palette=secondary_palette,
             background_palette=background_palette,
             neutral_palette=neutral_palette,
+            disabled_palette=disabled_palette,
             success_palette=success_palette,
             warning_palette=warning_palette,
             danger_palette=danger_palette,
