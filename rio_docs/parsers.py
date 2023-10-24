@@ -122,8 +122,8 @@ def parse_descriptions(description: str) -> Tuple[Optional[str], Optional[str]]:
     # Split into short & long descriptions
     lines = description.split("\n")
 
-    short_lines = []
-    long_lines = []
+    short_lines: List[str] = []
+    long_lines: List[str] = []
     cur_lines = short_lines
 
     for raw_line in lines:
@@ -148,7 +148,7 @@ def parse_descriptions(description: str) -> Tuple[Optional[str], Optional[str]]:
     return short_description, long_description
 
 
-def str_type_hint(typ: Type) -> str:
+def str_type_hint(typ: type) -> str:
     # Make sure the type annotation has been parsed
     assert not isinstance(typ, str), typ
 
@@ -183,7 +183,7 @@ def parse_docstring(
     short_description, long_description = parse_descriptions(description)
 
     # Post-process the sections
-    enabled_sections = set()
+    enabled_sections: Set[str] = set()
 
     if enable_args:
         enabled_sections.add("args")
@@ -205,7 +205,7 @@ def parse_docstring(
     return short_description, long_description, sections
 
 
-def parse_function(func: Callable) -> models.FunctionDocs:
+def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
     """
     Given a function, parse its signature an docstring into a `FunctionDocs`
     object.
@@ -284,7 +284,7 @@ def parse_function(func: Callable) -> models.FunctionDocs:
 
 
 def _parse_class_docstring_with_inheritance(
-    cls: Type,
+    cls: type,
 ) -> Tuple[Optional[str], Optional[str], Dict[str, Dict[str, str]]]:
     """
     Parses the docstring of a class in the same format as `parse_docstring`, but
@@ -300,13 +300,13 @@ def _parse_class_docstring_with_inheritance(
     )
 
     # Get the docstrings for the base classes
-    base_docs = []
+    base_docs: List[Tuple[str | None, str | None, Dict[str, Dict[str, str]]]] = []
 
     for base in cls.__bases__:
         base_docs.append(_parse_class_docstring_with_inheritance(base))
 
     # Merge the docstrings
-    result_sections = {}
+    result_sections: Dict[str, Dict[str, str]] = {}
     all_in_order = base_docs + [docstring]
 
     for docs in all_in_order:
@@ -318,7 +318,7 @@ def _parse_class_docstring_with_inheritance(
     return docstring[0], docstring[1], result_sections
 
 
-def parse_class(cls: Type) -> models.ClassDocs:
+def parse_class(cls: type) -> models.ClassDocs:
     """
     Given a class, parse its signature an docstring into a `ClassDocs` object.
     """
@@ -328,7 +328,7 @@ def parse_class(cls: Type) -> models.ClassDocs:
     # Make sure to add functions from base classes as well
     functions_by_name: Dict[str, models.FunctionDocs] = {}
 
-    def add_functions(cls: Type) -> None:
+    def add_functions(cls: type) -> None:
         # Chain to the base classes
         for base in cls.__bases__:
             add_functions(base)
@@ -356,7 +356,7 @@ def parse_class(cls: Type) -> models.ClassDocs:
         )
 
     # Properties are also fields
-    for name, prop in inspect.getmembers(cls, inspect.isdatadescriptor):
+    for name, _ in inspect.getmembers(cls, inspect.isdatadescriptor):
         if name in fields_by_name:
             continue
 

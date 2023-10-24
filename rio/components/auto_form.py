@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 import rio
 
 from .. import inspection
-from . import banner, button, component_base, number_input, switch, text
+from . import banner, component_base, number_input, switch, text
 
 __all__ = ["AutoForm"]
 
@@ -88,7 +88,7 @@ class AutoForm(component_base.Component):
     def _build_input_field(
         self,
         field_name: str,
-        field_type: Type,
+        field_type: type,
     ) -> rio.Component:
         # Get sensible type information
         origin = get_origin(field_type)

@@ -16,7 +16,7 @@ import website
 
 def check_function(
     docs: rio_docs.FunctionDocs,
-    owning_cls: Optional[Type],
+    owning_cls: Optional[type],
 ) -> None:
     qualname = (
         f"{owning_cls.__name__}.{docs.name}" if owning_cls is not None else docs.name
@@ -51,7 +51,7 @@ def check_function(
             )
 
 
-def check_class(cls: Type, docs: rio_docs.ClassDocs) -> None:
+def check_class(cls: type, docs: rio_docs.ClassDocs) -> None:
     # Run checks
     if docs.short_description is None:
         warning(f"Docstring for `{docs.name}` is missing a short description")
@@ -70,7 +70,7 @@ def check_class(cls: Type, docs: rio_docs.ClassDocs) -> None:
 def main() -> None:
     # Find all items that should be documented
     print_chapter("Looking for items needing documentation")
-    target_items: List[Union[Type, Callable]] = list(
+    target_items: List[Union[type, Callable[..., Any]]] = list(
         rio_docs.custom.find_items_needing_documentation()
     )
 
@@ -100,7 +100,7 @@ def main() -> None:
             check_function(docs, None)
 
     # Make sure all items are displayed Rio's documentation
-    visited_item_names = set()
+    visited_item_names: Set[str] = set()
 
     for entry in website.structure.DOCUMENTATION_STRUCTURE_LINEAR:
         url, section_name, entry_name, art = entry

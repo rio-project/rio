@@ -632,7 +632,7 @@ class KeyEventListener(component_base.FundamentalComponent):
         # Parse the message
         assert isinstance(msg, dict), msg
 
-        msg_type = msg["type"]
+        msg_type: str = msg["type"]
         assert isinstance(msg_type, str), msg_type
 
         # Dispatch the correct event

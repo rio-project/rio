@@ -11,12 +11,12 @@ from .components import component_base
 
 
 @functools.lru_cache(maxsize=None)
-def get_type_annotations(cls: type) -> Mapping[str, type]:
+def get_type_annotations_raw(cls: type) -> Mapping[str, Union[type, str]]:
     """
     Reimplementation of `typing.get_type_hints` because it has a stupid bug in
     python 3.10 where it dies if something is annotated as `dataclasses.KW_ONLY`.
     """
-    type_hints: Dict[str, type] = {}
+    type_hints: Dict[str, Union[type, str]] = {}
 
     for cls in cls.__mro__:
         for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
@@ -24,15 +24,34 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
                 continue
 
             if isinstance(annotation, ForwardRef):
-                annotation = annotation.__forward_code__
+                annotation = annotation.__forward_arg__
 
             if isinstance(annotation, (str, types.CodeType)):
                 globs = vars(sys.modules[cls.__module__])
-                annotation = eval(annotation, globs)
+                try:
+                    annotation = eval(annotation, globs)
+                except NameError:
+                    pass
 
             type_hints[attr_name] = annotation
 
     return type_hints
+
+
+@functools.lru_cache(maxsize=None)
+def get_type_annotations(cls: type) -> Mapping[str, type]:
+    """
+    Returns a dictionary of attribute names to their types for the given class.
+    """
+    annotations = get_type_annotations_raw(cls)
+
+    for attr_name, annotation in annotations.items():
+        if isinstance(annotation, str):
+            raise ValueError(
+                f"Failed to eval annotation for attribute {attr_name!r}: {annotation}"
+            )
+
+    return annotations  # type: ignore
 
 
 @functools.lru_cache(maxsize=None)
@@ -45,7 +64,7 @@ def get_attributes_to_serialize(
     """
     result: Dict[str, type] = {}
 
-    for attr_name, annotation in get_type_annotations(cls).items():
+    for attr_name, annotation in get_type_annotations_raw(cls).items():
         if attr_name in {
             "_",
             "_build_generation_",
@@ -70,6 +89,10 @@ def get_attributes_to_serialize(
             "margin",
             "width",
         }:
+            continue
+
+        # Annotation couldn't be eval'd? Then we probably can't serialize it.
+        if isinstance(annotation, str):
             continue
 
         result[attr_name] = annotation

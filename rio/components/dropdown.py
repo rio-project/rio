@@ -125,7 +125,7 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
             )
 
     def _custom_serialize(self) -> JsonDoc:
-        result = {
+        result: JsonDoc = {
             "optionNames": list(self.options.keys()),
             "selectedName": self._fetch_selected_name(),
         }
