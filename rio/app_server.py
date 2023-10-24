@@ -326,7 +326,7 @@ class AppServer(fastapi.FastAPI):
         if rio.Theme in sess.attachments:
             thm = sess.attachments[rio.Theme]
         else:
-            thm = rio.Theme()
+            thm = rio.Theme.from_color()
             sess.attachments.add(thm)
 
         # Create a list of initial messages for the client to process
