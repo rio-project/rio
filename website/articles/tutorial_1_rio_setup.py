@@ -65,16 +65,31 @@ as `python`. If that isn't the case on your system, make sure to replace
 Rio is available on PyPI, so you can install it using `pip`:
 
 ```bash
-python -m pip install rio
+python -m pip install rio[window]
 ```
 
-This will install the `rio` library, so you can use it in your projects, as well
-as the `rio` command line tool. We'll use this tool to setup our little
-tutorial project, as well as to run it.
+This will install rio, along with the optional `window` extra. This extra allows
+you to create local apps in addition to websites. This also includes the `rio`
+command line tool. We'll use this tool to setup our little tutorial project, as
+well as to run it.
 
 If you're using `poetry`, `conda` or similar, those will work as well of course.
 
-TODO: Actually test conda. How does it work?
+<!-- Explain this once the CLI is done. -->
+
+## Running Your Project
+
+Now that your project is all set up, let's run it! Open a terminal and navigate
+to your project directory. Then, run the following command:
+
+<!-- Explain this once the CLI is done. -->
+
+You can exit the app by pressing `Ctrl+C` while the terminal is focused.
+
+If you can see an app window pop-up you're golden! If not, double check that you
+have followed all the steps above. If you need help, feel free to reach out on
+the [Rio Discord server](https://TODO-insert-discord-server-link). We have a
+section dedicated to helping newcomers get started.
 """
     )
 
