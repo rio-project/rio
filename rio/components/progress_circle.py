@@ -32,6 +32,9 @@ class ProgressCircle(component_base.FundamentalComponent):
                 case the default is hard to perceive on your background.
     """
 
+    progress: Optional[float]
+    color: rio.ColorSet
+
     def __init__(
         self,
         *,

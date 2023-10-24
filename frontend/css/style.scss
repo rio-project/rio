@@ -949,19 +949,12 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     animation: dash 1.5s ease-in-out infinite;
 }
 
-.spinning .background {
-    stroke: none;
-}
-
 .rio-progress-circle:not(.spinning) .progress {
     stroke-dashoffset: -94.25;
     stroke-dasharray: var(--dasharray);
     transition: stroke-dasharray 0.5s ease;
 }
 
-.rio-progress-circle:not(.spinning) .background {
-    stroke: var(--background-color);
-}
 
 @keyframes rotate {
     100% {
