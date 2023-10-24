@@ -3,13 +3,27 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-import material_color_utilities_python
 from typing_extensions import Self
 from uniserde import Jsonable
 
 import rio
 
 from . import color
+
+# This module imports `curses` even though it doesn't need it, which causes
+# problems on Windows. Since it's unused, we'll just give it a fake module if
+# the real curses isn't available.
+try:
+    import material_color_utilities_python
+except ImportError:
+    import sys
+    import types
+
+    sys.modules["curses"] = types.SimpleNamespace(termattrs=None)  # type: ignore
+    import material_color_utilities_python
+
+    del sys.modules["curses"]
+
 
 __all__ = [
     "Palette",

@@ -80,7 +80,7 @@ def main() -> None:
     if not INPUT_DIR.exists():
         fatal(f"The input directory [bold]{INPUT_DIR}[/bold] does not exist")
 
-    in_files = []
+    in_files: List[Path] = []
     for path in INPUT_DIR.glob("**/*"):
         if path.is_file() and re.fullmatch(INPUT_NAME_PATTERN, path.name):
             in_files.append(path)

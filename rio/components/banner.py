@@ -5,8 +5,7 @@ from typing import *  # type: ignore
 
 import rio
 
-from .. import theme
-from . import component_base, text
+from . import component_base
 
 __all__ = [
     "Banner",

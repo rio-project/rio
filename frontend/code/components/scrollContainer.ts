@@ -14,6 +14,35 @@ const SCROLL_TO_OVERFLOW = {
     always: 'scroll',
 };
 
+function getScrollBarWidth(): number {
+    let outer = document.createElement('div');
+    outer.style.position = "absolute";
+    outer.style.top = "0px";
+    outer.style.left = "0px";
+    outer.style.visibility = "hidden";
+    outer.style.width = "200px";
+    outer.style.height = "150px";
+    outer.style.overflow = "hidden";
+
+    let inner = document.createElement('p');
+    inner.style.width = "100%";
+    inner.style.height = "200px";
+    outer.appendChild(inner);
+
+    document.body.appendChild(outer);
+    let w1 = inner.offsetWidth;
+    outer.style.overflow = 'scroll';
+    let w2 = inner.offsetWidth;
+    if (w1 == w2) w2 = outer.clientWidth;
+
+    document.body.removeChild(outer);
+
+    return (w1 - w2);
+};
+
+const SCROLL_BAR_SIZE = getScrollBarWidth();
+
+
 export class ScrollContainerComponent extends ComponentBase {
     state: Required<ScrollContainerState>;
 
@@ -72,13 +101,36 @@ export class ScrollContainerComponent extends ComponentBase {
         let minWidth: string | null = null;
         let minHeight: string | null = null;
 
-        // FIXME: If a scroll bar is visible, include the space it takes up
+        let element = this.element();
+
         if (this.state.scroll_x === 'never') {
-            minWidth = `${child.scrollWidth}px`;
+            let hasVerticalScrollbar = (
+                this.state.scroll_y === 'always' || (
+                    this.state.scroll_y === 'auto' &&
+                    child.scrollHeight > element.clientHeight
+                )
+            );
+
+            if (hasVerticalScrollbar) {
+                minWidth = `${child.scrollWidth + SCROLL_BAR_SIZE}px`;
+            } else {
+                minWidth = `${child.scrollWidth}px`;
+            }
         }
 
         if (this.state.scroll_y === 'never') {
-            minHeight = `${child.scrollHeight}px`;
+            let hasHorizontalScrollbar = (
+                this.state.scroll_x === 'always' || (
+                    this.state.scroll_x === 'auto' &&
+                    child.scrollWidth > element.clientWidth
+                )
+            );
+
+            if (hasHorizontalScrollbar) {
+                minHeight = `${child.scrollHeight + SCROLL_BAR_SIZE}px`;
+            } else {
+                minHeight = `${child.scrollHeight}px`;
+            }
         }
 
         this.setMinSizeComponentImpl(minWidth, minHeight);

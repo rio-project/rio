@@ -7,7 +7,6 @@ from uniserde import JsonDoc
 
 import rio
 
-from .. import theme
 from . import component_base
 
 __all__ = [
@@ -71,12 +70,14 @@ class Card(component_base.FundamentalComponent):
         return {
             "corner_radius": self.corner_radius,
             "reportPress": report_press,
-            "elevate_on_hover": report_press
-            if self.elevate_on_hover is None
-            else self.elevate_on_hover,
-            "colorize_on_hover": report_press
-            if self.colorize_on_hover is None
-            else self.colorize_on_hover,
+            "elevate_on_hover": (
+                report_press if self.elevate_on_hover is None else self.elevate_on_hover
+            ),
+            "colorize_on_hover": (
+                report_press
+                if self.colorize_on_hover is None
+                else self.colorize_on_hover
+            ),
             "color": color,
         }
 
