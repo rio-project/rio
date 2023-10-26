@@ -37,6 +37,11 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
                 "tutorial-3-application-setup",
                 articles.tutorial_3_app_setup.generate,
             ),
+            (
+                "First Components",
+                "tutorial-4-first-components",
+                articles.tutorial_4_first_components.generate,
+            ),
         ),
     ),
     None,

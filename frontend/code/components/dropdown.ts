@@ -8,11 +8,11 @@ export type DropdownState = ComponentState & {
     is_sensitive?: boolean;
 };
 
-function showPopup(popup: HTMLElement): void {
+function showPopup(parent: HTMLElement, popup: HTMLElement): void {
     popup.style.maxHeight = popup.scrollHeight + 'px';
 }
 
-function hidePopup(popup: HTMLElement): void {
+function hidePopup(parent: HTMLElement, popup: HTMLElement): void {
     popup.style.maxHeight = '0px';
 }
 
@@ -69,7 +69,7 @@ export class DropdownComponent extends ComponentBase {
             }
 
             // Hide the popup
-            hidePopup(this.popupElement);
+            hidePopup(element, this.popupElement);
             this.isOpen = false;
 
             // De-register the event listener
@@ -79,13 +79,13 @@ export class DropdownComponent extends ComponentBase {
         this.textInputElement.addEventListener('click', () => {
             // Hide if open
             if (this.isOpen) {
-                hidePopup(this.popupElement);
+                hidePopup(element, this.popupElement);
                 this.isOpen = false;
                 return;
             }
 
             // Show the popup
-            showPopup(this.popupElement);
+            showPopup(element, this.popupElement);
             this.isOpen = true;
             document.addEventListener('click', outsideClickListener);
         });
@@ -104,7 +104,8 @@ export class DropdownComponent extends ComponentBase {
                 this.optionsElement.appendChild(optionElement);
 
                 optionElement.addEventListener('click', () => {
-                    hidePopup(this.popupElement);
+                    hidePopup(element, this.popupElement);
+                    this.isOpen = false;
                     this.inputElement.value = optionName;
                     this.sendMessageToBackend({
                         name: optionName,

@@ -105,34 +105,30 @@ class Article:
         self.code_block(code)
 
     def box(self, style: Literal["info", "warning", "danger"], text: str) -> None:
-        # self.component(
-        #     rio.Card(
-        #         child=rio.Row(
-        #             rio.Icon(
-        #                 icon,
-        #                 width=3,
-        #                 height=3,
-        #                 align_y=0,
-        #             ),
-        #             rio.MarkdownView(
-        #                 text,
-        #                 default_language=self.default_language,
-        #                 width="grow",
-        #             ),
-        #             spacing=1.5,
-        #             margin=1.5,
-        #         ),
-        #         style=style,
-        #         corner_radius=theme.THEME.corner_radius_medium,
-        #     ),
-        # )
-
         self.component(
             rio.Banner(
                 text=text,
                 style=style,
                 markup=True,
                 multiline=True,
+            )
+        )
+
+    def summary(self, *items: str) -> None:
+        assert items, "Summaries must have at least one item"
+        bullet_texts = "\n".join(f"- {item}" for item in items)
+
+        self.component(
+            rio.Card(
+                child=rio.MarkdownView(
+                    f"""
+## In Summary
+What we've learned this lesson:
+
+{bullet_texts}
+""",
+                    margin=theme.THEME.corner_radius_medium,
+                ),
             )
         )
 

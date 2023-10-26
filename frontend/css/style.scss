@@ -754,7 +754,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-text-input-color-bar {
     position: absolute;
     bottom: 0;
-    height: 0.17rem;
+    height: 0.15rem;
 }
 
 .rio-text-input-plain-bar {
@@ -770,7 +770,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     right: 40%;
     opacity: 0;
 
-    transition: all 0.13s ease-in-out;
+    transition: all 0.20s ease-in-out;
 }
 
 .rio-text-input:focus-within .rio-text-input-color-bar {
@@ -862,9 +862,19 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-dropdown-popup {
+    position: absolute;
+    display: flex;
+    align-items: stretch;
+    z-index: $z-index-popup;
+
     top: 100%;
     left: 0;
     width: 100%;
+
+    overflow: hidden;
+
+    max-height: 0;
+    transition: max-height 0.14s ease-out;
 
     background-color: var(--rio-global-background-bg);
     color: var(--rio-global-text-color);
@@ -908,18 +918,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     border-top: 1px solid var(--rio-global-text-on-surface-color);
 }
 
-.rio-dropdown-popup {
-    position: absolute;
-    display: flex;
-    align-items: stretch;
-    z-index: $z-index-popup;
-
-    overflow: hidden;
-
-    max-height: 0;
-    transition: max-height 0.14s ease-out;
-}
-
 // Progress Circle
 .rio-progress-circle {
     pointer-events: auto;
@@ -954,7 +952,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     stroke-dasharray: var(--dasharray);
     transition: stroke-dasharray 0.5s ease;
 }
-
 
 @keyframes rotate {
     100% {

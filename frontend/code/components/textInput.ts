@@ -67,8 +67,8 @@ export class TextInputComponent extends ComponentBase {
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
-            // Adapt th minimum height, depending on whether there is a label
-            element.style.minHeight =
+            // Adapt the minimum height, depending on whether there is a label
+            element.style.height =
                 deltaState.label.length > 0 ? '3.3rem' : '2.3rem';
         }
 

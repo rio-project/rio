@@ -2,7 +2,7 @@ import rio
 
 
 # <circular-button>
-class CircularButton(rio.Button):
+class CircularButton(rio.Component):
     text: str
     on_press: rio.EventHandler[[]] = None
 

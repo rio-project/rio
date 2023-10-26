@@ -327,6 +327,31 @@ class Sidebar(rio.Component):
             margin=1.0,
         )
 
+    def build(self) -> rio.Component:
+        return rio.Column(
+            Card(
+                rio.Column(
+                    rio.Dropdown(
+                        {
+                            "foo": "bar",
+                            "spam": "baz",
+                        },
+                        align_y=0.1,
+                    ),
+                ),
+            ),
+            rio.TextInput(
+                label="Label!",
+                prefix_text="$",
+                suffix_text="USD",
+            ),
+            rio.Text(
+                "foo",
+                height=80,
+            ),
+            spacing=1.0,
+        )
+
 
 class ComponentShowcase(rio.Component):
     def build(self) -> rio.Component:
