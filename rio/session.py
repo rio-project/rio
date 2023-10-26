@@ -83,8 +83,8 @@ def _host_and_get_fill_as_css_variables(
         return {
             "color": f"#{fill.color.hex}",
             "background": "none",
-            "background-clip": "border-box",
-            "fill-color": "transparent",
+            "background-clip": "unset",
+            "fill-color": "unset",
         }
 
     assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill

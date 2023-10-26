@@ -1,7 +1,3 @@
-import { colorToCssString, fillToCssString, textStyleToCss } from './cssUtils';
-import { TextStyle, Theme } from './models';
-import { snakeToCamel } from './utils';
-
 export async function registerFont(
     name: string,
     urls: (string | null)[]
