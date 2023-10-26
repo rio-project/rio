@@ -54,7 +54,7 @@ website](https://www.python.org/downloads/).
         """
 For the rest of this tutorial, we'll assume that the Python command is available
 as `python`. If that isn't the case on your system, make sure to replace
-`python` with `python3` or whatever the command is on your system.
+`python` with `python3` or whatever the appropriate command is on your system.
         """,
     )
 
@@ -62,29 +62,52 @@ as `python`. If that isn't the case on your system, make sure to replace
         """
 ## Installing Rio
 
-Rio is available on PyPI, so you can install it using `pip`:
+Rio is available on PyPI, so you can simply install it using `pip`:
 
 ```bash
 python -m pip install rio[window]
 ```
 
 This will install rio, along with the optional `window` extra. This extra allows
-you to create local apps in addition to websites. This also includes the `rio`
-command line tool. We'll use this tool to setup our little tutorial project, as
-well as to run it.
+you to create local apps in addition to websites. The `rio` command line tool
+is also included. We'll use it to setup our little tutorial project, as well as
+to run it.
 
 If you're using `poetry`, `conda` or similar, those will work as well of course.
 
-<!-- Explain this once the CLI is done. -->
+<!-- TODO: Test other tools -->
+
+
+## Creating a new Project
+
+Now that everything is installed, let's create a new project. Still in your
+terminal, run the following command:
+
+```bash
+rio create
+```
+
+Rio will ask you a few questions about your project. Enter the following values:
+
+<-- TODO: Rework this once the CLI is done. -->
+
+- **Project name:** `rio-tutorial`
+- **Project type:** `website`
+- **Project description:** `A short tutorial on how to use Rio`
+- **Dependency management:** `pip`
 
 ## Running Your Project
 
 Now that your project is all set up, let's run it! Open a terminal and navigate
 to your project directory. Then, run the following command:
 
+```bash
+rio run
+```
+
 <!-- Explain this once the CLI is done. -->
 
-You can exit the app by pressing `Ctrl+C` while the terminal is focused.
+**You can exit the app by pressing `Ctrl+C` while the terminal is focused.**
 
 If you can see an app window pop-up you're golden! If not, double check that you
 have followed all the steps above. If you need help, feel free to reach out on

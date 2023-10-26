@@ -261,10 +261,14 @@ class AppServer(fastapi.FastAPI):
         # In addition to legitimate requests for HTML pages, it will also catch
         # a bunch of invalid requests to other resources. To highlight this,
         # throw a 404 if HTML is not explicitly requested.
-        if not request.headers.get("accept", "").startswith("text/html"):
-            raise fastapi.HTTPException(
-                status_code=fastapi.status.HTTP_404_NOT_FOUND,
-            )
+        #
+        # Currently inactive, because this caused issues behind dumb proxies
+        # that don't pass on the `accept` header.
+
+        # if not request.headers.get("accept", "").startswith("text/html"):
+        #     raise fastapi.HTTPException(
+        #         status_code=fastapi.status.HTTP_404_NOT_FOUND,
+        #     )
 
         # Prepare some URL constants
         base_url = rio.URL(str(request.base_url))

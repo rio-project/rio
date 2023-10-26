@@ -164,7 +164,12 @@ class Theme:
                 foreground=rio.Color.from_grey(0.9),
             )
 
-        disabled_palette = Palette._from_color(rio.Color.from_grey(0.5), light)
+        disabled_palette = Palette(
+            rio.Color.from_grey(0.6),
+            rio.Color.from_grey(0.5),
+            rio.Color.from_grey(0.5),
+            rio.Color.from_grey(0.2),
+        )
 
         # Semantic colors
         if success_color is None:
