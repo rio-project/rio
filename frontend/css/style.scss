@@ -770,7 +770,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     right: 40%;
     opacity: 0;
 
-    transition: all 0.20s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 .rio-text-input:focus-within .rio-text-input-color-bar {
@@ -994,7 +994,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 .rio-buttonstyle-major {
     background: var(--rio-local-plain-bg);
-    --rio-local-text-color: var(--rio-local-text-color);
     --rio-local-text-font-weight: bold;
 
     box-shadow: 0 0 0 transparent;
@@ -1008,14 +1007,13 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     box-shadow: 0 0.1rem 0.22rem rgba(0, 0, 0, 0.35);
 }
 
-.rio-buttonstyle-minor {
+.rio-buttonstyle-minor:not(:hover) {
     outline: 0.1em solid var(--rio-local-plain-bg);
     --rio-local-text-color: var(--rio-local-plain-bg);
 }
 
 .rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
     background: var(--rio-local-plain-bg);
-    --rio-local-text-color: var(--rio-local-text-color);
     cursor: pointer;
 }
 

@@ -39,7 +39,7 @@ class ProgressCircle(component_base.FundamentalComponent):
         self,
         *,
         progress: Optional[float] = None,
-        color: rio.ColorSet = "primary",
+        color: rio.ColorSet = "keep",
         size: Union[Literal["grow"], float] = 3.5,
         key: Optional[str] = None,
         margin: Optional[float] = None,

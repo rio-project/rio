@@ -79,7 +79,6 @@ class Button(component_base.Component):
                 size=1.5,
                 align_x=0.5,
                 margin=0.3,
-                color="secondary",
             )
         else:
             children: List[component_base.Component] = []
@@ -114,7 +113,8 @@ class Button(component_base.Component):
             child = rio.Row(
                 *children,
                 spacing=0.6,
-                margin=0.3,
+                margin_x=0.7,
+                margin_y=0.3,
                 align_x=0.5,
                 # Make sure there's no popping when switching between Text & ProgressCircle
                 height=1.6,
