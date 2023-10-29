@@ -5,22 +5,6 @@ import rio
 from .. import components as comps
 
 
-class FloatingActionButton(rio.Component):
-    def build(self) -> rio.Component:
-        return rio.Overlay(
-            rio.Button(
-                icon="mail:fill",
-                shape="circle",
-                width=4,
-                height=4,
-                margin_right=3,
-                margin_bottom=3,
-                align_x=1,
-                align_y=1,
-            )
-        )
-
-
 class BiographyView(rio.Component):
     def build(self) -> rio.Component:
         thm = self.session.attachments[rio.Theme]
@@ -125,7 +109,18 @@ class BiographyView(rio.Component):
                     margin_top=3,
                 ),
                 comps.Projects(),
-                FloatingActionButton(),
+                rio.Overlay(
+                    rio.Button(
+                        icon="mail:fill",
+                        shape="circle",
+                        width=4,
+                        height=4,
+                        margin_right=3,
+                        margin_bottom=3,
+                        align_x=1,
+                        align_y=1,
+                    )
+                ),
                 margin_y=4,
                 spacing=2,
                 width=40,

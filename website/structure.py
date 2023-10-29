@@ -42,6 +42,11 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
                 "tutorial-4-first-components",
                 articles.tutorial_4_first_components.generate,
             ),
+            (
+                "More Components",
+                "tutorial-5-more-components",
+                articles.tutorial_5_more_components.generate,
+            ),
         ),
     ),
     None,

@@ -1,3 +1,5 @@
+import rio
+
 from .. import article
 
 
@@ -87,10 +89,14 @@ and replace its contents with the following code:
 """
     )
 
-    result.snippet("tutorial-biography/biography_page")
+    result.snippet("tutorial-biography/biography_page_after_tutorial_4")
 
     result.markdown(
         """
+Our page currently simply returns the `AboutMe` component we just created. We'll
+extend this with more components over the next tutorials, but for now that's all
+we have.
+
 Finally, we have to update some references, since we renamed the
 `sample_page.py` file earlier. Open `pages/__init__.py`, and update the import
 like so:
@@ -116,6 +122,13 @@ That's it! You can now run the app again, and see the changes you've made. Run
         "Projects are organized into `components`, `pages`, and `assets`. Clean projects are easier to work on!",
         "Components often contain optional parameters that allow you to control their appearance.",
         "We can create interesting layouts by stacking components inside each other.",
+    )
+
+    result.navigation(
+        "App Setup",
+        rio.URL("tutorial-3-app-setup"),
+        "More Components",
+        rio.URL("tutorial-5-more-components"),
     )
 
     return result

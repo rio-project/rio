@@ -1,3 +1,5 @@
+import rio
+
 from .. import article
 
 
@@ -88,6 +90,13 @@ taken care of for us, and we can start working on our app right away.
     result.summary(
         "The rio tool can be used to create new projects, as well as to run them.",
         "Sticking to the standard project structure makes it easier to work with other developers.",
+    )
+
+    result.navigation(
+        "App Overview",
+        rio.URL("tutorial-2-app-overview"),
+        "First Components",
+        rio.URL("tutorial-4-first-components"),
     )
 
     return result
