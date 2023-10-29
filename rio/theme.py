@@ -124,8 +124,7 @@ class Theme:
     ) -> Self:
         # Impute defaults
         if primary_color is None:
-            # Consider "ee3f59"
-            primary_color = rio.Color.from_hex("c202ee")
+            primary_color = rio.Color.from_hex("b002ef")
 
         if secondary_color is None:
             secondary_color = rio.Color.from_hex("329afc")

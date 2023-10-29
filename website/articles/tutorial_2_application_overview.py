@@ -20,7 +20,7 @@ some buttons to change said number.
 """
     )
 
-    result.snippet("simple_counter_app")
+    result.snippet("example-counter/simple_counter_app")
 
     result.box(
         "info",
@@ -50,7 +50,7 @@ Let's break this down.
 """
     )
 
-    result.snippet("simple_counter_app", section="circular-button")
+    result.snippet("example-counter/simple_counter_app", section="circular-button")
 
     result.markdown(
         """
@@ -91,7 +91,7 @@ call the Component's build method and display it's output.
 """
     )
 
-    result.snippet("simple_counter_app", section="counter")
+    result.snippet("example-counter/simple_counter_app", section="counter")
 
     result.markdown(
         """
@@ -159,7 +159,7 @@ Next in the code we can see the definition of the `App` itself:
 """
     )
 
-    result.snippet("simple_counter_app", section="app")
+    result.snippet("example-counter/simple_counter_app", section="app")
 
     result.markdown(
         """
@@ -172,7 +172,7 @@ Lastly, let's run the app:
 """
     )
 
-    result.snippet("simple_counter_app", section="run")
+    result.snippet("example-counter/simple_counter_app", section="run")
 
     result.markdown(
         """
@@ -199,7 +199,7 @@ when we talk about deployment.
         "",
         None,
         "App Setup",
-        rio.URL("tutorial-3-app-setup"),
+        rio.URL("tutorial-3-application-setup"),
     )
 
     return result

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import *  # type: ignore
 
 import rio
@@ -7,7 +8,7 @@ class AboutMe(rio.Component):
     def build(self) -> rio.Component:
         return rio.Row(
             rio.Image(
-                rio.URL("https://thispersondoesnotexist.com/"),
+                Path("me.jpg"),
                 width=11,
                 height=11,
                 corner_radius=99999,

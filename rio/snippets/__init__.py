@@ -11,7 +11,10 @@ from .. import common
 
 SECTION_PATTERN = re.compile(r"#\s*<(\/?[\w-]+)>")
 
+_ALL_SNIPPET_PATHS: Optional[Dict[str, Path]] = None
 
+
+@dataclass
 class Snippet(uniserde.Serde):
     raw_code: str
 
@@ -26,6 +29,7 @@ class Snippet(uniserde.Serde):
 
             # No match
             if match is None:
+                result.append(line)
                 continue
 
             # Start of the target section?
@@ -63,6 +67,38 @@ class Snippet(uniserde.Serde):
         return "\n".join(result)
 
 
+def _scan_snippets() -> None:
+    """
+    Find all snippets in the snippet directory, and initialize the
+    `_ALL_SNIPPET_PATHS` global variable.
+    """
+    global _ALL_SNIPPET_PATHS
+    assert _ALL_SNIPPET_PATHS is None
+
+    # Find all snippet files
+    _ALL_SNIPPET_PATHS = {}
+
+    def scan_dir_recursively(group_name: str, path: Path) -> None:
+        assert path.is_dir(), path
+        assert _ALL_SNIPPET_PATHS is not None
+
+        for fpath in path.iterdir():
+            # Directory
+            if fpath.is_dir():
+                scan_dir_recursively(group_name, fpath)
+
+            # Snippet file
+            else:
+                key = f"{group_name}/{fpath.name}"
+                _ALL_SNIPPET_PATHS[key] = fpath
+
+    # Scan all snippet directories. The first directory is used as a key, the
+    # rest just for organization.
+    for group_dir in common.SNIPPETS_DIR.iterdir():
+        assert group_dir.is_dir(), group_dir
+        scan_dir_recursively(group_dir.name, group_dir)
+
+
 @functools.lru_cache(maxsize=None)
 def get_raw_snippet(name: str) -> Snippet:
     """
@@ -72,19 +108,27 @@ def get_raw_snippet(name: str) -> Snippet:
     The snippet isn't processed in any way, meaning all tags and metadata are
     still present.
     """
+    # Make sure the snippets have been scanned
+    if _ALL_SNIPPET_PATHS is None:
+        _scan_snippets()
+
+    assert _ALL_SNIPPET_PATHS is not None
 
     # Try to read the metadata. Fall back to an empty dict if it doesn't exist.
+
     try:
-        with (common.SNIPPETS_DIR / f"{name}.json").open() as json_path:
-            metadata = json.load(json_path)
-    except FileNotFoundError:
+        json_path = _ALL_SNIPPET_PATHS[f"{name}.json"]
+    except KeyError:
         metadata = {}
+    else:
+        with json_path.open() as json_file:
+            metadata = json.load(json_file)
 
     # Read the snippet code
-    snippet_path = common.SNIPPETS_DIR / f"{name}.py"
+    snippet_path = _ALL_SNIPPET_PATHS[f"{name}.py"]
     try:
         metadata["rawCode"] = snippet_path.read_text()
-    except FileNotFoundError:
+    except KeyError:
         raise KeyError(f'There is no snippet named "{name}"') from None
 
     # Deserialize the snippet

@@ -111,7 +111,8 @@ def _make_documentation_pages() -> List[rio.Page]:
                 lambda make_child=make_child: rio.Column(
                     make_child(),
                     rio.Spacer(),
-                    margin_left=23,
+                    margin_left=30,
+                    margin_right=2,
                     margin_bottom=4,
                     spacing=3,
                     width=65,

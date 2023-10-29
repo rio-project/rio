@@ -1,8 +1,8 @@
 import rio.snippets
 
 result = rio.snippets.get_snippet_section(
-    "simple_counter_app",
-    "run",
+    "example-counter/simple_counter_app",
+    section="run",
 )
 
 print(result)
