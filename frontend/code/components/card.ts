@@ -20,7 +20,7 @@ export class CardComponent extends SingleContainer {
     _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('rio-card', 'mdc-ripple-surface');
+        element.classList.add('rio-card');
 
         // Detect presses
         element.onmouseup = (e) => {
@@ -40,15 +40,26 @@ export class CardComponent extends SingleContainer {
         // Update the child
         replaceOnlyChildAndResetCssProperties(element, deltaState.child);
 
-        // Update the corner radius
+        // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {
             if (deltaState.corner_radius === null) {
                 element.style.borderRadius =
                     'var(--rio-global-corner-radius-medium)';
+                element.style.padding =
+                    'var(--rio-global-corner-radius-medium)';
             } else if (typeof deltaState.corner_radius === 'number') {
                 element.style.borderRadius = `${deltaState.corner_radius}rem`;
+                element.style.padding = `${deltaState.corner_radius}rem`;
             } else {
                 element.style.borderRadius = `${deltaState.corner_radius[0]}em ${deltaState.corner_radius[1]}em ${deltaState.corner_radius[2]}em ${deltaState.corner_radius[3]}em`;
+
+                let maxRadius = Math.max(
+                    deltaState.corner_radius[0],
+                    deltaState.corner_radius[1],
+                    deltaState.corner_radius[2],
+                    deltaState.corner_radius[3]
+                );
+                element.style.padding = `${maxRadius}rem`;
             }
         }
 

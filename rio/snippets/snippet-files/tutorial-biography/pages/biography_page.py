@@ -21,7 +21,7 @@ class FloatingActionButton(rio.Component):
         )
 
 
-class CvView(rio.Component):
+class BiographyView(rio.Component):
     def build(self) -> rio.Component:
         thm = self.session.attachments[rio.Theme]
 
@@ -128,9 +128,8 @@ class CvView(rio.Component):
                 FloatingActionButton(),
                 margin_y=4,
                 spacing=2,
-                width=65,
+                width=40,
                 align_x=0.5,
-                align_y=0.2,
             ),
-            rio.Spacer(),
+            align_y=0,
         )

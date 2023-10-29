@@ -32,7 +32,7 @@ let's have a look at the code.
 You should see a file structure resembling this:
 
 ```
-<project-name>
+<todo-project-name>
 │
 ├── components
 │   ├── __init__.py
@@ -41,6 +41,8 @@ You should see a file structure resembling this:
 ├── pages
 │   ├── __init__.py
 │   └── sample_page.py
+|
+├── assets
 │
 └── __init__.py
 ```
@@ -54,6 +56,9 @@ and well known directory.
 The `pages` directory is similar, but contains top-level components that are
 used to display the content of a page. By keeping the pages separate from the
 remaining components it's easier to keep an overview over your app.
+
+The `assets` directory is empty for now. It is used to store non-code files that
+are needed by your app, such as images.
 """
     )
 
@@ -71,8 +76,8 @@ code and also help you when you ask for advice.
 If you would like to run the placeholder code to get a quick overview over what
 it does, you can do so by running the following command:
 
-```
-bash rio run
+```bash
+rio run
 ```
 
 This already concludes the project setup. Thanks to the `rio` tool everything is
