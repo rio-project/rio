@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import uniserde
-
 from .. import common
 
 SECTION_PATTERN = re.compile(r"#\s*<(\/?[\w-]+)>")
@@ -15,8 +13,18 @@ _ALL_SNIPPET_PATHS: Optional[Dict[str, Path]] = None
 
 
 @dataclass
-class Snippet(uniserde.Serde):
+class Snippet:
+    # The name the snippet can be accessed via
+    name: str
+
+    # Read from the snippet file
     raw_code: str
+
+    # Determined by the snippet's parent directory
+    target_directory: Literal["components", "pages", "other"]
+
+    # Read from the snippet's metadata file
+    dependencies: Set[str]
 
     def get_section(self, section_name: str) -> str:
         # Find the target section
@@ -114,25 +122,40 @@ def get_raw_snippet(name: str) -> Snippet:
 
     assert _ALL_SNIPPET_PATHS is not None
 
-    # Try to read the metadata. Fall back to an empty dict if it doesn't exist.
-
-    try:
-        json_path = _ALL_SNIPPET_PATHS[f"{name}.json"]
-    except KeyError:
-        metadata = {}
-    else:
-        with json_path.open() as json_file:
-            metadata = json.load(json_file)
-
     # Read the snippet code
-    snippet_path = _ALL_SNIPPET_PATHS[f"{name}.py"]
+    snippet_path = _ALL_SNIPPET_PATHS[name]
     try:
-        metadata["rawCode"] = snippet_path.read_text()
+        raw_code = snippet_path.read_text()
     except KeyError:
         raise KeyError(f'There is no snippet named "{name}"') from None
 
-    # Deserialize the snippet
-    return Snippet.from_json(metadata)
+    # Define the default values for the metadata
+    target_directory = snippet_path.parent.name
+    if target_directory not in ("components", "pages"):
+        target_directory = "other"
+
+    dependencies = set()
+
+    # Try to read the metadata JSON
+    json_path = snippet_path.with_suffix(".json")
+
+    try:
+        with json_path.open("r") as json_file:
+            metadata = json.load(json_file)
+
+    except FileNotFoundError:
+        pass
+
+    else:
+        dependencies = set(metadata.get("dependencies", dependencies))
+
+    # Construct and return the snippet
+    return Snippet(
+        name=name,
+        raw_code=raw_code,
+        target_directory=target_directory,
+        dependencies=dependencies,
+    )
 
 
 @functools.lru_cache(maxsize=None)

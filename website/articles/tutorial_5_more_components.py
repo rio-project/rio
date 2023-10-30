@@ -26,7 +26,7 @@ skillset. Create a new file in the `components` directory and name it
         """
     )
 
-    result.snippet("tutorial-biography/skill_bars")
+    result.snippet("tutorial-biography/skill_bars.py")
 
     result.markdown(
         """
@@ -60,7 +60,7 @@ link to websites we can find you on.
         """
     )
 
-    result.snippet("tutorial-biography/contact")
+    result.snippet("tutorial-biography/contact.py")
 
     result.markdown(
         """
@@ -115,7 +115,7 @@ work experience and education.
 """
     )
 
-    result.snippet("tutorial-biography/history")
+    result.snippet("tutorial-biography/history.py")
 
     result.markdown(
         """
@@ -145,7 +145,7 @@ to show off your skills, and can be a great way to get your foot in the door.
 """
     )
 
-    result.snippet("tutorial-biography/project")
+    result.snippet("tutorial-biography/project.py")
 
     result.markdown(
         """
@@ -195,7 +195,7 @@ many times before now. Update `biography_page.py` to look like this:
 """
     )
 
-    result.snippet("tutorial-biography/biography_page")
+    result.snippet("tutorial-biography/biography_page.py")
 
     result.markdown(
         """

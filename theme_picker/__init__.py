@@ -400,4 +400,4 @@ if __name__ == "__main__":
         quiet=False,
     )
 else:
-    app = rio_app.as_fastapi()
+    fastapi_app = rio_app.as_fastapi()

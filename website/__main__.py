@@ -4,6 +4,6 @@ import website
 
 if __name__ == "__main__":
     uvicorn.run(
-        website.app,
+        website.fastapi_app,
         port=8001,
     )
