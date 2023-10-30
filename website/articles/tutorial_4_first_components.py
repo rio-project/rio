@@ -41,7 +41,7 @@ Copy & paste the following code into the file:
 """
     )
 
-    result.snippet("tutorial-biography/about_me")
+    result.snippet("tutorial-biography/about_me.py")
 
     result.markdown(
         """
@@ -89,7 +89,7 @@ and replace its contents with the following code:
 """
     )
 
-    result.snippet("tutorial-biography/biography_page_after_tutorial_4")
+    result.snippet("tutorial-biography/biography_page_after_tutorial_4.py")
 
     result.markdown(
         """

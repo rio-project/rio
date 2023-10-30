@@ -20,7 +20,7 @@ some buttons to change said number.
 """
     )
 
-    result.snippet("example-counter/simple_counter_app")
+    result.snippet("example-counter/simple_counter_app.py")
 
     result.box(
         "info",
@@ -50,7 +50,7 @@ Let's break this down.
 """
     )
 
-    result.snippet("example-counter/simple_counter_app", section="circular-button")
+    result.snippet("example-counter/simple_counter_app.py", section="circular-button")
 
     result.markdown(
         """
@@ -91,7 +91,7 @@ call the Component's build method and display it's output.
 """
     )
 
-    result.snippet("example-counter/simple_counter_app", section="counter")
+    result.snippet("example-counter/simple_counter_app.py", section="counter")
 
     result.markdown(
         """
@@ -159,7 +159,7 @@ Next in the code we can see the definition of the `App` itself:
 """
     )
 
-    result.snippet("example-counter/simple_counter_app", section="app")
+    result.snippet("example-counter/simple_counter_app.py", section="app")
 
     result.markdown(
         """
@@ -172,7 +172,7 @@ Lastly, let's run the app:
 """
     )
 
-    result.snippet("example-counter/simple_counter_app", section="run")
+    result.snippet("example-counter/simple_counter_app.py", section="run")
 
     result.markdown(
         """

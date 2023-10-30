@@ -166,7 +166,7 @@ if __name__ == "__main__":
         internal_on_app_start=None,
     )
 else:
-    app = rio_app._as_fastapi(
+    fastapi_app = rio_app._as_fastapi(
         running_in_window=False,
         validator_factory=rio.debug.Validator,
         internal_on_app_start=None,

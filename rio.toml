@@ -1,0 +1,5 @@
+# This is the configuration file for Rio,
+# an easy to use app & web framework for Python.
+
+mainModule = "website"
+fastapiAppVariable = "fastapi_app"
