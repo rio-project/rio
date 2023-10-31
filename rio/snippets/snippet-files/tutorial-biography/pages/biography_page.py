@@ -5,7 +5,7 @@ import rio
 from .. import components as comps
 
 
-class BiographyView(rio.Component):
+class BiographyPage(rio.Component):
     def build(self) -> rio.Component:
         thm = self.session.attachments[rio.Theme]
 

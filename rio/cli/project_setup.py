@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -69,9 +70,9 @@ def write_init_file(fil: IO, snippets: Iterable[rio.snippets.Snippet]) -> None:
     """
     for snippet in snippets:
         assert snippet.name.count("/") == 1, snippet.name
-        file_name = snippet.name.split("/")[1]
+        module_name = snippet.name.split("/")[1][:-3]
         class_name = class_name_from_snippet_name(snippet.name)
-        fil.write(f"from .{file_name} import {class_name}\n")
+        fil.write(f"from .{module_name} import {class_name}\n")
 
 
 def find_all_dependency_snippets(
@@ -291,6 +292,7 @@ def create_project(
     # Report success
     #
     # TODO: Add a command to install dependencies? Activate the venv?
+    print()
     success(f"The project has been created!")
     success(f"You can find it at `{project_dir.resolve()}`")
     print()

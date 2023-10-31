@@ -3,7 +3,7 @@ import rio
 from . import pages
 
 app = rio.App(
-    name="My Portfolio",
+    name="Biography",
     pages=[
         rio.Page("", pages.BiographyPage),
     ],

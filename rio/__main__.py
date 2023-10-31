@@ -1,4 +1,9 @@
 import rio.cli
 
-if __name__ == "__main__":
+
+def main():
     rio.cli.app.run()
+
+
+if __name__ == "__main__":
+    main()
