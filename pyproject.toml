@@ -53,3 +53,6 @@ ipykernel = "^6.25.2"
 
 [tool.isort]
 profile = "black"
+
+[tool.poetry.scripts]
+rio = "rio.__main__:main"
