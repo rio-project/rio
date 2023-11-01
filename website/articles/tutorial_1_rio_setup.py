@@ -84,7 +84,7 @@ Now that everything is installed, let's create a new project. Still in your
 terminal, run the following command:
 
 ```bash
-rio create
+rio new
 ```
 
 Rio will ask you a few questions about your project. Enter the following values:

@@ -17,7 +17,24 @@ __all__ = [
 app = revel.App()
 
 
-@app.command
+@app.command(
+    summary="Create a new Rio project",
+    details="TODO",
+    parameters=[
+        revel.Parameter(
+            "nicename",
+            summary="Human-readable name for the new project",
+        ),
+        revel.Parameter(
+            "type",
+            summary="Whether this is a website or an app",
+        ),
+        revel.Parameter(
+            "template",
+            summary="Template to use for the new project",
+        ),
+    ],
+)
 def new(
     nicename: str,
     *,
@@ -32,7 +49,20 @@ def new(
     )
 
 
-@app.command
+@app.command(
+    summary="Run the current project",
+    details="TODO",
+    parameters=[
+        revel.Parameter(
+            "port",
+            summary="Port to run the HTTP server on",
+        ),
+        revel.Parameter(
+            "public",
+            summary="Whether the app should be available on the local network, or just the local device",
+        ),
+    ],
+)
 def run(
     *,
     port: int = 8080,

@@ -28,7 +28,7 @@ some buttons to change said number.
 If you would like to run this app yourself, you can create a new project using
 
 ```bash
-rio init --example counter
+rio new --example counter
 ```
 
 <!-- TODO: Rework this once the CLI is done. -->
