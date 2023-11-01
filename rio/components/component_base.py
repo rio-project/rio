@@ -203,6 +203,15 @@ class ComponentMeta(abc.ABCMeta):
         component = super().__call__(*args, **kwargs)
         component._create_state_bindings()
 
+        # Call `_rio_post_init` for every class in the MRO
+        for base in reversed(type(component).__mro__):
+            try:
+                post_init = vars(base)["_rio_post_init"]
+            except KeyError:
+                continue
+
+            post_init(component)
+
         try:
             on_create_handler = component._rio_event_handlers_[event.EventTag.ON_CREATE]
         except KeyError:
@@ -541,13 +550,12 @@ class Component(metaclass=ComponentMeta):
         cls_vars = vars(cls)
         has_custom_init = "__init__" in cls_vars
 
-        # If it exists, rename the `__post_init__` method, so that the dataclass
-        # `__init__` doesn't automatically call it. We will call it manually
-        # once the component's state bindings have been created.
+        # We'll manually take care of calling __post_init__ methods because
+        # dataclasses are unreliable. Rename the method so that it won't be
+        # called by the dataclass constructor.
         if "__post_init__" in cls_vars:
             cls._rio_post_init = cls.__post_init__  # type: ignore
             del cls.__post_init__  # type: ignore
-            # FIXME
 
         # Apply the dataclass transform
         cls._preprocess_dataclass_fields()

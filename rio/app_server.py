@@ -114,10 +114,10 @@ async def _periodically_clean_up_expired_sessions(
         now = time.monotonic()
         cutoff = now - SESSION_LIFETIME
 
-        for session_token, session in list(app_server._active_session_tokens.items()):
-            if session._last_interaction_timestamp < cutoff:
+        for session_token, sess in list(app_server._active_session_tokens.items()):
+            if sess._last_interaction_timestamp < cutoff:
                 del app_server._active_session_tokens[session_token]
-                session._close()
+                sess._close()
 
 
 class AppServer(fastapi.FastAPI):

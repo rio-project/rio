@@ -47,3 +47,18 @@ async def test_init_cannot_read_state_properties():
 
     async with create_mockapp(Container):
         pass
+
+
+async def test_post_init():
+    class TestComponent(rio.Component):
+        post_init_called: bool = False
+
+        def __post_init__(self):
+            self.post_init_called = True
+
+        def build(self) -> rio.Component:
+            return rio.Text("hi")
+
+    async with create_mockapp(TestComponent) as app:
+        root_component = app.get_component(TestComponent)
+        assert root_component.post_init_called
