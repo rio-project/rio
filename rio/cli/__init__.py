@@ -14,12 +14,26 @@ __all__ = [
     "app",
 ]
 
-app = revel.App()
+app = revel.App(
+    summary="An easy to use, app & web framework for Python",
+    details="""
+Rio is a framework for building reactive apps and websites in Python. It's
+designed to be easy to use, and to get out of your way as much as possible.
+
+This is the command line interface for Rio. You can use it to easily create new
+projects, run them, and more.
+""",
+)
 
 
 @app.command(
     summary="Create a new Rio project",
-    details="TODO",
+    details="""
+The `new` command creates a new directory and populates it with the files needed
+to start a new Rio project. You can optionally specify a template, in which case
+the files from that template will be copied into the new project, allowing you
+hit the ground running.
+""",
     parameters=[
         revel.Parameter(
             "nicename",
@@ -51,7 +65,6 @@ def new(
 
 @app.command(
     summary="Run the current project",
-    details="TODO",
     parameters=[
         revel.Parameter(
             "port",
