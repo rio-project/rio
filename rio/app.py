@@ -395,7 +395,7 @@ class App:
 
     def run_in_window(
         self,
-        quiet: bool = True,
+        quiet: bool = False,
     ) -> None:
         """
         Runs the app in a local window.

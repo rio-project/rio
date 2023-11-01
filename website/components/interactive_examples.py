@@ -33,13 +33,14 @@ class InteractiveExample(rio.Component, ABC):
         )
 
         # If there is no controls, that's it
-        if not self.build_controls():
+        controls = self.build_controls()
+        if not controls:
             return result_view
 
         # Prepare the controls
         control_sections = []
 
-        for name, control in self.build_controls().items():
+        for name, control in controls.items():
             control_sections.append(
                 rio.Column(
                     rio.Text(name, style="heading3"),

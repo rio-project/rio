@@ -1268,10 +1268,14 @@ class Session(unicall.Unicall):
         settings_json: Dict[str, object]
 
         if self.running_in_window:
-            async with aiofiles.open(self._get_settings_file_path()) as file:
-                settings_text = await file.read()
+            try:
+                async with aiofiles.open(self._get_settings_file_path()) as file:
+                    settings_text = await file.read()
 
-            settings_json = json.loads(settings_text)
+                settings_json = json.loads(settings_text)
+            except (IOError, json.JSONDecodeError):
+                settings_json = {}
+
             self._settings_json = settings_json
         else:
             # Browsers send us a flat dict where the keys are prefixed with the
