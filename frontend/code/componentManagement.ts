@@ -35,6 +35,7 @@ import { TextComponent } from './components/text';
 import { HtmlComponent } from './components/html';
 import { CardComponent } from './components/card';
 import { SwitcherBarComponent } from './components/switcher_bar';
+import { TableComponent } from './components/table';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -69,6 +70,7 @@ const componentClasses = {
     'Stack-builtin': StackComponent,
     'Switch-builtin': SwitchComponent,
     'SwitcherBar-builtin': SwitcherBarComponent,
+    'Table-builtin': TableComponent,
     'Text-builtin': TextComponent,
     'TextInput-builtin': TextInputComponent,
     Placeholder: PlaceholderComponent,

@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass, field
 from typing import *  # type: ignore
 
+import aiofiles
 import uniserde
 from typing_extensions import dataclass_transform
 

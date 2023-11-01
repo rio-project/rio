@@ -36,6 +36,7 @@ from .stack import *
 from .style_context import *
 from .switch import *
 from .switcher_bar import *
+from .table import *
 from .text import *
 from .text_input import *
 from .website import *
