@@ -19,7 +19,7 @@ projects, so that we can show it to potential employers.
 Let's get started by creating a new project using the Rio CLI:
 
 ```bash
-rio init
+rio new
 ```
 
 Once again, rio will ask us a few questions about our project. This time, we
