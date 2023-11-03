@@ -1,13 +1,23 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
+from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
+
+from uniserde import JsonDoc
+
+import rio
 
 from . import component_base
 
 __all__ = [
     "Slider",
+    "SliderChangeEvent",
 ]
+
+
+@dataclass
+class SliderChangeEvent:
+    value: float
 
 
 class Slider(component_base.FundamentalComponent):
@@ -33,6 +43,23 @@ class Slider(component_base.FundamentalComponent):
     max: float = 1
     value: float = 0.5
     is_sensitive: bool = True
+    on_change: rio.EventHandler[SliderChangeEvent]
+
+    async def _on_state_update(self, delta_state: JsonDoc) -> None:
+        # Trigger on_change event
+        try:
+            new_value = delta_state["value"]
+        except KeyError:
+            pass
+        else:
+            assert isinstance(new_value, (int, float)), new_value
+            await self.call_event_handler(
+                self.on_change,
+                SliderChangeEvent(new_value),
+            )
+
+        # Chain up
+        await super()._on_state_update(delta_state)
 
 
 Slider._unique_id = "Slider-builtin"
