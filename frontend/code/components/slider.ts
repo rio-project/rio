@@ -18,7 +18,7 @@ export class SliderComponent extends ComponentBase {
         element.classList.add('rio-slider', 'mdc-slider');
 
         element.innerHTML = `
-        <input class="mdc-slider__input" type="range" min="0" max="1000" value="250">
+        <input class="mdc-slider__input" type="range" min="0" max="1000" value="0">
         <div class="mdc-slider__track">
             <div class="mdc-slider__track--inactive"></div>
             <div class="mdc-slider__track--active">
@@ -28,7 +28,7 @@ export class SliderComponent extends ComponentBase {
         <div class="mdc-slider__thumb">
             <div class="mdc-slider__thumb-knob"></div>
         </div>
-    `;
+        `;
 
         // Initialize the material design component
         this.mdcSlider = new MDCSlider(element);
@@ -38,10 +38,8 @@ export class SliderComponent extends ComponentBase {
             let min = this.state['min'];
             let max = this.state['max'];
 
-            console.log(`NEW VALUE: ${this.mdcSlider.getValue()}`);
-
             this.setStateAndNotifyBackend({
-                value: (this.mdcSlider.getValue() / 1000) * (max - min),
+                value: min + (this.mdcSlider.getValue() / 1000) * (max - min),
             });
         });
 
@@ -57,7 +55,7 @@ export class SliderComponent extends ComponentBase {
             deltaState.max === undefined ? this.state['max'] : deltaState.max;
 
         if (deltaState.value !== undefined) {
-            this.mdcSlider.setValue((deltaState.value / (max - min)) * 1000);
+            this.mdcSlider.setValue(((deltaState.value - min) / (max - min)) * 1000);
         }
 
         if (deltaState.is_sensitive !== undefined) {
