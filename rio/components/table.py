@@ -11,10 +11,14 @@ TableValue = Union[int, float, str]
 
 
 class Table(FundamentalComponent):
-    data: Dict[str, List[TableValue]]
+    data: Union[Dict[str, List[TableValue]], List[List[TableValue]]]
+    show_row_numbers: bool = True
 
     def _custom_serialize(self) -> JsonDoc:
         data = self.data
+
+        if isinstance(data, list):
+            data = {header: column for header, *column in zip(*data)}
 
         return {
             "data": data,  # type: ignore

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import collections
-import copy
 import enum
 import inspect
 import json
@@ -164,6 +163,7 @@ class Session(unicall.Unicall):
     def __init__(
         self,
         app_server_: app_server.AppServer,
+        session_token: str,
         base_url: rio.URL,
         initial_page: rio.URL,
     ):
@@ -173,6 +173,7 @@ class Session(unicall.Unicall):
         )
 
         self._app_server = app_server_
+        self._session_token = session_token
 
         # Components need unique ids, but we don't want them to be globally unique
         # because then people could guesstimate the approximate number of
@@ -328,7 +329,7 @@ class Session(unicall.Unicall):
         """
         if self._app_server.running_in_window:
             raise RuntimeError(
-                f"Cannot get the base URL of an app that is running in a window"
+                "Cannot get the base URL of an app that is running in a window"
             )
 
         return self._base_url
@@ -350,6 +351,33 @@ class Session(unicall.Unicall):
         This property is read-only. To change the page, use `Session.navigate_to`.
         """
         return self._active_page_instances
+
+    def close(self) -> None:
+        self.create_task(self._close())
+
+    async def _close(self) -> None:
+        try:
+            del self._app_server._active_session_tokens[self._session_token]
+        except KeyError:
+            # This can happen if two _close() tasks are running at the same
+            # time. Just abort in that case.
+            return
+
+        if self.running_in_window:
+            self._get_webview_window().destroy()
+        else:
+            await self._remote_close_session()
+
+        # Cancel all running tasks
+        for task in self._running_tasks:
+            task.cancel()
+
+    def _get_webview_window(self):
+        import webview
+
+        window = webview.active_window()
+        assert window is not None
+        return window
 
     @overload
     async def _call_event_handler(
@@ -413,11 +441,6 @@ class Session(unicall.Unicall):
         task.add_done_callback(self._running_tasks.remove)
 
         return task
-
-    def _close(self):
-        # Cancel all running tasks
-        for task in self._running_tasks:
-            task.cancel()
 
     def navigate_to(
         self,
@@ -594,18 +617,18 @@ class Session(unicall.Unicall):
 
             # Yes, rescue state. This will:
             #
-            # - Look for components in the build output which correspond to components
-            #   in the previous build output, and transfers state from the new
-            #   to the old component ("reconciliation")
+            # - Look for components in the build output which correspond to
+            #   components in the previous build output, and transfers state
+            #   from the new to the old component ("reconciliation")
             #
-            # - Replace any references to new, reconciled components in the build
-            #   output with the old components instead
+            # - Replace any references to new, reconciled components in the
+            #   build output with the old components instead
             #
             # - Add any dirty components from the build output (new, or old but
             #   changed) to the dirty set.
             #
-            # - Update the component data with the build output resulting from the
-            #   operations above
+            # - Update the component data with the build output resulting from
+            #   the operations above
             else:
                 self._reconcile_tree(component, component_data, build_result)
 
@@ -614,8 +637,8 @@ class Session(unicall.Unicall):
                 global_state.build_generation += 1
 
                 # Reconciliation can change the build result. Make sure nobody
-                # uses `build_result` instead of `component_data.build_result` from
-                # now on.
+                # uses `build_result` instead of `component_data.build_result`
+                # from now on.
                 del build_result
 
             # Inject the builder and build generation
@@ -1428,8 +1451,7 @@ class Session(unicall.Unicall):
             # way to open a file dialog without blocking the event loop.
             import webview  # type: ignore
 
-            active_window = webview.active_window()
-            destination = active_window.create_file_dialog(
+            destination = self._get_webview_window().create_file_dialog(
                 webview.SAVE_DIALOG,
                 directory=directory,
                 save_filename=file_name,
@@ -1638,6 +1660,13 @@ document.body.removeChild(a)
 
     @unicall.remote(name="registerFont", await_response=False)
     async def _remote_register_font(self, name: str, urls: List[Optional[str]]) -> None:
+        raise NotImplementedError
+
+    @unicall.remote(
+        name="closeSession",
+        await_response=False,
+    )
+    async def _remote_close_session(self) -> None:
         raise NotImplementedError
 
     def _try_get_component_for_message(

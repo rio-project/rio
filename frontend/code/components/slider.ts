@@ -5,6 +5,7 @@ export type SliderState = ComponentState & {
     min?: number;
     max?: number;
     value?: number;
+    discrete?: boolean;
     is_sensitive?: boolean;
 };
 
@@ -17,45 +18,76 @@ export class SliderComponent extends ComponentBase {
         let element = document.createElement('div');
         element.classList.add('rio-slider', 'mdc-slider');
 
-        element.innerHTML = `
-        <input class="mdc-slider__input" type="range" min="0" max="1000" value="0">
-        <div class="mdc-slider__track">
-            <div class="mdc-slider__track--inactive"></div>
-            <div class="mdc-slider__track--active">
-                <div class="mdc-slider__track--active_fill"></div>
-            </div>
-        </div>
-        <div class="mdc-slider__thumb">
-            <div class="mdc-slider__thumb-knob"></div>
-        </div>
-        `;
+        return element;
+    }
 
+    private createMdcSlider(element: HTMLElement): void {
         // Initialize the material design component
         this.mdcSlider = new MDCSlider(element);
 
         // Subscribe to changes
-        this.mdcSlider.listen('MDCSlider:change', () => {
-            let min = this.state['min'];
-            let max = this.state['max'];
+        this.mdcSlider.listen(
+            'MDCSlider:change',
+            this.onSliderChange.bind(this)
+        );
+    }
 
-            this.setStateAndNotifyBackend({
-                value: min + (this.mdcSlider.getValue() / 1000) * (max - min),
-            });
+    private onSliderChange(): void {
+        let value = this.mdcSlider.getValue();
+
+        if (!this.state.discrete) {
+            let min = this.state.min;
+            let max = this.state.max;
+
+            value = min + (value / 1000) * (max - min);
+        }
+
+        this.setStateAndNotifyBackend({
+            value: value,
         });
-
-        return element;
     }
 
     _updateElement(element: HTMLElement, deltaState: SliderState): void {
-        // Convert between the component's units and the backend's.
-        let min =
-            deltaState.min === undefined ? this.state['min'] : deltaState.min;
+        if (deltaState.min !== undefined || deltaState.max !== undefined) {
+            let min = deltaState.min ?? this.state.min;
+            let max = deltaState.max ?? this.state.max;
+            let value = deltaState.value ?? this.state.value;
 
-        let max =
-            deltaState.max === undefined ? this.state['max'] : deltaState.max;
+            element.innerHTML = `
+            <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}">
+            <div class="mdc-slider__track">
+                <div class="mdc-slider__track--inactive"></div>
+                <div class="mdc-slider__track--active">
+                    <div class="mdc-slider__track--active_fill"></div>
+                </div>
+            </div>
+            <div class="mdc-slider__thumb">
+                <div class="mdc-slider__thumb-knob"></div>
+            </div>
+            `;
+
+            this.createMdcSlider(element);
+        }
 
         if (deltaState.value !== undefined) {
-            this.mdcSlider.setValue(((deltaState.value - min) / (max - min)) * 1000);
+            let value = deltaState.value;
+
+            if (!(deltaState.discrete ?? this.state.discrete)) {
+                // Convert between the component's units and the backend's.
+                let min =
+                    deltaState.min === undefined
+                        ? this.state['min']
+                        : deltaState.min;
+
+                let max =
+                    deltaState.max === undefined
+                        ? this.state['max']
+                        : deltaState.max;
+
+                value = ((value - min) / (max - min)) * 1000;
+            }
+
+            this.mdcSlider.setValue(value);
         }
 
         if (deltaState.is_sensitive !== undefined) {
