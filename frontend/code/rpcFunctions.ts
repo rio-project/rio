@@ -118,3 +118,7 @@ export function requestFileUpload(message: any): void {
     // Trigger the file upload
     input.click();
 }
+
+export function closeSession(): void {
+    window.close(); // TODO: What if the browser doesn't allow it?
+}

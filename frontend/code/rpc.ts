@@ -1,6 +1,6 @@
 import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
 import { updateComponentStates } from './componentManagement';
-import { requestFileUpload, registerFont } from './rpcFunctions';
+import { requestFileUpload, registerFont, closeSession } from './rpcFunctions';
 
 let websocket: WebSocket | null = null;
 let pingPongHandlerId: number;
@@ -166,89 +166,98 @@ export async function processMessageReturnResponse(
     }
 
     // Delegate to the appropriate handler
-    let response;
+    let response: JsonRpcResponse | string | null;
     let responseIsError = false;
 
-    // New components received
-    if (message.method == 'updateComponentStates') {
-        await updateComponentStates(
-            message.params.deltaStates,
-            message.params.rootComponentId
-        );
-        response = null;
-    }
+    switch (message.method) {
+        case 'updateComponentStates':
+            // New components received
+            updateComponentStates(
+                message.params.deltaStates,
+                message.params.rootComponentId
+            );
+            response = null;
+            break;
 
-    // Allow the server to run JavaScript
-    else if (message.method == 'evaluateJavaScript') {
-        // Avoid using `eval` so that parceljs can minify the code
-        try {
-            const func = new Function(message.params.javaScriptSource);
-            response = await func();
+        case 'evaluateJavaScript':
+            // Allow the server to run JavaScript
+            //
+            // Avoid using `eval` so that parceljs can minify the code
+            try {
+                const func = new Function(message.params.javaScriptSource);
+                response = await func();
 
-            if (response === undefined) {
-                response = null;
+                if (response === undefined) {
+                    response = null;
+                }
+            } catch (e) {
+                response = e.toString();
+                responseIsError = true;
+                console.warn(
+                    `Uncaught exception in \`evaluateJavaScript\`: ${e}`
+                );
             }
-        } catch (e) {
-            response = e.toString();
-            responseIsError = true;
-            console.warn(`Uncaught exception in \`evaluateJavaScript\`: ${e}`);
-        }
-    }
+            break;
 
-    // Upload a file to the server
-    else if (message.method == 'requestFileUpload') {
-        requestFileUpload(message.params);
-        response = null;
-    }
+        case 'requestFileUpload':
+            // Upload a file to the server
+            requestFileUpload(message.params);
+            response = null;
+            break;
 
-    // Persistently store user settings
-    else if (message.method == 'setUserSettings') {
-        for (let key in message.params.deltaSettings) {
-            localStorage.setItem(
-                `rio:userSetting:${key}`,
-                JSON.stringify(message.params.deltaSettings[key])
+        case 'setUserSettings':
+            // Persistently store user settings
+            for (let key in message.params.deltaSettings) {
+                localStorage.setItem(
+                    `rio:userSetting:${key}`,
+                    JSON.stringify(message.params.deltaSettings[key])
+                );
+            }
+            response = null;
+            break;
+
+        case 'registerFont':
+            // Load and register a new font
+            await registerFont(message.params.name, message.params.urls);
+            response = null;
+            break;
+
+        case 'applyTheme':
+            // Set the CSS variables
+            for (let key in message.params.cssVariables) {
+                document.documentElement.style.setProperty(
+                    key,
+                    message.params.cssVariables[key]
+                );
+            }
+
+            // Set the theme variant
+            document.documentElement.setAttribute(
+                'data-theme',
+                message.params.themeVariant
             );
-        }
-        response = null;
-    }
 
-    // Load and register a new font
-    else if (message.method == 'registerFont') {
-        await registerFont(message.params.name, message.params.urls);
-        response = null;
-    }
+            response = null;
+            break;
 
-    // Apply a theme
-    else if (message.method == 'applyTheme') {
-        // Set the CSS variables
-        for (let key in message.params.cssVariables) {
-            document.documentElement.style.setProperty(
-                key,
-                message.params.cssVariables[key]
+        case 'invalidSessionToken':
+            // The attempt to connect to the server has failed, because the session
+            // token is invalid
+            console.error(
+                'Reloading the page because the session token is invalid'
             );
-        }
+            window.location.reload();
+            response = null;
+            break;
 
-        // Set the theme variant
-        document.documentElement.setAttribute(
-            'data-theme',
-            message.params.themeVariant
-        );
+        case 'closeSession':
+            closeSession();
+            response = null;
+            break;
 
-        response = null;
-    }
-
-    // The attempt to connect to the server has failed, because the session
-    // token is invalid
-    else if (message.method == 'invalidSessionToken') {
-        console.error(
-            'Reloading the page because the session token is invalid'
-        );
-        window.location.reload();
-    }
-
-    // Invalid method
-    else {
-        throw `Encountered unknown RPC method: ${message.method}`;
+        default:
+            // Invalid method
+            throw `Encountered unknown RPC method: ${message.method}`;
     }
 
     if (message.id === undefined) {
@@ -263,7 +272,7 @@ export async function processMessageReturnResponse(
     if (responseIsError) {
         rpcResponse['error'] = {
             code: -32000,
-            message: response,
+            message: response as string,
         };
     } else {
         rpcResponse['result'] = response;

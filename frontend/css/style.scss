@@ -1727,11 +1727,13 @@ $drawer-side-margin: 0.7rem;
     th {
         border-top: solid 1px var(--rio-local-accent-fg);
     }
-    th, td {
+    th,
+    td {
         border-right: 1px solid var(--rio-local-accent-fg);
         border-bottom: 1px solid var(--rio-local-accent-fg);
     }
-    th:first-child, td:first-child {
+    th:first-child,
+    td:first-child {
         border-left: 1px solid var(--rio-local-accent-fg);
     }
 
@@ -1750,28 +1752,32 @@ $drawer-side-margin: 0.7rem;
 
     // header row
     th {
-        font-weight: bold;
-        padding: 0;
-    }
-
-    th {
         background-color: var(--rio-local-accent-bg);
         color: var(--rio-local-accent-fg);
-        
+        font-weight: bold;
+
+        padding: 0.15rem;
+
         cursor: pointer;
-        padding: 0.2rem;
     }
-    th[data-sort="asc"] span + span::after {
-        content: "▴";
+
+    th::after {
+        content: '▴';
+        display: inline-block;
+        opacity: 0;
     }
-    th[data-sort="desc"] span + span::after {
-        content: "▾";
+    th[data-sort='asc']::after {
+        content: '▴';
+        opacity: 1;
+    }
+    th[data-sort='desc']::after {
+        content: '▾';
+        opacity: 1;
     }
 
     // cells
     td {
         padding: 0.2rem;
-        text-align: left;
     }
 }
 

@@ -114,10 +114,9 @@ async def _periodically_clean_up_expired_sessions(
         now = time.monotonic()
         cutoff = now - SESSION_LIFETIME
 
-        for session_token, sess in list(app_server._active_session_tokens.items()):
+        for sess in app_server._active_session_tokens.values():
             if sess._last_interaction_timestamp < cutoff:
-                del app_server._active_session_tokens[session_token]
-                sess._close()
+                sess.close()
 
 
 class AppServer(fastapi.FastAPI):
@@ -292,6 +291,7 @@ class AppServer(fastapi.FastAPI):
 
         sess = session.Session(
             app_server_=self,
+            session_token=session_token,
             base_url=rio.URL(str(request.base_url)),
             initial_page=initial_page_url_absolute,
         )
