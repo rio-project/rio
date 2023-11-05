@@ -9,12 +9,19 @@ export type DropdownState = ComponentState & {
 };
 
 function showPopup(parent: HTMLElement, popup: HTMLElement): void {
+    document.body.appendChild(popup);
+
+    let clientRect = parent.getBoundingClientRect();
+
+    popup.style.left = clientRect.left + 'px';
+    popup.style.top = clientRect.bottom + 'px';
+    popup.style.width = clientRect.width + 'px';
     popup.style.maxHeight = popup.scrollHeight + 'px';
-    popup.style.top = parent.getBoundingClientRect().bottom + 'px';
-    popup.style.width = parent.offsetWidth + 'px';
 }
 
 function hidePopup(parent: HTMLElement, popup: HTMLElement): void {
+    popup.remove();
+
     popup.style.maxHeight = '0px';
 }
 
@@ -42,26 +49,21 @@ export class DropdownComponent extends ComponentBase {
             <div class="rio-text-input-plain-bar"></div>
             <div class="rio-text-input-color-bar"></div>
         </div>
-
-        <div class='rio-dropdown-popup'>
-            <div class="rio-dropdown-options"></div>
-        </div>
-`;
+        `;
 
         // Expose them as properties
-        this.popupElement = element.querySelector(
-            '.rio-dropdown-popup'
-        ) as HTMLElement;
-
-        this.optionsElement = element.querySelector(
-            '.rio-dropdown-options'
-        ) as HTMLElement;
-
         this.textInputElement = element.querySelector(
             '.rio-text-input'
         ) as HTMLElement;
 
         this.inputElement = element.querySelector('input') as HTMLInputElement;
+
+        this.popupElement = document.createElement('div');
+        this.popupElement.classList.add('rio-dropdown-popup');
+
+        this.optionsElement = document.createElement('div');
+        this.optionsElement.classList.add('rio-dropdown-options');
+        this.popupElement.appendChild(this.optionsElement);
 
         // Connect events
         let outsideClickListener = (event) => {
@@ -74,7 +76,7 @@ export class DropdownComponent extends ComponentBase {
             hidePopup(element, this.popupElement);
             this.isOpen = false;
 
-            // De-register the event listener
+            // Unregister the event listener
             document.removeEventListener('click', outsideClickListener);
         };
 
