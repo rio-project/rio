@@ -14,6 +14,9 @@ __all__ = [
     "app",
 ]
 
+revel.GLOBAL_STYLES.add_alias("primary", ["magenta"])
+revel.GLOBAL_STYLES.add_alias("bg-primary", ["bg-magenta"])
+
 app = revel.App(
     summary="An easy to use, app & web framework for Python",
     details="""
@@ -38,10 +41,11 @@ hit the ground running.
         revel.Parameter(
             "nicename",
             summary="Human-readable name for the new project",
+            prompt="What should the project be called?",
         ),
         revel.Parameter(
             "type",
-            summary="Whether this is a website or an app",
+            summary="Whether to create a website or an app",
         ),
         revel.Parameter(
             "template",

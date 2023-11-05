@@ -69,7 +69,10 @@ class History(rio.Component):
                 "Present",
                 "AI Researcher",
                 "DataWorks Inc.",
-                "Developed and deployed machine learning models to improve the accuracy of the company's recommender system. Collaborated with a team of 10 researchers to implement a novel algorithm for predicting user behavior.",
+                "Developed and deployed machine learning models to improve the "
+                "accuracy of the company's recommender system. Collaborated "
+                "with a team of 10 researchers to implement a novel algorithm "
+                "for predicting user behavior.",
                 "science",
             ),
             HistoryItem(
@@ -77,7 +80,11 @@ class History(rio.Component):
                 "2021",
                 "Data Analyst",
                 "Insight Technologies",
-                "Conducted in-depth data analysis and implemented machine learning algorithms to improve predictive models, resulting in a 15% increase in accuracy. Collaborated with cross-functional teams to develop and deploy scalable AI solutions for optimizing business operations.",
+                "Conducted in-depth data analysis and implemented machine "
+                "learning algorithms to improve predictive models, resulting "
+                "in a 15% increase in accuracy. Collaborated with "
+                "cross-functional teams to develop and deploy scalable AI "
+                "solutions for optimizing business operations.",
                 "monitoring",
             ),
             rio.Text(
@@ -90,7 +97,8 @@ class History(rio.Component):
                 "2018",
                 "Master in Data Science",
                 "Carnegie Mellon University, Pittsburgh, PA",
-                'Thesis: "Predictive Modeling in Financial Markets using Machine Learning Techniques"',
+                'Thesis: "Predictive Modeling in Financial Markets using '
+                'Machine Learning Techniques"',
                 "school",
             ),
             HistoryItem(
@@ -98,7 +106,8 @@ class History(rio.Component):
                 "2015",
                 "Bachelor in Software Engineering",
                 "University of Texas, Austin, TX",
-                'Thesis: "Design and Implementation of an Intelligent Traffic Control System"',
+                'Thesis: "Design and Implementation of an Intelligent Traffic '
+                'Control System"',
                 "school",
             ),
             spacing=2,

@@ -919,7 +919,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 // Progress Circle
 .rio-progress-circle {
     pointer-events: auto;
-    stroke: var(--rio-local-accent-bg);
+    stroke: var(--rio-local-plain-bg);
 
     // Since the svg inside is rotating, the corners of its bounding box will
     // stick out. This can cause frequent re-layouting. To prevent this, we

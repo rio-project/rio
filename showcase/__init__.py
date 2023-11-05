@@ -338,6 +338,7 @@ class Sidebar(rio.Component):
                         },
                         align_y=0.1,
                     ),
+                    rio.Button("foo", is_loading=True),
                 ),
             ),
             rio.TextInput(
