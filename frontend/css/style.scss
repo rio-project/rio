@@ -866,9 +866,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     align-items: stretch;
     z-index: $z-index-popup;
 
-    top: 100px;
+    // top and width are set by JavaScript
     left: 0;
-    width: 100%;
 
     overflow: hidden;
 

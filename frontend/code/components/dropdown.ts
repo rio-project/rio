@@ -10,6 +10,8 @@ export type DropdownState = ComponentState & {
 
 function showPopup(parent: HTMLElement, popup: HTMLElement): void {
     popup.style.maxHeight = popup.scrollHeight + 'px';
+    popup.style.top = parent.getBoundingClientRect().bottom + 'px';
+    popup.style.width = parent.offsetWidth + 'px';
 }
 
 function hidePopup(parent: HTMLElement, popup: HTMLElement): void {
