@@ -31,6 +31,7 @@ export class ProgressCircleComponent extends ComponentBase {
         element: HTMLElement,
         deltaState: ProgressCircleState
     ): void {
+        // Apply the progress
         if (deltaState.progress !== undefined) {
             if (deltaState.progress === null) {
                 element.classList.add('spinning');
@@ -47,6 +48,7 @@ export class ProgressCircleComponent extends ComponentBase {
             }
         }
 
+        // Apply the color
         if (deltaState.color !== undefined) {
             applyColorSet(
                 element,

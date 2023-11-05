@@ -75,10 +75,16 @@ class Button(component_base.Component):
     def build(self) -> rio.Component:
         # Prepare the child
         if self.is_loading:
+            if self.color in ("keep", "secondary"):
+                progress_color = "primary"
+            else:
+                progress_color = "secondary"
+
             child = progress_circle.ProgressCircle(
                 size=1.5,
                 align_x=0.5,
                 margin=0.3,
+                color=progress_color,
             )
         else:
             children: List[component_base.Component] = []
@@ -127,7 +133,9 @@ class Button(component_base.Component):
             shape=self.shape,
             style=self.style,
             color=self.color,
-            is_sensitive=self.is_sensitive and not self.is_loading,
+            # is_sensitive=self.is_sensitive and not self.is_loading,
+            is_sensitive=self.is_sensitive,
+            is_loading=self.is_loading,
             initially_disabled_for=self.initially_disabled_for,
         )
 
@@ -172,6 +180,7 @@ class CircularButton(component_base.Component):
             shape="circle",
             color=self.color,
             is_sensitive=self.is_sensitive,
+            is_loading=False,
             width=4,
             height=4,
             margin_right=3,
@@ -190,6 +199,7 @@ class _ButtonInternal(component_base.FundamentalComponent):
     style: Literal["major", "minor"]
     color: rio.ColorSet
     is_sensitive: bool
+    is_loading: bool
     initially_disabled_for: float
 
     async def _on_message(self, msg: Any) -> None:
@@ -201,7 +211,7 @@ class _ButtonInternal(component_base.FundamentalComponent):
         assert isinstance(msg_type, str), msg_type
 
         # Is the button sensitive?
-        if not self.is_sensitive:
+        if not self.is_sensitive or self.is_loading:
             return
 
         # Trigger the press event
