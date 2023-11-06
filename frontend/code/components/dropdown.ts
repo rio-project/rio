@@ -170,6 +170,10 @@ export class DropdownComponent extends ComponentBase {
         this.popupElement.style.removeProperty('width');
     }
 
+    onDestruction(): void {
+        this.popupElement.remove();
+    }
+
     _updateElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
             this.optionsElement.innerHTML = '';
