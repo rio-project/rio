@@ -331,14 +331,18 @@ class Sidebar(rio.Component):
         return rio.Column(
             Card(
                 rio.Column(
+                    rio.Button("foo", is_loading=True),
                     rio.Dropdown(
                         {
                             "foo": "bar",
                             "spam": "baz",
+                            "a very long option": "a very long value",
+                            "A": "1",
+                            "B": "2",
+                            "C": "3",
                         },
                         align_y=0.1,
                     ),
-                    rio.Button("foo", is_loading=True),
                 ),
             ),
             rio.TextInput(

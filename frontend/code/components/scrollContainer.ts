@@ -1,4 +1,8 @@
-import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import {
+    getInstanceByComponentId,
+    replaceOnlyChildAndResetCssProperties,
+} from '../componentManagement';
+import { SCROLL_BAR_SIZE } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ScrollContainerState = ComponentState & {
@@ -13,35 +17,6 @@ const SCROLL_TO_OVERFLOW = {
     auto: 'auto',
     always: 'scroll',
 };
-
-function getScrollBarWidth(): number {
-    let outer = document.createElement('div');
-    outer.style.position = "absolute";
-    outer.style.top = "0px";
-    outer.style.left = "0px";
-    outer.style.visibility = "hidden";
-    outer.style.width = "200px";
-    outer.style.height = "150px";
-    outer.style.overflow = "hidden";
-
-    let inner = document.createElement('p');
-    inner.style.width = "100%";
-    inner.style.height = "200px";
-    outer.appendChild(inner);
-
-    document.body.appendChild(outer);
-    let w1 = inner.offsetWidth;
-    outer.style.overflow = 'scroll';
-    let w2 = inner.offsetWidth;
-    if (w1 == w2) w2 = outer.clientWidth;
-
-    document.body.removeChild(outer);
-
-    return (w1 - w2);
-};
-
-const SCROLL_BAR_SIZE = getScrollBarWidth();
-
 
 export class ScrollContainerComponent extends ComponentBase {
     state: Required<ScrollContainerState>;
@@ -82,7 +57,10 @@ export class ScrollContainerComponent extends ComponentBase {
     // ScrollContainer's inner element. This ensures that the child will never
     // be too large for the ScrollContainer. But since children fill up their
     // entire parent, the child's size can only ever grow and never shrink.
-    private _onChildSizeChange(entries: ResizeObserverEntry[], observer: ResizeObserver): void {
+    private _onChildSizeChange(
+        entries: ResizeObserverEntry[],
+        observer: ResizeObserver
+    ): void {
         let element = this.tryGetElement();
 
         // If the parent isn't alive anymore, remove the observer
@@ -104,12 +82,10 @@ export class ScrollContainerComponent extends ComponentBase {
         let element = this.element();
 
         if (this.state.scroll_x === 'never') {
-            let hasVerticalScrollbar = (
-                this.state.scroll_y === 'always' || (
-                    this.state.scroll_y === 'auto' &&
-                    child.scrollHeight > element.clientHeight
-                )
-            );
+            let hasVerticalScrollbar =
+                this.state.scroll_y === 'always' ||
+                (this.state.scroll_y === 'auto' &&
+                    child.scrollHeight > element.clientHeight);
 
             if (hasVerticalScrollbar) {
                 minWidth = `${child.scrollWidth + SCROLL_BAR_SIZE}px`;
@@ -119,12 +95,10 @@ export class ScrollContainerComponent extends ComponentBase {
         }
 
         if (this.state.scroll_y === 'never') {
-            let hasHorizontalScrollbar = (
-                this.state.scroll_x === 'always' || (
-                    this.state.scroll_x === 'auto' &&
-                    child.scrollWidth > element.clientWidth
-                )
-            );
+            let hasHorizontalScrollbar =
+                this.state.scroll_x === 'always' ||
+                (this.state.scroll_x === 'auto' &&
+                    child.scrollWidth > element.clientWidth);
 
             if (hasHorizontalScrollbar) {
                 minHeight = `${child.scrollHeight + SCROLL_BAR_SIZE}px`;
@@ -150,7 +124,10 @@ export class ScrollContainerComponent extends ComponentBase {
                 this.setMinSizeComponentImpl(null, null);
             }
 
-            replaceOnlyChildAndResetCssProperties(this._innerElement, deltaState.child);
+            replaceOnlyChildAndResetCssProperties(
+                this._innerElement,
+                deltaState.child
+            );
 
             let child = getInstanceByComponentId(deltaState.child);
             child.replaceLayoutCssProperties({});
