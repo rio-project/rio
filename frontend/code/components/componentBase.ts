@@ -168,7 +168,12 @@ export abstract class ComponentBase {
     /// This method is called after the component's HTML element has been
     /// created. It is intended for components that need to do some additional
     /// initialization once they know their initial state.
-    onCreation(element: HTMLElement, state: Required<ComponentState>): void { }
+    onCreation(element: HTMLElement, state: Required<ComponentState>): void {}
+
+    /// This method is called right before the component's HTML element is
+    /// removed from the DOM. It can be used for cleaning up event handlers and
+    /// helper HTML elements (like popups).
+    onDestruction(element: HTMLElement): void {}
 
     /// Given a partial state update, this function updates the component's HTML
     /// element to reflect the new state.
