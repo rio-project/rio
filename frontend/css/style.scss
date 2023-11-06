@@ -861,18 +861,12 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-dropdown-popup {
+    // x, y, width, height, and overflow are set by JavaScript
+
     position: fixed;
     display: flex;
     align-items: stretch;
     z-index: $z-index-popup;
-
-    // top and width are set by JavaScript
-    left: 0;
-
-    overflow: hidden;
-
-    max-height: 0;
-    transition: max-height 0.14s ease-out;
 
     background-color: var(--rio-global-background-bg);
     color: var(--rio-global-text-color);
