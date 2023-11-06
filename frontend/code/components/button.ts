@@ -32,6 +32,11 @@ export class ButtonComponent extends SingleContainer {
 
         // Detect button presses
         element.onmouseup = (e) => {
+            // Only react to left clicks
+            if (e.button !== 0) {
+                return;
+            }
+
             // Do nothing if the button isn't sensitive
             if (!this.state['is_sensitive'] || this.isStillInitiallyDisabled) {
                 return;
