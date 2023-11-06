@@ -91,7 +91,7 @@ class Banner(component_base.Component):
                     ),
                     text_child,
                     spacing=1.5,
-                    margin=1.5,
+                    margin=0.5,
                 ),
                 color=style_name,
             )
@@ -101,7 +101,6 @@ class Banner(component_base.Component):
                 rio.Icon(icon),
                 text_child,
                 spacing=0.8,
-                margin=0.8,
                 align_x=0.5,
             ),
             color=style_name,

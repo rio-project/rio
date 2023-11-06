@@ -88,25 +88,25 @@ export function textStyleToCss(
 
     // Predefined style from theme
     if (typeof style === 'string') {
-        // Globals
-        let cssPrefix = `var(--rio-global-${style}-`;
-        result['font-family'] = cssPrefix + 'font-name)';
-        result['font-size'] = cssPrefix + 'font-size)';
-        result['font-weight'] = cssPrefix + 'font-weight)';
-        result['text-style'] = cssPrefix + 'font-italic)';
-        result['text-decoration'] = cssPrefix + 'underlined)';
-        result['text-transform'] = cssPrefix + 'all-caps)';
+        let globalPrefix = `var(--rio-global-${style}-`;
+        let localPrefix = `var(--rio-local-${style}-`;
 
-        // Locals
-        cssPrefix = `var(--rio-local-${style}-`;
-        result['color'] = `var(--rio-local-${style}-color)`;
-        result['background'] = `var(--rio-local-${style}-background)`;
-        result[
-            '-webkit-background-clip'
-        ] = `var(--rio-local-${style}-background-clip)`;
-        result[
-            '-webkit-text-fill-color'
-        ] = `var(--rio-local-${style}-fill-color)`;
+        // Text fill
+        result['color'] = localPrefix + 'color)';
+        result['background'] = localPrefix + 'background)';
+        result['-webkit-background-clip'] = localPrefix + 'background-clip)';
+        result['-webkit-text-fill-color'] = localPrefix + 'fill-color)';
+
+        // Font weight. This is local, so that buttons can make their label text
+        // be bold.
+        result['font-weight'] = localPrefix + 'font-weight)';
+
+        // Others
+        result['font-family'] = globalPrefix + 'font-name)';
+        result['font-size'] = globalPrefix + 'font-size)';
+        result['text-style'] = globalPrefix + 'font-italic)';
+        result['text-decoration'] = globalPrefix + 'underlined)';
+        result['text-transform'] = globalPrefix + 'all-caps)';
     }
 
     // Explicitly defined style
