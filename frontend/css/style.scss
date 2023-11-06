@@ -59,6 +59,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
         --rio-global-heading1-background-clip
     );
     --rio-local-heading1-fill-color: var(--rio-global-heading1-fill-color);
+    --rio-local-heading1-font-weight: var(--rio-global-heading1-font-weight);
 
     --rio-local-heading2-color: var(--rio-global-heading2-color);
     --rio-local-heading2-background: var(--rio-global-heading2-background);
@@ -66,6 +67,7 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
         --rio-global-heading2-background-clip
     );
     --rio-local-heading2-fill-color: var(--rio-global-heading2-fill-color);
+    --rio-local-heading2-font-weight: var(--rio-global-heading2-font-weight);
 
     --rio-local-heading3-color: var(--rio-global-heading3-color);
     --rio-local-heading3-background: var(--rio-global-heading3-background);
@@ -73,11 +75,13 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
         --rio-global-heading3-background-clip
     );
     --rio-local-heading3-fill-color: var(--rio-global-heading3-fill-color);
+    --rio-local-heading3-font-weight: var(--rio-global-heading3-font-weight);
 
     --rio-local-text-color: var(--rio-global-text-color);
     --rio-local-text-background: var(--rio-global-text-background);
     --rio-local-text-background-clip: var(--rio-global-text-background-clip);
     --rio-local-text-fill-color: var(--rio-global-text-fill-color);
+    --rio-local-text-font-weight: var(--rio-global-text-font-weight);
 
     // Material Design Web
     --mdc-theme-primary: var(--rio-global-secondary-bg);
@@ -615,7 +619,7 @@ body {
 
     transition-timing-function: ease; // The transition time is set via JS
 
-    // overflow: hidden; // Correct, but causes issues with dropdowns
+    overflow: hidden;
 
     /*
     The following attributes are controlled via variables, to allow JavaScript
