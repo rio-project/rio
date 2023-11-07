@@ -64,7 +64,7 @@ class Palette:
             background=color,
             background_variant=hct_palette[as_hct.tone + 5],
             background_active=hct_palette[as_hct.tone + 10],
-            foreground=hct_palette[15 if as_hct.tone > 50 else 85],
+            foreground=hct_palette[8 if as_hct.tone > 50 else 92],
         )
 
 
@@ -148,6 +148,13 @@ class Theme:
                 foreground=rio.Color.from_grey(0.1),
             )
 
+            disabled_palette = Palette(
+                rio.Color.from_grey(0.7),
+                rio.Color.from_grey(0.75),
+                rio.Color.from_grey(0.80),
+                rio.Color.from_grey(0.4),
+            )
+
         else:
             background_palette = Palette(
                 background=rio.Color.from_grey(0.1),
@@ -163,12 +170,12 @@ class Theme:
                 foreground=rio.Color.from_grey(0.9),
             )
 
-        disabled_palette = Palette(
-            rio.Color.from_grey(0.6),
-            rio.Color.from_grey(0.5),
-            rio.Color.from_grey(0.5),
-            rio.Color.from_grey(0.2),
-        )
+            disabled_palette = Palette(
+                rio.Color.from_grey(0.2),
+                rio.Color.from_grey(0.15),
+                rio.Color.from_grey(0.10),
+                rio.Color.from_grey(0.6),
+            )
 
         # Semantic colors
         if success_color is None:

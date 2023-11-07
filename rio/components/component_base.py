@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import asyncio
 import dataclasses
 import inspect
 import json
@@ -49,6 +50,32 @@ def make_default_factory_for_value(value: T) -> Callable[[], T]:
     default_factory.__name__ = default_factory.__qualname__ = f"return_{value!r}"
 
     return default_factory
+
+
+async def call_component_handler_once(
+    weak_component: weakref.ReferenceType[Component],
+    handler: Callable,
+) -> None:
+    # Does the component still exist?
+    component = weak_component()
+
+    if component is None:
+        return
+
+    # Call the handler
+    await component.call_event_handler(lambda: handler(component))
+
+
+async def _periodic_event_worker(
+    weak_component: weakref.ReferenceType[Component],
+    handler: Callable,
+) -> None:
+    while True:
+        # Wait for the next tick
+        await asyncio.sleep(handler._rio_event_periodic_interval_)  # type: ignore
+
+        # Call the handler
+        await call_component_handler_once(weak_component, handler)
 
 
 @dataclass(eq=False)
@@ -228,30 +255,30 @@ class Component(metaclass=ComponentMeta):
     """
     Base class for all `rio` components.
 
-    Components are the building blocks of `rio` apps. `rio` ships with many useful
-    components out of the box, but you can also subclass a component to create your
-    own.
+    Components are the building blocks of `rio` apps. `rio` ships with many
+    useful components out of the box, but you can also subclass a component to
+    create your own.
 
     Attributes:
-        key: A unique identifier for this component. If two components with the same
-            key are present during reconciliation they will be considered the
-            same component and their state will be preserved. If no key is
+        key: A unique identifier for this component. If two components with the
+            same key are present during reconciliation they will be considered
+            the same component and their state will be preserved. If no key is
             specified, reconciliation falls back to a less precise method, by
             comparing the location of the component in the component tree.
 
-        margin: The margin around this component. This is a shorthand for setting
-            `margin_left`, `margin_top`, `margin_right` and `margin_bottom` to
-            the same value. If multiple conflicting margins are specified the
-            most specific one wins. If for example `margin` and `margin_left`
-            are both specified, `margin_left` is used for the left side, while
-            the other sides use `margin`.
+        margin: The margin around this component. This is a shorthand for
+            setting `margin_left`, `margin_top`, `margin_right` and
+            `margin_bottom` to the same value. If multiple conflicting margins
+            are specified the most specific one wins. If for example `margin`
+            and `margin_left` are both specified, `margin_left` is used for the
+            left side, while the other sides use `margin`.
 
-        margin_x: The horizontal margin around this component. This is a shorthand
-            for setting `margin_left` and `margin_right` to the same value. If
-            multiple conflicting margins are specified the most specific one
-            wins. If for example `margin_x` and `margin_left` are both
-            specified, `margin_left` is used for the left side, while the other
-            side uses `margin_x`.
+        margin_x: The horizontal margin around this component. This is a
+            shorthand for setting `margin_left` and `margin_right` to the same
+            value. If multiple conflicting margins are specified the most
+            specific one wins. If for example `margin_x` and `margin_left` are
+            both specified, `margin_left` is used for the left side, while the
+            other side uses `margin_x`.
 
         margin_y: The vertical margin around this component. This is a shorthand
             for setting `margin_top` and `margin_bottom` to the same value. If
@@ -260,15 +287,15 @@ class Component(metaclass=ComponentMeta):
             `margin_top` is used for the top side, while the other side uses
             `margin_y`.
 
-        margin_left: The left margin around this component. If multiple conflicting
-            margins are specified this one will be used, since it's the most
-            specific. If for example `margin_left` and `margin` are both
-            specified, `margin_left` is used for the left side, while the other
-            sides use `margin`.
+        margin_left: The left margin around this component. If multiple
+            conflicting margins are specified this one will be used, since it's
+            the most specific. If for example `margin_left` and `margin` are
+            both specified, `margin_left` is used for the left side, while the
+            other sides use `margin`.
 
-        margin_top: The top margin around this component. If multiple conflicting
-            margins are specified this one will be used, since it's the most
-            specific. If for example `margin_top` and `margin` are both
+        margin_top: The top margin around this component. If multiple
+            conflicting margins are specified this one will be used, since it's
+            the most specific. If for example `margin_top` and `margin` are both
             specified, `margin_top` is used for the top side, while the other
             sides use `margin`.
 
@@ -293,12 +320,12 @@ class Component(metaclass=ComponentMeta):
             however much space the characters of that text require. A `Row`
             would request the sum of the widths of its children.
 
-            If `"grow"`, the component will request all the remaining space in its
-            parent.
+            If `"grow"`, the component will request all the remaining space in
+            its parent.
 
-            Please note that the space a `Component` receives during layouting may
-            not match the request. As a general rule for example, containers try
-            to pass on all available space to children. If you really want a
+            Please note that the space a `Component` receives during layouting
+            may not match the request. As a general rule for example, containers
+            try to pass on all available space to children. If you really want a
             `Component` to only take up as much space as requested, consider
             specifying an alignment.
 
@@ -311,18 +338,18 @@ class Component(metaclass=ComponentMeta):
             however much space the characters of that text require. A `Row`
             would request the height of its tallest child.
 
-            If `"grow"`, the component will request all the remaining space in its
-            parent.
+            If `"grow"`, the component will request all the remaining space in
+            its parent.
 
-            Please note that the space a `Component` receives during layouting may
-            not match the request. As a general rule for example, containers try
-            to pass on all available space to children. If you really want a
+            Please note that the space a `Component` receives during layouting
+            may not match the request. As a general rule for example, containers
+            try to pass on all available space to children. If you really want a
             `Component` to only take up as much space as requested, consider
             specifying an alignment.
 
-        align_x: How this component should be aligned horizontally, if it receives
-            more space than it requested. This can be a number between 0 and 1,
-            where 0 means left-aligned, 0.5 means centered, and 1 means
+        align_x: How this component should be aligned horizontally, if it
+            receives more space than it requested. This can be a number between
+            0 and 1, where 0 means left-aligned, 0.5 means centered, and 1 means
             right-aligned.
 
         align_y: How this component should be aligned vertically, if it receives
@@ -465,10 +492,18 @@ class Component(metaclass=ComponentMeta):
         # them can be passed on correctly.
         session._weak_components_by_id[self._id] = self
 
-        # Some events need support from the session. Register them
+        # Some events need attention right after the component is created
         for event_tag, event_handler in self._rio_event_handlers_.items():
+            # Page changes are handled by the session. Register the handler
             if event_tag == event.EventTag.ON_PAGE_CHANGE:
                 session._page_change_callbacks[self] = event_handler
+
+            # The `periodic` event needs a task to work in
+            elif event_tag == event.EventTag.PERIODIC:
+                session.create_task(
+                    _periodic_event_worker(weakref.ref(self), event_handler),
+                    name=f"`rio.event.periodic` event worker for {self}",
+                )
 
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)

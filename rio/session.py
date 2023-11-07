@@ -201,9 +201,9 @@ class Session(unicall.Unicall):
         # the tasks are cancelled when the session is closed.
         self._running_tasks: Set[asyncio.Task[object]] = set()
 
-        # Maps all PageViews to the id of the PageView one higher up in the component
-        # tree. Root PageViews are mapped to None. This map is kept up to date by
-        # PageViews themselves.
+        # Maps all PageViews to the id of the PageView one higher up in the
+        # component tree. Root PageViews are mapped to None. This map is kept up
+        # to date by PageViews themselves.
         self._page_views: weakref.WeakKeyDictionary[
             rio.PageView, Optional[int]
         ] = weakref.WeakKeyDictionary()
@@ -217,8 +217,8 @@ class Session(unicall.Unicall):
             rio.Component, Callable[[rio.Component], None]
         ] = weakref.WeakKeyDictionary()
 
-        # All components / methods which should be called when the session's window
-        # size has changed.
+        # All components / methods which should be called when the session's
+        # window size has changed.
         self._on_window_resize_callbacks: weakref.WeakKeyDictionary[
             rio.Component, Callable[[rio.Component], None]
         ] = weakref.WeakKeyDictionary()
@@ -373,7 +373,7 @@ class Session(unicall.Unicall):
             task.cancel()
 
     def _get_webview_window(self):
-        import webview
+        import webview  # type: ignore
 
         window = webview.active_window()
         assert window is not None
@@ -470,7 +470,7 @@ class Session(unicall.Unicall):
 
         # Is this a page, or a full URL to another site?
         try:
-            target_url_relative = common.make_url_relative(
+            common.make_url_relative(
                 self._base_url,
                 target_url_absolute,
             )
@@ -488,9 +488,7 @@ class Session(unicall.Unicall):
 
         # Is any guard opposed to this page?
         active_page_instances, active_page = routing.check_page_guards(
-            self,
-            target_url_relative,
-            target_url_absolute,
+            self, target_url_absolute
         )
 
         # Update the current page

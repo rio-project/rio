@@ -6,6 +6,7 @@ from typing import *  # type: ignore
 
 import rio
 
+from . import common
 from .errors import NavigationFailed
 
 
@@ -92,7 +93,6 @@ class PageRedirect(Exception):
 
 def check_page_guards(
     sess: rio.Session,
-    target_url_relative: rio.URL,
     target_url_absolute: rio.URL,
 ) -> Tuple[List[Page], rio.URL]:
     """
@@ -113,7 +113,6 @@ def check_page_guards(
     whether navigation to the target page is possible.
     """
 
-    assert not target_url_relative.is_absolute(), target_url_relative
     assert target_url_absolute.is_absolute(), target_url_absolute
 
     # Is any guard opposed to this page?
@@ -159,6 +158,12 @@ def check_page_guards(
         return [page] + sub_pages
 
     while True:
+        # TODO: What if the URL is not a child of the base URL? i.e. redirecting
+        #   to a completely different site
+        target_url_relative = common.make_url_relative(
+            sess.base_url, target_url_absolute
+        )
+
         # Find all pages which would by activated by this navigation, and
         # check their guards
         try:

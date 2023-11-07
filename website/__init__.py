@@ -131,6 +131,9 @@ pages = [
     rio.Page(
         "",
         pages.HomePage,
+        # Just for debugging
+        # TODO / REMOVEME
+        # guard=lambda x: rio.URL("/documentation"),
     ),
     rio.Page(
         "documentation",

@@ -383,6 +383,10 @@ class ComponentShowcase(rio.Component):
             ),
         )
 
+    @rio.event.periodic(1)
+    def _on_periodic(self) -> None:
+        print(f"Periodic! {self}")
+
 
 def validator_factory(sess: rio.Session) -> rio.debug.Validator:
     return rio.debug.Validator(

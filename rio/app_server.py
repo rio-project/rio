@@ -276,11 +276,6 @@ class AppServer(fastapi.FastAPI):
         initial_page_url_absolute = rio.URL(str(request.url))
         assert initial_page_url_absolute.is_absolute(), initial_page_url_absolute
 
-        initial_page_url_relative = common.make_url_relative(
-            base_url,
-            initial_page_url_absolute,
-        )
-
         # Create a session instance to hold all of this state in an organized
         # fashion.
         #
@@ -305,8 +300,7 @@ class AppServer(fastapi.FastAPI):
                 initial_page_url_absolute,
             ) = routing.check_page_guards(
                 sess,
-                target_url_relative=initial_page_url_relative,
-                target_url_absolute=initial_page_url_absolute,
+                initial_page_url_absolute,
             )
         except routing.NavigationFailed:
             raise fastapi.HTTPException(
