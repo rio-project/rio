@@ -8,7 +8,7 @@ from typing_extensions import TypeAlias
 
 import rio.snippets
 
-from . import project_setup, rio_toml
+from . import project, project_setup
 
 __all__ = [
     "app",
@@ -59,7 +59,7 @@ def new(
     type: Literal["app", "website"],
     template: Optional[project_setup.TemplatesLiteral] = None,
 ) -> None:
-    # Project setup is surprisingly complex. Don't handle it here
+    # Project setup is surprisingly complex. Handle it in another file
     project_setup.create_project(
         nicename=nicename,
         type=type,
@@ -85,15 +85,16 @@ def run(
     port: int = 8080,
     public: bool = False,
 ) -> None:
-    # Load the config file
-    project_dir = Path.cwd()
-    config = rio_toml.try_load(project_dir)
-
     # TODO: Verify the parameters are okay. i.e. `port` is a valid port number
+
+    # Load the project
+    with project.RioProject.try_load() as proj:
+        main_module = proj.main_module
+        fastapi_app_variable = proj.fastapi_app_variable
 
     # Delegate to uvicorn
     uvicorn.run(
-        f"{config.main_module}:{config.fastapi_app_variable}",
+        f"{main_module}:{fastapi_app_variable}",
         host="0.0.0.0" if public else "127.0.0.1",
         port=port,
         reload=True,

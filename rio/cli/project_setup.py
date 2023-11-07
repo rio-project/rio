@@ -10,7 +10,7 @@ from typing_extensions import TypeAlias
 import rio.cli
 import rio.snippets
 
-from . import project_setup, rio_toml
+from . import project, project_setup
 
 __all__ = [
     "create_project",
@@ -238,8 +238,8 @@ def create_project(
 
         f.write("\n")
 
-        f.write(f'mainModule = "{python_name}"\n')
-        f.write(f'fastapiAppVariable = "fastapi_app"\n')
+        f.write(f'main_module = "{python_name}"\n')
+        f.write(f'fastapi_app_variable = "fastapi_app"\n')
 
     # Create the main module and its subdirectories
     main_module_dir = project_dir / python_name
