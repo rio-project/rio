@@ -5,6 +5,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 export type TextState = ComponentState & {
     text?: string;
     multiline?: boolean;
+    selectable?: boolean;
     style?: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle;
 };
 
@@ -33,6 +34,13 @@ export class TextComponent extends ComponentBase {
             textElement.style.whiteSpace = deltaState.multiline
                 ? 'normal'
                 : 'nowrap';
+        }
+
+        // Selectable
+        if (deltaState.selectable !== undefined) {
+            textElement.style.userSelect = deltaState.selectable
+                ? 'text'
+                : 'none';
         }
 
         // Text style

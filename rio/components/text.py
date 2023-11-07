@@ -30,6 +30,8 @@ class Text(component_base.FundamentalComponent):
         multiline: Whether the text may be split into multiple lines if not
             enough space is available.
 
+        selectable: Whether the text can be selected by the user.
+
         style: The style of the text. This can either be a `TextStyle` instance,
             or one of the built-in styles: `heading1`, `heading2`, `heading3`,
             or `text`.
@@ -38,6 +40,7 @@ class Text(component_base.FundamentalComponent):
     text: str
     _: KW_ONLY
     multiline: bool = False
+    selectable: bool = False
     style: Union[
         Literal["heading1", "heading2", "heading3", "text"],
         text_style.TextStyle,
