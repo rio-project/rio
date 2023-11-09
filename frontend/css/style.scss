@@ -152,17 +152,17 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     --rio-local-accent-fg: var(--rio-global-secondary-fg);
 
     // Text Styles
-    --rio-local-heading1-color: var(--rio-global-primary-fg);
+    --rio-local-heading1-color: var(--rio-global-secondary-bg);
     --rio-local-heading1-background: 'none';
     --rio-local-heading1-background-clip: 'border-box';
     --rio-local-heading1-fill-color: 'transparent';
 
-    --rio-local-heading2-color: var(--rio-global-primary-fg);
+    --rio-local-heading2-color: var(--rio-global-secondary-bg);
     --rio-local-heading2-background: 'none';
     --rio-local-heading2-background-clip: 'border-box';
     --rio-local-heading2-fill-color: 'transparent';
 
-    --rio-local-heading3-color: var(--rio-global-primary-fg);
+    --rio-local-heading3-color: var(--rio-global-secondary-bg);
     --rio-local-heading3-background: 'none';
     --rio-local-heading3-background-clip: 'border-box';
     --rio-local-heading3-fill-color: 'transparent';
@@ -584,11 +584,11 @@ body {
 
     background-image: linear-gradient(
         -45deg,
-        black 25%,
+        transparent 25%,
         var(--rio-global-warning-bg) 25%,
         var(--rio-global-warning-bg) 50%,
-        black 50%,
-        black 75%,
+        transparent 50%,
+        transparent 75%,
         var(--rio-global-warning-bg) 75%,
         var(--rio-global-warning-bg)
     );
@@ -1112,7 +1112,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
     color: var(--rio-global-danger-bg);
     background: var(--rio-global-neutral-bg);
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
     border-radius: $infinite-corner-radius;
     box-shadow: 0 0 1rem var(--rio-global-shadow-color);
 
@@ -1776,6 +1776,38 @@ $drawer-side-margin: 0.7rem;
     td {
         padding: 0.2rem;
     }
+}
+
+// Lists (ListView + ListItem)
+.rio-list-view {
+    pointer-events: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: fit-content;
+}
+
+.rio-list-item {
+    pointer-events: auto;
+    position: relative;
+    padding: 0.7rem 1.5rem;
+
+    background-color: transparent;
+
+    transition: background-color 0.1s ease-in-out;
+}
+
+.rio-list-item:hover {
+    background-color: var(--rio-local-plain-bg-active);
+}
+
+.rio-list-view > *:not(:last-child)::after {
+    content: '';
+    width: 100%;
+    height: 1px;
+    background-color: var(--rio-local-text-color);
+    opacity: 0.3;
 }
 
 // SVG Images

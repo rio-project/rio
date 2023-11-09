@@ -350,6 +350,13 @@ class Sidebar(rio.Component):
                 prefix_text="$",
                 suffix_text="USD",
             ),
+            rio.ListView(
+                rio.CustomListItem(rio.Text("Text 1")),
+                rio.SingleLineListItem("Text 2"),
+                rio.CustomListItem(
+                    rio.Text("Text 3"), on_press=lambda: print("Pressed!")
+                ),
+            ),
             rio.Text(
                 "foo",
                 height=80,

@@ -3,16 +3,20 @@ import { ComponentId } from './models';
 
 import { AlignComponent } from './components/align';
 import { ButtonComponent } from './components/button';
+import { CardComponent } from './components/card';
 import { ClassContainerComponent } from './components/classContainer';
 import { ColorPickerComponent } from './components/colorPicker';
 import { ColumnComponent, RowComponent } from './components/linearContainers';
 import { DrawerComponent } from './components/drawer';
 import { DropdownComponent } from './components/dropdown';
 import { GridComponent } from './components/grid';
+import { HtmlComponent } from './components/html';
 import { IconComponent } from './components/icon';
 import { ImageComponent } from './components/image';
 import { KeyEventListenerComponent } from './components/keyEventListener';
 import { LinkComponent } from './components/link';
+import { ListItemComponent } from './components/listItem';
+import { ListViewComponent } from './components/listView';
 import { MarginComponent } from './components/margin';
 import { MarkdownViewComponent } from './components/markdownView';
 import { MediaPlayerComponent } from './components/mediaPlayer';
@@ -30,12 +34,10 @@ import { SliderComponent } from './components/slider';
 import { SlideshowComponent } from './components/slideshow';
 import { StackComponent } from './components/stack';
 import { SwitchComponent } from './components/switch';
-import { TextInputComponent } from './components/textInput';
-import { TextComponent } from './components/text';
-import { HtmlComponent } from './components/html';
-import { CardComponent } from './components/card';
 import { SwitcherBarComponent } from './components/switcher_bar';
 import { TableComponent } from './components/table';
+import { TextComponent } from './components/text';
+import { TextInputComponent } from './components/textInput';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -52,6 +54,8 @@ const componentClasses = {
     'Image-builtin': ImageComponent,
     'KeyEventListener-builtin': KeyEventListenerComponent,
     'Link-builtin': LinkComponent,
+    'ListItem-builtin': ListItemComponent,
+    'ListView-builtin': ListViewComponent,
     'Margin-builtin': MarginComponent,
     'MarkdownView-builtin': MarkdownViewComponent,
     'MediaPlayer-builtin': MediaPlayerComponent,
