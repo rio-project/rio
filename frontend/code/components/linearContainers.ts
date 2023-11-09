@@ -26,7 +26,7 @@ class LinearContainer extends ComponentBase {
         this.grower2.classList.add('rio-undefined-space');
 
         // The growers are placed in a a separate container so that they don't
-        // caus additional spacing at the start and end of the
+        // cause additional spacing at the start and end of the
         // `LinearContainer`.
         element.append(this.grower1);
         element.append(this.childContainer);

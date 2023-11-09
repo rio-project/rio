@@ -11,11 +11,13 @@ export type CardState = ComponentState & {
     reportPress?: boolean;
     elevate_on_hover?: boolean;
     colorize_on_hover?: boolean;
+    inner_margin?: boolean;
     color?: ColorSet;
 };
 
 export class CardComponent extends SingleContainer {
     state: Required<CardState>;
+    marginCss: string;
 
     _createElement(): HTMLElement {
         // Create the element
@@ -45,11 +47,10 @@ export class CardComponent extends SingleContainer {
             if (deltaState.corner_radius === null) {
                 element.style.borderRadius =
                     'var(--rio-global-corner-radius-medium)';
-                element.style.padding =
-                    'var(--rio-global-corner-radius-medium)';
+                this.marginCss = 'var(--rio-global-corner-radius-medium)';
             } else if (typeof deltaState.corner_radius === 'number') {
                 element.style.borderRadius = `${deltaState.corner_radius}rem`;
-                element.style.padding = `${deltaState.corner_radius}rem`;
+                this.marginCss = `${deltaState.corner_radius}rem`;
             } else {
                 element.style.borderRadius = `${deltaState.corner_radius[0]}em ${deltaState.corner_radius[1]}em ${deltaState.corner_radius[2]}em ${deltaState.corner_radius[3]}em`;
 
@@ -59,8 +60,15 @@ export class CardComponent extends SingleContainer {
                     deltaState.corner_radius[2],
                     deltaState.corner_radius[3]
                 );
-                element.style.padding = `${maxRadius}rem`;
+                this.marginCss = `${maxRadius}rem`;
             }
+        }
+
+        // Update the inner margin
+        if (deltaState.inner_margin === true) {
+            element.style.padding = this.marginCss;
+        } else {
+            element.style.removeProperty('padding');
         }
 
         // Report presses?
