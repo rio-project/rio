@@ -107,7 +107,7 @@ export class SwitcherBarComponent extends ComponentBase {
                 newPos.right - prevPos.right
             }px`;
             this.markerElement.style.bottom = `${
-                prevPos.bottom - newPos.bottom
+                newPos.bottom - prevPos.bottom
             }px`;
             element.offsetHeight;
 

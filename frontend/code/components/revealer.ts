@@ -71,7 +71,7 @@ export class RevealerComponent extends ComponentBase {
     <div class="rio-revealer-label"></div>
     <div class="rio-icon-revealer-arrow"></div>
 </div>
-<div class="rio-revealer-content-outer">
+<div class="rio-revealer-content-outer rio-single-container">
     <div class="rio-revealer-content-inner rio-single-container"></div>
 </div>
 `;
