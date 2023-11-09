@@ -26,6 +26,7 @@ class Outliner(rio.Component):
             # Otherwise, it's a tuple of (title, articles)
             title, arts = section
             buttons = []
+            entries = {}
 
             # ... where each article is either a tuple of (name, url_segment,
             # article), or a rio `Component`
@@ -58,12 +59,20 @@ class Outliner(rio.Component):
                     ),
                 )
 
+                entries[name] = url_segment
+
             chapter_expanders.append(
                 rio.Revealer(
                     title,
-                    rio.Column(
-                        *buttons,
-                        spacing=0.8,
+                    # rio.Column(
+                    #     *buttons,
+                    #     spacing=0.8,
+                    # ),
+                    rio.SwitcherBar(
+                        entries,
+                        orientation="vertical",
+                        color="primary",
+                        width="grow",
                     ),
                 ),
             )

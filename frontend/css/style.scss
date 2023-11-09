@@ -1031,6 +1031,12 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 // Revealer
+.rio-revealer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
 .rio-revealer-header {
     pointer-events: auto;
     cursor: pointer;
