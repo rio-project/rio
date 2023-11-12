@@ -30,6 +30,7 @@ projects, run them, and more.
 
 
 @app.command(
+    aliases={"init", "create"},
     summary="Create a new Rio project",
     details="""
 The `new` command creates a new directory and populates it with the files needed
