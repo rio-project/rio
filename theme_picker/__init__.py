@@ -1,7 +1,8 @@
-import math
-from dataclasses import field
+from dataclasses import KW_ONLY, field
 from pathlib import Path
 from typing import *  # type: ignore
+
+from typing_extensions import Self
 
 import rio
 import rio.debug
@@ -19,8 +20,9 @@ class ColorPickerPopup(rio.Component):
 
     _color: rio.Color = field(init=False)
 
-    def _on_create(self) -> None:
-        self._color = getattr(self.theme, self.property_name)
+    # @rio.event.on_create
+    # def _on_create(self) -> None:
+    #     self._color = getattr(self.theme, self.property_name)
 
     async def _on_confirm(self) -> None:
         await self._call_event_handler(
@@ -31,7 +33,8 @@ class ColorPickerPopup(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
             rio.ColorPicker(
-                color=ColorPickerPopup._color,
+                # color=ColorPickerPopup._color,
+                color=rio.Color.RED,
                 height="grow",
             ),
             rio.Button(
@@ -47,11 +50,13 @@ class ColorPickerPopup(rio.Component):
 
 class ColorSwatch(rio.Component):
     theme: rio.Theme
+    palette_name: str
     description: Optional[str]
-    heading_fill: rio.FillLike
-    text_fill: rio.FillLike
-    color_property_names: List[Tuple[str, str, bool]]
     currently_edited_property_name: Optional[str]
+    _: KW_ONLY
+    _colors: List[Tuple[str, rio.Color]] = field(default_factory=list)
+    heading_fill: Optional[rio.FillLike] = None
+    text_fill: Optional[rio.FillLike] = None
 
     def _on_color_click(self, property_name: str) -> None:
         # Stop picking a color, if the same color was clicked again
@@ -70,18 +75,31 @@ class ColorSwatch(rio.Component):
         self.theme = self.theme
         self.currently_edited_property_name = None
 
+    def add_color(
+        self,
+        nicename: str,
+        color: rio.Color,
+    ) -> None:
+        self._colors.append((nicename, color))
+
+    def add_palette(
+        self,
+        palette: rio.Palette,
+    ) -> Self:
+        self.add_color("Background", palette.background)
+        self.add_color("Background Variant", palette.background_variant)
+        self.add_color("Background Active", palette.background_active)
+        self.add_color("Foreground", palette.foreground)
+        return self
+
     def build(self) -> rio.Component:
-        assert len(self.color_property_names) > 0, "Must provide at least one color"
+        assert self._colors, "Swatches must have at least one color"
 
         # Create rectangles for each color
         rects = []
         corner_radius = self.theme.corner_radius_medium
 
-        for ii, (color_nice_name, property_name, changeable) in enumerate(
-            self.color_property_names
-        ):
-            color = getattr(self.theme, property_name)
-
+        for ii, (color_nice_name, color) in enumerate(self._colors):
             # Prepare the content for the rectangle
             if ii == 0:
                 # Prepare text styles
@@ -113,7 +131,7 @@ class ColorSwatch(rio.Component):
                     *children,
                     margin_left=1,
                     margin_top=1,
-                    margin_bottom=1 if len(self.color_property_names) == 1 else 0.5,
+                    margin_bottom=1 if len(self._colors) == 1 else 0.5,
                     spacing=0.4,
                     align_y=0,
                 )
@@ -132,14 +150,14 @@ class ColorSwatch(rio.Component):
                 corner_radii[0] = corner_radius
                 corner_radii[1] = corner_radius
 
-                if len(self.color_property_names) == 1:
+                if len(self._colors) == 1:
                     corner_radii[2] = corner_radius
                     corner_radii[3] = corner_radius
 
             elif ii == 1:
                 corner_radii[3] = corner_radius
 
-            if ii == len(self.color_property_names) - 1:
+            if ii == len(self._colors) - 1:
                 corner_radii[2] = corner_radius
 
             rects.append(
@@ -156,10 +174,7 @@ class ColorSwatch(rio.Component):
 
         # Show a colorpicker when clicked
         for ii, rect in enumerate(rects):
-            _, property_name, changeable = self.color_property_names[ii]
-
-            if not changeable:
-                continue
+            _, property_name = self._colors[ii]
 
             rects[ii] = rio.MouseEventListener(
                 child=rect,
@@ -184,8 +199,8 @@ class ColorSwatch(rio.Component):
 
         # If the displayed color is too similar to the surface color, add a
         # border
-        surface_color = self.theme.surface_color
-        main_color = getattr(self.theme, self.color_property_names[0][1])
+        surface_color = self.theme.neutral_palette.background
+        main_color = self._colors[0][1]
 
         difference = (
             abs(main_color.red - surface_color.red)
@@ -234,96 +249,64 @@ class Sidebar(rio.Component):
             rio.Column(
                 ColorSwatch(
                     theme=AppRoot.theme,
+                    palette_name="primary_palette",
                     description="Defines your theme",
-                    color_property_names=[
-                        ("Primary", "primary_color", True),
-                        ("Variant", "primary_color_variant", True),
-                    ],
-                    heading_fill=self.theme.heading_on_primary_fill,
-                    text_fill=self.theme.text_on_primary_color,
                     currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description="Adds visual interest",
-                    color_property_names=[
-                        ("Secondary", "secondary_color", True),
-                        ("Variant", "secondary_color_variant", True),
-                    ],
-                    heading_fill=self.theme.heading_on_secondary_color,
-                    text_fill=self.theme.text_on_secondary_color,
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description="Provides a neutral background",
-                    color_property_names=[
-                        ("Surface", "surface_color", True),
-                        ("Variant", "surface_color_variant", True),
-                        ("Active", "surface_active_color", True),
-                        ("Background", "background_color", True),
-                    ],
-                    heading_fill=self.theme.heading1_style.fill,
-                    text_fill=self.theme.text_style.fill,
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description="Indicates a positive outcome",
-                    color_property_names=[
-                        ("Success", "success_color", True),
-                        ("Variant", "success_color_variant", True),
-                    ],
-                    heading_fill=self.theme.text_on_success_color,
-                    text_fill=self.theme.text_on_success_color,
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description="Indicates that attention is needed",
-                    color_property_names=[
-                        ("Warning", "warning_color", True),
-                        ("Variant", "warning_color_variant", True),
-                    ],
-                    heading_fill=self.theme.text_on_warning_color,
-                    text_fill=self.theme.text_on_warning_color,
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description="Indicates a problem",
-                    color_property_names=[
-                        ("Danger", "danger_color", True),
-                        ("Variant", "danger_color_variant", True),
-                    ],
-                    heading_fill=self.theme.text_on_danger_color,
-                    text_fill=self.theme.text_on_danger_color,
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description=None,
-                    color_property_names=[
-                        ("Text on Dark", "text_color_on_dark", True),  # type: ignore
-                    ],
-                    heading_fill=self.theme.text_color_for(
-                        self.theme.text_color_on_dark
-                    ),
-                    text_fill=self.theme.text_color_for(self.theme.text_color_on_dark),
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
-                ColorSwatch(
-                    theme=AppRoot.theme,
-                    description=None,
-                    color_property_names=[
-                        ("Text on Light", "text_color_on_light", True),  # type: ignore
-                    ],
-                    heading_fill=self.theme.text_color_for(
-                        self.theme.text_color_on_light
-                    ),
-                    text_fill=self.theme.text_color_for(self.theme.text_color_on_light),
-                    currently_edited_property_name=Sidebar.currently_picked_property_name,
-                ),
+                ).add_palette(self.theme.primary_palette),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     palette_name="secondary_palette",
+                #     description="Adds visual interest",
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     palette_name="neutral_palette",
+                #     description="Provides a neutral background",
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     palette_name="success_palette",
+                #     description="Indicates a positive outcome",
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     palette_name="warning_palette",
+                #     description="Indicates that attention is needed",
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     palette_name="danger_palette",
+                #     description="Indicates a problem",
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     description=None,
+                #     color_property_names=[
+                #         ("Text on Dark", "text_color_on_dark", True),  # type: ignore
+                #     ],
+                #     heading_fill=self.theme.text_color_for(
+                #         self.theme.text_color_on_dark
+                #     ),
+                #     text_fill=self.theme.text_color_for(self.theme.text_color_on_dark),
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
+                # ColorSwatch(
+                #     theme=AppRoot.theme,
+                #     description=None,
+                #     color_property_names=[
+                #         ("Text on Light", "text_color_on_light", True),  # type: ignore
+                #     ],
+                #     heading_fill=self.theme.text_color_for(
+                #         self.theme.text_color_on_light
+                #     ),
+                #     text_fill=self.theme.text_color_for(self.theme.text_color_on_light),
+                #     currently_edited_property_name=Sidebar.currently_picked_property_name,
+                # ),
                 spacing=1,
             ),
             corner_radius=self.theme.corner_radius_large,
@@ -359,7 +342,7 @@ theme = rio.Theme(
 
 
 class AppRoot(rio.Component):
-    theme: rio.Theme = field(default_factory=rio.Theme)
+    theme: rio.Theme = field(default_factory=rio.Theme.from_color)
 
     def build(self) -> rio.Component:
         return rio.Row(
