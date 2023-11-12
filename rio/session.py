@@ -1332,6 +1332,13 @@ class Session(unicall.Unicall):
             # Attach the instance to the session
             self.attachments._add(settings, synchronize=False)
 
+    async def set_title(self, title: str) -> None:
+        if self.running_in_window:
+            window = self._get_webview_window()
+            window.set_title(title)
+        else:
+            await self._remote_set_title(title)
+
     @overload
     async def file_chooser(
         self,
@@ -1449,11 +1456,15 @@ class Session(unicall.Unicall):
             # way to open a file dialog without blocking the event loop.
             import webview  # type: ignore
 
-            destination = self._get_webview_window().create_file_dialog(
+            destinations = self._get_webview_window().create_file_dialog(
                 webview.SAVE_DIALOG,
-                directory=directory,
+                directory="" if directory is None else str(directory),
                 save_filename=file_name,
             )
+            if not destinations:
+                return  # TODO: Raise error?
+
+            destination = destinations[0]
 
             if isinstance(file_contents, Path):
                 await asyncio.to_thread(shutil.copy, file_contents, destination)
@@ -1598,6 +1609,14 @@ document.body.removeChild(a)
         css_variables: Dict[str, str],
         theme_variant: Literal["light", "dark"],
     ) -> None:
+        raise NotImplementedError
+
+    @unicall.remote(
+        name="setTitle",
+        parameter_format="dict",
+        await_response=False,
+    )
+    async def _remote_set_title(self, title: str) -> None:
         raise NotImplementedError
 
     @unicall.remote(

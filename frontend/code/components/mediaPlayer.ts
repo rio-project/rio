@@ -36,7 +36,10 @@ export class MediaPlayerComponent extends ComponentBase {
         element: HTMLMediaElement,
         deltaState: MediaPlayerState
     ): void {
-        if (deltaState.mediaUrl !== undefined) {
+        if (
+            deltaState.mediaUrl !== undefined &&
+            deltaState.mediaUrl !== this.mediaElement.src
+        ) {
             this.mediaElement.src = deltaState.mediaUrl;
         }
 

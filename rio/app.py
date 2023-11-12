@@ -395,7 +395,7 @@ class App:
 
     def run_in_window(
         self,
-        quiet: bool = False,
+        quiet: bool = True,
     ) -> None:
         """
         Runs the app in a local window.
@@ -458,13 +458,16 @@ class App:
             kwargs = {}
 
             if quiet:
-                kwargs["log_config"] = {
-                    "version": 1,
-                    "disable_existing_loggers": True,
-                    "formatters": {},
-                    "handlers": {},
-                    "loggers": {},
-                }
+                kwargs["log_level"] = "error"
+                # kwargs["log_config"] = {
+                #     "version": 1,
+                #     "disable_existing_loggers": True,
+                #     "formatters": {},
+                #     "handlers": {},
+                #     "loggers": {},
+                # }
+
+            # kwargs["log_level"] = "trace"
 
             nonlocal server
             config = uvicorn.Config(fastapi_app, host=host, port=port, **kwargs)
@@ -487,7 +490,7 @@ class App:
             webview.start()
 
         finally:
-            assert server is not None
+            assert isinstance(server, uvicorn.Server)
 
             server.should_exit = True
             server_thread.join()

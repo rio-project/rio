@@ -1,6 +1,11 @@
 import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
 import { updateComponentStates } from './componentManagement';
-import { requestFileUpload, registerFont, closeSession } from './rpcFunctions';
+import {
+    requestFileUpload,
+    registerFont,
+    closeSession,
+    setTitle,
+} from './rpcFunctions';
 
 let websocket: WebSocket | null = null;
 let pingPongHandlerId: number;
@@ -197,6 +202,11 @@ export async function processMessageReturnResponse(
                     `Uncaught exception in \`evaluateJavaScript\`: ${e}`
                 );
             }
+            break;
+
+        case 'setTitle':
+            setTitle(message.params.title);
+            response = null;
             break;
 
         case 'requestFileUpload':
