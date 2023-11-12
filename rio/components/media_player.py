@@ -62,12 +62,10 @@ class MediaPlayer(component_base.FundamentalComponent):
     on_playback_end: EventHandler[[]] = None
     on_error: EventHandler[[]] = None
 
-    def __post_init__(self):
-        self._media_asset = assets.Asset.new(self.media, self.media_type)
-
     def _custom_serialize(self) -> JsonDoc:
+        media_asset = assets.Asset.new(self.media, self.media_type)
         return {
-            "mediaUrl": self._media_asset._serialize(self.session),
+            "mediaUrl": media_asset._serialize(self.session),
             "reportError": self.on_error is not None,
             "reportPlaybackEnd": self.on_playback_end is not None,
         }

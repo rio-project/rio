@@ -119,6 +119,10 @@ export function requestFileUpload(message: any): void {
     input.click();
 }
 
+export function setTitle(title: string): void {
+    document.title = title;
+}
+
 export function closeSession(): void {
     window.close(); // TODO: What if the browser doesn't allow it?
 }

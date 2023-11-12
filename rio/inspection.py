@@ -106,7 +106,7 @@ def get_child_component_containing_attribute_names(
 ) -> Collection[str]:
     attr_names: List[str] = []
 
-    for attr_name, annotation in get_type_annotations(cls).items():
+    for attr_name, annotation in get_attributes_to_serialize(cls).items():
         origin = get_origin(annotation)
         if origin is None:
             origin = annotation

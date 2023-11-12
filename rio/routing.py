@@ -161,7 +161,7 @@ def check_page_guards(
         # TODO: What if the URL is not a child of the base URL? i.e. redirecting
         #   to a completely different site
         target_url_relative = common.make_url_relative(
-            sess.base_url, target_url_absolute
+            sess._base_url, target_url_absolute
         )
 
         # Find all pages which would by activated by this navigation, and
