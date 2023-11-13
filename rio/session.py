@@ -689,7 +689,21 @@ class Session(unicall.Unicall):
             if not visited_components:
                 return
 
+            # Serialize all components which have been visited
+            delta_states: Dict[int, JsonDoc] = {
+                component._id: self._serialize_and_host_component(component)
+                for component in visited_components
+            }
+
+            await self._update_component_states(visited_components, delta_states)
+
             # Trigger the `on_unmount` event
+            #
+            # Notes:
+            # - All events are triggered only after the client has been notified
+            #   of the changes. This way, if the event handlers trigger another
+            #   client message themselves, any referenced widgets will already
+            #   exist
             for comp in list(self._watched_and_mounted_components):
                 # Still alive
                 if comp._is_in_component_tree(alive_cache):
@@ -706,6 +720,12 @@ class Session(unicall.Unicall):
                 self._watched_and_mounted_components.remove(comp)
 
             # Trigger the `on_mount` event
+            #
+            # Notes:
+            # - See the note on running after notifying the client above
+            # - This function enlarges the set of watched components. The
+            #   `on_unmount` event handler iterates over that set. By processing
+            #   that handler first it only needs to process a smaller set
             for component in visited_components - self._watched_and_mounted_components:
                 # Disinterested
                 if not component._watch_tree_mount_and_unmount_:
@@ -722,14 +742,6 @@ class Session(unicall.Unicall):
 
                 # Remember that this component is now mounted
                 self._watched_and_mounted_components.add(component)
-
-            # Serialize all components which have been visited
-            delta_states: Dict[int, JsonDoc] = {
-                component._id: self._serialize_and_host_component(component)
-                for component in visited_components
-            }
-
-            await self._update_component_states(visited_components, delta_states)
 
     async def _update_component_states(
         self, visited_components: Set[rio.Component], delta_states: Dict[int, JsonDoc]
