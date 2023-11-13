@@ -401,6 +401,17 @@ class Component(metaclass=ComponentMeta):
         init=False, default_factory=set
     )
 
+    # True if the component is subscribed to either the `on_mount` or
+    # `on_unmount` events.
+    _watch_tree_mount_and_unmount_: ClassVar[bool] = dataclasses.field(
+        default=False, init=False
+    )
+
+    # This flag indicates whether state bindings for this component have already
+    # been initialized. Used by `__getattribute__` to check if it should throw
+    # an error.
+    _state_bindings_initialized_: bool = dataclasses.field(default=False, init=False)
+
     # Cache for the set of all `StateProperty` instances in this class
     _state_properties_: ClassVar[Dict[str, "StateProperty"]]
 
@@ -408,15 +419,10 @@ class Component(metaclass=ComponentMeta):
     # to the instance yet, so make sure to pass `self` when calling them
     #
     # The assigned value is needed so that the `Component` class itself has a
-    # valid value. All subclasses override this valud in `__init_subclass__`.
+    # valid value. All subclasses override this value in `__init_subclass__`.
     _rio_event_handlers_: ClassVar[
         defaultdict[event.EventTag, Tuple[Callable[..., Any], ...]]
     ] = defaultdict(tuple)
-
-    # This flag indicates whether state bindings for this component have already
-    # been initialized. Used by `__getattribute__` to check if it should throw
-    # an error.
-    _state_bindings_initialized_: bool = dataclasses.field(default=False, init=False)
 
     @classmethod
     def _preprocess_dataclass_fields(cls):
@@ -499,11 +505,12 @@ class Component(metaclass=ComponentMeta):
 
         # Some events need attention right after the component is created
         for event_tag, event_handlers in self._rio_event_handlers_.items():
+            # Don't register event handlers if there aren't any, since that would slow down the session
+            if not event_handlers:
+                continue
+
             # Page changes are handled by the session. Register the handler
             if event_tag == event.EventTag.ON_PAGE_CHANGE:
-                assert (
-                    len(event_handlers) > 0
-                ), "Don't register event handlers if there aren't any, since that would slow down the session"
                 session._page_change_callbacks[self] = event_handlers
 
             # The `periodic` event needs a task to work in
@@ -666,6 +673,14 @@ class Component(metaclass=ComponentMeta):
                 for event_tag, handlers in event_handlers.items()
             },
         )
+
+        # If the component is subscribed to `on_mount` or `on_unmount`, update
+        # the boolean for that
+        if (
+            event.EventTag.ON_MOUNT in cls._rio_event_handlers_
+            or event.EventTag.ON_UNMOUNT in cls._rio_event_handlers_
+        ):
+            cls._watch_tree_mount_and_unmount_ = True
 
     @classmethod
     def _initialize_state_properties(

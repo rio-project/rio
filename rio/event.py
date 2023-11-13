@@ -8,6 +8,14 @@ from typing import *  # type: ignore
 
 import rio
 
+__all__ = [
+    "on_create",
+    "on_page_change",
+    "on_mount",
+    "on_unmount",
+    "periodic",
+]
+
 C = TypeVar("C", bound="rio.Component")
 R = TypeVar("R")
 
@@ -41,7 +49,6 @@ def on_page_change(handler: Callable[[C], R]) -> Callable[[C], R]:
     return handler
 
 
-# TODO: The tag is added, but currently ignored
 def on_mount(handler: Callable[[C], R]) -> Callable[[C], R]:
     """
     Triggered when the component is added to the widget tree.
@@ -53,7 +60,6 @@ def on_mount(handler: Callable[[C], R]) -> Callable[[C], R]:
     return handler
 
 
-# TODO: The tag is added, but currently ignored
 def on_unmount(handler: Callable[[C], R]) -> Callable[[C], R]:
     """
     Triggered when the component is removed from the widget tree.
@@ -69,6 +75,8 @@ def periodic(
     interval: Union[float, timedelta]
 ) -> Callable[[Callable[[C], None]], Callable[[C], None]]:
     """
+    TODO / unfinished / do not use
+
     This event is triggered repeatedly at a fixed time interval for as long as
     the component exists. The component does not have to be mounted for this
     event to trigger.

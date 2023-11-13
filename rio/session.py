@@ -288,6 +288,10 @@ class Session(unicall.Unicall):
         # references.
         self._refresh_lock = asyncio.Lock()
 
+        # All components wich are currently in the widget tree and are
+        # subscribed to either `on_mount` or `on_unmount` events.
+        self._watched_and_mounted_components: Set[rio.Component] = set()
+
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
         # Note: These are initialized by the AppServer.
@@ -552,7 +556,7 @@ class Session(unicall.Unicall):
                 include_children_recursively=True,
             )
 
-    def _refresh_sync(self) -> Set[rio.Component]:
+    def _refresh_sync(self) -> Tuple[Dict[rio.Component, bool], Set[rio.Component]]:
         """
         See `refresh` for details on what this function does.
 
@@ -657,7 +661,7 @@ class Session(unicall.Unicall):
             self._root_component: True,
         }
 
-        return {
+        return alive_cache, {
             component
             for component in visited_components
             if component._is_in_component_tree(alive_cache)
@@ -679,11 +683,45 @@ class Session(unicall.Unicall):
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
             # Refresh and get a set of all components which have been visited
-            visited_components = self._refresh_sync()
+            alive_cache, visited_components = self._refresh_sync()
 
             # Avoid sending empty messages
             if not visited_components:
                 return
+
+            # Trigger the `on_unmount` event
+            for comp in list(self._watched_and_mounted_components):
+                # Still alive
+                if comp._is_in_component_tree(alive_cache):
+                    continue
+
+                # Trigger the event
+                for handler in comp._rio_event_handlers_[rio.event.EventTag.ON_UNMOUNT]:
+                    self.create_task(
+                        self._call_event_handler(handler, comp),
+                        name="`on_unmount` event handler",
+                    )
+
+                # Remember that this component is no longer mounted
+                self._watched_and_mounted_components.remove(comp)
+
+            # Trigger the `on_mount` event
+            for component in visited_components - self._watched_and_mounted_components:
+                # Disinterested
+                if not component._watch_tree_mount_and_unmount_:
+                    continue
+
+                # Trigger the event
+                for handler in component._rio_event_handlers_[
+                    rio.event.EventTag.ON_MOUNT
+                ]:
+                    self.create_task(
+                        self._call_event_handler(handler, component),
+                        name="`on_mount` event handler",
+                    )
+
+                # Remember that this component is now mounted
+                self._watched_and_mounted_components.add(component)
 
             # Serialize all components which have been visited
             delta_states: Dict[int, JsonDoc] = {
