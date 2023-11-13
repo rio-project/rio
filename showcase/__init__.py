@@ -357,11 +357,45 @@ class Sidebar(rio.Component):
                     rio.Text("Text 3"), on_press=lambda: print("Pressed!")
                 ),
             ),
+            FooButton(0),
             rio.Text(
                 "foo",
                 height=80,
             ),
             spacing=1.0,
+        )
+
+
+class Foo(rio.Component):
+    text: str
+
+    def build(self) -> rio.Component:
+        return rio.Text(self.text)
+
+    @rio.event.on_mount
+    def _on_mount(self):
+        print(f"Mounted: {self.text}")
+
+    @rio.event.on_unmount
+    def _on_unmount(self):
+        print(f"Unmounted: {self.text}")
+
+
+class FooButton(rio.Component):
+    value: int
+
+    def on_press(self) -> None:
+        self.value += 1
+
+    def build(self) -> rio.Component:
+        if self.value % 2 == 0:
+            child = Foo(f"Value: {self.value}")
+        else:
+            child = rio.Text(f"Value: {self.value}")
+
+        return rio.Column(
+            rio.Button("Press Me", on_press=self.on_press),
+            child,
         )
 
 
