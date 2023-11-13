@@ -8,6 +8,7 @@ import json
 import typing
 import weakref
 from abc import abstractmethod
+from collections import defaultdict
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
@@ -239,12 +240,11 @@ class ComponentMeta(abc.ABCMeta):
 
             post_init(component)
 
-        try:
-            on_create_handler = component._rio_event_handlers_[event.EventTag.ON_CREATE]
-        except KeyError:
-            pass
-        else:
-            on_create_handler(component)
+        # Call `on_create` handlers
+        on_create_handlers = component._rio_event_handlers_[event.EventTag.ON_CREATE]
+
+        for handler in on_create_handlers:
+            handler(component)
 
         return component
 
@@ -406,7 +406,12 @@ class Component(metaclass=ComponentMeta):
 
     # Maps event tags to the methods that handle them. The methods aren't bound
     # to the instance yet, so make sure to pass `self` when calling them
-    _rio_event_handlers_: ClassVar[Dict[event.EventTag, Callable[..., Any]]] = {}
+    #
+    # The assigned value is needed so that the `Component` class itself has a
+    # valid value. All subclasses override this valud in `__init_subclass__`.
+    _rio_event_handlers_: ClassVar[
+        defaultdict[event.EventTag, Tuple[Callable[..., Any], ...]]
+    ] = defaultdict(tuple)
 
     # This flag indicates whether state bindings for this component have already
     # been initialized. Used by `__getattribute__` to check if it should throw
@@ -493,17 +498,21 @@ class Component(metaclass=ComponentMeta):
         session._weak_components_by_id[self._id] = self
 
         # Some events need attention right after the component is created
-        for event_tag, event_handler in self._rio_event_handlers_.items():
+        for event_tag, event_handlers in self._rio_event_handlers_.items():
             # Page changes are handled by the session. Register the handler
             if event_tag == event.EventTag.ON_PAGE_CHANGE:
-                session._page_change_callbacks[self] = event_handler
+                assert (
+                    len(event_handlers) > 0
+                ), "Don't register event handlers if there aren't any, since that would slow down the session"
+                session._page_change_callbacks[self] = event_handlers
 
             # The `periodic` event needs a task to work in
             elif event_tag == event.EventTag.PERIODIC:
-                session.create_task(
-                    _periodic_event_worker(weakref.ref(self), event_handler),
-                    name=f"`rio.event.periodic` event worker for {self}",
-                )
+                for event_handler in event_handlers:
+                    session.create_task(
+                        _periodic_event_worker(weakref.ref(self), event_handler),
+                        name=f"`rio.event.periodic` event worker for {self}",
+                    )
 
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)
@@ -625,18 +634,20 @@ class Component(metaclass=ComponentMeta):
 
         cls._initialize_state_properties(all_parent_state_properties)
 
-        # Keep track of all event handlers. By gathering them here, the component
-        # constructor doesn't have to re-scan the entire class for each
-        # instantiation.
-        cls._rio_event_handlers_ = {}
+        # Keep track of all event handlers. By gathering them here, the
+        # component constructor doesn't have to re-scan the entire class for
+        # each instantiation.
+        event_handlers: defaultdict[
+            event.EventTag, List[Callable[..., Any]]
+        ] = defaultdict(list)
 
-        # Inherit event handlers from base classes. Note that this could quietly
-        # overwrite a handler.
+        # Inherit event handlers from base classes
         for base in cls.__bases__:
             if not issubclass(base, Component):
                 continue
 
-            cls._rio_event_handlers_.update(base._rio_event_handlers_)
+            for event_tag, handlers in base._rio_event_handlers_.items():
+                event_handlers[event_tag].extend(handlers)
 
         # Add any event handlers added in this class
         for method in vars(cls).values():
@@ -645,13 +656,16 @@ class Component(metaclass=ComponentMeta):
             except AttributeError:
                 continue
 
-            # Make sure there's only one handler for each tag
-            if tag in cls._rio_event_handlers_:
-                raise RuntimeError(
-                    f"Multiple event handlers for tag `{tag}` in component `{cls.__name__}`"
-                )
+            event_handlers[tag].append(method)
 
-            cls._rio_event_handlers_[tag] = method
+        # Convert the lists to tuples
+        cls._rio_event_handlers_ = defaultdict(
+            tuple,
+            {
+                event_tag: tuple(handlers)
+                for event_tag, handlers in event_handlers.items()
+            },
+        )
 
     @classmethod
     def _initialize_state_properties(

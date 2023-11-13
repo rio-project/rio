@@ -214,7 +214,7 @@ class Session(unicall.Unicall):
         # The methods don't have the component bound yet, so they don't unduly
         # prevent the component from being garbage collected.
         self._page_change_callbacks: weakref.WeakKeyDictionary[
-            rio.Component, Callable[[rio.Component], None]
+            rio.Component, Tuple[Callable[[rio.Component], None], ...]
         ] = weakref.WeakKeyDictionary()
 
         # All components / methods which should be called when the session's
@@ -514,11 +514,12 @@ class Session(unicall.Unicall):
 
         # Trigger the `on_page_change` event
         async def event_worker() -> None:
-            for component, callback in self._page_change_callbacks.items():
-                self.create_task(
-                    self._call_event_handler(callback, component),
-                    name="`on_page_change` event handler",
-                )
+            for component, callbacks in self._page_change_callbacks.items():
+                for callback in callbacks:
+                    self.create_task(
+                        self._call_event_handler(callback, component),
+                        name="`on_page_change` event handler",
+                    )
 
         self.create_task(event_worker())
 
