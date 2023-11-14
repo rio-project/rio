@@ -902,12 +902,28 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-dropdown-options > * {
+    position: relative;
     padding: 1rem 1rem;
-    transition: background-color 0.1s ease-in-out;
 }
 
-.rio-dropdown-options > *:hover {
-    background-color: var(--rio-local-plain-bg-active);
+// Spawn a brightly colored element when hovered
+.rio-dropdown-options > *::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: var(--rio-global-primary-bg);
+    opacity: 0;
+
+    transition: opacity 0.1s ease-in-out;
+}
+
+.rio-dropdown-options > *:hover::after {
+    opacity: 0.2;
 }
 
 .rio-dropdown-options > * + * {
