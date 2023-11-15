@@ -19,6 +19,13 @@ export class DropdownComponent extends ComponentBase {
 
     private isOpen: boolean = false;
 
+    // If the user types while the dropdown is open, this text is used to filter
+    // available options.
+    private filterText: string = '';
+
+    //The currently highlighted option, if any
+    private highlightedOptionName: HTMLElement | null = null;
+
     _createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
@@ -81,7 +88,27 @@ export class DropdownComponent extends ComponentBase {
         return element;
     }
 
+    private _highlightOption(optionElement: HTMLElement | null): void {
+        // Remove the highlight from the previous option
+        if (this.highlightedOptionName !== null) {
+            this.highlightedOptionName.classList.remove(
+                'rio-dropdown-option-highlighted'
+            );
+        }
+
+        // Remember the new option and highlight it
+        this.highlightedOptionName = optionElement;
+
+        if (optionElement !== null) {
+            optionElement.classList.add('rio-dropdown-option-highlighted');
+        }
+    }
+
     private showPopup(element: HTMLElement): void {
+        // Reset the filter
+        this.filterText = '';
+        this._updateOptionEntries();
+
         // In order to guarantee that the popup is on top of all components, we must
         // add it to the `body`. `z-index` alone isn't enough because it only
         // affects the "local stacking context".
@@ -118,6 +145,78 @@ export class DropdownComponent extends ComponentBase {
 
         this.popupElement.style.left = clientRect.left + 'px';
         this.popupElement.style.width = clientRect.width + 'px';
+
+        // Listen for key presses
+        let keyDownListener = (event) => {
+            // Do nothing and disconnect if the dropdown is closed
+            if (!this.isOpen) {
+                document.removeEventListener('keydown', keyDownListener);
+                return;
+            }
+
+            // Close the dropdown on escape
+            if (event.key === 'Escape') {
+                this.hidePopup(element);
+                this.isOpen = false;
+                document.removeEventListener('keydown', keyDownListener);
+                return;
+            }
+
+            // Backspace -> remove the last character from the filter text
+            if (event.key === 'Backspace') {
+                this.filterText = this.filterText.slice(0, -1);
+                this._updateOptionEntries();
+            }
+
+            // Enter -> select the highlighted option
+            if (event.key === 'Enter') {
+                if (this.highlightedOptionName !== null) {
+                    this.highlightedOptionName.click();
+                }
+            }
+
+            // Arrow keys -> move the highlight
+            if (event.key === 'ArrowDown') {
+                let nextOption;
+
+                if (this.highlightedOptionName === null) {
+                    nextOption = this.optionsElement.firstElementChild;
+                } else {
+                    nextOption = this.highlightedOptionName.nextElementSibling;
+
+                    if (nextOption === null) {
+                        nextOption = this.optionsElement.firstElementChild;
+                    }
+                }
+
+                this._highlightOption(nextOption as HTMLElement);
+            }
+
+            if (event.key === 'ArrowUp') {
+                let nextOption;
+
+                if (this.highlightedOptionName === null) {
+                    nextOption = this.optionsElement.lastElementChild;
+                } else {
+                    nextOption =
+                        this.highlightedOptionName.previousElementSibling;
+
+                    if (nextOption === null) {
+                        nextOption = this.optionsElement.lastElementChild;
+                    }
+                }
+
+                this._highlightOption(nextOption as HTMLElement);
+            }
+
+            // Any other key -> add it to the filter text
+            if (event.key.length === 1) {
+                this.filterText += event.key;
+                this._updateOptionEntries();
+            }
+        };
+
+        document.addEventListener('keydown', keyDownListener);
     }
 
     private animatePopupDownwards(top: number, height: number): void {
@@ -166,7 +265,6 @@ export class DropdownComponent extends ComponentBase {
 
     private hidePopup(element: HTMLElement): void {
         this.popupElement.remove();
-
         this.popupElement.style.removeProperty('width');
     }
 
@@ -174,31 +272,51 @@ export class DropdownComponent extends ComponentBase {
         this.popupElement.remove();
     }
 
+    _updateOptionEntries() {
+        let element = this.element();
+
+        // Find all options which should currently be displayed
+        let currentOptionNames: string[] = [];
+
+        for (let optionName of this.state.optionNames) {
+            if (optionName.toLowerCase().includes(this.filterText)) {
+                currentOptionNames.push(optionName);
+            }
+        }
+
+        // Update the HTML to reflect them
+        this.optionsElement.innerHTML = '';
+        for (let optionName of currentOptionNames) {
+            let optionElement = document.createElement('div');
+            optionElement.classList.add('rio-dropdown-option');
+            optionElement.textContent = optionName;
+            this.optionsElement.appendChild(optionElement);
+
+            optionElement.addEventListener('click', () => {
+                this.hidePopup(element);
+                this.isOpen = false;
+                this.inputElement.value = optionName;
+                this.sendMessageToBackend({
+                    name: optionName,
+                });
+            });
+
+            optionElement.addEventListener('mouseenter', () => {
+                this._highlightOption(optionElement);
+            });
+        }
+
+        // Because the popup isn't a child element of the dropdown, manually
+        // make the popup wide enough to fit the widest option + a potential
+        // scrollbar.
+        element.style.minWidth =
+            this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
+    }
+
     _updateElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
-            this.optionsElement.innerHTML = '';
-
-            for (let optionName of deltaState.optionNames) {
-                let optionElement = document.createElement('div');
-                optionElement.classList.add('rio-dropdown-option');
-                optionElement.textContent = optionName;
-                this.optionsElement.appendChild(optionElement);
-
-                optionElement.addEventListener('click', () => {
-                    this.hidePopup(element);
-                    this.isOpen = false;
-                    this.inputElement.value = optionName;
-                    this.sendMessageToBackend({
-                        name: optionName,
-                    });
-                });
-            }
-
-            // Because the popup isn't a child element of the dropdown, we need
-            // to manually make the popup wide enough to fit the widest option +
-            // a potential scrollbar.
-            element.style.minWidth =
-                this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
+            this.state.optionNames = deltaState.optionNames;
+            this._updateOptionEntries();
         }
 
         if (deltaState.label !== undefined) {
