@@ -40,7 +40,7 @@ from . import (
 from .common import URL
 
 try:
-    import plotly
+    import plotly  # type: ignore[missing-import]
 except ImportError:
     plotly = None
 
@@ -61,41 +61,10 @@ class InitialClientMessage(uniserde.Serde):
     preferred_languages: List[str]
     timezone: str
     user_settings: Dict[str, Any]
+    prefers_light_theme: bool
 
     window_width: float
     window_height: float
-
-
-async def _build_initial_messages(
-    sess: session.Session, thm: rio.Theme
-) -> List[Jsonable]:
-    """
-    Build the initial messages that are sent to the frontend when a new session
-    is established.
-    """
-    # We'll temporarily replace the session's `send_message` method and make it
-    # append all the messages to a list.
-    initial_messages: List[Jsonable] = []
-
-    async def send_message(msg: uniserde.Jsonable) -> None:
-        initial_messages.append(msg)
-
-    sess._send_message = send_message
-
-    await sess._apply_theme(thm)
-
-    # The methods we just called may have some side effects like registering
-    # fonts. Registering fonts in particular is an operation that's done in a
-    # background task, so we need to wait for that to finish.
-    #
-    # Since the session is freshly created, there shouldn't be any other tasks
-    # running, so we can just wait for all of them.
-    for task in sess._running_tasks:
-        await task
-
-    sess._send_message = session.dummy_send_message
-
-    return initial_messages
 
 
 async def _periodically_clean_up_expired_sessions(
@@ -320,16 +289,6 @@ class AppServer(fastapi.FastAPI):
 
             sess.attachments.add(copy.deepcopy(attachment))
 
-        # Make sure a theme is attached
-        if rio.Theme in sess.attachments:
-            thm = sess.attachments[rio.Theme]
-        else:
-            thm = rio.Theme.from_color()
-            sess.attachments.add(thm)
-
-        # Create a list of initial messages for the client to process
-        initial_messages = await _build_initial_messages(sess, thm)
-
         # Load the templates
         html = read_frontend_template("index.html")
 
@@ -347,16 +306,10 @@ class AppServer(fastapi.FastAPI):
         )
 
         html = html.replace(
-            '"{initial_messages}"',
-            json.dumps(initial_messages),
-        )
-
-        html = html.replace(
             '"{ping_pong_interval}"',
             str(self.app._ping_pong_interval.total_seconds()),
         )
 
-        # Merge everything into one HTML
         html = html.replace("{title}", self.app.name)
 
         # Respond
@@ -706,6 +659,17 @@ class AppServer(fastapi.FastAPI):
         sess.external_url = (
             None if self.running_in_window else initial_message.website_url
         )
+
+        # Set the theme according to the user's preferences
+        theme = self.app._theme
+        if isinstance(theme, tuple):
+            if initial_message.prefers_light_theme:
+                theme = theme[0]
+            else:
+                theme = theme[1]
+
+        sess.attachments.add(theme)
+        await sess._apply_theme(theme)
 
         # Deserialize the user settings
         await sess._load_user_settings(initial_message.user_settings)

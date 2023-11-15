@@ -124,6 +124,7 @@ class App:
         default_attachments: Iterable[Any] = (),
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
+        theme: Union[rio.Theme, Tuple[rio.Theme, rio.Theme], None] = None,
     ):
         """
         Args:
@@ -197,6 +198,9 @@ class App:
         if build is None:
             build = rio.PageView
 
+        if theme is None:
+            theme = rio.Theme.from_color()
+
         self.name = name
         self._build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
@@ -208,6 +212,7 @@ class App:
         self.assets_dir = main_file.parent / (
             "assets" if assets_dir is None else assets_dir
         )
+        self._theme = theme
 
         if isinstance(ping_pong_interval, timedelta):
             self._ping_pong_interval = ping_pong_interval
@@ -455,22 +460,16 @@ class App:
             )
 
             # Suppress stdout messages if requested
-            kwargs = {}
-
-            if quiet:
-                kwargs["log_level"] = "error"
-                # kwargs["log_config"] = {
-                #     "version": 1,
-                #     "disable_existing_loggers": True,
-                #     "formatters": {},
-                #     "handlers": {},
-                #     "loggers": {},
-                # }
-
-            # kwargs["log_level"] = "trace"
+            log_level = "error" if quiet else "info"
 
             nonlocal server
-            config = uvicorn.Config(fastapi_app, host=host, port=port, **kwargs)
+            config = uvicorn.Config(
+                fastapi_app,
+                host=host,
+                port=port,
+                log_level=log_level,
+                timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
+            )
             server = uvicorn.Server(config)
 
             asyncio.run(server.serve())

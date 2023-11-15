@@ -1,3 +1,6 @@
+import { getElementByComponentId } from './componentManagement';
+import { ComponentId } from './models';
+
 export async function registerFont(
     name: string,
     urls: (string | null)[]
@@ -125,4 +128,9 @@ export function setTitle(title: string): void {
 
 export function closeSession(): void {
     window.close(); // TODO: What if the browser doesn't allow it?
+}
+
+export function setKeyboardFocus(component_id: ComponentId): void {
+    let element = getElementByComponentId(component_id);
+    element.focus();
 }
