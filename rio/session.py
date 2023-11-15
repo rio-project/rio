@@ -1671,6 +1671,14 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(
+        name="setKeyboardFocus",
+        parameter_format="dict",
+        await_response=False,
+    )
+    async def _remote_set_keyboard_focus(self, component_id: int) -> None:
+        raise NotImplementedError
+
+    @unicall.remote(
         name="updateComponentStates",
         parameter_format="dict",
         await_response=False,

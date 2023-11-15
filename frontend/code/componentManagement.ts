@@ -421,7 +421,10 @@ export function updateComponentStates(
     }
 
     // Restore the keyboard focus
-    if (focusedElement instanceof HTMLElement) {
+    if (
+        focusedElement instanceof HTMLElement &&
+        focusedElement.parentElement !== latentComponents
+    ) {
         focusedElement.focus();
     }
 

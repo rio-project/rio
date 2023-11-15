@@ -928,6 +928,9 @@ class Component(metaclass=ComponentMeta):
         """
         await self.session._call_event_handler(handler, *event_data)
 
+    async def grab_keyboard_focus(self) -> None:
+        await self.session._remote_set_keyboard_focus(self._id)
+
     async def force_refresh(self) -> None:
         """
         Force a rebuild of this component.

@@ -1,24 +1,27 @@
-<!DOCTYPE html>
-<html data-theme="dark" class="rio-single-container">
+<!doctype html>
+<!-- Until the CSS is loaded and the server sends us the theme colors, make the background dark so
+that dark mode users don't get flashbanged by a completely white screen -->
+<html data-theme="dark" class="rio-single-container" style="background: #333">
+    <head>
+        <title>{title}</title>
+        <link rel="icon" type="image/x-icon" href="/rio/favicon.ico" />
 
-<head>
-    <title>{title}</title>
-    <link rel="icon" type="image/x-icon" href="/rio/favicon.ico" />
+        <!-- <link rel="stylesheet" type="text/css" href="/rio/asset/highlightjs-default-light.css"> -->
+        <link rel="stylesheet" href="css/style.scss" />
 
-    <!-- <link rel="stylesheet" type="text/css" href="/rio/asset/highlightjs-default-light.css"> -->
-    <link rel="stylesheet" href="css/style.scss">
+        <script src="code/app.ts" type="module"></script>
+    </head>
 
-    <script src="code/app.ts" type="module"></script>
-</head>
-
-<body class="rio-single-container rio-switcheroo-background">
-    <div class="component-root"></div>
-    <div class="rio-error-popup" style="display: none;">
-        <div>
-            <div class="rio-icon-error" style="width: 1.5rem; height: 1.5rem;"></div>
-            <div style="font-weight: bold;">Connection lost</div>
+    <body class="rio-single-container rio-switcheroo-background">
+        <div class="component-root"></div>
+        <div class="rio-error-popup" style="display: none">
+            <div>
+                <div
+                    class="rio-icon-error"
+                    style="width: 1.5rem; height: 1.5rem"
+                ></div>
+                <div style="font-weight: bold">Connection lost</div>
+            </div>
         </div>
-    </div>
-</body>
-
+    </body>
 </html>

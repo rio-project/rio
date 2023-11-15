@@ -16,17 +16,20 @@ export type ImageState = ComponentState & {
 export class ImageComponent extends ComponentBase {
     state: Required<ImageState>;
 
+    private imageElement: HTMLImageElement;
+
     _createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-image');
         element.classList.add('rio-zero-size-request-container');
 
-        let img = document.createElement('img');
-        element.appendChild(img);
+        this.imageElement = document.createElement('img');
+        element.appendChild(this.imageElement);
 
-        img.onload = () => {
-            img.classList.remove('rio-content-loading');
+        this.imageElement.onload = () => {
+            this.imageElement.classList.remove('rio-content-loading');
         };
+        this.imageElement.onerror = this._onError.bind(this);
 
         return element;
     }
@@ -47,16 +50,6 @@ export class ImageComponent extends ComponentBase {
                 FILL_MODE_TO_OBJECT_FIT[deltaState.fill_mode];
         }
 
-        if (deltaState.reportError !== undefined) {
-            if (deltaState.reportError) {
-                if (imgElement.onerror === null) {
-                    imgElement.onerror = this._onError.bind(this);
-                }
-            } else {
-                imgElement.onerror = null;
-            }
-        }
-
         if (deltaState.corner_radius !== undefined) {
             let [topLeft, topRight, bottomRight, bottomLeft] =
                 deltaState.corner_radius;
@@ -66,6 +59,8 @@ export class ImageComponent extends ComponentBase {
     }
 
     private _onError(event: string | Event): void {
+        this.imageElement.classList.remove('rio-content-loading');
+
         this.sendMessageToBackend({
             type: 'onError',
         });

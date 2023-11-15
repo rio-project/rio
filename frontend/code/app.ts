@@ -15,9 +15,6 @@ const childAttributeNames: { [id: string]: string[] } =
     '{child_attribute_names}';
 globalThis.childAttributeNames = childAttributeNames;
 
-// @ts-ignore
-const INITIAL_MESSAGES: Array<JsonRpcMessage> = '{initial_messages}';
-
 export let pixelsPerEm = 16;
 
 function main() {
@@ -46,12 +43,6 @@ function main() {
             newHeight: window.innerHeight / pixelsPerEm,
         });
     });
-
-    // Process all initial messages
-    for (let message of INITIAL_MESSAGES) {
-        console.log('Processing initial message: ', message);
-        processMessageReturnResponse(message);
-    }
 }
 
 main();

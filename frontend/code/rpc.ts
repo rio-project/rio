@@ -5,6 +5,7 @@ import {
     registerFont,
     closeSession,
     setTitle,
+    setKeyboardFocus,
 } from './rpcFunctions';
 
 let websocket: WebSocket | null = null;
@@ -75,6 +76,8 @@ function sendInitialMessage(): void {
         preferredLanguages: navigator.languages,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         userSettings: userSettings,
+        prefersLightTheme: !window.matchMedia('(prefers-color-scheme: dark)')
+            .matches,
         windowWidth: window.innerWidth / pixelsPerEm,
         windowHeight: window.innerHeight / pixelsPerEm,
     });
@@ -202,6 +205,11 @@ export async function processMessageReturnResponse(
                     `Uncaught exception in \`evaluateJavaScript\`: ${e}`
                 );
             }
+            break;
+
+        case 'setKeyboardFocus':
+            setKeyboardFocus(message.params.component_id);
+            response = null;
             break;
 
         case 'setTitle':
