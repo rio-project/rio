@@ -109,9 +109,9 @@ export class DropdownComponent extends ComponentBase {
         this.filterText = '';
         this._updateOptionEntries();
 
-        // In order to guarantee that the popup is on top of all components, we must
-        // add it to the `body`. `z-index` alone isn't enough because it only
-        // affects the "local stacking context".
+        // In order to guarantee that the popup is on top of all components, it
+        // must be added to the `body`. `z-index` alone isn't enough because it
+        // only affects the "local stacking context".
         document.body.appendChild(this.popupElement);
 
         let clientRect = element.getBoundingClientRect();
@@ -119,7 +119,7 @@ export class DropdownComponent extends ComponentBase {
         let windowHeight = window.innerHeight;
 
         if (popupHeight >= windowHeight) {
-            // Popup is larger than the window. We'll give it all the space that's
+            // Popup is larger than the window. Give it all the space that's
             // available.
             this.animatePopupDownwards(0, windowHeight);
         } else if (clientRect.bottom + popupHeight <= windowHeight) {
@@ -131,8 +131,8 @@ export class DropdownComponent extends ComponentBase {
             this.popupElement.style.maxHeight = popupHeight + 'px';
             this.animatePopupUpwards(clientRect.top - popupHeight, popupHeight);
         } else {
-            // Popup doesn't fit above or below the dropdown. We'll center it as
-            // much as possible
+            // Popup doesn't fit above or below the dropdown. Center it as much
+            // as possible
             let top = clientRect.top + clientRect.height / 2 - popupHeight / 2;
             if (top < 0) {
                 top = 0;
