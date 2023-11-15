@@ -907,7 +907,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 // Spawn a brightly colored element when hovered
-.rio-dropdown-options > *::after {
+.rio-dropdown-option::after {
     content: '';
     pointer-events: none;
     position: absolute;
@@ -922,13 +922,13 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     transition: opacity 0.1s ease-in-out;
 }
 
-.rio-dropdown-options > *:hover::after {
+.rio-dropdown-option-highlighted::after {
     opacity: 0.2;
 }
 
-.rio-dropdown-options > * + * {
-    border-top: 1px solid var(--rio-global-text-on-surface-color);
-}
+// .rio-dropdown-options > * + * {
+//     border-top: 1px solid var(--rio-global-background-fg);
+// }
 
 // Progress Circle
 .rio-progress-circle {
