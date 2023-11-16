@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 
 import rio
 
@@ -34,12 +35,11 @@ class NavigationBar(rio.Component):
         return rio.Rectangle(
             child=rio.Row(
                 rio.Row(
-                    rio.Icon(
-                        "star",
-                        width=3.0,
-                        height=3.0,
-                        margin_left=2,
-                        fill=theme.THEME.primary_palette.background,
+                    rio.Image(
+                        Path("website/assets/rio-logo.png"),
+                        width=1.7,
+                        height=1.7,
+                        margin_left=2.5,
                     ),
                     rio.Text(
                         "rio",
@@ -49,7 +49,7 @@ class NavigationBar(rio.Component):
                             fill=text_color,
                         ),
                     ),
-                    spacing=0.7,
+                    spacing=0.8,
                 ),
                 rio.Spacer(),
                 rio.SwitcherBar(
