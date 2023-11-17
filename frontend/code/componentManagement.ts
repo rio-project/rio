@@ -187,7 +187,7 @@ function createLayoutComponentStates(
         message[marginId] = {
             _type_: 'Margin-builtin',
             _python_type_: 'Margin (injected)',
-            _size_: entireState['_size_'],
+            _size_: [null, null],
             _grow_: entireState['_grow_'],
             // @ts-ignore
             child: resultId,
