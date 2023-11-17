@@ -63,8 +63,7 @@ class Button(component_base.Component):
     text: str = ""
     _: KW_ONLY
     icon: Optional[str] = None
-    child: Optional[rio.Component] = None
-    shape: Literal["pill", "rounded", "rectangle", "circle"] = "pill"
+    shape: Literal["pill", "rounded", "rectangle"] = "pill"
     style: Literal["major", "minor"] = "major"
     color: rio.ColorSet = "keep"
     is_sensitive: bool = True
@@ -86,38 +85,24 @@ class Button(component_base.Component):
                 margin=0.3,
                 color=progress_color,
             )
+        elif self.icon is None:
+            child = rio.Text(
+                self.text.strip(),
+                # Make sure there's no popping when switching between Text & ProgressCircle
+                height=1.6,
+            )
         else:
-            children: List[component_base.Component] = []
-
-            if self.icon is not None:
-                if self.shape == "circle":
-                    icon_size = 2.2
-                else:
-                    icon_size = 1.2
-
-                children.append(
-                    rio.Icon(
-                        self.icon,
-                        height=icon_size,
-                        width=icon_size,
-                    )
-                )
-
-            stripped_text = self.text.strip()
-            if stripped_text:
-                children.append(
-                    rio.Text(
-                        stripped_text,
-                        height=1.5,
-                        width="grow",
-                    )
-                )
-
-            if self.child is not None:
-                children.append(self.child)
-
             child = rio.Row(
-                *children,
+                rio.Icon(
+                    self.icon,
+                    height=1.2,
+                    width=1.2,
+                ),
+                rio.Text(
+                    self.text.strip(),
+                    height=1.5,
+                    width="grow",
+                ),
                 spacing=0.6,
                 margin_x=0.7,
                 margin_y=0.3,
@@ -172,21 +157,17 @@ class CircularButton(component_base.Component):
             style="major",
             child=rio.Icon(
                 self.icon,
-                height=2.5,
-                width=2.5,
-                align_x=1,
-                align_y=1,
+                height=2.2,
+                width=2.2,
+                align_x=0.5,
+                align_y=0.5,
             ),
             shape="circle",
             color=self.color,
             is_sensitive=self.is_sensitive,
             is_loading=False,
-            width=4,
-            height=4,
-            margin_right=3,
-            margin_bottom=3,
-            align_x=1,
-            align_y=1,
+            width=3.5,
+            height=3.5,
             initially_disabled_for=self.initially_disabled_for,
         )
 
