@@ -1549,8 +1549,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 // Drawer
-$drawer-side-margin: 0.7rem;
-
 .rio-drawer {
     pointer-events: auto;
     position: relative;
@@ -1567,7 +1565,7 @@ $drawer-side-margin: 0.7rem;
 
 .rio-drawer-content {
     position: absolute;
-    background-color: var(--rio-global-surface-color);
+    background-color: var(--rio-global-neutral-bg);
 
     box-shadow: 0 0 1rem var(--rio-global-shadow-color);
 
@@ -1585,9 +1583,9 @@ $drawer-side-margin: 0.7rem;
 }
 
 .rio-drawer-left > .rio-drawer-content {
-    top: $drawer-side-margin;
+    top: 0;
     left: 0;
-    bottom: $drawer-side-margin;
+    bottom: 0;
     width: min-content;
 
     border-radius: 0 var(--rio-global-corner-radius-large)
@@ -1595,9 +1593,9 @@ $drawer-side-margin: 0.7rem;
 }
 
 .rio-drawer-right > .rio-drawer-content {
-    top: $drawer-side-margin;
+    top: 0;
     right: 0;
-    bottom: $drawer-side-margin;
+    bottom: 0;
     width: min-content;
 
     border-radius: var(--rio-global-corner-radius-large) 0 0
@@ -1605,9 +1603,9 @@ $drawer-side-margin: 0.7rem;
 }
 
 .rio-drawer-top > .rio-drawer-content {
-    left: $drawer-side-margin;
+    left: 0;
     top: 0;
-    right: $drawer-side-margin;
+    right: 0;
     height: min-content;
 
     border-radius: 0 0 var(--rio-global-corner-radius-large)
@@ -1615,9 +1613,9 @@ $drawer-side-margin: 0.7rem;
 }
 
 .rio-drawer-bottom > .rio-drawer-content {
-    left: $drawer-side-margin;
+    left: 0;
     bottom: 0;
-    right: $drawer-side-margin;
+    right: 0;
     height: min-content;
 
     border-radius: var(--rio-global-corner-radius-large)
