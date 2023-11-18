@@ -9,7 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import *  # type: ignore
 
-import aiohttp
+import httpx
 from PIL.Image import Image
 from yarl import URL
 
@@ -278,10 +278,17 @@ class UrlAsset(Asset):
 
     async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(self._url) as response:
-                    return await response.read(), response.content_type
-        except aiohttp.ClientError:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(str(self._url))
+
+                content_type = response.headers.get("Content-Type")
+                if content_type is None:
+                    content_type = "application/octet-stream"
+                else:
+                    content_type, _, _ = content_type.partition(";")
+
+                return response.read(), content_type
+        except httpx.HTTPError:
             raise ValueError(f"Could not fetch asset from {self._url}")
 
     @property

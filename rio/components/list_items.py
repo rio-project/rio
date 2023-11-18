@@ -25,6 +25,23 @@ class CustomListItem(component_base.FundamentalComponent):
             "pressable": self.on_press is not None,
         }
 
+    async def _on_message(self, msg: Any) -> None:
+        # Parse the message
+        assert isinstance(msg, dict), msg
+        assert msg["type"] == "press", msg
+
+        msg_type: str = msg["type"]
+        assert isinstance(msg_type, str), msg_type
+
+        if self.on_press is None:
+            return
+
+        # Trigger the press event
+        await self.call_event_handler(self.on_press)
+
+        # Refresh the session
+        await self.session._refresh()
+
 
 class SingleLineListItem(component_base.Component):
     text: str

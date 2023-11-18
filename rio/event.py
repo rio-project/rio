@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import asyncio
 import enum
-import weakref
 from datetime import timedelta
 from typing import *  # type: ignore
 
@@ -18,6 +16,8 @@ __all__ = [
 
 C = TypeVar("C", bound="rio.Component")
 R = TypeVar("R")
+SyncOrAsync = Union[R, Awaitable[R]]
+SyncOrAsyncNone = TypeVar("SyncOrAsyncNone", bound=SyncOrAsync[None])
 
 
 class EventTag(enum.Enum):
@@ -73,7 +73,7 @@ def on_unmount(handler: Callable[[C], R]) -> Callable[[C], R]:
 
 def periodic(
     interval: Union[float, timedelta]
-) -> Callable[[Callable[[C], None]], Callable[[C], None]]:
+) -> Callable[[Callable[[C], SyncOrAsyncNone]], Callable[[C], SyncOrAsyncNone]]:
     """
     TODO / unfinished / do not use
 
@@ -92,7 +92,9 @@ def periodic(
     if isinstance(interval, timedelta):
         interval = interval.total_seconds()
 
-    def decorator(handler: Callable[[C], None]) -> Callable[[C], None]:
+    def decorator(
+        handler: Callable[[C], SyncOrAsyncNone]
+    ) -> Callable[[C], SyncOrAsyncNone]:
         handler._rio_event_tag_ = EventTag.PERIODIC
         handler._rio_event_periodic_interval_ = interval
         return handler
