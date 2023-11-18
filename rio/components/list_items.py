@@ -29,6 +29,7 @@ class CustomListItem(component_base.FundamentalComponent):
 class SingleLineListItem(component_base.Component):
     text: str
     _: KW_ONLY
+    secondary_text: str = ""
     image_or_icon: Optional[component_base.Component] = None
     actions: List[component_base.Component] = field(default_factory=list)
     on_press: rio.EventHandler[[]] = None
@@ -41,7 +42,35 @@ class SingleLineListItem(component_base.Component):
             children.append(self.image_or_icon)
 
         # Main content (text)
-        children.append(rio.Text(self.text))
+        text_children = [
+            rio.Text(
+                self.text,
+                align_x=0,
+            )
+        ]
+
+        if self.secondary_text:
+            text_children.append(
+                rio.Text(
+                    self.secondary_text,
+                    multiline=True,
+                    style="dim",
+                    align_x=0,
+                )
+            )
+
+        if len(text_children) == 1:
+            children.append(text_children[0])
+        else:
+            children.append(
+                rio.Column(
+                    *text_children,
+                    spacing=0.5,
+                )
+            )
+
+        # Space
+
         children.append(rio.Spacer())
 
         # Actions, if any

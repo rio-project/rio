@@ -18,6 +18,18 @@ export class ListViewComponent extends ComponentBase {
     }
 
     _updateElement(element: HTMLElement, deltaState: ListViewState): void {
-        replaceChildrenAndResetCssProperties(element, deltaState.children);
+        // Update the children. They are wrapped in divs, to allow CSS to spawn
+        // separators between them. Those separators would be the wrong size if
+        // the children were not wrapped in divs.
+        replaceChildrenAndResetCssProperties(
+            element,
+            deltaState.children,
+            true
+        );
+
+        // Make sure the added divs are single containers
+        for (let child of element.children) {
+            child.classList.add('rio-single-container');
+        }
     }
 }
