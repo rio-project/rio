@@ -68,7 +68,7 @@ export function fillToCss(fill: Fill): { background: string } {
 }
 
 export function textStyleToCss(
-    style: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle
+    style: 'heading1' | 'heading2' | 'heading3' | 'text' | 'dim' | TextStyle
 ): {
     'font-family': string;
     'font-size': string;
@@ -85,6 +85,14 @@ export function textStyleToCss(
         background: 'none',
         color: 'unset', // FIXME
     };
+
+    // `Dim` is the same as `text`, just with some opacity
+    if (style === 'dim') {
+        style = 'text';
+        result['opacity'] = '0.5';
+    } else {
+        result['opacity'] = '1';
+    }
 
     // Predefined style from theme
     if (typeof style === 'string') {
