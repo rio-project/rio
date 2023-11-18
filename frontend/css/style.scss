@@ -1030,10 +1030,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     cursor: pointer;
 }
 
-.rio-buttonstyle-plain {
-    --rio-local-text-color: var(--rio-local-plain-bg);
-}
-
 .rio-buttonstyle-plain:hover:not(.rio-switcheroo-disabled) {
     cursor: pointer;
 }
@@ -1817,17 +1813,15 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     min-width: fit-content;
 }
 
-.rio-list-item {
+.rio-list-view > * {
     pointer-events: auto;
-    position: relative;
-    padding: 0.7rem 1.5rem;
 
     background-color: transparent;
 
     transition: background-color 0.1s ease-in-out;
 }
 
-.rio-list-item:hover {
+.rio-list-view > *:hover {
     background-color: var(--rio-local-plain-bg-active);
 }
 
@@ -1837,6 +1831,10 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: 1px;
     background-color: var(--rio-local-text-color);
     opacity: 0.3;
+}
+
+.rio-list-item {
+    padding: 0.7rem 1.5rem;
 }
 
 // SVG Images

@@ -7,7 +7,7 @@ import { SingleContainer } from './singleContainer';
 export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
     shape?: 'pill' | 'rounded' | 'rectangle';
-    style?: 'major' | 'minor' | 'flat';
+    style?: 'major' | 'minor' | 'plain';
     color?: ColorSet;
     child?: number | string;
     is_sensitive?: boolean;
@@ -79,7 +79,8 @@ export class ButtonComponent extends SingleContainer {
         if (deltaState.style !== undefined) {
             element.classList.remove(
                 'rio-buttonstyle-major',
-                'rio-buttonstyle-minor'
+                'rio-buttonstyle-minor',
+                'rio-buttonstyle-plain'
             );
 
             let className = 'rio-buttonstyle-' + deltaState.style;
@@ -89,10 +90,11 @@ export class ButtonComponent extends SingleContainer {
         // Apply the color
         if (
             deltaState.color !== undefined ||
-            deltaState.is_sensitive !== undefined
+            deltaState.is_sensitive !== undefined ||
+            deltaState.style !== undefined
         ) {
-            // It looks ugly if every new button is initially greyed out, so
-            // for the styling we ignore `self.isStillInitiallyDisabled`.
+            // It looks ugly if every new button is initially greyed out, so for
+            // the styling ignore `self.isStillInitiallyDisabled`.
             let is_sensitive: boolean =
                 deltaState.is_sensitive || this.state['is_sensitive'];
 
@@ -100,7 +102,15 @@ export class ButtonComponent extends SingleContainer {
                 ? deltaState.color || this.state['color']
                 : 'disabled';
 
-            if (colorSet === 'keep') {
+            let style = deltaState.style || this.state['style'];
+
+            // If no new colorset is specified, turn the accent color into the
+            // plain color. This allows all styles to just assume that the color
+            // they should use is the plain color.
+            //
+            // The exception to this is the plain style, which obviously isn't
+            // trying to stand out.
+            if (colorSet === 'keep' && style !== 'plain') {
                 colorSet = 'accent-to-plain';
             }
 
