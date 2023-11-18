@@ -9,7 +9,7 @@ from . import component_base, progress_circle
 
 __all__ = [
     "Button",
-    "CircularButton",
+    "IconButton",
 ]
 
 
@@ -64,7 +64,7 @@ class Button(component_base.Component):
     _: KW_ONLY
     icon: Optional[str] = None
     shape: Literal["pill", "rounded", "rectangle"] = "pill"
-    style: Literal["major", "minor"] = "major"
+    style: Literal["major", "minor", "plain"] = "major"
     color: rio.ColorSet = "keep"
     is_sensitive: bool = True
     is_loading: bool = False
@@ -90,6 +90,8 @@ class Button(component_base.Component):
                 self.text.strip(),
                 # Make sure there's no popping when switching between Text & ProgressCircle
                 height=1.6,
+                margin_x=0.7,
+                margin_y=0.3,
             )
         else:
             child = rio.Row(
@@ -104,11 +106,11 @@ class Button(component_base.Component):
                     width="grow",
                 ),
                 spacing=0.6,
-                margin_x=0.7,
-                margin_y=0.3,
                 align_x=0.5,
                 # Make sure there's no popping when switching between Text & ProgressCircle
                 height=1.6,
+                margin_x=0.7,
+                margin_y=0.3,
             )
 
         # Delegate to a HTML Component
@@ -118,9 +120,9 @@ class Button(component_base.Component):
             shape=self.shape,
             style=self.style,
             color=self.color,
-            # is_sensitive=self.is_sensitive and not self.is_loading,
             is_sensitive=self.is_sensitive,
             is_loading=self.is_loading,
+            width=8,
             initially_disabled_for=self.initially_disabled_for,
         )
 
@@ -128,7 +130,7 @@ class Button(component_base.Component):
         return f"<Button id:{self._id} text:{self.text!r}>"
 
 
-class CircularButton(component_base.Component):
+class IconButton(component_base.Component):
     """
     A round, clickable button with shadow.
 
@@ -146,28 +148,73 @@ class CircularButton(component_base.Component):
 
     icon: str
     _: KW_ONLY
-    color: rio.ColorSet = "keep"
-    is_sensitive: bool = True
-    on_press: rio.EventHandler[[]] = None
+    style: Literal["major", "minor", "plain"]
+    color: rio.ColorSet
+    is_sensitive: bool
+    on_press: rio.EventHandler[[]]
     initially_disabled_for: float = INITIALLY_DISABLED_FOR
+    size: float
+
+    def __init__(
+        self,
+        icon: str,
+        *,
+        style: Literal["major", "minor", "plain"] = "major",
+        color: rio.ColorSet = "keep",
+        is_sensitive: bool = True,
+        on_press: rio.EventHandler[[]] = None,
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        size: float = 3.7,
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        super().__init__(
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width="natural",
+            height="natural",
+            align_x=align_x,
+            align_y=align_y,
+        )
+
+        self.icon = icon
+        self.size = size
+        self.style = style
+        self.color = color
+        self.is_sensitive = is_sensitive
+        self.on_press = on_press
+        self.initially_disabled_for = INITIALLY_DISABLED_FOR
 
     def build(self) -> rio.Component:
         return _ButtonInternal(
             on_press=self.on_press,
-            style="major",
             child=rio.Icon(
                 self.icon,
-                height=2.2,
-                width=2.2,
+                height=self.size * 0.65,
+                width=self.size * 0.65,
                 align_x=0.5,
                 align_y=0.5,
             ),
             shape="circle",
+            style=self.style,
             color=self.color,
             is_sensitive=self.is_sensitive,
             is_loading=False,
-            width=3.5,
-            height=3.5,
+            width=self.size,
+            height=self.size,
             initially_disabled_for=self.initially_disabled_for,
         )
 
@@ -177,7 +224,7 @@ class _ButtonInternal(component_base.FundamentalComponent):
     on_press: rio.EventHandler[[]]
     child: rio.Component
     shape: Literal["pill", "rounded", "rectangle", "circle"]
-    style: Literal["major", "minor"]
+    style: Literal["major", "minor", "plain"]
     color: rio.ColorSet
     is_sensitive: bool
     is_loading: bool

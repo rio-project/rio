@@ -990,12 +990,13 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 // Button
 .rio-button {
     pointer-events: auto;
+
+    overflow: hidden; // Needed for the ripple effect
+
     transition:
         background-color 0.1s ease-in-out,
         color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
-
-    overflow: hidden; // Needed for the ripple effect
 }
 
 .rio-button:not(.rio-switcheroo-disabled) {
@@ -1026,6 +1027,14 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 .rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
     background: var(--rio-local-plain-bg);
+    cursor: pointer;
+}
+
+.rio-buttonstyle-plain {
+    --rio-local-text-color: var(--rio-local-plain-bg);
+}
+
+.rio-buttonstyle-plain:hover:not(.rio-switcheroo-disabled) {
     cursor: pointer;
 }
 

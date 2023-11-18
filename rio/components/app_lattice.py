@@ -13,20 +13,27 @@ __all__ = [
 
 
 class AppTopBar(component_base.Component):
+    on_press_open: rio.EventHandler[[]] = None
+
     def build(self) -> rio.Component:
         thm = self.session.attachments[rio.Theme]
 
         icons = []
         for icon in ("castle", "error", "archive"):
-            icons.append(rio.Icon(icon, width=2, height=2))
+            icons.append(
+                rio.IconButton(
+                    icon,
+                    style="plain",
+                )
+            )
 
         return class_container.ClassContainer(
             child=rio.Row(
-                rio.Icon(
+                rio.IconButton(
                     "menu",
-                    width=2,
-                    height=2,
+                    style="plain",
                     margin_right=1,
+                    on_press=self.on_press_open,
                 ),
                 rio.Text(
                     self.session.app.name,
@@ -39,19 +46,21 @@ class AppTopBar(component_base.Component):
                 rio.Row(*icons, spacing=2),
             ),
             classes=["rio-switcheroo-primary"],
-            margin=1,
+            margin_x=1,
+            margin_y=0.1,
         )
 
 
 class Sidebar(component_base.Component):
+    on_press_close: rio.EventHandler[[]] = None
+
     def build(self) -> rio.Component:
         return rio.Column(
             rio.Row(
-                rio.Icon(
+                rio.IconButton(
                     "menu-open",
-                    width=2,
-                    height=2,
-                    align_y=0,
+                    style="plain",
+                    on_press=self.on_press_close,
                 ),
                 rio.Column(
                     rio.Text(
@@ -96,8 +105,15 @@ class Sidebar(component_base.Component):
 
 class AppLattice(component_base.Component):
     _: KW_ONLY
-
     fallback_build: Optional[Callable[[], rio.Component]] = None
+
+    _sidebar_is_open: bool = False
+
+    def _on_press_open(self) -> None:
+        self._sidebar_is_open = True
+
+    def _on_press_close(self) -> None:
+        self._sidebar_is_open = False
 
     def build(self) -> rio.Component:
         thm = self.session.attachments[rio.Theme]
@@ -110,13 +126,15 @@ class AppLattice(component_base.Component):
                     ),
                 ),
                 rio.Column(
-                    AppTopBar(),
+                    AppTopBar(
+                        on_press_open=self._on_press_open,
+                    ),
                     rio.Card(
                         rio.Stack(
                             rio.PageView(
                                 fallback_build=self.fallback_build,
                             ),
-                            rio.CircularButton(
+                            rio.IconButton(
                                 "castle",
                                 align_x=1,
                                 align_y=1,
@@ -132,5 +150,8 @@ class AppLattice(component_base.Component):
                     ),
                 ),
             ),
-            content=Sidebar(),
+            content=Sidebar(
+                on_press_close=self._on_press_close,
+            ),
+            is_open=self._sidebar_is_open,
         )

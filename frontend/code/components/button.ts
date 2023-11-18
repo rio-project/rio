@@ -6,8 +6,8 @@ import { SingleContainer } from './singleContainer';
 
 export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
-    shape?: 'pill' | 'rounded' | 'rectangle' | 'circle';
-    style?: 'major' | 'minor';
+    shape?: 'pill' | 'rounded' | 'rectangle';
+    style?: 'major' | 'minor' | 'flat';
     color?: ColorSet;
     child?: number | string;
     is_sensitive?: boolean;
