@@ -6,7 +6,7 @@ export type TextState = ComponentState & {
     text?: string;
     multiline?: boolean;
     selectable?: boolean;
-    style?: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle;
+    style?: 'heading1' | 'heading2' | 'heading3' | 'text' | 'dim' | TextStyle;
 };
 
 export class TextComponent extends ComponentBase {

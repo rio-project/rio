@@ -42,7 +42,7 @@ class Text(component_base.FundamentalComponent):
     multiline: bool = False
     selectable: bool = False
     style: Union[
-        Literal["heading1", "heading2", "heading3", "text"],
+        Literal["heading1", "heading2", "heading3", "text", "dim"],
         text_style.TextStyle,
     ] = "text"
 

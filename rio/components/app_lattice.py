@@ -61,7 +61,7 @@ class Sidebar(component_base.Component):
                     ),
                     rio.Text(
                         "TODO: Subtext",
-                        style="text",
+                        style="dim",
                         align_x=0,
                     ),
                     align_y=0,
