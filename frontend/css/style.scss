@@ -1742,6 +1742,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-table {
     pointer-events: auto;
 
+    color: var(--rio-local-text-color);
+
     // borders
     border-collapse: separate;
     border-spacing: 0;

@@ -14,6 +14,7 @@ from .html import *
 from .icon import *
 from .image import *
 from .key_event_listener import *
+from .labeled_column import *
 from .link import *
 from .list_items import *
 from .list_view import *

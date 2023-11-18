@@ -60,7 +60,7 @@ class Button(component_base.Component):
         on_press: Triggered when the user clicks on the button.
     """
 
-    text: str = ""
+    text_or_child: Union[str, rio.Component] = ""
     _: KW_ONLY
     icon: Optional[str] = None
     shape: Literal["pill", "rounded", "rectangle"] = "pill"

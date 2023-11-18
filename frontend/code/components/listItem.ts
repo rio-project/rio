@@ -29,6 +29,8 @@ export class ListItemComponent extends SingleContainer {
 
                 element.classList.add('mdc-ripple-surface');
                 element.classList.add('rio-rectangle-ripple');
+
+                element.onclick = this._on_press.bind(this);
             }
         } else if (deltaState.pressable === false) {
             if (this.mdcRipple !== null) {
@@ -37,6 +39,8 @@ export class ListItemComponent extends SingleContainer {
 
                 element.classList.remove('mdc-ripple-surface');
                 element.classList.remove('rio-rectangle-ripple');
+
+                element.onclick = null;
             }
         }
 
@@ -53,5 +57,11 @@ export class ListItemComponent extends SingleContainer {
                 }
             });
         }
+    }
+
+    private _on_press(): void {
+        this.sendMessageToBackend({
+            type: 'press',
+        });
     }
 }

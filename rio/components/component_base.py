@@ -65,6 +65,7 @@ async def call_component_handler_once(
 
     # Call the handler
     await component.call_event_handler(lambda: handler(component))
+    await component.session._refresh()
 
 
 async def _periodic_event_worker(

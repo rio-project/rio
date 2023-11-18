@@ -368,7 +368,8 @@ class Session(unicall.Unicall):
             return
 
         if self.running_in_window:
-            self._get_webview_window().destroy()
+            window = await self._get_webview_window()
+            window.destroy()
         else:
             await self._remote_close_session()
 
@@ -376,12 +377,17 @@ class Session(unicall.Unicall):
         for task in self._running_tasks:
             task.cancel()
 
-    def _get_webview_window(self):
+    async def _get_webview_window(self):
         import webview  # type: ignore
 
-        window = webview.active_window()
-        assert window is not None
-        return window
+        # The window may not have opened yet, so we'll wait until it exists
+        while True:
+            window = webview.active_window()
+
+            if window is not None:
+                return window
+
+            await asyncio.sleep(0.2)
 
     @overload
     async def _call_event_handler(
@@ -1385,7 +1391,7 @@ class Session(unicall.Unicall):
 
     async def set_title(self, title: str) -> None:
         if self.running_in_window:
-            window = self._get_webview_window()
+            window = await self._get_webview_window()
             window.set_title(title)
         else:
             await self._remote_set_title(title)
@@ -1507,7 +1513,8 @@ class Session(unicall.Unicall):
             # way to open a file dialog without blocking the event loop.
             import webview  # type: ignore
 
-            destinations = self._get_webview_window().create_file_dialog(
+            window = await self._get_webview_window()
+            destinations = window.create_file_dialog(
                 webview.SAVE_DIALOG,
                 directory="" if directory is None else str(directory),
                 save_filename=file_name,
