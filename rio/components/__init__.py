@@ -1,4 +1,4 @@
-from .app_lattice import *
+from .app_root import *
 from .banner import *
 from .button import *
 from .card import *

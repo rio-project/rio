@@ -10,7 +10,7 @@ theme = rio.Theme.from_color()
 
 rio_app = rio.App(
     name="Rio Showcase",
-    build=rio.AppLattice,
+    build=rio.AppRoot,
     default_attachments=[
         theme,
     ],

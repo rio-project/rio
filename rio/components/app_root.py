@@ -8,7 +8,7 @@ import rio
 from . import class_container, component_base
 
 __all__ = [
-    "AppLattice",
+    "AppRoot",
 ]
 
 
@@ -103,7 +103,7 @@ class Sidebar(component_base.Component):
         )
 
 
-class AppLattice(component_base.Component):
+class AppRoot(component_base.Component):
     _: KW_ONLY
     fallback_build: Optional[Callable[[], rio.Component]] = None
 
