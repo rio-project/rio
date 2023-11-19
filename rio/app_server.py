@@ -38,6 +38,7 @@ from . import (
     user_settings_module,
 )
 from .common import URL
+from .errors import AssetError
 
 try:
     import plotly  # type: ignore[missing-import]
@@ -142,6 +143,9 @@ class AppServer(fastapi.FastAPI):
         self.add_api_route("/rio/favicon.ico", self._serve_favicon, methods=["GET"])
         self.add_api_route(
             "/rio/asset/{asset_id:path}", self._serve_asset, methods=["GET"]
+        )
+        self.add_api_route(
+            "/rio/icon/{icon_name:path}", self._serve_icon, methods=["GET"]
         )
         self.add_api_route(
             "/rio/upload/{upload_token}", self._serve_file_upload, methods=["PUT"]
@@ -436,6 +440,26 @@ class AppServer(fastapi.FastAPI):
             )
         else:
             assert False, f"Unable to serve asset of unknown type: {asset}"
+
+    async def _serve_icon(self, icon_name: str) -> fastapi.responses.Response:
+        """
+        Allows the client to request an icon by name. This is not actually the
+        mechanism used by the `Icon` component, but allows JavaScript to request
+        icons.
+        """
+        # Get the icon's SVG
+        registry = components.Icon._get_registry()
+
+        try:
+            svg_source = registry.get_icon_svg(icon_name)
+        except AssetError:
+            return fastapi.responses.Response(status_code=404)
+
+        # Respond
+        return fastapi.responses.Response(
+            content=svg_source,
+            media_type="image/svg+xml",
+        )
 
     async def _serve_file_upload(
         self,
