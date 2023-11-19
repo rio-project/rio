@@ -14,6 +14,8 @@ export type TextInputState = ComponentState & {
 export class TextInputComponent extends ComponentBase {
     state: Required<TextInputState>;
 
+    private inputElement: HTMLInputElement;
+
     _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
@@ -30,11 +32,11 @@ export class TextInputComponent extends ComponentBase {
         `;
 
         // Detect value changes and send them to the backend
-        let inputElement = element.querySelector('input') as HTMLInputElement;
+        this.inputElement = element.querySelector('input') as HTMLInputElement;
 
-        inputElement.addEventListener('blur', () => {
+        this.inputElement.addEventListener('blur', () => {
             this.setStateAndNotifyBackend({
-                text: inputElement.value,
+                text: this.inputElement.value,
             });
         });
 
@@ -43,10 +45,10 @@ export class TextInputComponent extends ComponentBase {
         // In addition to notifying the backend, also include the input's
         // current value. This ensures any event handlers actually use the up-to
         // date value.
-        inputElement.addEventListener('keydown', (event) => {
+        this.inputElement.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 this.sendMessageToBackend({
-                    text: inputElement.value,
+                    text: this.inputElement.value,
                 });
             }
         });
@@ -55,10 +57,8 @@ export class TextInputComponent extends ComponentBase {
     }
 
     _updateElement(element: HTMLElement, deltaState: TextInputState): void {
-        let inputElement = element.querySelector('input') as HTMLInputElement;
-
         if (deltaState.text !== undefined) {
-            inputElement.value = deltaState.text;
+            this.inputElement.value = deltaState.text;
         }
 
         if (deltaState.label !== undefined) {
@@ -87,14 +87,14 @@ export class TextInputComponent extends ComponentBase {
         }
 
         if (deltaState.is_secret !== undefined) {
-            inputElement.type = deltaState.is_secret ? 'password' : 'text';
+            this.inputElement.type = deltaState.is_secret ? 'password' : 'text';
         }
 
         if (deltaState.is_sensitive === true) {
-            inputElement.disabled = false;
+            this.inputElement.disabled = false;
             element.classList.remove('rio-disabled-input');
         } else if (deltaState.is_sensitive === false) {
-            inputElement.disabled = true;
+            this.inputElement.disabled = true;
             element.classList.add('rio-disabled-input');
         }
 
@@ -106,5 +106,9 @@ export class TextInputComponent extends ComponentBase {
         } else if (deltaState.is_valid === true) {
             element.style.removeProperty('--rio-local-text-color');
         }
+    }
+
+    grabKeyboardFocus(): void {
+        this.inputElement.focus();
     }
 }

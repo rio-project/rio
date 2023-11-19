@@ -125,6 +125,7 @@ export class ScrollContainerComponent extends ComponentBase {
             }
 
             replaceOnlyChildAndResetCssProperties(
+                element.id,
                 this._innerElement,
                 deltaState.child
             );

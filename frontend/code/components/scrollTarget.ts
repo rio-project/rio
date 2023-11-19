@@ -33,7 +33,11 @@ export class ScrollTargetComponent extends ComponentBase {
     _updateElement(element: HTMLElement, deltaState: ScrollTargetState): void {
         let anchorElement = element.firstElementChild as HTMLElement;
 
-        replaceOnlyChildAndResetCssProperties(anchorElement, deltaState.child);
+        replaceOnlyChildAndResetCssProperties(
+            element.id,
+            anchorElement,
+            deltaState.child
+        );
 
         if (deltaState.id !== undefined) {
             anchorElement.id = deltaState.id;

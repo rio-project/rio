@@ -1,4 +1,7 @@
-import { getInstanceByComponentId, replaceChildrenAndResetCssProperties } from '../componentManagement';
+import {
+    getInstanceByComponentId,
+    replaceChildrenAndResetCssProperties,
+} from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type LinearContainerState = ComponentState & {
@@ -40,7 +43,11 @@ class LinearContainer extends ComponentBase {
         deltaState: LinearContainerState
     ): void {
         // Update the children
-        replaceChildrenAndResetCssProperties(this.childContainer, deltaState.children);
+        replaceChildrenAndResetCssProperties(
+            element.id,
+            this.childContainer,
+            deltaState.children
+        );
 
         // Spacing
         if (deltaState.spacing !== undefined) {

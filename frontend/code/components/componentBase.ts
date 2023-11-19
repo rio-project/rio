@@ -13,6 +13,9 @@ export type ComponentState = {
 };
 
 /// Base class for all components
+///
+/// Note: Components that can have the keyboard focus must also implement a
+/// `grabKeyboardFocus(): void` method.
 export abstract class ComponentBase {
     elementId: string;
     state: Required<ComponentState>;

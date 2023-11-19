@@ -208,7 +208,7 @@ export async function processMessageReturnResponse(
             break;
 
         case 'setKeyboardFocus':
-            setKeyboardFocus(message.params.component_id);
+            setKeyboardFocus(message.params.componentId);
             response = null;
             break;
 

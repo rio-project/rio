@@ -70,7 +70,12 @@ export class SlideshowComponent extends ComponentBase {
     _updateElement(element: HTMLElement, deltaState: SlideshowState): void {
         // Update the children
         if (deltaState.children !== undefined) {
-            replaceChildrenAndResetCssProperties(this.childContainer, deltaState.children, true);
+            replaceChildrenAndResetCssProperties(
+                element.id,
+                this.childContainer,
+                deltaState.children,
+                true
+            );
 
             // Make sure no children are hiding the current one
             //
@@ -132,10 +137,12 @@ export class SlideshowComponent extends ComponentBase {
 
             // Update the animated children's positions
             let offset = easeInOut(this.switchProgress);
-            this.outgoingChild.style.transform = `translateX(${-100 * offset
-                }%)`;
-            this.incomingChild.style.transform = `translateX(${-100 * (offset - 1)
-                }%)`;
+            this.outgoingChild.style.transform = `translateX(${
+                -100 * offset
+            }%)`;
+            this.incomingChild.style.transform = `translateX(${
+                -100 * (offset - 1)
+            }%)`;
 
             // Update the progress bar's opacity
             this.progressBarOpacity = Math.max(

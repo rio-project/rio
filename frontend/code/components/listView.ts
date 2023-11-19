@@ -1,7 +1,4 @@
-import {
-    getInstanceByComponentId,
-    replaceChildrenAndResetCssProperties,
-} from '../componentManagement';
+import { replaceChildrenAndResetCssProperties } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ListViewState = ComponentState & {
@@ -22,6 +19,7 @@ export class ListViewComponent extends ComponentBase {
         // separators between them. Those separators would be the wrong size if
         // the children were not wrapped in divs.
         replaceChildrenAndResetCssProperties(
+            element.id,
             element,
             deltaState.children,
             true
