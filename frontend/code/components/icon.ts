@@ -12,12 +12,12 @@ function createSVGPath(
     div: HTMLElement,
     svgSource: string,
     fill: Fill | ColorSet
-) {
+): void {
     // Create an SVG element
     div.innerHTML = svgSource;
     let svgRoot = div.firstChild as SVGSVGElement;
 
-    // If not fill was provided, use the default foreground color.
+    // If no fill was provided, use the default foreground color.
     if (fill === 'keep') {
         svgRoot.style.fill = 'var(--rio-local-text-color)';
         return;
@@ -60,11 +60,7 @@ export class IconComponent extends ComponentBase {
         element.innerHTML = '';
 
         // Add the SVG
-        createSVGPath(
-            element,
-            deltaState.svgSource,
-            deltaState.fill
-        );
+        createSVGPath(element, deltaState.svgSource, deltaState.fill);
 
         // Size
         //
