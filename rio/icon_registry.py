@@ -143,9 +143,11 @@ class IconRegistry:
         return svg_path
 
     def get_icon_svg(self, icon_name: str) -> str:
-        # Given an icon name, return the SVG string for that icon. This will
-        # extract the icon if necessary. If the icon name is invalid or there is
-        # no matching icon, raise an `AssetError`.
+        """
+        Given an icon name, return the SVG string for that icon. This will
+        extract the icon if necessary. If the icon name is invalid or there is
+        no matching icon, raise an `AssetError`.
+        """
 
         # Normalize the icon name
         icon_name = IconRegistry.normalize_icon_name(icon_name)
@@ -158,6 +160,8 @@ class IconRegistry:
 
         # Get the path to the icon's SVG file
         svg_path = self._get_icon_svg_path(icon_name)
+
+        print(icon_name, svg_path)
 
         # Read the SVG file
         try:
