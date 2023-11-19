@@ -171,3 +171,23 @@ function createLinearGradient(
 
     return gradient;
 }
+
+// Given an element, load the icon with the given name and apply it to the
+// element.
+export async function applyIcon(
+    target: HTMLElement,
+    iconName: string,
+    cssColor: string
+): Promise<void> {
+    // Load the icon
+    let iconUrl = `/rio/icon/${iconName}`;
+    let response = await fetch(iconUrl);
+    let svgSource = await response.text();
+
+    // Create the SVG element
+    target.innerHTML = svgSource;
+
+    // Apply the color
+    let svgRoot = target.querySelector('svg') as SVGSVGElement;
+    svgRoot.style.fill = cssColor;
+}

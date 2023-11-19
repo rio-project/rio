@@ -65,7 +65,8 @@ class Icon(component_base.FundamentalComponent):
     ) -> None:
         """
         Add an icon set to the global registry. This allows the icons to be
-        accessed as `set_name/icon_name` or `set_name/icon_name:variant`.
+        accessed as `icon_name`, `set_name/icon_name` or
+        `set_name/icon_name:variant`.
 
         There must not already be a set with the given name.
 

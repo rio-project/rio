@@ -1,6 +1,7 @@
 import { TextStyle } from '../models';
 import { textStyleToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
+import { applyIcon } from '../designApplication';
 
 export type TextState = ComponentState & {
     text?: string;
@@ -18,6 +19,7 @@ export class TextComponent extends ComponentBase {
 
         let textElement = document.createElement('div');
         containerElement.appendChild(textElement);
+
         return containerElement;
     }
 

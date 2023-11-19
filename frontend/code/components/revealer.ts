@@ -1,4 +1,5 @@
 import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { applyIcon } from '../designApplication';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type RevealerState = ComponentState & {
@@ -69,7 +70,7 @@ export class RevealerComponent extends ComponentBase {
         element.innerHTML = `
 <div class="rio-revealer-header">
     <div class="rio-revealer-label"></div>
-    <div class="rio-icon-revealer-arrow"></div>
+    <div class="rio-revealer-arrow"></div>
 </div>
 <div class="rio-revealer-content-outer rio-single-container">
     <div class="rio-revealer-content-inner rio-single-container"></div>
@@ -78,6 +79,13 @@ export class RevealerComponent extends ComponentBase {
         let header = element.querySelector(
             '.rio-revealer-header'
         ) as HTMLElement;
+
+        // Add an arrow icon
+        let arrowElement = header.querySelector(
+            '.rio-revealer-arrow'
+        ) as HTMLElement;
+
+        applyIcon(arrowElement, 'expand-more', 'var(--rio-local-text-color)');
 
         // Listen for presses
         header.onmouseup = (e) => {
