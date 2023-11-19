@@ -95,4 +95,8 @@ export class MediaPlayerComponent extends ComponentBase {
             type: 'onPlaybackEnd',
         });
     }
+
+    grabKeyboardFocus(): void {
+        this.mediaElement.focus();
+    }
 }

@@ -49,7 +49,7 @@ export class LinkComponent extends SingleContainer {
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            replaceOnlyChildAndResetCssProperties(element, null);
+            replaceOnlyChildAndResetCssProperties(element.id, element, null);
 
             // Add the new text
             let textElement = document.createElement('div');
@@ -65,7 +65,11 @@ export class LinkComponent extends SingleContainer {
             deltaState.child_component !== undefined &&
             deltaState.child_component !== null
         ) {
-            replaceOnlyChildAndResetCssProperties(element, deltaState.child_component);
+            replaceOnlyChildAndResetCssProperties(
+                element.id,
+                element,
+                deltaState.child_component
+            );
             element.classList.remove('rio-text-link');
         }
 

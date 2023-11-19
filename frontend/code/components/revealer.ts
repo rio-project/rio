@@ -133,7 +133,11 @@ export class RevealerComponent extends ComponentBase {
         let contentInner = element.querySelector(
             '.rio-revealer-content-inner'
         ) as HTMLElement;
-        replaceOnlyChildAndResetCssProperties(contentInner, deltaState.content);
+        replaceOnlyChildAndResetCssProperties(
+            element.id,
+            contentInner,
+            deltaState.content
+        );
 
         // Expand / collapse
         if (deltaState.is_expanded === true) {

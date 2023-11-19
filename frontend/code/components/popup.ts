@@ -37,8 +37,16 @@ export class PopupComponent extends ComponentBase {
 
     _updateElement(element: HTMLElement, deltaState: PopupState): void {
         // Update the children
-        replaceOnlyChildAndResetCssProperties(this.anchorContainer, deltaState.anchor);
-        replaceOnlyChildAndResetCssProperties(this.contentContainer, deltaState.content);
+        replaceOnlyChildAndResetCssProperties(
+            element.id,
+            this.anchorContainer,
+            deltaState.anchor
+        );
+        replaceOnlyChildAndResetCssProperties(
+            element.id,
+            this.contentContainer,
+            deltaState.content
+        );
 
         // Open / Close
         if (deltaState.is_open === true) {

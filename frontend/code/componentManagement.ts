@@ -320,6 +320,14 @@ export function updateComponentStates(
     // Modifying the DOM makes the keyboard focus get lost. Remember which
     // element had focus, so we can restore it later.
     let focusedElement = document.activeElement;
+    // Find the component that this HTMLElement belongs to
+    while (
+        focusedElement !== null &&
+        !elementsToInstances.has(focusedElement as HTMLElement)
+    ) {
+        focusedElement = focusedElement.parentElement!;
+    }
+    console.log('Focused element:', focusedElement);
 
     // Create a HTML element to hold all latent components, so they aren't
     // garbage collected while updating the DOM.
@@ -421,11 +429,9 @@ export function updateComponentStates(
     }
 
     // Restore the keyboard focus
-    if (
-        focusedElement instanceof HTMLElement &&
-        focusedElement.parentElement !== latentComponents
-    ) {
-        focusedElement.focus();
+    console.log('Have focused element?', focusedElement instanceof HTMLElement);
+    if (focusedElement instanceof HTMLElement) {
+        restoreKeyboardFocus(focusedElement, latentComponents);
     }
 
     // Remove the latent components
@@ -436,7 +442,52 @@ export function updateComponentStates(
     latentComponents.remove();
 }
 
+function canHaveKeyboardFocus(instance: ComponentBase): boolean {
+    // @ts-expect-error
+    return typeof instance.grabKeyboardFocus === 'function';
+}
+
+function restoreKeyboardFocus(
+    focusedElement: HTMLElement,
+    latentComponents: HTMLElement
+): void {
+    // The elements that are about to die still know the id of the parent from
+    // which they were just removed. We'll go up the tree until we find a parent
+    // that can accept the keyboard focus.
+    //
+    // Keep in mind that we have to traverse the widget tree all the way up to
+    // the root. Because even if a widget still has a parent, the parent itself
+    // might be about to die.
+    let rootComponent = document.body.firstElementChild!.firstElementChild!;
+    let current: HTMLElement = focusedElement;
+    let winner: ComponentBase | null = null;
+
+    while (current !== rootComponent) {
+        // If this component is dead, no child of it can get the keyboard focus
+        if (current.parentElement === latentComponents) {
+            winner = null;
+        }
+        // If we don't currently know of a focusable (and live) widget, check if
+        // this one fits the bill
+        else if (winner === null) {
+            let instance = elementsToInstances.get(current)!;
+            if (canHaveKeyboardFocus(instance)) {
+                winner = instance;
+            }
+        }
+
+        current = document.getElementById(current.dataset.parentId!)!;
+    }
+
+    // We made it to the root. Do we have a winner?
+    if (winner !== null) {
+        // @ts-expect-error
+        winner.grabKeyboardFocus();
+    }
+}
+
 export function replaceOnlyChildAndResetCssProperties(
+    parentId: string,
     parentElement: HTMLElement,
     childId: null | undefined | number | string
 ): void {
@@ -471,6 +522,7 @@ export function replaceOnlyChildAndResetCssProperties(
     // Add the replacement component
     let newElement = getElementByComponentId(childId);
     parentElement?.appendChild(newElement);
+    newElement.dataset.parentId = parentId;
 
     // Reset the new child's CSS properties
     let childInstance = getInstanceByComponentId(childId);
@@ -478,6 +530,7 @@ export function replaceOnlyChildAndResetCssProperties(
 }
 
 export function replaceChildrenAndResetCssProperties(
+    parentId: string,
     parentElement: HTMLElement,
     childIds: undefined | (number | string)[],
     wrapInDivs: boolean = false
@@ -515,6 +568,7 @@ export function replaceChildrenAndResetCssProperties(
 
                 let newElement = getElementByComponentId(curId);
                 parentElement.appendChild(wrap(newElement!));
+                newElement.dataset.parentId = parentId;
 
                 let newInstance = getInstanceByComponentId(curId);
                 newInstance.resetCssProperties();
@@ -547,6 +601,7 @@ export function replaceChildrenAndResetCssProperties(
         // instead
         let newElement = getElementByComponentId(curId);
         parentElement.insertBefore(wrap(newElement!), curElement);
+        newElement.dataset.parentId = parentId;
 
         let newInstance = getInstanceByComponentId(curId);
         newInstance.resetCssProperties();

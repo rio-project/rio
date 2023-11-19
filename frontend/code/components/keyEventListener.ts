@@ -1,4 +1,3 @@
-import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from '../componentManagement';
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
 
@@ -743,5 +742,9 @@ export class KeyEventListenerComponent extends SingleContainer {
         } else {
             element.onkeyup = null;
         }
+    }
+
+    grabKeyboardFocus(): void {
+        this.element().focus();
     }
 }

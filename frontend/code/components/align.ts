@@ -1,4 +1,7 @@
-import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import {
+    getInstanceByComponentId,
+    replaceOnlyChildAndResetCssProperties,
+} from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type AlignState = ComponentState & {
@@ -18,7 +21,11 @@ export class AlignComponent extends ComponentBase {
     }
 
     _updateElement(element: HTMLElement, deltaState: AlignState): void {
-        replaceOnlyChildAndResetCssProperties(element, deltaState.child);
+        replaceOnlyChildAndResetCssProperties(
+            element.id,
+            element,
+            deltaState.child
+        );
     }
 
     updateChildLayouts(): void {

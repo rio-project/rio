@@ -1,7 +1,9 @@
-import { ComponentId } from "../models";
-import { getInstanceByComponentId, replaceOnlyChildAndResetCssProperties } from "../componentManagement";
-import { ComponentBase, ComponentState } from "./componentBase";
-
+import { ComponentId } from '../models';
+import {
+    getInstanceByComponentId,
+    replaceOnlyChildAndResetCssProperties,
+} from '../componentManagement';
+import { ComponentBase, ComponentState } from './componentBase';
 
 /// Base class for components that only have a single child.
 /// It automatically:
@@ -30,26 +32,30 @@ export abstract class SingleContainer extends ComponentBase {
     updateElement(element: HTMLElement, deltaState: ComponentState): void {
         super.updateElement(element, deltaState);
 
-        let childId: ComponentId | null | undefined = deltaState[this.childAttributeName()];
+        let childId: ComponentId | null | undefined =
+            deltaState[this.childAttributeName()];
         if (childId !== undefined && childId !== null) {
-            replaceOnlyChildAndResetCssProperties(element, childId);
+            replaceOnlyChildAndResetCssProperties(element.id, element, childId);
 
             let child = getInstanceByComponentId(childId);
             child.replaceLayoutCssProperties({});
         }
     }
 
-    _updateElement(element: HTMLElement, deltaState: ComponentState): void { }
+    _updateElement(element: HTMLElement, deltaState: ComponentState): void {}
 
     protected getChildId(): ComponentId | null {
         return this.state[this.childAttributeName()];
     }
 
     childAttributeName(): string {
-        let childAttributeNames = globalThis.childAttributeNames[this.state['_type_']];
+        let childAttributeNames =
+            globalThis.childAttributeNames[this.state['_type_']];
 
         if (childAttributeNames === undefined) {
-            throw new Error(`Unknown childAttributeNames for component type ${this.state['_type_']}`);
+            throw new Error(
+                `Unknown childAttributeNames for component type ${this.state['_type_']}`
+            );
         }
 
         return childAttributeNames[0];

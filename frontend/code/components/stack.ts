@@ -1,4 +1,7 @@
-import { getInstanceByComponentId, replaceChildrenAndResetCssProperties } from '../componentManagement';
+import {
+    getInstanceByComponentId,
+    replaceChildrenAndResetCssProperties,
+} from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type StackState = ComponentState & {
@@ -16,7 +19,11 @@ export class StackComponent extends ComponentBase {
     }
 
     _updateElement(element: HTMLElement, deltaState: StackState): void {
-        replaceChildrenAndResetCssProperties(element, deltaState.children);
+        replaceChildrenAndResetCssProperties(
+            element.id,
+            element,
+            deltaState.children
+        );
     }
 
     updateChildLayouts(): void {

@@ -40,7 +40,11 @@ export class CardComponent extends SingleContainer {
 
     _updateElement(element: HTMLElement, deltaState: CardState): void {
         // Update the child
-        replaceOnlyChildAndResetCssProperties(element, deltaState.child);
+        replaceOnlyChildAndResetCssProperties(
+            element.id,
+            element,
+            deltaState.child
+        );
 
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {
