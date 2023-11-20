@@ -34,6 +34,7 @@ class ButtonCard(rio.Component):
                     width=2,
                     align_x=1,
                     align_y=0,
+                    fill="dim",
                 ),
                 spacing=2,
                 margin=2,

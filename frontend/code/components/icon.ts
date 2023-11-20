@@ -5,13 +5,13 @@ import { pixelsPerEm } from '../app';
 
 export type IconState = ComponentState & {
     svgSource: string;
-    fill: Fill | ColorSet | 'keep';
+    fill: Fill | ColorSet | 'dim';
 };
 
 function createSVGPath(
     div: HTMLElement,
     svgSource: string,
-    fill: Fill | ColorSet
+    fill: Fill | ColorSet | 'dim'
 ): void {
     // Create an SVG element
     div.innerHTML = svgSource;
@@ -23,10 +23,20 @@ function createSVGPath(
         return;
     }
 
+    // "dim" is a special case, which is represented by using the "neutral"
+    // style, but with a reduced opacity.
+    if (fill === 'dim') {
+        svgRoot.style.fill = `var(--rio-global-neutral-fg)`;
+        svgRoot.style.opacity = '0.4';
+        return;
+    }
+
     // If the fill is a string apply the appropriate theme color. Note that this
     // uses the background rather than foreground color. The foreground is
     // intended to be used if the background was already set to background
     // color.
+    svgRoot.style.removeProperty('opacity');
+
     if (typeof fill === 'string') {
         svgRoot.style.fill = `var(--rio-global-${fill}-bg)`;
         return;
