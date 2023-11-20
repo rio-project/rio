@@ -503,7 +503,10 @@ class Session(unicall.Unicall):
 
             async def history_worker() -> None:
                 await self._evaluate_javascript(
-                    f"window.location.href = {json.dumps(str(target_url))}",
+                    f"""
+window.scrollTo({{ top: 0, behavior: 'smooth' }});  // TODO: Not working, probably because it's not actually the window that's scrolling, but a ScrollContainer somewhere
+window.location.href = {json.dumps(str(target_url))};
+""",
                 )
 
             self.create_task(history_worker(), name="history worker")

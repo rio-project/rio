@@ -17,6 +17,12 @@ class Outliner(rio.Component):
     def build(self) -> rio.Component:
         chapter_expanders = []
 
+        # Which page is currently selected?
+        try:
+            active_segment = self.session.active_page_url.parts[2]
+        except IndexError:
+            active_segment = ""
+
         for section in structure.DOCUMENTATION_STRUCTURE:
             # `None` is used to represent whitespace
             if section is None:
@@ -25,7 +31,6 @@ class Outliner(rio.Component):
 
             # Otherwise, it's a tuple of (title, articles)
             title, arts = section
-            buttons = []
             entries = {}
 
             # ... where each article is either a tuple of (name, url_segment,
@@ -37,6 +42,7 @@ class Outliner(rio.Component):
                     name = art.__name__
                     url_segment = name
 
+                # TODO: Select the appropriate entry
                 # Highlight the button as active?
                 try:
                     part = self.session.active_page_url.parts[2]
@@ -45,31 +51,19 @@ class Outliner(rio.Component):
                 is_active = part == url_segment
 
                 # Create the button
-                buttons.append(
-                    rio.Button(
-                        name,
-                        color=theme.THEME.primary_palette.background.replace(
-                            opacity=0.3
-                        )
-                        if is_active
-                        else rio.Color.TRANSPARENT,
-                        on_press=lambda segment=url_segment: self.session.navigate_to(
-                            f"/documentation/{segment}"
-                        ),
-                    ),
-                )
-
                 entries[name] = url_segment
 
             chapter_expanders.append(
                 rio.Revealer(
                     title,
-                    # rio.Column(
-                    #     *buttons,
-                    #     spacing=0.8,
-                    # ),
                     rio.SwitcherBar(
                         entries,
+                        selected_value=active_segment
+                        if active_segment in entries
+                        else None,
+                        on_change=lambda ev: self.session.navigate_to(
+                            f"/documentation/{ev.value}"
+                        ),
                         orientation="vertical",
                         color="primary",
                         width="grow",

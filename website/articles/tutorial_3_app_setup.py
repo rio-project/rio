@@ -33,7 +33,7 @@ let's have a look at the code.
 
 You should see a file structure resembling this:
 
-```
+```text
 <todo-project-name>
 │
 ├── components

@@ -1700,7 +1700,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-switcher-bar {
     pointer-events: auto;
     display: flex;
-    align-items: stretch;
+    align-items: start;
     gap: 1;
 }
 
