@@ -242,6 +242,8 @@ class Session(unicall.Unicall):
         self.window_width: float
         self.window_height: float
 
+        self.theme: theme.Theme
+
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
 
@@ -367,11 +369,22 @@ class Session(unicall.Unicall):
             # time. Just abort in that case.
             return
 
+        # Fire the session end event
+        await self._call_event_handler(self._app_server.on_session_end, self)
+
         if self.running_in_window:
             window = await self._get_webview_window()
             window.destroy()
+
+            # Save all of the settings
+            for attachment in self.attachments:
+                if isinstance(attachment, user_settings_module.UserSettings):
+                    await attachment._synchronize_now(self)
         else:
-            await self._remote_close_session()
+            try:
+                await self._remote_close_session()
+            except RuntimeError:  # Websocket is already closed
+                pass
 
         # Cancel all running tasks
         for task in self._running_tasks:
@@ -428,7 +441,7 @@ class Session(unicall.Unicall):
 
     def create_task(
         self,
-        coro: Coroutine[Any, Any, T],
+        coro: Coroutine[Any, None, T],
         *,
         name: Optional[str] = None,
     ) -> asyncio.Task[T]:
@@ -829,7 +842,7 @@ class Session(unicall.Unicall):
         # Important: This must happen before the SelfSerializing check, because
         # `value` might be a `Color`
         if origin is Union and set(args) == color._color_set_args:
-            thm = self.attachments[theme.Theme]
+            thm = self.theme
             return thm._serialize_colorset(value)
 
         # Self-Serializing
@@ -1584,6 +1597,7 @@ document.body.removeChild(a)
         """
         Updates the client's theme to match the given one.
         """
+        self.theme = thm
         # Build the set of all CSS variables that must be set
 
         # Miscellaneous

@@ -7,7 +7,7 @@ from .. import components as comps
 
 class BiographyPage(rio.Component):
     def build(self) -> rio.Component:
-        thm = self.session.attachments[rio.Theme]
+        thm = self.session.theme
 
         return rio.Column(
             rio.Rectangle(

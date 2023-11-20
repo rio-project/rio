@@ -29,14 +29,11 @@ class Button(component_base.Component):
     navigation button.
 
     Attributes:
-        text: The text to display on the button.
+        child: The text or child component to display inside of the button.
 
         icon: The name of an icon to display on the button, in the form
             "set/name:variant". See the `Icon` component for details of how
             icons work in Rio.
-
-        child: A component to display inside the button. This can be used to
-            create more complex buttons than just icons and text.
 
         shape: The shape of the button. This can be one of:
             - `pill`: A rectangle where the left and right sides are completely
@@ -60,7 +57,7 @@ class Button(component_base.Component):
         on_press: Triggered when the user clicks on the button.
     """
 
-    text_or_child: Union[str, rio.Component] = ""
+    child: Union[rio.Component, str] = ""
     _: KW_ONLY
     icon: Optional[str] = None
     shape: Literal["pill", "rounded", "rectangle"] = "pill"
@@ -85,9 +82,14 @@ class Button(component_base.Component):
                 margin=0.3,
                 color=progress_color,
             )
+        elif isinstance(self.child, component_base.Component):
+            child = rio.Column(
+                self.child,
+                align_x=0.5,
+            )
         elif self.icon is None:
             child = rio.Text(
-                self.text.strip(),
+                self.child.strip(),
                 # Make sure there's no popping when switching between Text & ProgressCircle
                 height=1.6,
                 margin_x=0.7,
@@ -101,7 +103,7 @@ class Button(component_base.Component):
                     width=1.2,
                 ),
                 rio.Text(
-                    self.text.strip(),
+                    self.child.strip(),
                     height=1.5,
                     width="grow",
                 ),
@@ -127,7 +129,12 @@ class Button(component_base.Component):
         )
 
     def __str__(self) -> str:
-        return f"<Button id:{self._id} text:{self.text!r}>"
+        if isinstance(self.child, str):
+            text_or_child = f"text:{self.child!r}"
+        else:
+            text_or_child = f"child:{self.child._id}"
+
+        return f"<Button id:{self._id} {text_or_child}>"
 
 
 class IconButton(component_base.Component):

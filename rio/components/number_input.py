@@ -80,6 +80,9 @@ class NumberInput(component_base.Component):
     on_change: rio.EventHandler[NumberInputChangeEvent] = None
     on_confirm: rio.EventHandler[NumberInputConfirmEvent] = None
 
+    def __post_init__(self):
+        self._text_input = None
+
     def _try_set_value(self, raw_value: str) -> bool:
         """
         Parse the given string and update the component's value accordingly.
@@ -176,7 +179,7 @@ class NumberInput(component_base.Component):
             value_str = int_str + locale.number_symbols["decimal"] + frac_str
 
         # Build the component
-        return rio.TextInput(
+        self._text_input = rio.TextInput(
             text=value_str,
             label=self.label,
             prefix_text=self.prefix_text,
@@ -184,3 +187,8 @@ class NumberInput(component_base.Component):
             on_change=self._on_change,
             on_confirm=self._on_confirm,
         )
+        return self._text_input
+
+    async def grab_keyboard_focus(self) -> None:
+        if self._text_input is not None:
+            await self._text_input.grab_keyboard_focus()

@@ -16,7 +16,7 @@ class AppTopBar(component_base.Component):
     on_press_open: rio.EventHandler[[]] = None
 
     def build(self) -> rio.Component:
-        thm = self.session.attachments[rio.Theme]
+        thm = self.session.theme
 
         icons = []
         for icon in ("castle", "error", "archive"):
@@ -119,7 +119,7 @@ class AppRoot(component_base.Component):
         self._sidebar_is_open = False
 
     def build(self) -> rio.Component:
-        thm = self.session.attachments[rio.Theme]
+        thm = self.session.theme
 
         return rio.Drawer(
             anchor=rio.Stack(

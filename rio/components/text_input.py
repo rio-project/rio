@@ -26,7 +26,7 @@ class TextInputConfirmEvent:
     text: str
 
 
-class TextInput(component_base.FundamentalComponent):
+class TextInput(component_base.KeyboardFocusableFundamentalComponent):
     """
     A user-editable text field.
 

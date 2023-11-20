@@ -1,5 +1,8 @@
 import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
-import { updateComponentStates } from './componentManagement';
+import {
+    getInstanceByComponentId,
+    updateComponentStates,
+} from './componentManagement';
 import {
     requestFileUpload,
     registerFont,
@@ -208,7 +211,10 @@ export async function processMessageReturnResponse(
             break;
 
         case 'setKeyboardFocus':
-            setKeyboardFocus(message.params.componentId);
+            let instance = getInstanceByComponentId(message.params.componentId);
+            // @ts-expect-error
+            instance.grabKeyboardFocus();
+
             response = null;
             break;
 

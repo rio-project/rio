@@ -14,7 +14,7 @@ from . import component_base
 __all__ = ["MediaPlayer"]
 
 
-class MediaPlayer(component_base.FundamentalComponent):
+class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
     """
     Plays audio and video.
 

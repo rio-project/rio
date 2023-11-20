@@ -87,7 +87,7 @@ class Slideshow(component_base.FundamentalComponent):
     def _custom_serialize(self) -> JsonDoc:
         # Serialize the corner radius
         if self.corner_radius is None:
-            thm = self.session.attachments[rio.Theme]
+            thm = self.session.theme
 
             corner_radius = (
                 thm.corner_radius_medium,

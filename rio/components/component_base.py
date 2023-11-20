@@ -736,7 +736,7 @@ class Component(metaclass=ComponentMeta):
     # When running in development mode, make sure that no component `__init__`
     # tries to read a state property. This would be incorrect because state
     # bindings are not yet initialized at that point.
-    if common.RUNNING_IN_DEV_MODE:
+    if common.RUNNING_IN_DEV_MODE and not TYPE_CHECKING:
 
         def __getattribute__(self, attr_name: str):
             # fmt: off
@@ -929,9 +929,6 @@ class Component(metaclass=ComponentMeta):
         """
         await self.session._call_event_handler(handler, *event_data)
 
-    async def grab_keyboard_focus(self) -> None:
-        await self.session._remote_set_keyboard_focus(self._id)
-
     async def force_refresh(self) -> None:
         """
         Force a rebuild of this component.
@@ -1064,3 +1061,8 @@ class FundamentalComponent(Component):
         via `sendMessage`.
         """
         pass
+
+
+class KeyboardFocusableFundamentalComponent(FundamentalComponent):
+    async def grab_keyboard_focus(self) -> None:
+        await self.session._remote_set_keyboard_focus(self._id)

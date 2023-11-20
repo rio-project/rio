@@ -63,7 +63,7 @@ class Card(component_base.FundamentalComponent):
         await self.session._refresh()
 
     def _custom_serialize(self) -> JsonDoc:
-        thm = self.session.attachments[rio.Theme]
+        thm = self.session.theme
         color = thm._serialize_colorset(self.color)
 
         report_press = self.on_press is not None

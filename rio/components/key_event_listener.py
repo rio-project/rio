@@ -594,7 +594,7 @@ class KeyPressEvent(_KeyUpDownEvent):
     pass
 
 
-class KeyEventListener(component_base.FundamentalComponent):
+class KeyEventListener(component_base.KeyboardFocusableFundamentalComponent):
     """
     Calls an event handler when a key is pressed or released.
 

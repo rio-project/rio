@@ -72,7 +72,10 @@ class UserSettings:
 
     @classmethod
     def _from_json(
-        cls, sess: session.Session, settings_json: Dict[str, object], defaults: Self
+        cls,
+        sess: session.Session,
+        settings_json: Dict[str, object],
+        defaults: Self,
     ) -> Self:
         # Create the instance for this attachment. Bypass the constructor so
         # the instance doesn't immediately try to synchronize with the
@@ -176,9 +179,7 @@ class UserSettings:
         # This attributes doesn't exist yet during the constructor
         dct = vars(self)
         dirty_attribute_names = dct.setdefault("_rio_dirty_attribute_names_", set())
-        write_back_task = dct.get(
-            "_rio_synchronization_task_",
-        )
+        write_back_task = dct.get("_rio_synchronization_task_")
 
         # Set the attribute
         dct[name] = value
@@ -190,15 +191,17 @@ class UserSettings:
         # Mark it as dirty
         dirty_attribute_names.add(name)
 
+        # Make sure a write back task is running
+        if write_back_task is not None:
+            return
+
         # Can't sync if there's no loop yet
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
             return
 
-        # Make sure a write back task is running
-        if write_back_task is None:
-            dct["_rio_synchronization_task_"] = loop.create_task(
-                self._start_synchronization_task(),
-                name="write back user settings (attribute changed)",
-            )
+        dct["_rio_synchronization_task_"] = loop.create_task(
+            self._start_synchronization_task(),
+            name="write back user settings (attribute changed)",
+        )

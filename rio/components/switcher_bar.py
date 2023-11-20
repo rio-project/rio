@@ -106,7 +106,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
             )
 
     def _custom_serialize(self) -> JsonDoc:
-        thm = self.session.attachments[rio.Theme]
+        thm = self.session.theme
         result = {
             "optionNames": list(self.options.keys()),
             "selectedName": self._fetch_selected_name(),
