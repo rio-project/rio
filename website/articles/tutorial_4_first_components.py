@@ -17,7 +17,7 @@ name, and a short biography.
 If you've followed the tutorial so far you should have the following file
 structure:
 
-```
+```text
 <todo-project-name>
 │
 ├── components

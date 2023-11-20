@@ -14,7 +14,7 @@ __all__ = [
 
 class CustomButton(component_base.Component):
     """
-    A clickable button, with customizable visuals.
+    A clickable button with customizable visuals.
 
     Most buttons in apps should fit the main Theme and are well served by the
     `Button` component. However, sometimes you need more control over the

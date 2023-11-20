@@ -413,6 +413,8 @@ class AppServer(fastapi.FastAPI):
             # TODO: Can this check be avoided? `FileResponse` may already be
             # doing it internally anyway.
             if asset_file_path.exists():
+                # TODO: Support byte serving
+                # https://github.com/tiangolo/fastapi/issues/1240#issuecomment-612485608
                 return fastapi.responses.FileResponse(
                     common.HOSTED_ASSETS_DIR / asset_id,
                 )
