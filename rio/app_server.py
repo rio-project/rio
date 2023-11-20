@@ -630,8 +630,7 @@ class AppServer(fastapi.FastAPI):
             pass
 
         finally:
-            # Fire the session end event
-            await sess._call_event_handler(self.on_session_end, sess)
+            sess.close()
 
     async def _finish_session_initialization(
         self,
@@ -692,7 +691,6 @@ class AppServer(fastapi.FastAPI):
             else:
                 theme = theme[1]
 
-        sess.attachments.add(theme)
         await sess._apply_theme(theme)
 
         # Deserialize the user settings

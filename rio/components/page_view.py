@@ -13,7 +13,7 @@ __all__ = [
 
 
 def default_fallback_build(sess: rio.Session) -> rio.Component:
-    thm = sess.attachments[rio.Theme]
+    thm = sess.theme
 
     return rio.Column(
         rio.Row(

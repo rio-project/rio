@@ -43,7 +43,7 @@ class Plot(component_base.FundamentalComponent):
     def _custom_serialize(self) -> JsonDoc:
         # Determine a style
         if self.style is None:
-            thm = self.session.attachments[rio.Theme]
+            thm = self.session.theme
             box_style = rio.BoxStyle(
                 fill=thm.neutral_palette.background_variant,
                 corner_radius=thm.corner_radius_small,
