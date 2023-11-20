@@ -78,7 +78,7 @@ class AutoForm(component_base.Component):
         is_major: bool,
     ) -> rio.Component:
         return rio.Button(
-            text=text,
+            text_or_child == text,
             style="major" if is_major else "minor",
             on_press=on_press,
             is_sensitive=is_sensitive,

@@ -86,6 +86,8 @@ class RioProject:
                 project_dir = root_search_dir
                 break
 
+            project_dir = parent_dir
+
         # Try to load the toml file
         rio_toml_path = project_dir / "rio.toml"
         logging.debug(f"Loading `{rio_toml_path}`")
