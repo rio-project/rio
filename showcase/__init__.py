@@ -357,6 +357,16 @@ class Sidebar(rio.Component):
                     rio.Text("Text 3"), on_press=lambda: print("Pressed!")
                 ),
             ),
+            rio.Flow(
+                rio.Button("Flow-1", margin=0.2),
+                rio.Button("Flow-2", margin=0.2),
+                rio.Button("Flow-3", margin=0.2),
+                rio.Button("Flow-4", margin=0.2),
+                rio.Button("Flow-5", margin=0.2),
+                rio.Button("Flow-6", margin=0.2),
+                rio.Button("Flow-7", margin=0.2),
+                rio.Button("Flow-8", margin=0.2),
+            ),
             FooButton(0),
             rio.Text(
                 "foo",

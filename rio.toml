@@ -3,3 +3,4 @@
 
 main_module = "website"
 fastapi_app_variable = "fastapi_app"
+debug_port = 8001

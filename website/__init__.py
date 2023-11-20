@@ -152,11 +152,12 @@ pages = [
 rio_app = rio.App(
     name="Rio",
     build=AppRoot,
+    icon=ASSETS_DIR / "rio-logo.png",
     pages=pages,
     default_attachments=[
         theme.THEME,
     ],
-    assets_dir=Path(__file__).parent / "assets",
+    assets_dir=ASSETS_DIR,
 )
 
 

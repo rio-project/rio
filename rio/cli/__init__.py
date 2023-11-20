@@ -83,7 +83,7 @@ def new(
 )
 def run(
     *,
-    port: int = 8080,
+    port: Optional[int] = None,
     public: bool = False,
 ) -> None:
     # TODO: Verify the parameters are okay. i.e. `port` is a valid port number
@@ -97,6 +97,6 @@ def run(
     uvicorn.run(
         f"{main_module}:{fastapi_app_variable}",
         host="0.0.0.0" if public else "127.0.0.1",
-        port=port,
+        port=proj.debug_port if port is None else port,
         reload=True,
     )
