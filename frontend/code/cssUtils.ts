@@ -89,7 +89,7 @@ export function textStyleToCss(
     // `Dim` is the same as `text`, just with some opacity
     if (style === 'dim') {
         style = 'text';
-        result['opacity'] = '0.5';
+        result['opacity'] = '0.4';
     } else {
         result['opacity'] = '1';
     }
