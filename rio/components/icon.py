@@ -52,7 +52,7 @@ class Icon(component_base.FundamentalComponent):
 
     icon: str
     _: KW_ONLY
-    fill: Union[rio.FillLike, color.ColorSet]
+    fill: Union[rio.FillLike, color.ColorSet, Literal["dim"]]
 
     @staticmethod
     def _get_registry() -> icon_registry.IconRegistry:
@@ -96,7 +96,7 @@ class Icon(component_base.FundamentalComponent):
         self,
         icon: str,
         *,
-        fill: Union[rio.FillLike, color.ColorSet] = "keep",
+        fill: Union[rio.FillLike, color.ColorSet, Literal["dim"]] = "keep",
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
