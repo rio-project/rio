@@ -9,6 +9,7 @@ import { ColorPickerComponent } from './components/colorPicker';
 import { ColumnComponent, RowComponent } from './components/linearContainers';
 import { DrawerComponent } from './components/drawer';
 import { DropdownComponent } from './components/dropdown';
+import { FlowComponent } from './components/flow';
 import { GridComponent } from './components/grid';
 import { HtmlComponent } from './components/html';
 import { IconComponent } from './components/icon';
@@ -48,6 +49,7 @@ const componentClasses = {
     'Column-builtin': ColumnComponent,
     'Drawer-builtin': DrawerComponent,
     'Dropdown-builtin': DropdownComponent,
+    'Flow-builtin': FlowComponent,
     'Grid-builtin': GridComponent,
     'Html-builtin': HtmlComponent,
     'Icon-builtin': IconComponent,

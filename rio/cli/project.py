@@ -62,6 +62,10 @@ class RioProject:
     def fastapi_app_variable(self) -> str:
         return self._get_key("fastapi_app_variable", str, "fastapi_app")
 
+    @property
+    def debug_port(self) -> int:
+        return self._get_key("debug_port", int, 0)
+
     @staticmethod
     def try_load() -> "RioProject":
         """

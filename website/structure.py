@@ -20,7 +20,7 @@ SectionType: TypeAlias = Union[Tuple[str, Tuple[ArticleType, ...]], None]
 DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
     # Introduction
     (
-        "Getting Started",
+        "Introduction",
         (
             (
                 "Rio Setup",
@@ -46,6 +46,36 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
                 "More Components",
                 "tutorial-5-more-components",
                 articles.tutorial_5_more_components.generate,
+            ),
+        ),
+    ),
+    (
+        "How-To Guides",
+        (
+            (
+                "Creating an App",
+                "howto-app",
+                articles.howto_app.generate,
+            ),
+            (
+                "Multiple Pages",
+                "howto-multiple-pages",
+                articles.howto_multiple_pages.generate,
+            ),
+            (
+                "Passing Values",
+                "howto-passing-values",
+                articles.howto_passing_values.generate,
+            ),
+            (
+                "Layout",
+                "howto-layout",
+                articles.howto_layout.generate,
+            ),
+            (
+                "Theming",
+                "howto-theming",
+                articles.howto_theming.generate,
             ),
         ),
     ),

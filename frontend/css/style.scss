@@ -1838,3 +1838,10 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-list-item {
     padding: 0.7rem 1.5rem;
 }
+
+// Flow
+.rio-flow {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: min-content;
+}
