@@ -476,11 +476,16 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
+// Make sure the whole GUI can scroll. The <html> element can scroll by
+// default, so we'll just make sure the <body> uses all the available space.
+//
+// This is a little simpler than the `ScrollContainer` component, because our
+// child element is always the `HighLevelRootComponent` from python, which
+// doesn't have a `width` or `height` set.
 html {
     background: var(--rio-global-background-bg);
-
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
 }
 
 body {
@@ -488,29 +493,27 @@ body {
     padding: 0;
 
     font-family: Roboto, sans-serif;
-}
 
-// The root element for the component tree. It should display scrollbars if the
-// components grow too large for the screen.
-//
-// This is a little simpler than the `ScrollContainer` component, because our
-// child element is always the `RootContainer` from python, which doesn't have a
-// `width` or `height` set.
-.component-root {
-    position: relative;
-}
-
-.component-root > * {
-    overflow: auto;
-
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.component-root > * > * {
     min-width: 100%;
     min-height: 100%;
+
+    // Do *NOT* use inline-grid here, for some godforsaken reason it causes
+    // vertical overflow in the <html> element
+    display: grid;
+}
+
+body > * > * {
+    // This is the FundamentalRootComponent
+    min-width: 100%;
+    min-height: 100%;
+
+    display: inline-grid;
+}
+
+body > * > * > * {
+    // This affects both the user-generated component and the error-popup
+    grid-row: 1;
+    grid-column: 1;
 }
 
 // Some components, for example `Stack`, need a `min-width` or `min-height`. But
@@ -1107,8 +1110,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     pointer-events: auto;
 }
 
-// Error popup
-.rio-error-popup {
+// Connection lost popup
+#rio-connection-lost-popup {
     pointer-events: none;
 
     z-index: $z-index-error-popup;
@@ -1119,35 +1122,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
 
-    // This is immediately changed by JavaScript to effect a fade-in
-    opacity: 0;
-
     transition: opacity 0.7s ease-in;
-}
-
-.rio-error-popup > div {
-    pointer-events: auto;
-    position: fixed;
-    top: 2rem;
-    left: 50%;
-    width: unset;
-    height: unset;
-
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-
-    color: var(--rio-global-danger-bg);
-    background: var(--rio-global-neutral-bg);
-    padding: 1.5rem 2rem;
-    border-radius: $infinite-corner-radius;
-    box-shadow: 0 0 1rem var(--rio-global-shadow-color);
-
-    // This is immediately changed by JavaScript to effect a fade-in
-    transform: translate(-50%, -200%);
-
-    transition: transform 0.4s $transition-timing-overshoot;
-    transition-delay: transform 0.2s;
 }
 
 // Slideshow

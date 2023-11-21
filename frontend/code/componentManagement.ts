@@ -10,6 +10,7 @@ import { ColumnComponent, RowComponent } from './components/linearContainers';
 import { DrawerComponent } from './components/drawer';
 import { DropdownComponent } from './components/dropdown';
 import { FlowComponent } from './components/flow';
+import { FundamentalRootComponent } from './components/fundamental_root_component';
 import { GridComponent } from './components/grid';
 import { HtmlComponent } from './components/html';
 import { IconComponent } from './components/icon';
@@ -50,6 +51,7 @@ const componentClasses = {
     'Drawer-builtin': DrawerComponent,
     'Dropdown-builtin': DropdownComponent,
     'Flow-builtin': FlowComponent,
+    'FundamentalRootComponent-builtin': FundamentalRootComponent,
     'Grid-builtin': GridComponent,
     'Html-builtin': HtmlComponent,
     'Icon-builtin': IconComponent,
@@ -84,7 +86,7 @@ const componentClasses = {
 
 globalThis.componentClasses = componentClasses;
 
-const componentTreeRootElement = document.body.firstElementChild as HTMLElement;
+const componentTreeRootElement = document.body;
 
 const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
 
@@ -329,7 +331,6 @@ export function updateComponentStates(
     ) {
         focusedElement = focusedElement.parentElement!;
     }
-    console.log('Focused element:', focusedElement);
 
     // Create a HTML element to hold all latent components, so they aren't
     // garbage collected while updating the DOM.
@@ -431,7 +432,6 @@ export function updateComponentStates(
     }
 
     // Restore the keyboard focus
-    console.log('Have focused element?', focusedElement instanceof HTMLElement);
     if (focusedElement instanceof HTMLElement) {
         restoreKeyboardFocus(focusedElement, latentComponents);
     }
