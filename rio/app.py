@@ -50,6 +50,41 @@ def _validate_build_function(
     return wrapper
 
 
+def default_connection_lost_message(session: rio.Session) -> rio.Component:
+    return rio.Html(
+        """
+<div class="error-box">
+    <svg xmlns="http://www.w3.org/2000/svg"
+        style="fill: var(--rio-global-danger-bg); width: 1.6rem; height: 1.6rem;" viewBox="0 -960 960 960">
+        <path
+            d="M479.928-274.022q16.463 0 27.398-10.743 10.935-10.743 10.935-27.206 0-16.464-10.863-27.518-10.862-11.055-27.326-11.055-16.463 0-27.398 11.037-10.935 11.037-10.935 27.501 0 16.463 10.863 27.224 10.862 10.76 27.326 10.76Zm3.247-158.739q14.499 0 24.195-9.821 9.695-9.82 9.695-24.244v-188.935q0-14.424-9.871-24.244-9.871-9.821-24.369-9.821-14.499 0-24.195 9.821-9.695 9.82-9.695 24.244v188.935q0 14.424 9.871 24.244 9.871 9.821 24.369 9.821Zm-2.876 358.74q-84.202 0-158.041-31.879t-129.159-87.199q-55.32-55.32-87.199-129.201-31.878-73.88-31.878-158.167t31.878-158.2q31.879-73.914 87.161-128.747 55.283-54.832 129.181-86.818 73.899-31.986 158.205-31.986 84.307 0 158.249 31.968 73.942 31.967 128.756 86.768 54.815 54.801 86.79 128.883 31.976 74.083 31.976 158.333 0 84.235-31.986 158.07t-86.818 128.942q-54.833 55.107-128.873 87.169-74.04 32.063-158.242 32.063Zm.201-68.131q140.543 0 238.946-98.752 98.402-98.752 98.402-239.596 0-140.543-98.215-238.946-98.215-98.402-239.753-98.402-140.163 0-238.945 98.215-98.783 98.215-98.783 239.753 0 140.163 98.752 238.945 98.752 98.783 239.596 98.783ZM480-480Z" />
+    </svg>
+    <div style="font-weight: bold;">Connection lost</div>
+</div>
+<style>
+    #rio-connection-lost-popup .error-box {
+        position: absolute;
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: unset;
+        height: unset;
+
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+
+        color: var(--rio-global-danger-bg);
+        background: var(--rio-global-neutral-bg);
+        padding: 1.5rem 2rem;
+        border-radius: 99999px;
+        box-shadow: 0 0 1rem var(--rio-global-shadow-color);
+    }
+</style>
+        """
+    )
+
+
 class App:
     """
     Contains all the information needed to run a Rio app.
@@ -118,13 +153,16 @@ class App:
         build: Optional[Callable[[], rio.Component]] = None,
         icon: Optional[ImageLike] = None,
         pages: Iterable[rio.Page] = tuple(),
-        on_app_start: rio.EventHandler["App"] = None,
+        on_app_start: rio.EventHandler[App] = None,
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
         assets_dir: Union[str, os.PathLike, None] = None,
         theme: Union[rio.Theme, Tuple[rio.Theme, rio.Theme], None] = None,
+        build_connection_lost_message: Callable[
+            [rio.Session], rio.Component
+        ] = default_connection_lost_message,
     ):
         """
         Args:
@@ -213,6 +251,7 @@ class App:
             "assets" if assets_dir is None else assets_dir
         )
         self._theme = theme
+        self._build_connection_lost_message = build_connection_lost_message
 
         if isinstance(ping_pong_interval, timedelta):
             self._ping_pong_interval = ping_pong_interval
@@ -536,15 +575,6 @@ def _choose_free_port(host: str) -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind((host, 0))
         return sock.getsockname()[1]
-
-
-def _port_is_in_use(host: str, port: int) -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        try:
-            sock.bind((host, port))
-            return False
-        except OSError:
-            return True
 
 
 def _ensure_valid_port(host: str, port: Optional[int]) -> int:

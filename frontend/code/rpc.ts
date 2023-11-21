@@ -8,15 +8,10 @@ import {
     registerFont,
     closeSession,
     setTitle,
-    setKeyboardFocus,
 } from './rpcFunctions';
 
 let websocket: WebSocket | null = null;
 let pingPongHandlerId: number;
-
-const connectionLostPopup = document.querySelector(
-    '.rio-error-popup'
-) as HTMLElement;
 
 export type JsonRpcMessage = {
     jsonrpc: '2.0';
@@ -34,6 +29,10 @@ export type JsonRpcResponse = {
         message: string;
     };
 };
+
+function getConnectionLostPopup(): HTMLElement | null {
+    return document.getElementById('rio-connection-lost-popup');
+}
 
 function createWebsocket(connectionAttempt: number = 1): WebSocket {
     let url = new URL(
@@ -89,8 +88,11 @@ function sendInitialMessage(): void {
 function onOpen(): void {
     console.log('Websocket connection opened');
 
-    connectionLostPopup.style.opacity = '0';
-    connectionLostPopup.style.display = 'none';
+    let connectionLostPopup = getConnectionLostPopup();
+    if (connectionLostPopup !== null) {
+        connectionLostPopup.style.opacity = '0';
+        connectionLostPopup.style.display = 'none';
+    }
 
     // Some proxies kill idle websocket connections. Send pings occasionally to
     // keep the connection alive.
@@ -101,7 +103,7 @@ function onOpen(): void {
             params: ['ping'],
             id: `ping-${Date.now()}`,
         });
-    }, pingPongIntervalSeconds * 1000);
+    }, pingPongIntervalSeconds * 1000) as any;
 }
 
 async function onMessage(event: any) {
@@ -309,16 +311,14 @@ export async function processMessageReturnResponse(
 }
 
 function displayConnectionLostPopup(): void {
-    connectionLostPopup.style.display = 'block';
+    let connectionLostPopup = getConnectionLostPopup()!;
+    connectionLostPopup.style.display = 'inline-grid';
 
     // The popup spawns with opacity 0. Fade it in.
     //
     // For some reason `requestAnimationFrame` doesn't work here. Use an actual
     // timeout instead.
     setTimeout(() => {
-        let popupCard = connectionLostPopup.firstElementChild! as HTMLElement;
-
         connectionLostPopup.style.opacity = '1';
-        popupCard.style.transform = 'translate(-50%, 0)';
     }, 100);
 }

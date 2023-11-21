@@ -38,6 +38,7 @@ from . import (
     user_settings_module,
 )
 from .common import URL
+from .components.root_components import HighLevelRootComponent
 from .errors import AssetError
 
 try:
@@ -698,18 +699,13 @@ class AppServer(fastapi.FastAPI):
         # Deserialize the user settings
         await sess._load_user_settings(initial_message.user_settings)
 
-        # Create the root component. The root component is a non-fundamental component,
-        # because that has many advantages:
-        # 1. Every component except for the root component itself has a valid builder
-        # 2. The JS code is simpler because the root component can't have an
-        #    alignment or margin
-        # 3. Children of non-fundamental components are automatically initialized
-        #    correctly, so we don't need to duplicate that logic here
         global_state.currently_building_component = None
         global_state.currently_building_session = sess
 
         try:
-            sess._root_component = RootContainer(self.app._build)
+            sess._root_component = HighLevelRootComponent(
+                self.app._build, self.app._build_connection_lost_message
+            )
         finally:
             global_state.currently_building_session = None
 
@@ -718,10 +714,3 @@ class AppServer(fastapi.FastAPI):
         # Note: Since this event is often used for initialization, like adding
         # attachments, we actually wait for it to finish before continuing.
         await sess._call_event_handler(self.on_session_start, sess)
-
-
-class RootContainer(components.Component):
-    build_function: Callable[[], components.Component]
-
-    def build(self) -> rio.Component:
-        return self.build_function()
