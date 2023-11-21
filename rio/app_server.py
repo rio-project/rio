@@ -28,6 +28,7 @@ import rio
 from . import (
     app,
     assets,
+    byte_serving,
     common,
     components,
     debug,
@@ -371,7 +372,11 @@ class AppServer(fastapi.FastAPI):
             media_type="image/x-icon",
         )
 
-    async def _serve_asset(self, asset_id: str) -> fastapi.responses.Response:
+    async def _serve_asset(
+        self,
+        request: fastapi.Request,
+        asset_id: str,
+    ) -> fastapi.responses.Response:
         """
         Handler for serving assets via fastapi.
 
@@ -411,17 +416,10 @@ class AppServer(fastapi.FastAPI):
                 )
                 return fastapi.responses.Response(status_code=404)
 
-            # TODO: Can this check be avoided? `FileResponse` may already be
-            # doing it internally anyway.
-            if asset_file_path.exists():
-                # TODO: Support byte serving
-                # https://github.com/tiangolo/fastapi/issues/1240#issuecomment-612485608
-                return fastapi.responses.FileResponse(
-                    common.HOSTED_ASSETS_DIR / asset_id,
-                )
-
-            # No such file
-            return fastapi.responses.Response(status_code=404)
+            return byte_serving.range_requests_response(
+                request,
+                file_path=asset_file_path,
+            )
 
         # Get the asset's Python instance. The asset's id acts as a secret, so
         # no further authentication is required.
@@ -437,8 +435,9 @@ class AppServer(fastapi.FastAPI):
                 media_type=asset.media_type,
             )
         elif isinstance(asset, assets.PathAsset):
-            return fastapi.responses.FileResponse(
-                asset.path,
+            return byte_serving.range_requests_response(
+                request,
+                file_path=asset.path,
                 media_type=asset.media_type,
             )
         else:
