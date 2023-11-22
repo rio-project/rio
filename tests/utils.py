@@ -36,6 +36,7 @@ class MockApp:
                 "windowWidth": 1920,
                 "windowHeight": 1080,
                 "timezone": "America/New_York",
+                "prefersLightTheme": True,
             }
         )
 

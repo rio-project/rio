@@ -42,9 +42,11 @@ class Grid(component_base.FundamentalComponent):
     row_spacing: float
     column_spacing: float
 
-    # This must be annotated, otherwise rio won't understand that grids have
-    # child components
+    # These must be annotated, otherwise rio won't understand that grids have
+    # child components and won't copy over the new values when two Grids are
+    # reconciled
     _children: List[rio.Component]
+    _child_positions: List[GridChildPosition]
 
     def __init__(
         self,
@@ -99,6 +101,8 @@ class Grid(component_base.FundamentalComponent):
 
         self._children = _children
         self._child_positions = _child_positions
+
+        self._explicitly_set_properties_.update(["_children", "_child_positions"])
 
     def add_child(
         self,
