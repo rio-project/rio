@@ -677,8 +677,8 @@ window.location.href = {json.dumps(str(target_url))};
                 child._weak_builder_ = weak_builder
                 child._build_generation_ = component_data.build_generation
 
-        # Determine which components are alive, to avoid sending references to dead
-        # components to the frontend.
+        # Determine which components are alive, to avoid sending references to
+        # dead components to the frontend.
         alive_cache: Dict[rio.Component, bool] = {
             self._root_component: True,
         }
@@ -768,7 +768,7 @@ window.location.href = {json.dumps(str(target_url))};
     async def _update_component_states(
         self, visited_components: Set[rio.Component], delta_states: Dict[int, JsonDoc]
     ) -> None:
-        # Initialize all HTML components
+        # Initialize all new FundamentalComponents
         for component in visited_components:
             if (
                 not isinstance(component, component_base.FundamentalComponent)

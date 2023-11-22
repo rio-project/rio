@@ -273,6 +273,7 @@ function preprocessDeltaStates(message: {
 
     // Walk over all components in the message and inject layout components. The
     // message is modified in-place, so take care to have a copy of all keys
+    // (`originalComponentIds`)
     for (let componentId of originalComponentIds) {
         replaceChildrenWithLayoutComponents(
             message[componentId],
@@ -281,8 +282,8 @@ function preprocessDeltaStates(message: {
         );
     }
 
-    // Find all components which have had a layout component injected, and make sure
-    // their parents are updated to point to the new component.
+    // Find all components which have had a layout component injected, and make
+    // sure their parents are updated to point to the new component.
     for (let componentId of originalComponentIds) {
         // Child of another component in the message
         if (childIds.has(componentId)) {
@@ -314,12 +315,12 @@ function preprocessDeltaStates(message: {
 }
 
 export function updateComponentStates(
-    message: { [id: string]: ComponentState },
+    deltaStates: { [id: string]: ComponentState },
     rootComponentId: string | number | null
 ): void {
     // Preprocess the message. This converts `_align_` and `_margin_` properties
     // into actual components, amongst other things.
-    preprocessDeltaStates(message);
+    preprocessDeltaStates(deltaStates);
 
     // Modifying the DOM makes the keyboard focus get lost. Remember which
     // element had focus, so we can restore it later.
@@ -341,8 +342,8 @@ export function updateComponentStates(
 
     // Make sure all components mentioned in the message have a corresponding HTML
     // element
-    for (let componentId in message) {
-        let deltaState = message[componentId];
+    for (let componentId in deltaStates) {
+        let deltaState = deltaStates[componentId];
         let elementId = `rio-id-${componentId}`;
         let element = document.getElementById(elementId)!;
 
@@ -387,8 +388,8 @@ export function updateComponentStates(
     // Update all components mentioned in the message
     let componentsNeedingLayoutUpdate = new Set<ComponentBase>();
 
-    for (let id in message) {
-        let deltaState = message[id];
+    for (let id in deltaStates) {
+        let deltaState = deltaStates[id];
         let element = getElementByComponentId(id);
 
         // Perform updates specific to this component type
