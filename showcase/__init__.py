@@ -88,6 +88,7 @@ class Sidebar(rio.Component):
     search_text: str = ""
     expanded: bool = False
     popup_visible: bool = False
+    text_buffer: str = "text-buffer-default"
 
     def _on_toggle_popup(self) -> None:
         self.popup_visible = not self.popup_visible
@@ -332,6 +333,7 @@ class Sidebar(rio.Component):
             ),
             rio.TextInput(
                 label="Label!",
+                text=Sidebar.text_buffer,
                 prefix_text="$",
                 suffix_text="USD",
             ),

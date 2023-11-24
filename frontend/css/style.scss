@@ -664,6 +664,7 @@ body > * > * > * {
 // Text Input
 .rio-text-input {
     pointer-events: auto;
+    cursor: text;
 
     position: relative;
     min-width: 6rem;
@@ -724,6 +725,14 @@ body > * > * > * {
 
     opacity: 0;
     transition: all 0.13s linear;
+}
+
+.rio-text-input-prefix-text {
+    margin-left: 0.5rem;
+}
+
+.rio-text-input-suffix-text {
+    margin-right: 0.5rem;
 }
 
 input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
