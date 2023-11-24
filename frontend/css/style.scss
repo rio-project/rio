@@ -1820,3 +1820,9 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     flex-wrap: wrap;
     min-width: min-content;
 }
+
+// Restyle the material progressbar to take up the entire assigned height
+.mdc-linear-progress__bar-inner {
+    height: 100%;
+    background-color: var(--mdc-theme-primary);
+}

@@ -432,6 +432,7 @@ class ComponentShowcase(rio.Component):
                 align_y=0.2,
                 width="grow",
             ),
+            rio.ProgressBar(height=2),
         )
 
     # @rio.event.periodic(1)

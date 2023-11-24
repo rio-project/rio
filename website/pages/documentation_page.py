@@ -92,14 +92,25 @@ class Outliner(rio.Component):
 
 class DocumentationPage(rio.Component):
     def build(self) -> rio.Component:
-        return rio.Column(
+        # Find the currently active section
+        active_segment = self.session.active_page_url.parts[1]
+
+        try:
+            section_name = structure.DOCUMENTATION_URL_SEGMENT_TO_SECTION[
+                active_segment
+            ]
+        except KeyError:
+            section_name = None
+
+        return rio.Row(
             rio.Overlay(
                 Outliner(
+                    align_y=0.5,
                     align_x=0,
-                    align_y=0.4,
                 ),
             ),
             rio.PageView(
+                margin_left=30,
                 margin_top=3,
                 width="grow",
                 height="grow",
