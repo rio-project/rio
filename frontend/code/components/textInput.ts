@@ -41,7 +41,7 @@ export class TextInputComponent extends ComponentBase {
         });
 
         // Detect the enter key and send it to the backend
-
+        //
         // In addition to notifying the backend, also include the input's
         // current value. This ensures any event handlers actually use the up-to
         // date value.
@@ -51,6 +51,11 @@ export class TextInputComponent extends ComponentBase {
                     text: this.inputElement.value,
                 });
             }
+        });
+
+        // Detect clicks on any part of the component and focus the input
+        element.addEventListener('click', () => {
+            this.inputElement.focus();
         });
 
         return element;
