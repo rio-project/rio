@@ -9,7 +9,7 @@ import { ColorPickerComponent } from './components/colorPicker';
 import { ColumnComponent, RowComponent } from './components/linearContainers';
 import { DrawerComponent } from './components/drawer';
 import { DropdownComponent } from './components/dropdown';
-import { FlowComponent } from './components/flow';
+import { FlowComponent as FlowContainerComponent } from './components/flowContainer';
 import { FundamentalRootComponent } from './components/fundamental_root_component';
 import { GridComponent } from './components/grid';
 import { HtmlComponent } from './components/html';
@@ -50,7 +50,7 @@ const componentClasses = {
     'Column-builtin': ColumnComponent,
     'Drawer-builtin': DrawerComponent,
     'Dropdown-builtin': DropdownComponent,
-    'Flow-builtin': FlowComponent,
+    'FlowContainer-builtin': FlowContainerComponent,
     'FundamentalRootComponent-builtin': FundamentalRootComponent,
     'Grid-builtin': GridComponent,
     'Html-builtin': HtmlComponent,

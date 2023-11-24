@@ -10,9 +10,15 @@ export type FlowState = ComponentState & {
 export class FlowComponent extends ComponentBase {
     state: Required<FlowState>;
 
+    inner: HTMLElement;
+
     _createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-flow');
+        element.classList.add('rio-flow', 'rio-zero-size-request-container');
+
+        this.inner = document.createElement('div');
+        element.appendChild(this.inner);
+
         return element;
     }
 
@@ -20,13 +26,13 @@ export class FlowComponent extends ComponentBase {
         // Update the children
         replaceChildrenAndResetCssProperties(
             element.id,
-            element,
+            this.inner,
             deltaState.children
         );
 
         // Spacing
         if (deltaState.spacing !== undefined) {
-            element.style.gap = `${deltaState.spacing}rem`;
+            this.inner.style.gap = `${deltaState.spacing}rem`;
         }
     }
 

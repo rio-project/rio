@@ -1,22 +1,24 @@
 from __future__ import annotations
 
+from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
 import rio
 
 from . import component_base
 
-__all__ = ["Flow"]
+__all__ = ["FlowContainer"]
 
 
-class Flow(component_base.FundamentalComponent):
+class FlowContainer(component_base.FundamentalComponent):
     children: List[component_base.Component]
-    spacing: float
+    _: KW_ONLY
+    spacing_x: float
 
     def __init__(
         self,
         *children: rio.Component,
-        spacing: float = 0.0,
+        spacing_x: float = 0.0,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -50,7 +52,7 @@ class Flow(component_base.FundamentalComponent):
         )
 
         self.children = list(children)
-        self.spacing = spacing
+        self.spacing_x = spacing_x
 
 
-Flow._unique_id = "Flow-builtin"
+FlowContainer._unique_id = "FlowContainer-builtin"
