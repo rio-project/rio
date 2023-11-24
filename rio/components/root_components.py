@@ -16,12 +16,12 @@ from .component_base import Component, FundamentalComponent
 #    correctly, so we don't need to duplicate that logic here
 class HighLevelRootComponent(Component):
     build_function: Callable[[], Component]
-    build_connection_lost_message_function: Callable[[rio.Session], Component]
+    build_connection_lost_message_function: Callable[[], Component]
 
     def build(self) -> Component:
         return FundamentalRootComponent(
             self.build_function(),
-            self.build_connection_lost_message_function(self.session),
+            self.build_connection_lost_message_function(),
         )
 
 
