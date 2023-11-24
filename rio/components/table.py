@@ -11,7 +11,7 @@ TableValue = Union[int, float, str]
 
 
 class Table(FundamentalComponent):
-    data: Union[Dict[str, List[TableValue]], List[List[TableValue]]]
+    data: Union[Mapping[str, Sequence[TableValue]], Sequence[Sequence[TableValue]]]
     show_row_numbers: bool = True
 
     def _custom_serialize(self) -> JsonDoc:
