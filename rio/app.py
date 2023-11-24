@@ -50,7 +50,7 @@ def _validate_build_function(
     return wrapper
 
 
-def default_connection_lost_message(session: rio.Session) -> rio.Component:
+def default_connection_lost_message() -> rio.Component:
     return rio.Html(
         """
 <div class="error-box">
@@ -161,7 +161,7 @@ class App:
         assets_dir: Union[str, os.PathLike, None] = None,
         theme: Union[rio.Theme, Tuple[rio.Theme, rio.Theme], None] = None,
         build_connection_lost_message: Callable[
-            [rio.Session], rio.Component
+            [], rio.Component
         ] = default_connection_lost_message,
     ):
         """
