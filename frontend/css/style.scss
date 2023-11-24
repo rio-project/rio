@@ -1718,46 +1718,29 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     pointer-events: auto;
 
     color: var(--rio-local-text-color);
+    border-collapse: collapse;
 
     // borders
-    border-collapse: separate;
     border-spacing: 0;
 
-    th {
-        border-top: solid 1px var(--rio-local-accent-fg);
-    }
     th,
+    tr,
     td {
-        border-right: 1px solid var(--rio-local-accent-fg);
-        border-bottom: 1px solid var(--rio-local-accent-fg);
+        border: none;
     }
-    th:first-child,
-    td:first-child {
-        border-left: 1px solid var(--rio-local-accent-fg);
-    }
-
-    tr:first-child th:first-child {
-        border-top-left-radius: var(--rio-global-corner-radius-small);
-    }
-    tr:first-child th:last-child {
-        border-top-right-radius: var(--rio-global-corner-radius-small);
-    }
-    tr:last-child td:first-child {
-        border-bottom-left-radius: var(--rio-global-corner-radius-small);
-    }
-    tr:last-child td:last-child {
-        border-bottom-right-radius: var(--rio-global-corner-radius-small);
+    tbody > tr {
+        border-top: 1px solid var(--rio-local-plain-bg-variant);
     }
 
     // header row
     th {
-        background-color: var(--rio-local-accent-bg);
-        color: var(--rio-local-accent-fg);
         font-weight: bold;
-
-        padding: 0.15rem;
-
         cursor: pointer;
+    }
+
+    th,
+    td {
+        padding: 0.5rem 0.8rem;
     }
 
     th::after {
@@ -1774,9 +1757,23 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
         opacity: 1;
     }
 
-    // cells
-    td {
-        padding: 0.2rem;
+    // Highlight the row when hovered
+    tr {
+        position: relative;
+    }
+
+    tr:hover::after {
+        pointer-events: none;
+
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--rio-local-accent-bg);
+
+        opacity: 0.1;
     }
 }
 
