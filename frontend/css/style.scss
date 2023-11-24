@@ -1818,7 +1818,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-flow {
     display: flex;
     flex-wrap: wrap;
-    min-width: min-content;
 }
 
 // Restyle the material progressbar to take up the entire assigned height

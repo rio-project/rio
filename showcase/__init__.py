@@ -33,21 +33,6 @@ class Card(rio.Component):
         )
 
 
-class ShowcaseCard(rio.Component):
-    title: str
-    description: str
-    child: rio.Component
-
-    def build(self) -> rio.Component:
-        return Card(
-            rio.Column(
-                rio.Text(self.title, multiline=True),
-                rio.Text(self.description, multiline=True),
-                self.child,
-            )
-        )
-
-
 class KeyEventTester(rio.Component):
     event: rio.KeyDownEvent = rio.KeyDownEvent("unknown", "unknown", "", frozenset())
 
@@ -357,15 +342,25 @@ class Sidebar(rio.Component):
                     rio.Text("Text 3"), on_press=lambda: print("Pressed!")
                 ),
             ),
-            rio.Flow(
-                rio.Button("Flow-1", margin=0.2),
-                rio.Button("Flow-2", margin=0.2),
-                rio.Button("Flow-3", margin=0.2),
-                rio.Button("Flow-4", margin=0.2),
-                rio.Button("Flow-5", margin=0.2),
-                rio.Button("Flow-6", margin=0.2),
-                rio.Button("Flow-7", margin=0.2),
-                rio.Button("Flow-8", margin=0.2),
+            # rio.Flow(
+            #     rio.Button("Flow-1", margin=0.2),
+            #     rio.Button("Flow-2", margin=0.2),
+            #     rio.Button("Flow-3", margin=0.2),
+            #     rio.Button("Flow-4", margin=0.2),
+            #     rio.Button("Flow-5", margin=0.2),
+            #     rio.Button("Flow-6", margin=0.2),
+            #     rio.Button("Flow-7", margin=0.2),
+            #     rio.Button("Flow-8", margin=0.2),
+            # ),
+            rio.Text(
+                """Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the 15th century who is thought to have scrambled parts of Cicero's De Finibus Bonorum et Malorum for use in a type specimen book. It usually begins with:
+
+    “Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”
+
+The purpose of lorem ipsum is to create a natural looking block of text (sentence, paragraph, page, etc.) that doesn't distract from the layout. A practice not without controversy, laying out pages with meaningless filler text can be very useful when the focus is meant to be on design, not content.
+
+The passage experienced a surge in popularity during the 1960s when Letraset used it on their dry-transfer sheets, and again during the 90s as desktop publishers bundled the text with their software. Today it's seen all around the web; on templates, websites, and stock designs. Use our generator to get your own, or read on for the authoritative history of lorem ipsum. """,
+                multiline=True,
             ),
             FooButton(0),
             rio.Text(
@@ -413,26 +408,12 @@ class ComponentShowcase(rio.Component):
     def build(self) -> rio.Component:
         return rio.Row(
             Sidebar(
-                width=30,
+                # width=30,
             ),
-            ShowcaseCard(
-                "Hello Worlds",
-                "Much hello!",
-                rio.Column(
-                    rio.Text("Hello World"),
-                    rio.Text("Hello World"),
-                    rio.Text("Hello World"),
-                    rio.ScrollContainer(
-                        rio.Rectangle(
-                            width=5, height=50, style=rio.BoxStyle(fill=rio.Color.RED)
-                        ),
-                    ),
-                ),
-                margin_x=4,
-                align_y=0.2,
+            rio.ProgressBar(
+                height=2,
                 width="grow",
             ),
-            rio.ProgressBar(height=2),
         )
 
     # @rio.event.periodic(1)

@@ -172,8 +172,11 @@ function createLinearGradient(
     return gradient;
 }
 
-// Given an element, load the icon with the given name and apply it to the
-// element.
+/// Given an element, load the icon with the given name and apply it to the
+/// element.
+///
+/// The element's size is not affected. Make it however big you want the icon
+/// to be. Any children of the element will be removed.
 export async function applyIcon(
     target: HTMLElement,
     iconName: string,

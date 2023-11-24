@@ -504,7 +504,6 @@ class Session(unicall.Unicall):
             async def history_worker() -> None:
                 await self._evaluate_javascript(
                     f"""
-window.scrollTo({{ top: 0, behavior: 'smooth' }});  // TODO: Not working, probably because it's not actually the window that's scrolling, but a ScrollContainer somewhere
 window.location.href = {json.dumps(str(target_url))};
 """,
                 )
@@ -533,7 +532,10 @@ window.location.href = {json.dumps(str(target_url))};
         async def history_worker() -> None:
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
-                f"window.history.{method}(null, null, {json.dumps(str(target_url))})",
+                f"""
+window.history.{method}(null, null, {json.dumps(str(target_url))})
+window.scrollTo({{ top: 0, behavior: 'smooth' }});
+""",
             )
 
         self.create_task(history_worker())
