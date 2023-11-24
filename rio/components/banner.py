@@ -26,19 +26,18 @@ class Banner(component_base.Component):
     quickly communicate the nature of the message to the user.
 
     Attributes:
-        text: The text to display. If set to `None`, the banner will disappear
-        entirely.
+        text: The text to display. If empty, the banner will disappear entirely.
 
         style: Controls the appearance of the banner. The style is one of
-        `info`, `success`, `warning` and `danger`. Depending on the value the
-        banner may change its colors and icon.
+            `info`, `success`, `warning` and `danger`. Depending on the value
+            the banner may change its colors and icon.
 
         multiline: Whether long text may be wrapped over multiple lines.
-            Multiline banners are also styled slightly differently to make
-            the icon fit their larger size.
+            Multiline banners are also styled slightly differently to make the
+            icon fit their larger size.
     """
 
-    text: Optional[str]
+    text: str
     style: Literal["info", "success", "warning", "danger"]
 
     _: KW_ONLY
@@ -47,7 +46,7 @@ class Banner(component_base.Component):
 
     def build(self) -> rio.Component:
         # Early out: Nothing to show
-        if self.text is None:
+        if not self.text:
             return rio.Column()
 
         # Prepare the style
@@ -104,4 +103,5 @@ class Banner(component_base.Component):
                 align_x=0.5,
             ),
             color=style_name,
+            corner_radius=self.session.theme.corner_radius_small,
         )
