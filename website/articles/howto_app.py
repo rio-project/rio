@@ -8,7 +8,7 @@ def generate() -> article.Article:
 
     result.markdown(
         """
-# More Components
+# Creating an App with Rio
 
 TODO
         """
