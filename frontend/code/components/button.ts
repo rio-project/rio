@@ -12,6 +12,7 @@ export type ButtonState = ComponentState & {
     child?: number | string;
     is_sensitive?: boolean;
     initially_disabled_for?: number;
+    square_aspect_ratio?: boolean;
 };
 
 export class ButtonComponent extends SingleContainer {
@@ -115,6 +116,13 @@ export class ButtonComponent extends SingleContainer {
             }
 
             applyColorSet(element, colorSet);
+        }
+
+        // Some buttons need to keep their aspect ratio square
+        if (deltaState.square_aspect_ratio === true) {
+            element.style.aspectRatio = '1';
+        } else if (deltaState.square_aspect_ratio === false) {
+            element.style.aspectRatio = '';
         }
 
         // The ripple stores the coordinates of its rectangle. Since rio likes

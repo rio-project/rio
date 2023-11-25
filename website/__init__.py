@@ -149,24 +149,9 @@ pages = [
 ]
 
 
-class IDied(rio.Component):
-    def build(self) -> rio.Component:
-        return rio.Card(
-            rio.Row(
-                rio.Icon("error"),
-                rio.Text("I died"),
-                spacing=1,
-            ),
-            color="danger",
-            align_x=0.5,
-            align_y=0.5,
-        )
-
-
 rio_app = rio.App(
     name="Rio",
     build=AppRoot,
-    build_connection_lost_message=IDied,
     icon=ASSETS_DIR / "rio-logo.png",
     pages=pages,
     default_attachments=[
