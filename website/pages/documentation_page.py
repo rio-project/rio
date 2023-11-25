@@ -15,6 +15,30 @@ class Outliner(rio.Component):
         await self.force_refresh()
 
     def build(self) -> rio.Component:
+        docs_page = self.session.active_page_instances[1]
+
+        subpages = {}
+        for page in docs_page.children:
+            subpages[page.page_url.replace("-", " ").capitalize()] = page.page_url
+
+        if not subpages:
+            subpages["Placeholder"] = "placeholder"
+
+        return rio.Column(
+            rio.IconButton(
+                icon="arrow-back",
+                on_press=lambda: self.session.navigate_to("/documentation"),
+                color="primary",
+                align_x=0.5,
+            ),
+            rio.SwitcherBar(
+                subpages,
+                selected_value="placeholder",
+                color="primary",
+            ),
+            spacing=1,
+        )
+
         chapter_expanders = []
 
         # Which page is currently selected?

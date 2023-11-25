@@ -1668,8 +1668,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     box-shadow: 0 0 0 var(--rio-global-shadow-color);
 
     transition:
-        box-shadow 0.15s ease-in-out,
-        background-color 0.15s ease-in-out;
+        box-shadow 0.15s ease-out,
+        background-color 0.15s ease-out;
 }
 
 .rio-card-elevate-on-hover:hover {
