@@ -8,19 +8,23 @@ def generate() -> article.Article:
 
     result.markdown(
         """
-# More Components
-
-TODO
+# Customizing the Theme
         """
     )
 
-    result.snippet("tutorial-biography/skill_bars.py")
+    result.box(
+        "info",
+        """
+The easiest way to customize the theme is to use [Rio's Theme
+Builder](https://TODO.com/tools/theme-builder). It allows you to edit your
+theme without writing any code, and shows you the result in real-time.
+""",
+    )
 
-    result.navigation(
-        "App Setup",
-        rio.URL("tutorial-4-first-components"),
-        "",
-        None,
+    result.markdown(
+        """
+TODO
+"""
     )
 
     return result

@@ -1216,11 +1216,13 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
         font-weight: bold;
     }
 
-    p > code {
-        font-family: 'Roboto Mono', monospace;
-        background: var(--rio-local-plain-bg-variant);
-        border-radius: var(--rio-global-corner-radius-small);
-        padding: 0.1em 0.3em;
+    p {
+        code {
+            font-family: 'Roboto Mono', monospace;
+            background: var(--rio-local-plain-bg-variant);
+            border-radius: var(--rio-global-corner-radius-small);
+            padding: 0.1em 0.3em;
+        }
     }
 }
 

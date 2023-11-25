@@ -8,7 +8,7 @@ def generate() -> article.Article:
 
     result.markdown(
         """
-# More Components
+# Multipage Apps
 
 TODO
         """

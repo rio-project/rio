@@ -58,6 +58,11 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
                 articles.howto_app.generate,
             ),
             (
+                "Events",
+                "howto-events",
+                articles.howto_events.generate,
+            ),
+            (
                 "Multiple Pages",
                 "howto-multiple-pages",
                 articles.howto_multiple_pages.generate,
@@ -68,14 +73,14 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
                 articles.howto_passing_values.generate,
             ),
             (
-                "Layout",
-                "howto-layout",
-                articles.howto_layout.generate,
-            ),
-            (
                 "Theming",
                 "howto-theming",
                 articles.howto_theming.generate,
+            ),
+            (
+                "Creating a Website",
+                "howto-website",
+                articles.howto_website.generate,
             ),
         ),
     ),
