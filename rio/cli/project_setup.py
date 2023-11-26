@@ -1,16 +1,13 @@
-import sys
 from pathlib import Path
 from typing import *  # type: ignore
 
-import revel
-import uvicorn
 from revel import error, fatal, input, print, success, warning
 from typing_extensions import TypeAlias
 
 import rio.cli
 import rio.snippets
 
-from . import project, project_setup
+from .shell_escape_module import shell_escape
 
 __all__ = [
     "create_project",
@@ -297,5 +294,5 @@ def create_project(
     success(f"You can find it at `{project_dir.resolve()}`")
     print()
     print(f"To run the project, use the following commands:")
-    print(f"> cd '{project_dir.resolve()}'")
+    print(f"> cd {shell_escape(project_dir.resolve())}")
     print(f"> rio run")

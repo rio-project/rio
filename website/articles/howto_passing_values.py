@@ -22,14 +22,15 @@ like this:
 
     result.markdown(
         """
-Nothing special going on here. We're just passing a string value to a component.
+This is teh simplest case. There is nothing special going on here - we're just
+passing a string value to a class.
 
 ## Child to Parent
 
 But what if we wanted to pass a value in the other direction? After the user
-enters a text, we need to be able to get the modified value after all, so we
-can store it in a database, send it to a server, or whatever else we need to do
-with it.
+enters a text, we need to be able to get the modified value after all, so we can
+store it in a database, send it to a server, or whatever else we need to do with
+it.
 
 Rio provides a convenient way to do this. Let's take a look at code:
         """
@@ -52,14 +53,13 @@ component will automatically be updated with the new value, without any extra
 code on our part!
 
 So now, if you want to get the value of the `TextInput` component, you can just
-write `setlf.some_value` and it will always contain the up-to-date value of the
-`TextInput` component.
-
-An example including reading the value back follows in the next section:
+write `self.some_value` and it will always contain the up-to-date value of the
+`TextInput` component. That is exactly what we're doing in the button's event
+handler.
 
 ## Sibling to Sibling
 
-Passing values between siblinds doesn't require any new concepts. Simply bind
+Passing values between siblings doesn't require any new concepts. Simply bind
 both components to the same class property, and they will be kept in sync:
 
 """
@@ -70,7 +70,7 @@ both components to the same class property, and they will be kept in sync:
     result.markdown(
         """
 Here, changing either of the inputs will update the other one. (You might have
-to press enter or click outside the input to see the change.)
+to press `Enter ⏎` or click outside the input to see the change.)
 """
     )
 
