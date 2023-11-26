@@ -631,7 +631,7 @@ class AppServer(fastapi.FastAPI):
         except fastapi.WebSocketDisconnect:
             pass
 
-        finally:
+        else:
             sess.close()
 
     async def _finish_session_initialization(

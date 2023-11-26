@@ -100,6 +100,9 @@ class SessionAttachments:
         self._session = sess
         self._attachments: Dict[type, object] = {}
 
+    def __iter__(self) -> Iterator[object]:
+        return iter(self._attachments.values())
+
     def __contains__(self, typ: type) -> bool:
         return typ in self._attachments
 

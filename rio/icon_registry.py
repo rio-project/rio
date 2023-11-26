@@ -161,8 +161,6 @@ class IconRegistry:
         # Get the path to the icon's SVG file
         svg_path = self._get_icon_svg_path(icon_name)
 
-        print(icon_name, svg_path)
-
         # Read the SVG file
         try:
             svg_string = svg_path.read_text()
