@@ -491,8 +491,15 @@ class Session(unicall.Unicall):
                 created, allowing the user to go back to the previous page.
         """
 
+        # Normalize the target URL. Having it always be lowercase helps the user
+        # avoid navigation problems because of casing issues.
+        if isinstance(target_url, rio.URL):
+            target_url = str(target_url).lower()
+
+        target_url = rio.URL(target_url)
+
         # Determine the full page to navigate to
-        target_url_absolute = self.active_page_url.join(rio.URL(target_url))
+        target_url_absolute = self.active_page_url.join(target_url)
 
         # Is this a page, or a full URL to another site?
         try:

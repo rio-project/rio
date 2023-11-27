@@ -248,7 +248,7 @@ class AppServer(fastapi.FastAPI):
         base_url = rio.URL(str(request.base_url))
         assert base_url.is_absolute(), base_url
 
-        initial_page_url_absolute = rio.URL(str(request.url))
+        initial_page_url_absolute = rio.URL(str(request.url).lower())
         assert initial_page_url_absolute.is_absolute(), initial_page_url_absolute
 
         # Create a session instance to hold all of this state in an organized

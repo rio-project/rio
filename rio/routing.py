@@ -80,6 +80,15 @@ class Page:
     children: List["Page"] = field(default_factory=list)
     guard: Optional[Callable[[rio.Session], Union[None, rio.URL, str]]] = None
 
+    def __post_init__(self) -> None:
+        # URLs are case insensitive. An easy way to enforce this, and also
+        # prevent casing issues in the user code is to make sure the page's URL
+        # fragment is lowercase.
+        if self.page_url != self.page_url.lower():
+            raise ValueError(
+                f"Page URLs have to be lowercase, but `{self.page_url}` is not"
+            )
+
 
 class PageRedirect(Exception):
     """

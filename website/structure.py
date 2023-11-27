@@ -227,7 +227,7 @@ def _compute_linear() -> (
 
                 for art in arts:
                     name = art.__name__  # type: ignore
-                    result.append((name, section_title, name, art))
+                    result.append((name.lower(), section_title, name, art))
 
     return tuple(result)
 
