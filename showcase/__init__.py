@@ -362,6 +362,8 @@ class Sidebar(rio.Component):
             #                 multiline=True,
             #             ),
             FooButton(0),
+            rio.Text("foo bar"),
+            rio.Text("foo                bar"),
             rio.Text(
                 "foo",
                 height=80,
