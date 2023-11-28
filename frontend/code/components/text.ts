@@ -34,8 +34,8 @@ export class TextComponent extends ComponentBase {
         // Multiline
         if (deltaState.multiline !== undefined) {
             textElement.style.whiteSpace = deltaState.multiline
-                ? 'normal'
-                : 'nowrap';
+                ? 'pre-wrap'
+                : 'pre';
         }
 
         // Selectable
