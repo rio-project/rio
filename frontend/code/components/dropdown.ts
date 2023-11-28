@@ -19,11 +19,7 @@ export class DropdownComponent extends ComponentBase {
 
     private isOpen: boolean = false;
 
-    // If the user types while the dropdown is open, this text is used to filter
-    // available options.
-    private filterText: string = '';
-
-    //The currently highlighted option, if any
+    // The currently highlighted option, if any
     private highlightedOptionName: HTMLElement | null = null;
 
     _createElement(): HTMLElement {
@@ -106,7 +102,7 @@ export class DropdownComponent extends ComponentBase {
 
     private showPopup(element: HTMLElement): void {
         // Reset the filter
-        this.filterText = '';
+        this.inputElement.value = '';
         this._updateOptionEntries();
 
         // In order to guarantee that the popup is on top of all components, it
@@ -164,7 +160,7 @@ export class DropdownComponent extends ComponentBase {
 
             // Backspace -> remove the last character from the filter text
             if (event.key === 'Backspace') {
-                this.filterText = this.filterText.slice(0, -1);
+                this.inputElement.value = this.inputElement.value.slice(0, -1);
                 this._updateOptionEntries();
             }
 
@@ -211,8 +207,12 @@ export class DropdownComponent extends ComponentBase {
 
             // Any other key -> add it to the filter text
             if (event.key.length === 1) {
-                this.filterText += event.key;
+                this.inputElement.value += event.key.toLowerCase();
                 this._updateOptionEntries();
+
+                // Space can cause scrolling in some browsers. Eat the event to
+                // prevent that from happening.
+                event.preventDefault();
             }
         };
 
@@ -279,31 +279,38 @@ export class DropdownComponent extends ComponentBase {
         let currentOptionNames: string[] = [];
 
         for (let optionName of this.state.optionNames) {
-            if (optionName.toLowerCase().includes(this.filterText)) {
+            if (optionName.toLowerCase().includes(this.inputElement.value)) {
                 currentOptionNames.push(optionName);
             }
         }
 
         // Update the HTML to reflect them
         this.optionsElement.innerHTML = '';
-        for (let optionName of currentOptionNames) {
-            let optionElement = document.createElement('div');
-            optionElement.classList.add('rio-dropdown-option');
-            optionElement.textContent = optionName;
-            this.optionsElement.appendChild(optionElement);
 
-            optionElement.addEventListener('click', () => {
-                this.hidePopup(element);
-                this.isOpen = false;
-                this.inputElement.value = optionName;
-                this.sendMessageToBackend({
-                    name: optionName,
+        if (currentOptionNames.length === 0) {
+            // let noMatchesElement = document.createElement('div');
+            // noMatchesElement.classList.add('rio-dropdown-no-matches');
+            // this.optionsElement.textContent = 'No matches';
+        } else {
+            for (let optionName of currentOptionNames) {
+                let optionElement = document.createElement('div');
+                optionElement.classList.add('rio-dropdown-option');
+                optionElement.textContent = optionName;
+                this.optionsElement.appendChild(optionElement);
+
+                optionElement.addEventListener('click', () => {
+                    this.hidePopup(element);
+                    this.isOpen = false;
+                    this.inputElement.value = optionName;
+                    this.sendMessageToBackend({
+                        name: optionName,
+                    });
                 });
-            });
 
-            optionElement.addEventListener('mouseenter', () => {
-                this._highlightOption(optionElement);
-            });
+                optionElement.addEventListener('mouseenter', () => {
+                    this._highlightOption(optionElement);
+                });
+            }
         }
 
         // Because the popup isn't a child element of the dropdown, manually
