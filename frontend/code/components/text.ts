@@ -27,8 +27,10 @@ export class TextComponent extends ComponentBase {
         let textElement = containerElement.firstElementChild as HTMLElement;
 
         // Text content
+        //
+        // Make sure not to allow any linebreaks if the text is not multiline.
         if (deltaState.text !== undefined) {
-            textElement.innerText = deltaState.text;
+            textElement.innerText = deltaState.text.replace(/\n/g, ' ');
         }
 
         // Multiline

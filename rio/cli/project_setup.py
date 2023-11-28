@@ -21,6 +21,9 @@ TemplatesLiteral: TypeAlias = Literal["biography"]
 AVAILABLE_TEMPLATES: Set[str] = set(get_args(TemplatesLiteral))
 
 # Which snippets must be included for each project template
+#
+# The first page will be used as the main page, i.e. it will be located at `/`.
+# The URLs of other pages are derived from the snippet name.
 TEMPLATE_DEPENDENCIES: Dict[Optional[TemplatesLiteral], Set[str]] = {
     None: {
         # Components
@@ -109,6 +112,7 @@ def generate_root_init(
     nicename: str,
     project_type: Literal["app", "website"],
     dependencies: Iterable[rio.snippets.Snippet],
+    main_page_snippet_name: str,
 ) -> None:
     # The root widget depends on the type of project
     root_widget_name = (
@@ -121,9 +125,13 @@ def generate_root_init(
         if dep.target_directory != "pages":
             continue
 
-        assert dep.name.count("/") == 1, dep.name
-        url_segment = dep.name.split("/")[1][:-3]
-        url_segment = url_segment.replace("_", "_").lower()
+        # What's the URL segment for this page?
+        if dep.name == main_page_snippet_name:
+            url_segment = ""
+        else:
+            assert dep.name.count("/") == 1, dep.name
+            url_segment = dep.name.split("/")[1][:-3]
+            url_segment = url_segment.replace("_", "_").lower()
 
         page_strings.append(
             f"""
@@ -180,14 +188,6 @@ rio_app = rio.App(
 fastapi_app = rio_app.as_fastapi()
 """
         )
-    else:
-        fil.write(
-            """
-# If this is the main module, run the app in a window
-if __name__ == "__main__":
-    rio_app.run_in_window()
-"""
-        )
 
 
 def create_project(
@@ -224,7 +224,7 @@ def create_project(
 
     # If the project directory already exists it must be empty
     if any(project_dir.iterdir()):
-        fatal("The project directory already exists and is not empty")
+        fatal(f"The project directory `{project_dir}` already exists and is not empty")
 
     # Create the config file
     with open(project_dir / "rio.toml", "w") as f:
@@ -283,6 +283,25 @@ def create_project(
             f,
             [snip for snip in dependencies if snip.target_directory == "components"],
         )
+
+    # Applications require a `__main__.py` as well
+    if type == "app":
+        with open(main_module_dir / "__main__.py", "w") as f:
+            f.write(
+                f"""
+# Make sure the project is in the Python path
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+# Import the main module
+import {python_name}
+
+# Run the app
+{python_name}.rio_app.run_in_window()
+"""
+            )
 
     # Report success
     #
