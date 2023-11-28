@@ -204,7 +204,7 @@ def create_project(
     """
 
     # Derive the python name from the nicename
-    python_name = nicename.strip().replace("-", "_").replace(" ", "_")
+    python_name = nicename.strip().replace("-", "_").replace(" ", "_").lower()
 
     # If the python name is not a valid module name, ask for a different one
     if not python_name.isidentifier():
