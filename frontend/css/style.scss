@@ -907,6 +907,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-dropdown-options {
     flex-grow: 1;
 
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -916,6 +917,17 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-dropdown-options > * {
     position: relative;
     padding: 1rem 1rem;
+}
+
+.rio-dropdown-options:empty::after {
+    content: 'No matches';
+    color: var(--rio-local-plain-fg);
+    opacity: 0.5;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 // Spawn a brightly colored element when hovered
