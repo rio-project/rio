@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
@@ -55,7 +55,7 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
 
     def __init__(
         self,
-        options: Mapping[str, T],
+        options: Union[Mapping[str, T], Sequence[T]],
         *,
         label: str = "",
         selected_value: Optional[T] = None,
@@ -91,6 +91,9 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
             align_x=align_x,
             align_y=align_y,
         )
+
+        if isinstance(options, Sequence):
+            options = {str(value): value for value in options}
 
         self.options = options
         self.label = label
