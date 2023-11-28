@@ -164,9 +164,7 @@ rio_app = rio.App(
     build={root_widget_name},
     pages=[{page_string}
     ],
-    default_attachments=[
-        theme,
-    ],
+    theme=theme,
 )
 
 """.lstrip()
