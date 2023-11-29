@@ -1140,7 +1140,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
 
             # Otherwise attempt to compare the values
             try:
-                return old == new
+                return bool(old == new)
             except Exception:
                 return old is new
 

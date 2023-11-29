@@ -183,6 +183,8 @@ export async function applyIcon(
     cssColor: string
 ): Promise<void> {
     // Load the icon
+    //
+    // TODO: Cache the icons, so the same icon isn't loaded multiple times.
     let iconUrl = `/rio/icon/${iconName}`;
     let response = await fetch(iconUrl);
     let svgSource = await response.text();
