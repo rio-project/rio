@@ -123,9 +123,8 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
             if value == selected_value:
                 return name
         else:
-            raise ValueError(
-                f"There is no option with value `{self.selected_value!r}`."
-            )
+            # If nothing matches, just select the first option
+            return next(iter(self.options.keys()))
 
     def _custom_serialize(self) -> JsonDoc:
         result: JsonDoc = {
