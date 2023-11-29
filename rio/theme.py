@@ -155,6 +155,8 @@ class Theme:
                 rio.Color.from_grey(0.4),
             )
 
+            shadow_color = rio.Color.from_rgb(0.1, 0.1, 0.4, 0.3)
+
         else:
             background_palette = Palette(
                 background=rio.Color.from_grey(0.1),
@@ -176,6 +178,8 @@ class Theme:
                 rio.Color.from_grey(0.10),
                 rio.Color.from_grey(0.6),
             )
+
+            shadow_color = rio.Color.from_rgb(0.0, 0.0, 0.1, 0.35)
 
         # Semantic colors
         if success_color is None:
@@ -215,7 +219,7 @@ class Theme:
             corner_radius_small=corner_radius_small,
             corner_radius_medium=corner_radius_medium,
             corner_radius_large=corner_radius_large,
-            shadow_color=rio.Color.from_rgb(0.1, 0.1, 0.4, 0.3),
+            shadow_color=shadow_color,
             heading1_style=heading1_style,
             heading2_style=heading2_style,
             heading3_style=heading3_style,
