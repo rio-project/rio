@@ -1,7 +1,6 @@
 import { TextStyle } from '../models';
 import { textStyleToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
-import { applyIcon } from '../designApplication';
 
 export type TextState = ComponentState & {
     text?: string;
