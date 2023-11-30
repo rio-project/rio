@@ -444,6 +444,8 @@ export class MediaPlayerComponent extends ComponentBase {
         applyIcon(this.muteButton, 'volume-up:fill', 'white');
         this._updateProgress();
 
+        this.mediaPlayer.onvolumechange = this._sendVolumeToPython.bind(this);
+
         return element;
     }
 
@@ -451,11 +453,13 @@ export class MediaPlayerComponent extends ComponentBase {
         element: HTMLMediaElement,
         deltaState: MediaPlayerState
     ): void {
-        if (
-            deltaState.mediaUrl !== undefined &&
-            deltaState.mediaUrl !== this.mediaPlayer.src
-        ) {
-            this.mediaPlayer.src = deltaState.mediaUrl;
+        if (deltaState.mediaUrl !== undefined) {
+            let mediaUrl = new URL(deltaState.mediaUrl, document.location.href)
+                .href;
+
+            if (mediaUrl !== this.mediaPlayer.src) {
+                this.mediaPlayer.src = mediaUrl;
+            }
         }
 
         if (deltaState.loop !== undefined) {
@@ -472,6 +476,8 @@ export class MediaPlayerComponent extends ComponentBase {
             this.controls.style.display = 'none';
         }
 
+        this.mediaPlayer.onvolumechange = null;
+
         if (deltaState.volume !== undefined) {
             this.setVolume(Math.min(1, Math.max(0, deltaState.volume)));
         }
@@ -479,6 +485,8 @@ export class MediaPlayerComponent extends ComponentBase {
         if (deltaState.muted !== undefined) {
             this.setMute(deltaState.muted);
         }
+
+        this.mediaPlayer.onvolumechange = this._sendVolumeToPython.bind(this);
 
         if (deltaState.background !== undefined) {
             Object.assign(element.style, fillToCss(deltaState.background));
@@ -514,6 +522,13 @@ export class MediaPlayerComponent extends ComponentBase {
     private _onPlaybackEnd(event: Event): void {
         this.sendMessageToBackend({
             type: 'onPlaybackEnd',
+        });
+    }
+
+    private _sendVolumeToPython(event: Event): void {
+        this.setStateAndNotifyBackend({
+            volume: this.mediaPlayer.volume,
+            muted: this.mediaPlayer.muted,
         });
     }
 
