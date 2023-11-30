@@ -18,7 +18,7 @@ const overlayTimeout = 2000;
 export class MediaPlayerComponent extends ComponentBase {
     state: Required<MediaPlayerState>;
 
-    private video: HTMLVideoElement;
+    private mediaPlayer: HTMLVideoElement;
     private controls: HTMLElement;
 
     private playButton: HTMLElement;
@@ -43,7 +43,7 @@ export class MediaPlayerComponent extends ComponentBase {
         let visibilityBefore = this._overlayVisible;
 
         // If the video is paused, show the controls
-        if (this.video.paused) {
+        if (this.mediaPlayer.paused) {
             this._overlayVisible = true;
         }
         // If the video was recently interacted with, show the controls
@@ -81,10 +81,10 @@ export class MediaPlayerComponent extends ComponentBase {
     /// Play/Pause the video
     setPlay(play: boolean): void {
         if (play) {
-            this.video.play();
+            this.mediaPlayer.play();
             applyIcon(this.playButton, 'pause:fill', 'white');
         } else {
-            this.video.pause();
+            this.mediaPlayer.pause();
             applyIcon(this.playButton, 'play-arrow:fill', 'white');
         }
 
@@ -94,9 +94,9 @@ export class MediaPlayerComponent extends ComponentBase {
     /// Update the content of the mute button to match the current state of the
     /// video.
     _updateMuteContent(): void {
-        if (this.video.muted || this.video.volume == 0) {
+        if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
             applyIcon(this.muteButton, 'volume-off:fill', 'white');
-        } else if (this.video.volume < 0.5) {
+        } else if (this.mediaPlayer.volume < 0.5) {
             applyIcon(this.muteButton, 'volume-down:fill', 'white');
         } else {
             applyIcon(this.muteButton, 'volume-up:fill', 'white');
@@ -106,12 +106,12 @@ export class MediaPlayerComponent extends ComponentBase {
     /// Mute/Unmute the video
     setMute(mute: boolean): void {
         if (mute) {
-            this.video.muted = true;
+            this.mediaPlayer.muted = true;
         } else {
-            this.video.muted = false;
+            this.mediaPlayer.muted = false;
 
-            if (this.video.volume == 0) {
-                this.video.volume = 0.5;
+            if (this.mediaPlayer.volume == 0) {
+                this.mediaPlayer.volume = 0.5;
             }
         }
 
@@ -121,11 +121,11 @@ export class MediaPlayerComponent extends ComponentBase {
     /// Set the volume of the video
     setVolume(volume: number): void {
         // Hooman audio perception is stoopid
-        this.video.volume = (Math.pow(3, volume) - 1) / 2;
+        this.mediaPlayer.volume = (Math.pow(3, volume) - 1) / 2;
 
         // Unmute, if previously muted
-        if (volume > 0 && this.video.muted) {
-            this.video.muted = false;
+        if (volume > 0 && this.mediaPlayer.muted) {
+            this.mediaPlayer.muted = false;
         }
 
         // Update the slider
@@ -165,7 +165,7 @@ export class MediaPlayerComponent extends ComponentBase {
     /// Update the UI to reflect the current playback and loading progress
     _updateProgress(): void {
         // Progress Slider
-        let progress = this.video.currentTime / this.video.duration;
+        let progress = this.mediaPlayer.currentTime / this.mediaPlayer.duration;
         let percentage = `${progress * 100}%`;
 
         this.timelinePlayed.style.width = percentage;
@@ -174,18 +174,22 @@ export class MediaPlayerComponent extends ComponentBase {
         //
         // The duration may not be known yet if the browser hasn't loaded
         // the metadata.
-        if (isNaN(this.video.duration)) {
+        if (isNaN(this.mediaPlayer.duration)) {
             this.playtimeLabel.textContent = '0:00';
         } else {
-            let playedString = this._durationToString(this.video.currentTime);
-            let durationString = this._durationToString(this.video.duration);
+            let playedString = this._durationToString(
+                this.mediaPlayer.currentTime
+            );
+            let durationString = this._durationToString(
+                this.mediaPlayer.duration
+            );
             this.playtimeLabel.textContent = `${playedString} / ${durationString}`;
         }
 
         // Loaded Amount
         let loadedFraction =
-            this.video.buffered.length > 0
-                ? this.video.buffered.end(0) / this.video.duration
+            this.mediaPlayer.buffered.length > 0
+                ? this.mediaPlayer.buffered.end(0) / this.mediaPlayer.duration
                 : 0;
         this.timelineLoaded.style.width = `${loadedFraction * 100}%`;
     }
@@ -232,7 +236,7 @@ export class MediaPlayerComponent extends ComponentBase {
             </div>
         `;
 
-        this.video = element.querySelector('video') as HTMLVideoElement;
+        this.mediaPlayer = element.querySelector('video') as HTMLVideoElement;
         this.controls = element.querySelector(
             '.rio-media-player-controls'
         ) as HTMLElement;
@@ -271,24 +275,27 @@ export class MediaPlayerComponent extends ComponentBase {
             '.rio-media-player-volume-current'
         ) as HTMLElement;
 
-        this.video.addEventListener(
+        this.mediaPlayer.addEventListener(
             'timeupdate',
             this._updateProgress.bind(this)
         );
 
         // Subscribe to events
-        this.video.addEventListener('mousemove', this.interact.bind(this));
+        this.mediaPlayer.addEventListener(
+            'mousemove',
+            this.interact.bind(this)
+        );
 
-        this.video.addEventListener('click', () => {
-            this.setPlay(this.video.paused);
+        this.mediaPlayer.addEventListener('click', () => {
+            this.setPlay(this.mediaPlayer.paused);
         });
 
         this.playButton.addEventListener('click', () => {
-            this.setPlay(this.video.paused);
+            this.setPlay(this.mediaPlayer.paused);
         });
 
         this.muteButton.addEventListener('click', () => {
-            this.setMute(!this.video.muted);
+            this.setMute(!this.mediaPlayer.muted);
         });
 
         this.fullscreenButton.addEventListener('click', () => {
@@ -298,7 +305,7 @@ export class MediaPlayerComponent extends ComponentBase {
         this.timelineOuter.addEventListener('click', (event: MouseEvent) => {
             let rect = this.timelineOuter.getBoundingClientRect();
             let progress = (event.clientX - rect.left) / rect.width;
-            this.video.currentTime = this.video.duration * progress;
+            this.mediaPlayer.currentTime = this.mediaPlayer.duration * progress;
         });
 
         this.timelineOuter.addEventListener(
@@ -322,25 +329,25 @@ export class MediaPlayerComponent extends ComponentBase {
             this.setVolume(volume);
         });
 
-        this.video.addEventListener(
+        this.mediaPlayer.addEventListener(
             'timeupdate',
             this._updateProgress.bind(this)
         );
 
-        this.video.addEventListener('dblclick', () => {
+        this.mediaPlayer.addEventListener('dblclick', () => {
             this.toggleFullscreen();
         });
 
-        this.video.addEventListener('keydown', (event: KeyboardEvent) => {
+        this.mediaPlayer.addEventListener('keydown', (event: KeyboardEvent) => {
             switch (event.key) {
                 // Space plays/pauses the video
                 case ' ':
-                    this.setPlay(this.video.paused);
+                    this.setPlay(this.mediaPlayer.paused);
                     break;
 
                 // M mutes/unmutes the video
                 case 'm':
-                    this.setMute(!this.video.muted);
+                    this.setMute(!this.mediaPlayer.muted);
                     break;
 
                 // F toggles fullscreen
@@ -350,18 +357,18 @@ export class MediaPlayerComponent extends ComponentBase {
 
                 // Left and right arrow keys seek the video
                 case 'ArrowLeft':
-                    this.video.currentTime -= 5;
+                    this.mediaPlayer.currentTime -= 5;
                     break;
                 case 'ArrowRight':
-                    this.video.currentTime += 5;
+                    this.mediaPlayer.currentTime += 5;
                     break;
 
                 // Up and down arrow keys change the volume
                 case 'ArrowUp':
-                    this.setVolume(this.video.volume + 0.1);
+                    this.setVolume(this.mediaPlayer.volume + 0.1);
                     break;
                 case 'ArrowDown':
-                    this.setVolume(this.video.volume - 0.1);
+                    this.setVolume(this.mediaPlayer.volume - 0.1);
                     break;
 
                 // All other keys are ignored
@@ -372,7 +379,7 @@ export class MediaPlayerComponent extends ComponentBase {
             event.preventDefault();
         });
 
-        this.video.addEventListener('ended', () => {
+        this.mediaPlayer.addEventListener('ended', () => {
             this.setPlay(false);
         });
 
@@ -391,17 +398,17 @@ export class MediaPlayerComponent extends ComponentBase {
     ): void {
         if (
             deltaState.mediaUrl !== undefined &&
-            deltaState.mediaUrl !== this.video.src
+            deltaState.mediaUrl !== this.mediaPlayer.src
         ) {
-            this.video.src = deltaState.mediaUrl;
+            this.mediaPlayer.src = deltaState.mediaUrl;
         }
 
         if (deltaState.loop !== undefined) {
-            this.video.loop = deltaState.loop;
+            this.mediaPlayer.loop = deltaState.loop;
         }
 
         if (deltaState.autoplay !== undefined) {
-            this.video.autoplay = deltaState.autoplay;
+            this.mediaPlayer.autoplay = deltaState.autoplay;
         }
 
         if (deltaState.controls !== undefined) {
@@ -414,26 +421,26 @@ export class MediaPlayerComponent extends ComponentBase {
         }
 
         if (deltaState.volume !== undefined) {
-            this.setVolume(deltaState.volume);
+            this.setVolume(Math.min(1, Math.max(0, deltaState.volume)));
         }
 
         if (deltaState.reportError !== undefined) {
             if (deltaState.reportError) {
-                if (this.video.onerror === null) {
-                    this.video.onerror = this._onError.bind(this);
+                if (this.mediaPlayer.onerror === null) {
+                    this.mediaPlayer.onerror = this._onError.bind(this);
                 }
             } else {
-                this.video.onerror = null;
+                this.mediaPlayer.onerror = null;
             }
         }
 
         if (deltaState.reportPlaybackEnd !== undefined) {
             if (deltaState.reportPlaybackEnd) {
-                if (this.video.onended === null) {
-                    this.video.onended = this._onPlaybackEnd.bind(this);
+                if (this.mediaPlayer.onended === null) {
+                    this.mediaPlayer.onended = this._onPlaybackEnd.bind(this);
                 }
             } else {
-                this.video.onended = null;
+                this.mediaPlayer.onended = null;
             }
         }
     }

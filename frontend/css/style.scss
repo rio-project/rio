@@ -769,13 +769,15 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 .rio-text-input-color-bar {
     position: absolute;
     bottom: 0;
-    height: 0.15rem;
+    height: 0.12rem;
 }
 
 .rio-text-input-plain-bar {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--rio-local-text-color);
+
     left: 0;
     right: 0;
+    opacity: 0.15;
 }
 
 .rio-text-input-color-bar {
@@ -921,7 +923,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 .rio-dropdown-options:empty::after {
     content: 'No matches';
-    color: var(--rio-local-plain-fg);
+    color: var(--rio-local-text-color);
     opacity: 0.5;
 
     position: absolute;
