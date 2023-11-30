@@ -1202,6 +1202,170 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 // MediaPlayer
 .rio-media-player {
     pointer-events: auto;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.rio-media-player video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rio-media-player-controls {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6));
+    padding-top: 2.5rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0rem;
+    align-items: stretch;
+
+    transition: opacity 0.4s ease-in-out;
+}
+
+.rio-media-player-timeline {
+    cursor: pointer;
+    position: relative;
+    height: 2rem;
+    margin: 0 0.5rem;
+}
+
+.rio-media-player-timeline > div {
+    position: relative;
+    top: 50%;
+    height: 0.2rem;
+    transform: translateY(-50%);
+
+    transition: height 0.2s ease-in-out;
+}
+
+.rio-media-player-timeline:hover > div {
+    height: 0.4rem;
+}
+
+.rio-media-player-timeline-knob {
+    position: absolute;
+    width: 0rem;
+    height: 0rem;
+    left: 100%;
+    top: 50%;
+    background-color: var(--rio-local-accent-bg);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+
+    transition:
+        width 0.2s ease-in-out,
+        height 0.2s ease-in-out;
+}
+
+.rio-media-player-timeline:hover .rio-media-player-timeline-knob {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.rio-media-player-timeline-background,
+.rio-media-player-timeline-loaded,
+.rio-media-player-timeline-hover,
+.rio-media-player-timeline-played {
+    position: absolute;
+    width: 0%;
+    height: 100%;
+    background-color: white;
+    border-radius: $infinite-corner-radius;
+}
+
+.rio-media-player-timeline-background {
+    width: 100%;
+    opacity: 0.2;
+}
+
+.rio-media-player-timeline-loaded {
+    opacity: 0.2;
+}
+
+.rio-media-player-timeline-hover {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.rio-media-player-timeline-played {
+    background-color: var(--rio-local-accent-bg);
+}
+
+.rio-media-player-controls-row {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    padding: 0.5rem;
+    padding-top: 0;
+}
+
+.rio-media-player-button {
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+}
+
+.rio-media-player-button > img {
+    width: 100%;
+    height: 100%;
+}
+
+.rio-media-player-volume {
+    cursor: pointer;
+    position: relative;
+    width: 5rem;
+    height: 1.5rem;
+}
+
+.rio-media-player-volume > div {
+    position: relative;
+    top: 50%;
+    height: 0.2rem;
+    transform: translateY(-50%);
+}
+
+.rio-media-player-volume-background,
+.rio-media-player-volume-current {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: $infinite-corner-radius;
+    background-color: white;
+}
+
+.rio-media-player-volume-background {
+    opacity: 0.2;
+}
+
+.rio-media-player-volume-knob {
+    position: absolute;
+    width: 0.9rem;
+    height: 0.9rem;
+    left: 100%;
+    top: 50%;
+    background-color: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.rio-media-player-volume > div {
+    position: relative;
+    top: 50%;
+    height: 0.2rem;
+    transform: translateY(-50%);
+}
+
+.rio-media-player-playtime-label {
+    color: white;
+    opacity: 0.6;
 }
 
 // Markdown
