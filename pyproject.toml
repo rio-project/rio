@@ -37,6 +37,7 @@ yarl = "^1.9.2"
 material-color-utilities-python = "^0.1.5"
 toml = "^0.10.2"
 httpx = "^0.25.1"
+watchfiles = "^0.21.0"
 
 [tool.poetry.extras]
 window = ["cefpython3", "platformdirs", "pygobject", "pywebview"]

@@ -261,6 +261,13 @@ def create_project(
 
         target_path.write_text(snippet.stripped_code())
 
+    # Find the main page
+    for main_page_snippet in dependencies:
+        if main_page_snippet.target_directory == "pages":
+            break
+    else:
+        raise AssertionError(f"Template `{template}` has no main page!?")
+
     # Generate /project/__init__.py
     with open(main_module_dir / "__init__.py", "w") as fil:
         generate_root_init(
@@ -268,6 +275,7 @@ def create_project(
             nicename=nicename,
             project_type=type,
             dependencies=dependencies,
+            main_page_snippet_name=main_page_snippet.name,
         )
 
     # Generate /project/pages/__init__.py
@@ -282,6 +290,22 @@ def create_project(
         write_init_file(
             f,
             [snip for snip in dependencies if snip.target_directory == "components"],
+        )
+
+    # Generate README.md
+    #
+    # This file isn't strictly necessary, but `poetry install` in particular
+    # fails without. So hey, why not make a template.
+    with open(project_dir / "README.md", "w") as f:
+        f.write(
+            f"""# {nicename}
+
+This is a placeholder README for your project. Use it to describe what your
+project is about, to give new users a quick overview of what they can expect.
+
+_{nicename.capitalize()} was created using [Rio](http://rio.dev/), an easy to use
+app & website framework for Python._
+"""
         )
 
     # Applications require a `__main__.py` as well
@@ -310,6 +334,6 @@ import {python_name}
     success(f"The project has been created!")
     success(f"You can find it at `{project_dir.resolve()}`")
     print()
-    print(f"To run the project, use the following commands:")
+    print(f"To see your new project in action, run the following commands:")
     print(f"> cd {shell_escape(project_dir.resolve())}")
     print(f"> rio run")
