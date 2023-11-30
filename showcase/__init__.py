@@ -5,7 +5,9 @@ from typing import *  # type: ignore
 import rio
 import rio.debug
 
-theme = rio.Theme.from_color()
+theme = rio.Theme.from_color(
+    light=False,
+)
 
 CARD_STYLE = rio.BoxStyle(
     fill=theme.neutral_palette.background,
@@ -457,9 +459,7 @@ rio_app = rio.App(
     build=ComponentShowcase,
     on_session_start=lambda sess: print("Session Started"),
     on_session_end=lambda sess: print("Session Ended"),
-    default_attachments=[
-        theme,
-    ],
+    theme=theme,
 )
 
 

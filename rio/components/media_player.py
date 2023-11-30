@@ -54,8 +54,8 @@ class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
     media: Union[Path, URL, bytes]
     media_type: Optional[str] = None
     _: KW_ONLY
-    loop: bool = True
-    autoplay: bool = True
+    loop: bool = False
+    autoplay: bool = False
     controls: bool = True
     muted: bool = False
     volume: float = 1.0
