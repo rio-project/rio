@@ -1,6 +1,8 @@
 import { Color, ColorSet, Fill } from './models';
 import { colorToCssString } from './cssUtils';
 
+const ICON_SVG_CACHE: { [iconName: string]: string } = {};
+
 export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
     // Remove all switcheroos
     element.classList.remove(
@@ -182,12 +184,17 @@ export async function applyIcon(
     iconName: string,
     cssColor: string
 ): Promise<void> {
-    // Load the icon
-    //
-    // TODO: Cache the icons, so the same icon isn't loaded multiple times.
-    let iconUrl = `/rio/icon/${iconName}`;
-    let response = await fetch(iconUrl);
-    let svgSource = await response.text();
+    // Try to load the icon from the cache
+    let svgSource = ICON_SVG_CACHE[iconName];
+
+    // If it's not in the cache yet, load it from the server
+    if (svgSource === undefined) {
+        let response = await fetch(`/rio/icon/${iconName}`);
+        svgSource = await response.text();
+
+        // Cache the icon
+        ICON_SVG_CACHE[iconName] = svgSource;
+    }
 
     // Create the SVG element
     target.innerHTML = svgSource;
