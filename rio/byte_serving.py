@@ -20,7 +20,7 @@ def send_bytes_range_requests(
     file_obj: BinaryIO,
     start: int,
     end: int,
-    chunk_size_in_bytes: int = 16 * 1024,
+    chunk_size_in_bytes: int = 16 * 1024 * 1024,
 ) -> Iterator[bytes]:
     """
     Send a file in chunks using Range Requests specification RFC7233. `start`
