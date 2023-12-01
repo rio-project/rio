@@ -1,10 +1,8 @@
 import { ComponentBase, ComponentState } from './componentBase';
 
-
 export type HtmlState = ComponentState & {
     html?: string;
 };
-
 
 export class HtmlComponent extends ComponentBase {
     state: Required<HtmlState>;

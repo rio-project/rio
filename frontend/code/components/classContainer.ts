@@ -14,13 +14,19 @@ export class ClassContainerComponent extends SingleContainer {
         return document.createElement('div');
     }
 
-    _updateElement(element: HTMLElement, deltaState: ClassContainerState): void {
+    _updateElement(
+        element: HTMLElement,
+        deltaState: ClassContainerState
+    ): void {
         if (deltaState.classes !== undefined) {
             // Remove all old values
             element.className = '';
 
             // Add all new values
-            element.classList.add('rio-single-container', ...deltaState.classes);
+            element.classList.add(
+                'rio-single-container',
+                ...deltaState.classes
+            );
         }
     }
 }
