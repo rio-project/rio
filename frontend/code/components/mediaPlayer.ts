@@ -84,31 +84,6 @@ export class MediaPlayerComponent extends ComponentBase {
         setTimeout(this._updateOverlay.bind(this), OVERLAY_TIMEOUT + 50);
     }
 
-    /// Play/Pause the video
-    setPlay(play: boolean): void {
-        if (play) {
-            this.mediaPlayer.play();
-            applyIcon(this.playButton, 'pause:fill', 'white');
-        } else {
-            this.mediaPlayer.pause();
-            applyIcon(this.playButton, 'play-arrow:fill', 'white');
-        }
-
-        this.interact();
-    }
-
-    /// Update the content of the mute button to match the current state of the
-    /// video.
-    _updateMuteContent(): void {
-        if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
-            applyIcon(this.muteButton, 'volume-off:fill', 'white');
-        } else if (this.mediaPlayer.volume < 0.5) {
-            applyIcon(this.muteButton, 'volume-down:fill', 'white');
-        } else {
-            applyIcon(this.muteButton, 'volume-up:fill', 'white');
-        }
-    }
-
     /// Mute/Unmute the video
     setMute(mute: boolean): void {
         if (mute) {
@@ -120,24 +95,25 @@ export class MediaPlayerComponent extends ComponentBase {
                 this.setVolume(0.5);
             }
         }
+    }
 
-        this._updateMuteContent();
+    /// Hooman eers are stoopid
+    humanVolumeToLinear(volume: number): number {
+        return (Math.pow(3, volume) - 1) / 2;
+    }
+
+    linearVolumeToHuman(volume: number): number {
+        return Math.log(volume * 2 + 1) / Math.log(3);
     }
 
     /// Set the volume of the video
     setVolume(volume: number): void {
-        // Hooman eers are stoopid
-        this.mediaPlayer.volume = (Math.pow(3, volume) - 1) / 2;
+        this.mediaPlayer.volume = this.humanVolumeToLinear(volume);
 
         // Unmute, if previously muted
         if (volume > 0 && this.mediaPlayer.muted) {
             this.mediaPlayer.muted = false;
         }
-
-        // Update the slider
-        this.volumeCurrent.style.width = `${volume * 100}%`;
-
-        this._updateMuteContent();
     }
 
     /// Enter/Exit fullscreen mode
@@ -312,13 +288,22 @@ export class MediaPlayerComponent extends ComponentBase {
         );
 
         this.mediaPlayer.addEventListener('click', () => {
-            if (this.state.controls) {
-                this.setPlay(this.mediaPlayer.paused);
+            if (!this.state.controls) {
+                return;
+            }
+            if (this.mediaPlayer.paused) {
+                this.mediaPlayer.play();
+            } else {
+                this.mediaPlayer.pause();
             }
         });
 
         this.playButton.addEventListener('click', () => {
-            this.setPlay(this.mediaPlayer.paused);
+            if (this.mediaPlayer.paused) {
+                this.mediaPlayer.play();
+            } else {
+                this.mediaPlayer.pause();
+            }
         });
 
         this.muteButton.addEventListener('click', () => {
@@ -362,14 +347,26 @@ export class MediaPlayerComponent extends ComponentBase {
         );
 
         this.mediaPlayer.addEventListener('dblclick', () => {
+            if (!this.state.controls) {
+                return;
+            }
+
             this.toggleFullscreen();
         });
 
         this.mediaPlayer.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (!this.state.controls) {
+                return;
+            }
+
             switch (event.key) {
                 // Space plays/pauses the video
                 case ' ':
-                    this.setPlay(this.mediaPlayer.paused);
+                    if (this.mediaPlayer.paused) {
+                        this.mediaPlayer.play();
+                    } else {
+                        this.mediaPlayer.pause();
+                    }
                     break;
 
                 // M mutes/unmutes the video
@@ -406,18 +403,42 @@ export class MediaPlayerComponent extends ComponentBase {
             event.preventDefault();
         });
 
-        this.mediaPlayer.addEventListener('ended', () => {
-            this.setPlay(false);
+        this.mediaPlayer.addEventListener('play', () => {
+            applyIcon(this.playButton, 'pause:fill', 'white');
         });
 
-        this.mediaPlayer.addEventListener('loadedmetadata', () => {
-            this._updateProgress();
+        this.mediaPlayer.addEventListener('paused', () => {
+            applyIcon(this.playButton, 'play-arrow:fill', 'white');
         });
+
+        this.mediaPlayer.addEventListener('ended', () => {
+            applyIcon(this.playButton, 'play-arrow:fill', 'white');
+        });
+
+        this.mediaPlayer.addEventListener('volumechange', () => {
+            // Update the mute button's icon
+            if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
+                applyIcon(this.muteButton, 'volume-off:fill', 'white');
+            } else if (this.mediaPlayer.volume < 0.5) {
+                applyIcon(this.muteButton, 'volume-down:fill', 'white');
+            } else {
+                applyIcon(this.muteButton, 'volume-up:fill', 'white');
+            }
+
+            // Update the slider
+            let humanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
+            this.volumeCurrent.style.width = `${humanVolume * 100}%`;
+        });
+
+        this.mediaPlayer.addEventListener(
+            'loadedmetadata',
+            this._updateProgress.bind(this)
+        );
 
         // Initialize
         applyIcon(this.playButton, 'play-arrow:fill', 'white');
         applyIcon(this.fullscreenButton, 'fullscreen', 'white');
-        this._updateMuteContent();
+        applyIcon(this.muteButton, 'volume-up:fill', 'white');
         this._updateProgress();
 
         return element;
@@ -448,12 +469,12 @@ export class MediaPlayerComponent extends ComponentBase {
             this.controls.style.display = 'none';
         }
 
-        if (deltaState.muted !== undefined) {
-            this.setMute(deltaState.muted);
-        }
-
         if (deltaState.volume !== undefined) {
             this.setVolume(Math.min(1, Math.max(0, deltaState.volume)));
+        }
+
+        if (deltaState.muted !== undefined) {
+            this.setMute(deltaState.muted);
         }
 
         if (deltaState.reportError !== undefined) {
