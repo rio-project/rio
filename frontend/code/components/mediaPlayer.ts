@@ -1,4 +1,6 @@
+import { fillToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
+import { Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type MediaPlayerState = ComponentState & {
@@ -9,6 +11,7 @@ export type MediaPlayerState = ComponentState & {
     muted?: boolean;
     volume?: number;
     mediaUrl?: string;
+    background: Fill;
     reportError?: boolean;
     reportPlaybackEnd?: boolean;
 };
@@ -475,6 +478,10 @@ export class MediaPlayerComponent extends ComponentBase {
 
         if (deltaState.muted !== undefined) {
             this.setMute(deltaState.muted);
+        }
+
+        if (deltaState.background !== undefined) {
+            Object.assign(element.style, fillToCss(deltaState.background));
         }
 
         if (deltaState.reportError !== undefined) {

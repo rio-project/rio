@@ -7,7 +7,9 @@ from typing import *  # type: ignore
 from uniserde import JsonDoc
 from yarl import URL
 
-from .. import assets
+import rio
+
+from .. import assets, color
 from ..common import URL, EventHandler
 from . import component_base
 
@@ -52,15 +54,67 @@ class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
     """
 
     media: Union[Path, URL, bytes]
-    media_type: Optional[str] = None
-    _: KW_ONLY
-    loop: bool = False
-    autoplay: bool = False
-    controls: bool = True
-    muted: bool = False
-    volume: float = 1.0
-    on_playback_end: EventHandler[[]] = None
-    on_error: EventHandler[[]] = None
+    media_type: Optional[str]
+    loop: bool
+    autoplay: bool
+    controls: bool
+    muted: bool
+    volume: float
+    background: rio.Fill
+    on_playback_end: EventHandler[[]]
+    on_error: EventHandler[[]]
+
+    def __init__(
+        self,
+        media: Union[Path, URL, bytes],
+        *,
+        media_type: Optional[str] = None,
+        loop: bool = False,
+        autoplay: bool = False,
+        controls: bool = True,
+        muted: bool = False,
+        volume: float = 1.0,
+        background: rio.FillLike = color.Color.TRANSPARENT,
+        on_playback_end: EventHandler[[]] = None,
+        on_error: EventHandler[[]] = None,
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        super().__init__(
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
+
+        self.media = media
+        self.media_type = media_type
+        self.loop = loop
+        self.autoplay = autoplay
+        self.controls = controls
+        self.muted = muted
+        self.volume = volume
+        self.background = rio.Fill._try_from(background)
+        self.on_playback_end = on_playback_end
+        self.on_error = on_error
 
     def _custom_serialize(self) -> JsonDoc:
         media_asset = assets.Asset.new(self.media, self.media_type)
