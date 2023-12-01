@@ -410,7 +410,7 @@ export class MediaPlayerComponent extends ComponentBase {
             applyIcon(this.playButton, 'pause:fill', 'white');
         });
 
-        this.mediaPlayer.addEventListener('paused', () => {
+        this.mediaPlayer.addEventListener('pause', () => {
             applyIcon(this.playButton, 'play-arrow:fill', 'white');
         });
 
