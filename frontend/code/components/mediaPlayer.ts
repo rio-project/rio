@@ -13,7 +13,7 @@ export type MediaPlayerState = ComponentState & {
     reportPlaybackEnd?: boolean;
 };
 
-const overlayTimeout = 2000;
+const OVERLAY_TIMEOUT = 2000;
 
 export class MediaPlayerComponent extends ComponentBase {
     state: Required<MediaPlayerState>;
@@ -47,7 +47,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this._overlayVisible = true;
         }
         // If the video was recently interacted with, show the controls
-        else if (Date.now() - this._lastInteractionAt < overlayTimeout) {
+        else if (Date.now() - this._lastInteractionAt < OVERLAY_TIMEOUT) {
             this._overlayVisible = true;
         }
         // Otherwise, hide the controls
@@ -62,7 +62,13 @@ export class MediaPlayerComponent extends ComponentBase {
         }
 
         // Apply the visibility
-        this.controls.style.opacity = this._overlayVisible ? '1' : '0';
+        if (this._overlayVisible) {
+            this.controls.style.opacity = '1';
+            this.mediaPlayer.style.cursor = 'default';
+        } else {
+            this.controls.style.opacity = '0';
+            this.mediaPlayer.style.cursor = 'none';
+        }
     }
 
     /// Register an interaction with the video player, so it knows to show/hide
@@ -75,7 +81,7 @@ export class MediaPlayerComponent extends ComponentBase {
         this._updateOverlay();
 
         // And again after the overlay timeout + some fudge factor
-        setTimeout(this._updateOverlay, overlayTimeout + 50);
+        setTimeout(this._updateOverlay.bind(this), OVERLAY_TIMEOUT + 50);
     }
 
     /// Play/Pause the video
@@ -111,7 +117,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this.mediaPlayer.muted = false;
 
             if (this.mediaPlayer.volume == 0) {
-                this.mediaPlayer.volume = 0.5;
+                this.setVolume(0.5);
             }
         }
 
@@ -120,7 +126,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
     /// Set the volume of the video
     setVolume(volume: number): void {
-        // Hooman audio perception is stoopid
+        // Hooman eers are stoopid
         this.mediaPlayer.volume = (Math.pow(3, volume) - 1) / 2;
 
         // Unmute, if previously muted
@@ -196,42 +202,47 @@ export class MediaPlayerComponent extends ComponentBase {
 
     _createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-media-player');
+        element.classList.add(
+            'rio-media-player',
+            'rio-zero-size-request-container'
+        );
 
         element.innerHTML = `
-            <video></video>
-            <div class="rio-media-player-controls">
-                <!-- Timeline -->
-                <div class="rio-media-player-timeline">
-                    <div>
-                        <div class="rio-media-player-timeline-background"></div>
-                        <div class="rio-media-player-timeline-loaded"></div>
-                        <div class="rio-media-player-timeline-hover"></div>
-                        <div class="rio-media-player-timeline-played">
-                            <div class="rio-media-player-timeline-knob"></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Controls -->
-                <div class="rio-media-player-controls-row">
-                    <div class="rio-media-player-button rio-media-player-button-play"></div>
-                    <div class="rio-media-player-button rio-media-player-button-mute"></div>
-                    <!-- Volume -->
-                    <div class="rio-media-player-volume">
+            <div>
+                <video></video>
+                <div class="rio-media-player-controls">
+                    <!-- Timeline -->
+                    <div class="rio-media-player-timeline">
                         <div>
-                            <div class="rio-media-player-volume-background"></div>
-                            <div class="rio-media-player-volume-current">
-                                <div class="rio-media-player-volume-knob"></div>
+                            <div class="rio-media-player-timeline-background"></div>
+                            <div class="rio-media-player-timeline-loaded"></div>
+                            <div class="rio-media-player-timeline-hover"></div>
+                            <div class="rio-media-player-timeline-played">
+                                <div class="rio-media-player-timeline-knob"></div>
                             </div>
                         </div>
                     </div>
+                    <!-- Controls -->
+                    <div class="rio-media-player-controls-row">
+                        <div class="rio-media-player-button rio-media-player-button-play"></div>
+                        <div class="rio-media-player-button rio-media-player-button-mute"></div>
+                        <!-- Volume -->
+                        <div class="rio-media-player-volume">
+                            <div>
+                                <div class="rio-media-player-volume-background"></div>
+                                <div class="rio-media-player-volume-current">
+                                    <div class="rio-media-player-volume-knob"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="rio-media-player-playtime-label"></div>
+                        <div class="rio-media-player-playtime-label"></div>
 
-                    <!-- Spacer -->
-                    <div style="flex-grow: 1;"></div>
+                        <!-- Spacer -->
+                        <div style="flex-grow: 1;"></div>
 
-                    <div class="rio-media-player-button rio-media-player-button-fullscreen"></div>
+                        <div class="rio-media-player-button rio-media-player-button-fullscreen"></div>
+                    </div>
                 </div>
             </div>
         `;
@@ -275,19 +286,35 @@ export class MediaPlayerComponent extends ComponentBase {
             '.rio-media-player-volume-current'
         ) as HTMLElement;
 
+        // Subscribe to events
         this.mediaPlayer.addEventListener(
             'timeupdate',
             this._updateProgress.bind(this)
         );
 
-        // Subscribe to events
         this.mediaPlayer.addEventListener(
+            'mousemove',
+            this.interact.bind(this)
+        );
+        this.timelineOuter.addEventListener(
+            'mousemove',
+            this.interact.bind(this)
+        );
+        this.volumeOuter.addEventListener(
+            'mousemove',
+            this.interact.bind(this)
+        );
+        this.playButton.addEventListener('mousemove', this.interact.bind(this));
+        this.muteButton.addEventListener('mousemove', this.interact.bind(this));
+        this.fullscreenButton.addEventListener(
             'mousemove',
             this.interact.bind(this)
         );
 
         this.mediaPlayer.addEventListener('click', () => {
-            this.setPlay(this.mediaPlayer.paused);
+            if (this.state.controls) {
+                this.setPlay(this.mediaPlayer.paused);
+            }
         });
 
         this.playButton.addEventListener('click', () => {
@@ -365,10 +392,10 @@ export class MediaPlayerComponent extends ComponentBase {
 
                 // Up and down arrow keys change the volume
                 case 'ArrowUp':
-                    this.setVolume(this.mediaPlayer.volume + 0.1);
+                    this.setVolume(Math.min(this.mediaPlayer.volume + 0.1, 1));
                     break;
                 case 'ArrowDown':
-                    this.setVolume(this.mediaPlayer.volume - 0.1);
+                    this.setVolume(Math.max(this.mediaPlayer.volume - 0.1, 0));
                     break;
 
                 // All other keys are ignored
@@ -381,6 +408,10 @@ export class MediaPlayerComponent extends ComponentBase {
 
         this.mediaPlayer.addEventListener('ended', () => {
             this.setPlay(false);
+        });
+
+        this.mediaPlayer.addEventListener('loadedmetadata', () => {
+            this._updateProgress();
         });
 
         // Initialize
@@ -411,9 +442,10 @@ export class MediaPlayerComponent extends ComponentBase {
             this.mediaPlayer.autoplay = deltaState.autoplay;
         }
 
-        if (deltaState.controls !== undefined) {
-            // TODO!
-            console.log('TODO: Support enabling/disabling controls');
+        if (deltaState.controls === true) {
+            this.controls.style.removeProperty('display');
+        } else if (deltaState.controls === false) {
+            this.controls.style.display = 'none';
         }
 
         if (deltaState.muted !== undefined) {

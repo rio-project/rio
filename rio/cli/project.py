@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
+import gitignore_parser
 import revel
 import toml
 import uniserde
@@ -17,7 +18,12 @@ T = TypeVar("T")
 
 
 class RioProject:
-    def __init__(self, file_path: Path, toml_dict: uniserde.JsonDoc):
+    def __init__(
+        self,
+        file_path: Path,
+        toml_dict: uniserde.JsonDoc,
+        ignore_func: Callable[[str], bool],
+    ):
         # Path to the `rio.toml` file. May or may not exist
         self._file_path = file_path
 
@@ -27,6 +33,11 @@ class RioProject:
         # Which keys have been modified and thus must be written back to the
         # `rio.toml` file
         self._dirty_keys: Set[str] = set()
+
+        # Contains the parsed `.rioignore` file. When called with a path, it
+        # returns True if the path should be ignored as per the `.rioignore`
+        # file.
+        self._ignore_func: Callable[[str], bool] = ignore_func
 
     def _get_key(
         self,
@@ -127,11 +138,34 @@ class RioProject:
                 status_code=1,
             )
 
-        # Done, return the project
+        # If a `.rioignore` file exists, parse it
+        rioignore_path = project_dir / ".rioignore"
+
+        if rioignore_path.exists() and rioignore_path.is_file():
+            try:
+                ignore_func = gitignore_parser.parse_gitignore(rioignore_path)
+
+            except OSError as e:
+                fatal(
+                    f"Couldn't read `.rioignore`: {e}",
+                    status_code=1,
+                )
+        else:
+            ignore_func = lambda _: False
+
+        # Instantiate the project
         return RioProject(
             file_path=rio_toml_path,
-            toml_dict=rio_toml_dict,  # type: ignore
+            toml_dict=rio_toml_dict,
+            ignore_func=ignore_func,
         )
+
+    def is_ignored(self, path: Path) -> bool:
+        """
+        Given a path, determine whether it should be ignored, as per the
+        `.rioignore` file.
+        """
+        return self._ignore_func(str(path))
 
     def __enter__(self) -> "RioProject":
         return self

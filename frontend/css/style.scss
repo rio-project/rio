@@ -1203,16 +1203,17 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 // MediaPlayer
 .rio-media-player {
-    pointer-events: auto;
+    pointer-events: none;
     width: 100%;
     height: 100%;
     position: relative;
 }
 
 .rio-media-player video {
+    pointer-events: auto;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .rio-media-player-controls {
@@ -1233,13 +1234,17 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-media-player-timeline {
+    pointer-events: auto;
     cursor: pointer;
+
     position: relative;
     height: 2rem;
     margin: 0 0.5rem;
 }
 
 .rio-media-player-timeline > div {
+    pointer-events: none;
+
     position: relative;
     top: 50%;
     height: 0.2rem;
@@ -1289,7 +1294,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-media-player-timeline-loaded {
-    opacity: 0.2;
+    opacity: 0.3;
 }
 
 .rio-media-player-timeline-hover {
@@ -1310,7 +1315,9 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-media-player-button {
+    pointer-events: auto;
     cursor: pointer;
+
     width: 2rem;
     height: 2rem;
 }
@@ -1321,13 +1328,17 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-media-player-volume {
+    pointer-events: auto;
     cursor: pointer;
+
     position: relative;
     width: 5rem;
     height: 1.5rem;
 }
 
 .rio-media-player-volume > div {
+    pointer-events: none;
+
     position: relative;
     top: 50%;
     height: 0.2rem;
