@@ -1263,7 +1263,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     height: 0rem;
     left: 100%;
     top: 50%;
-    background-color: var(--rio-local-accent-bg);
+    background-color: var(--rio-global-primary-bg);
     border-radius: 50%;
     transform: translate(-50%, -50%);
 
@@ -1303,7 +1303,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-media-player-timeline-played {
-    background-color: var(--rio-local-accent-bg);
+    background-color: var(--rio-global-primary-bg);
 }
 
 .rio-media-player-controls-row {
@@ -1730,13 +1730,24 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 // Drawer
 .rio-drawer {
-    pointer-events: auto;
+    pointer-events: none;
     position: relative;
     overflow: hidden;
-    transition: background-color 0.5s ease-in-out;
 
     display: flex;
     align-items: stretch;
+}
+
+.rio-drawer-shade {
+    pointer-events: none;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    transition: background-color 0.5s ease-in-out;
 }
 
 .rio-drawer-anchor {

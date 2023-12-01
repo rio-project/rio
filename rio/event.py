@@ -28,6 +28,11 @@ class EventTag(enum.Enum):
     PERIODIC = enum.auto()
 
 
+def _register_as_event_handler(function: Callable, tag: EventTag, args: Any) -> None:
+    tags_dict = vars(function).setdefault("_rio_event_tags_", {})
+    tags_dict[tag] = args
+
+
 def on_create(handler: Callable[[C], None]) -> Callable[[C], None]:
     """
     Triggered after the component has been created and has access to all of its

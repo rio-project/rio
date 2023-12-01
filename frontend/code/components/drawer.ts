@@ -17,6 +17,7 @@ export class DrawerComponent extends ComponentBase {
 
     private anchorContainer: HTMLElement;
     private contentContainer: HTMLElement;
+    private shadeElement: HTMLElement;
 
     private dragStartedAt: number = 0;
     private openFractionAtDragStart: number = 0;
@@ -33,6 +34,10 @@ export class DrawerComponent extends ComponentBase {
         this.anchorContainer.classList.add('rio-drawer-anchor');
         this.anchorContainer.classList.add('rio-single-container');
         element.appendChild(this.anchorContainer);
+
+        this.shadeElement = document.createElement('div');
+        this.shadeElement.classList.add('rio-drawer-shade');
+        element.appendChild(this.shadeElement);
 
         this.contentContainer = document.createElement('div');
         this.contentContainer.classList.add('rio-drawer-content');
@@ -118,12 +123,20 @@ export class DrawerComponent extends ComponentBase {
             closedFraction * 100
         }% ${negate} ${closedFraction * 1}em))`;
 
-        // Apply shade, if modal
-        let element = this.element();
-        let shadeFraction = this.state.is_modal ? this.openFraction * 0.5 : 0;
-        element.style.backgroundColor = `rgba(0, 0, 0, ${shadeFraction})`;
+        // Throw some shade, if modal
+        if (this.state.is_modal) {
+            let shadeFraction = this.openFraction * 0.5;
+            this.shadeElement.style.backgroundColor = `rgba(0, 0, 0, ${shadeFraction})`;
+            this.shadeElement.style.pointerEvents = this.state.is_open
+                ? 'auto'
+                : 'none';
+        } else {
+            this.shadeElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            this.shadeElement.style.pointerEvents = 'none';
+        }
 
         // Update the class
+        let element = this.element();
         if (this.openFraction > 0.5) {
             element.classList.add('rio-drawer-open');
         } else {
