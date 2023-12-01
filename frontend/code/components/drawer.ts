@@ -83,7 +83,7 @@ export class DrawerComponent extends ComponentBase {
         ) {
             let beginDrag = this.beginDrag.bind(this);
             this.dragEventHandlers.set('mousedown', beginDrag);
-            element.addEventListener('mousedown', beginDrag);
+            element.addEventListener('mousedown', beginDrag, true);
         } else if (
             deltaState.is_user_openable === false &&
             this.state.is_user_openable === true
@@ -192,15 +192,6 @@ export class DrawerComponent extends ComponentBase {
         // If the click was outside of the anchor element, ignore it
         let drawerRect = element.getBoundingClientRect();
 
-        if (
-            event.clientX < drawerRect.left ||
-            event.clientX > drawerRect.right ||
-            event.clientY < drawerRect.top ||
-            event.clientY > drawerRect.bottom
-        ) {
-            return;
-        }
-
         // Account for the side of the drawer
         const handleSizeIfClosed = 2.0 * pixelsPerEm;
         let relevantClickCoordinate, thresholdMin, thresholdMax;
@@ -249,11 +240,13 @@ export class DrawerComponent extends ComponentBase {
 
             let moveHandler = this.dragMove.bind(this);
             this.dragEventHandlers.set('mousemove', moveHandler);
-            window.addEventListener('mousemove', moveHandler);
+            window.addEventListener('mousemove', moveHandler, true);
 
-            let endHandler = this.endDrag.bind(this);
-            this.dragEventHandlers.set('mouseup', endHandler);
-            window.addEventListener('mouseup', endHandler);
+            let upHandler = this.endDrag.bind(this);
+            this.dragEventHandlers.set('mouseup', upHandler);
+            this.dragEventHandlers.set('blur', upHandler);
+            window.addEventListener('mouseup', upHandler, true);
+            window.addEventListener('blur', upHandler, true);
 
             // Eat the event
             event.stopPropagation();
@@ -297,7 +290,7 @@ export class DrawerComponent extends ComponentBase {
         this._updateCss();
     }
 
-    endDrag(event: MouseEvent) {
+    endDrag() {
         // Snap to fully open or fully closed
         let threshold = this.openFractionAtDragStart > 0.5 ? 0.7 : 0.3;
 
@@ -309,7 +302,7 @@ export class DrawerComponent extends ComponentBase {
 
         // Remove the event handlers
         for (let [name, handler] of this.dragEventHandlers) {
-            window.removeEventListener(name, handler);
+            window.removeEventListener(name, handler, true);
         }
     }
 }
