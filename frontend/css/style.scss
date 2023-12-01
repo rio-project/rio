@@ -1730,7 +1730,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
 // Drawer
 .rio-drawer {
-    pointer-events: none;
+    pointer-events: auto;
     position: relative;
     overflow: hidden;
 
@@ -1751,10 +1751,14 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 }
 
 .rio-drawer-anchor {
+    pointer-events: none;
+
     flex-grow: 1;
 }
 
 .rio-drawer-content {
+    pointer-events: none;
+
     position: absolute;
     background-color: var(--rio-global-neutral-bg);
 

@@ -6,7 +6,7 @@ import rio
 import rio.debug
 
 theme = rio.Theme.from_color(
-    # light=False,
+    light=False,
 )
 
 CARD_STYLE = rio.BoxStyle(
