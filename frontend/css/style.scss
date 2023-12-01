@@ -1781,7 +1781,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     top: 0;
     left: 0;
     bottom: 0;
-    width: min-content;
+    width: fit-content;
 
     border-radius: 0 var(--rio-global-corner-radius-large)
         var(--rio-global-corner-radius-large) 0;
@@ -1791,7 +1791,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     top: 0;
     right: 0;
     bottom: 0;
-    width: min-content;
+    width: fit-content;
 
     border-radius: var(--rio-global-corner-radius-large) 0 0
         var(--rio-global-corner-radius-large);
@@ -1801,7 +1801,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     left: 0;
     top: 0;
     right: 0;
-    height: min-content;
+    height: fit-content;
 
     border-radius: 0 0 var(--rio-global-corner-radius-large)
         var(--rio-global-corner-radius-large);
@@ -1811,7 +1811,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     left: 0;
     bottom: 0;
     right: 0;
-    height: min-content;
+    height: fit-content;
 
     border-radius: var(--rio-global-corner-radius-large)
         var(--rio-global-corner-radius-large) 0 0;
