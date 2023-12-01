@@ -1,5 +1,3 @@
 {
-    "dependencies": [
-        "common-templates/sample_component.py"
-    ]
+    "dependencies": ["common-templates/sample_component.py"]
 }

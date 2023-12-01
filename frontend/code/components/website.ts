@@ -1,10 +1,8 @@
 import { ComponentBase, ComponentState } from './componentBase';
 
-
 export type WebsiteState = ComponentState & {
     url?: string;
 };
-
 
 export class WebsiteComponent extends ComponentBase {
     state: Required<WebsiteState>;
