@@ -1,6 +1,7 @@
 import { fillToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
 import { Fill } from '../models';
+import { callRemoteMethodDiscardResponse } from '../rpc';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type MediaPlayerState = ComponentState & {
@@ -88,15 +89,27 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     /// Mute/Unmute the video
-    setMute(mute: boolean): void {
+    setMute(mute: boolean, notifyBackend: boolean): void {
         if (mute) {
             this.mediaPlayer.muted = true;
         } else {
             this.mediaPlayer.muted = false;
 
             if (this.mediaPlayer.volume == 0) {
-                this.setVolume(0.5);
+                this.setVolume(0.5, true);
             }
+        }
+
+        // Notify the backend
+        if (notifyBackend) {
+            callRemoteMethodDiscardResponse('componentStateUpdate', {
+                componentId: parseInt(
+                    this.elementId.substring('rio-id-'.length)
+                ),
+                deltaState: {
+                    muted: mute,
+                },
+            });
         }
     }
 
@@ -110,12 +123,27 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     /// Set the volume of the video
-    setVolume(volume: number): void {
+    setVolume(volume: number, notifyBackend: boolean): void {
         this.mediaPlayer.volume = this.humanVolumeToLinear(volume);
 
         // Unmute, if previously muted
         if (volume > 0 && this.mediaPlayer.muted) {
             this.mediaPlayer.muted = false;
+        }
+
+        // Notify the backend
+        if (notifyBackend) {
+            // this.setStateAndNotifyBackend({
+            //     volume: volume,
+            // });
+            callRemoteMethodDiscardResponse('componentStateUpdate', {
+                componentId: parseInt(
+                    this.elementId.substring('rio-id-'.length)
+                ),
+                deltaState: {
+                    volume: volume,
+                },
+            });
         }
     }
 
@@ -310,7 +338,7 @@ export class MediaPlayerComponent extends ComponentBase {
         });
 
         this.muteButton.addEventListener('click', () => {
-            this.setMute(!this.mediaPlayer.muted);
+            this.setMute(!this.mediaPlayer.muted, true);
         });
 
         this.fullscreenButton.addEventListener('click', () => {
@@ -341,7 +369,7 @@ export class MediaPlayerComponent extends ComponentBase {
             let rect = this.volumeOuter.getBoundingClientRect();
             let volume = (event.clientX - rect.left) / rect.width;
             volume = Math.min(1, Math.max(0, volume));
-            this.setVolume(volume);
+            this.setVolume(volume, true);
         });
 
         this.mediaPlayer.addEventListener(
@@ -374,7 +402,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
                 // M mutes/unmutes the video
                 case 'm':
-                    this.setMute(!this.mediaPlayer.muted);
+                    this.setMute(!this.mediaPlayer.muted, true);
                     break;
 
                 // F toggles fullscreen
@@ -392,10 +420,16 @@ export class MediaPlayerComponent extends ComponentBase {
 
                 // Up and down arrow keys change the volume
                 case 'ArrowUp':
-                    this.setVolume(Math.min(this.mediaPlayer.volume + 0.1, 1));
+                    this.setVolume(
+                        Math.min(this.mediaPlayer.volume + 0.1, 1),
+                        true
+                    );
                     break;
                 case 'ArrowDown':
-                    this.setVolume(Math.max(this.mediaPlayer.volume - 0.1, 0));
+                    this.setVolume(
+                        Math.max(this.mediaPlayer.volume - 0.1, 0),
+                        true
+                    );
                     break;
 
                 // All other keys are ignored
@@ -443,9 +477,6 @@ export class MediaPlayerComponent extends ComponentBase {
         applyIcon(this.fullscreenButton, 'fullscreen', 'white');
         applyIcon(this.muteButton, 'volume-up:fill', 'white');
         this._updateProgress();
-
-        this.mediaPlayer.onvolumechange = this._sendVolumeToPython.bind(this);
-
         return element;
     }
 
@@ -476,17 +507,13 @@ export class MediaPlayerComponent extends ComponentBase {
             this.controls.style.display = 'none';
         }
 
-        this.mediaPlayer.onvolumechange = null;
-
         if (deltaState.volume !== undefined) {
-            this.setVolume(Math.min(1, Math.max(0, deltaState.volume)));
+            this.setVolume(Math.min(1, Math.max(0, deltaState.volume)), false);
         }
 
         if (deltaState.muted !== undefined) {
-            this.setMute(deltaState.muted);
+            this.setMute(deltaState.muted, false);
         }
-
-        this.mediaPlayer.onvolumechange = this._sendVolumeToPython.bind(this);
 
         if (deltaState.background !== undefined) {
             Object.assign(element.style, fillToCss(deltaState.background));
@@ -522,13 +549,6 @@ export class MediaPlayerComponent extends ComponentBase {
     private _onPlaybackEnd(event: Event): void {
         this.sendMessageToBackend({
             type: 'onPlaybackEnd',
-        });
-    }
-
-    private _sendVolumeToPython(event: Event): void {
-        this.setStateAndNotifyBackend({
-            volume: this.linearVolumeToHuman(this.mediaPlayer.volume),
-            muted: this.mediaPlayer.muted,
         });
     }
 
