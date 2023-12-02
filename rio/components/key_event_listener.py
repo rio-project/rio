@@ -564,11 +564,13 @@ SoftwareKey = Literal[
 
 ModifierKey = Literal["alt", "control", "meta", "shift"]
 
+_MODIFIERS = ("control", "shift", "alt", "meta")
+
 
 @dataclass(frozen=True)
 class _KeyUpDownEvent:
     hardware_key: HardwareKey
-    software_key: SoftwareKey
+    software_key: Union[SoftwareKey, str]
     text: str
     modifiers: FrozenSet[ModifierKey]
 
@@ -580,6 +582,12 @@ class _KeyUpDownEvent:
             text=json_data["text"],
             modifiers=frozenset(json_data["modifiers"]),
         )
+
+    def __str__(self) -> str:
+        keys = [key for key in _MODIFIERS if key in self.modifiers]
+        keys.append(self.software_key)
+
+        return " + ".join(keys)
 
 
 class KeyDownEvent(_KeyUpDownEvent):

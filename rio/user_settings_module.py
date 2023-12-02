@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import copy
-import json
 from dataclasses import dataclass, field
 from typing import *  # type: ignore
 
-import aiofiles
 import uniserde
 from typing_extensions import dataclass_transform
 
@@ -34,7 +32,7 @@ class UserSettings:
 
     TODO: Give an example
 
-    Warning! Since settings are stored on the user's device special
+    Warning! Since settings are stored on the user's device, special
     considerations apply. Some countries have strict privacy laws regulating
     what you can store with/without the user's consent. Make sure you are
     familiar with the legal situation before going wild and storing everything
@@ -57,10 +55,11 @@ class UserSettings:
 
     _rio_type_hints_cache_: ClassVar[Mapping[str, Any]]
 
-    _rio_session_: Optional[session.Session] = field(default=None, init=False)
-    _rio_dirty_attribute_names_: Set[str] = field(default_factory=set, init=False)
-    _rio_synchronization_task_: Optional[asyncio.Task[None]] = field(
-        default=None, init=False
+    _rio_session_: Optional[session.Session] = field(
+        default=None, init=False, repr=False
+    )
+    _rio_dirty_attribute_names_: Set[str] = field(
+        default_factory=set, init=False, repr=False
     )
 
     def __init_subclass__(cls) -> None:
@@ -73,7 +72,6 @@ class UserSettings:
     @classmethod
     def _from_json(
         cls,
-        sess: session.Session,
         settings_json: Dict[str, object],
         defaults: Self,
     ) -> Self:
@@ -110,76 +108,10 @@ class UserSettings:
 
         return self
 
-    async def _synchronize_now(self, sess: session.Session) -> None:
-        async with sess._settings_sync_lock:
-            # Nothing to do
-            if not self._rio_dirty_attribute_names_:
-                return
-
-            if sess.running_in_window:
-                await self._synchronize_now_in_window(sess)
-            else:
-                await self._synchronize_now_in_browser(sess)
-
-            self._rio_dirty_attribute_names_.clear()
-
-    async def _synchronize_now_in_window(self, sess: session.Session) -> None:
-        if self.section_name:
-            section = cast(
-                Dict[str, object],
-                sess._settings_json.setdefault("section:" + self.section_name, {}),
-            )
-        else:
-            section = sess._settings_json
-
-        for name in self._rio_dirty_attribute_names_:
-            section[name] = uniserde.as_json(
-                getattr(self, name),
-                as_type=self._rio_type_hints_cache_[name],
-            )
-
-        json_data = json.dumps(sess._settings_json, indent="\t")
-        config_path = sess._get_settings_file_path()
-
-        async with aiofiles.open(config_path, "w") as file:
-            await file.write(json_data)
-
-    async def _synchronize_now_in_browser(self, sess: session.Session) -> None:
-        prefix = f"{self.section_name}:" if self.section_name else ""
-
-        # Get the dirty attributes
-        dirty_attributes = {
-            f"{prefix}{name}": uniserde.as_json(
-                getattr(self, name),
-                as_type=self._rio_type_hints_cache_[name],
-            )
-            for name in self._rio_dirty_attribute_names_
-        }
-
-        # Sync them with the client
-        await sess._set_user_settings(dirty_attributes)
-
-    async def _start_synchronization_task(self) -> None:
-        # Wait some time to see if more attributes are marked as dirty
-        while True:
-            await asyncio.sleep(0.5)
-
-            if self._rio_session_ is not None:
-                break
-
-        # Synchronize
-        try:
-            await self._synchronize_now(self._rio_session_)
-
-        # Housekeeping
-        finally:
-            self._rio_synchronization_task_ = None
-
     def __setattr__(self, name: str, value: Any) -> None:
-        # This attributes doesn't exist yet during the constructor
+        # These attributes doesn't exist yet during the constructor
         dct = vars(self)
         dirty_attribute_names = dct.setdefault("_rio_dirty_attribute_names_", set())
-        write_back_task = dct.get("_rio_synchronization_task_")
 
         # Set the attribute
         dct[name] = value
@@ -192,16 +124,5 @@ class UserSettings:
         dirty_attribute_names.add(name)
 
         # Make sure a write back task is running
-        if write_back_task is not None:
-            return
-
-        # Can't sync if there's no loop yet
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            return
-
-        dct["_rio_synchronization_task_"] = loop.create_task(
-            self._start_synchronization_task(),
-            name="write back user settings (attribute changed)",
-        )
+        if self._rio_session_ is not None:
+            self._rio_session_._save_settings_soon()

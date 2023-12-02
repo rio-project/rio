@@ -578,6 +578,12 @@ class AppServer(fastapi.FastAPI):
         # will also pipe the message to the validator if one is present.
         if self.validator_factory is None:
 
+            async def send_message(msg: uniserde.Jsonable) -> None:
+                try:
+                    await websocket.send_json(msg)
+                except RuntimeError:  # Socket is already closed
+                    pass
+
             async def receive_message() -> uniserde.Jsonable:
                 # Refresh the session's duration
                 self._active_session_tokens[session_token] = sess
@@ -585,7 +591,7 @@ class AppServer(fastapi.FastAPI):
                 # Fetch a message
                 return await websocket.receive_json()
 
-            sess._send_message = websocket.send_json  # type: ignore
+            sess._send_message = send_message
             sess._receive_message = receive_message
 
         else:
@@ -593,7 +599,11 @@ class AppServer(fastapi.FastAPI):
             async def send_message(msg: uniserde.Jsonable) -> None:
                 assert isinstance(validator_instance, debug.Validator)
                 validator_instance.handle_outgoing_message(msg)
-                await websocket.send_json(msg)
+
+                try:
+                    await websocket.send_json(msg)
+                except RuntimeError:  # Socket is already closed
+                    pass
 
             async def receive_message() -> uniserde.Jsonable:
                 assert isinstance(validator_instance, debug.Validator)
