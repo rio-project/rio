@@ -895,7 +895,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     box-shadow: 0 0 0.8rem var(--rio-global-shadow-color);
 }
 
-.rio-dropdown > .rio-text-input > .rio-icon-revealer-arrow {
+.rio-dropdown > .rio-text-input > .rio-dropdown-arrow {
     pointer-events: none;
 
     position: absolute;

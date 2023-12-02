@@ -84,7 +84,6 @@ export class RevealerComponent extends ComponentBase {
         let arrowElement = header.querySelector(
             '.rio-revealer-arrow'
         ) as HTMLElement;
-
         applyIcon(arrowElement, 'expand-more', 'var(--rio-local-text-color)');
 
         // Listen for presses

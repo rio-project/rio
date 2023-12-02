@@ -160,7 +160,7 @@ class Theme:
 
         else:
             background_palette = Palette(
-                background=rio.Color.from_grey(0.1),
+                background=rio.Color.from_grey(0.08).blend(primary_color, 0.01),
                 background_variant=rio.Color.from_grey(0.14).blend(primary_color, 0.03),
                 background_active=rio.Color.from_grey(0.14).blend(primary_color, 0.06),
                 foreground=rio.Color.from_grey(0.9),

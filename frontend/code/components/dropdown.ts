@@ -1,5 +1,6 @@
 import { ComponentBase, ComponentState } from './componentBase';
 import { SCROLL_BAR_SIZE } from '../utils';
+import { applyIcon } from '../designApplication';
 
 export type DropdownState = ComponentState & {
     _type_: 'dropdown';
@@ -32,7 +33,7 @@ export class DropdownComponent extends ComponentBase {
         <div class="rio-text-input">
             <input type="text" placeholder="" style="pointer-events: none" disabled>
             <div class="rio-text-input-label"></div>
-            <div class="rio-icon-revealer-arrow"></div>
+            <div class="rio-dropdown-arrow"></div>
             <div class="rio-text-input-plain-bar"></div>
             <div class="rio-text-input-color-bar"></div>
         </div>
@@ -51,6 +52,12 @@ export class DropdownComponent extends ComponentBase {
         this.optionsElement = document.createElement('div');
         this.optionsElement.classList.add('rio-dropdown-options');
         this.popupElement.appendChild(this.optionsElement);
+
+        // Add an arrow icon
+        let arrowElement = element.querySelector(
+            '.rio-dropdown-arrow'
+        ) as HTMLElement;
+        applyIcon(arrowElement, 'expand-more', 'var(--rio-local-text-color)');
 
         // Connect events
         let outsideClickListener = (event) => {
