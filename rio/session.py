@@ -119,29 +119,28 @@ class SessionAttachments:
         except KeyError:
             raise KeyError(typ) from None
 
-    def _add(self, value: Any, synchronize: bool) -> None:
-        # User settings need special care
-        if isinstance(value, user_settings_module.UserSettings):
-            # Get the previously attached value, and unlink it from the session
-            try:
-                old_value = self[type(value)]
-            except KeyError:
-                pass
-            else:
-                old_value._rio_session_ = None
-
-            # Link the new value to the session
-            value._rio_session_ = self._session
-
-            # Trigger a resync
-            if synchronize:
-                self._session.create_task(
-                    value._synchronize_now(self._session),
-                    name="write back user settings (entire settings instance changed)",
-                )
-
+    def _add(self, value: object, synchronize: bool) -> None:
         # Save it with the rest of the attachments
         self._attachments[type(value)] = value
+
+        # User settings need special care
+        if not isinstance(value, user_settings_module.UserSettings):
+            return
+
+        # Get the previously attached value, and unlink it from the session
+        try:
+            old_value = self[type(value)]
+        except KeyError:
+            pass
+        else:
+            old_value._rio_session_ = None
+
+        # Link the new value to the session
+        value._rio_session_ = self._session
+
+        # Trigger a resync
+        if synchronize:
+            self._session._save_settings_soon()
 
     def add(self, value: Any) -> None:
         """
@@ -250,10 +249,23 @@ class Session(unicall.Unicall):
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
 
+        # Modifying a setting starts this task that waits a little while and
+        # then saves the settings
+        self._settings_save_task: Optional[asyncio.Task] = None
+
         # If `running_in_window`, this contains all the settings loaded from the
         # json file. We need to keep this around so that we can update the
         # settings that have changed and write everything back to the file.
         self._settings_json: Dict[str, object] = {}
+
+        # If `running_in_window`, this is the current content of the settings
+        # file. This is used to avoid needlessly re-writing the file if nothing
+        # changed.
+        self._settings_json_string: Optional[str] = None
+
+        # If `running_in_window`, this is the timestamp of when the settings
+        # were last saved.
+        self._last_settings_save_time: float = -float("inf")
 
         # Weak dictionaries to hold additional information about components.
         # These are split in two to avoid the dictionaries keeping the
@@ -375,14 +387,12 @@ class Session(unicall.Unicall):
         # Fire the session end event
         await self._call_event_handler(self._app_server.on_session_end, self)
 
+        # Save the settings
+        await self._save_settings_now()
+
         if self.running_in_window:
             window = await self._get_webview_window()
             window.destroy()
-
-            # Save all of the settings
-            for attachment in self.attachments:
-                if isinstance(attachment, user_settings_module.UserSettings):
-                    await attachment._synchronize_now(self)
         else:
             try:
                 await self._remote_close_session()
@@ -1381,8 +1391,10 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                 settings_json = json.loads(settings_text)
             except (IOError, json.JSONDecodeError):
                 settings_json = {}
+                settings_text = "{}"
 
             self._settings_json = settings_json
+            self._settings_json_string = settings_text
         else:
             # Browsers send us a flat dict where the keys are prefixed with the
             # section name. We will convert each section into a dict.
@@ -1398,24 +1410,126 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                 else:
                     settings_json[key] = value
 
-        # If `running_in_window`, we need to store the settings JSON so that
-        # we can update the changed keys and write the whole thing to a file.
-        if self.running_in_window:
-            self._settings_json = settings_json
-
         # Instantiate and attach the settings
         for default_settings in self._app_server.default_attachments:
             if not isinstance(default_settings, user_settings_module.UserSettings):
                 continue
 
             settings = type(default_settings)._from_json(
-                self,
                 settings_json,
                 default_settings,
             )
 
             # Attach the instance to the session
             self.attachments._add(settings, synchronize=False)
+
+    async def _save_settings_now(self) -> None:
+        async with self._settings_sync_lock:
+            # Find the unsaved settings attachments
+            unsaved_settings: List[
+                Tuple[user_settings_module.UserSettings, Set[str]]
+            ] = []
+
+            for settings in self.attachments:
+                if not isinstance(settings, user_settings_module.UserSettings):
+                    continue
+
+                if not settings._rio_dirty_attribute_names_:
+                    continue
+
+                unsaved_settings.append(
+                    (settings, settings._rio_dirty_attribute_names_)
+                )
+                settings._rio_dirty_attribute_names_ = set()
+
+            if not unsaved_settings:
+                return
+
+            self._last_settings_save_time = time.monotonic()
+
+            if self.running_in_window:
+                await self._save_settings_now_in_window(unsaved_settings)
+            else:
+                await self._save_settings_now_in_browser(unsaved_settings)
+
+    async def _save_settings_now_in_window(
+        self,
+        settings_to_save: Iterable[
+            Tuple[user_settings_module.UserSettings, Iterable[str]]
+        ],
+    ) -> None:
+        for settings, dirty_attributes in settings_to_save:
+            if settings.section_name:
+                section = cast(
+                    Dict[str, object],
+                    self._settings_json.setdefault(
+                        "section:" + settings.section_name, {}
+                    ),
+                )
+            else:
+                section = self._settings_json
+
+            for attr_name in dirty_attributes:
+                section[attr_name] = uniserde.as_json(
+                    getattr(settings, attr_name),
+                    as_type=settings._rio_type_hints_cache_[attr_name],
+                )
+
+        json_data = json.dumps(self._settings_json, indent="\t")
+
+        # If nothing changed, don't needlessly re-write the file
+        if json_data == self._settings_json_string:
+            return
+        self._settings_json_string = json_data
+
+        config_path = self._get_settings_file_path()
+
+        async with aiofiles.open(config_path, "w") as file:
+            await file.write(json_data)
+
+    async def _save_settings_now_in_browser(
+        self,
+        settings_to_save: Iterable[
+            Tuple[user_settings_module.UserSettings, Iterable[str]]
+        ],
+    ) -> None:
+        delta_settings = {}
+
+        for settings, dirty_attributes in settings_to_save:
+            prefix = f"{settings.section_name}:" if settings.section_name else ""
+
+            # Get the dirty attributes
+            for attr_name in dirty_attributes:
+                delta_settings[f"{prefix}{attr_name}"] = uniserde.as_json(
+                    getattr(settings, attr_name),
+                    as_type=settings._rio_type_hints_cache_[attr_name],
+                )
+
+        # Sync them with the client
+        await self._set_user_settings(delta_settings)
+
+    def _save_settings_soon(self) -> None:
+        if self._settings_save_task is None:
+            self._settings_save_task = self.create_task(self.__wait_and_save_settings())
+
+    async def __wait_and_save_settings(self) -> None:
+        # Wait some time to see if more attributes are marked as dirty
+        await asyncio.sleep(0.5)
+
+        # If we've recently saved, wait a bit longer. Some apps change
+        # the settings very often, and we don't need to save immediately every
+        # single time.
+        timeout = 3 * 60 if self.running_in_window else 5
+        if time.monotonic() - self._last_settings_save_time < timeout:
+            await asyncio.sleep(timeout)
+
+        # Save
+        try:
+            await self._save_settings_now()
+
+        # Housekeeping
+        finally:
+            self._settings_save_task = None
 
     async def set_title(self, title: str) -> None:
         if self.running_in_window:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
@@ -224,6 +225,35 @@ class Theme:
             heading2_style=heading2_style,
             heading3_style=heading3_style,
             text_style=text_style,
+        )
+
+    @classmethod
+    def pair_from_color(
+        cls,
+        *,
+        primary_color: Optional[rio.Color] = None,
+        secondary_color: Optional[rio.Color] = None,
+        success_color: Optional[rio.Color] = None,
+        warning_color: Optional[rio.Color] = None,
+        danger_color: Optional[rio.Color] = None,
+        corner_radius_small: float = 0.6,
+        corner_radius_medium: float = 1.6,
+        corner_radius_large: float = 2.6,
+    ) -> Tuple[Self, Self]:
+        func = functools.partial(
+            cls.from_color,
+            primary_color=primary_color,
+            secondary_color=secondary_color,
+            success_color=success_color,
+            warning_color=warning_color,
+            danger_color=danger_color,
+            corner_radius_small=corner_radius_small,
+            corner_radius_medium=corner_radius_medium,
+            corner_radius_large=corner_radius_large,
+        )
+        return (
+            func(light=True),
+            func(light=False),
         )
 
     def text_color_for(self, color: rio.Color) -> rio.Color:

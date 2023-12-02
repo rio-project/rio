@@ -386,32 +386,37 @@ class Component(metaclass=ComponentMeta):
         # Make sure it works whether or not `self` is passed.
         default=lambda *args: None,
         init=False,
+        repr=False,
     )
 
     # Each time a component is built the build generation in that component's COMPONENT
     # DATA is incremented. If this value no longer matches the value in its
     # builder's COMPONENT DATA, the component is dead.
-    _build_generation_: int = dataclasses.field(default=-1, init=False)
+    _build_generation_: int = dataclasses.field(default=-1, init=False, repr=False)
 
     # Injected by the session when the component is refreshed
-    _session_: Optional["rio.Session"] = dataclasses.field(default=None, init=False)
+    _session_: Optional["rio.Session"] = dataclasses.field(
+        default=None, init=False, repr=False
+    )
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
     _explicitly_set_properties_: Set[str] = dataclasses.field(
-        init=False, default_factory=set
+        init=False, default_factory=set, repr=False
     )
 
     # True if the component is subscribed to either the `on_mount` or
     # `on_unmount` events.
     _watch_tree_mount_and_unmount_: ClassVar[bool] = dataclasses.field(
-        default=False, init=False
+        default=False, init=False, repr=False
     )
 
     # This flag indicates whether state bindings for this component have already
     # been initialized. Used by `__getattribute__` to check if it should throw
     # an error.
-    _state_bindings_initialized_: bool = dataclasses.field(default=False, init=False)
+    _state_bindings_initialized_: bool = dataclasses.field(
+        default=False, init=False, repr=False
+    )
 
     # Cache for the set of all `StateProperty` instances in this class
     _state_properties_: ClassVar[Dict[str, "StateProperty"]]
