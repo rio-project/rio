@@ -527,7 +527,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
     private _sendVolumeToPython(event: Event): void {
         this.setStateAndNotifyBackend({
-            volume: this.mediaPlayer.volume,
+            volume: this.linearVolumeToHuman(this.mediaPlayer.volume),
             muted: this.mediaPlayer.muted,
         });
     }
