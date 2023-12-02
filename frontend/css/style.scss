@@ -1962,14 +1962,17 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     th::after {
         content: '▴';
         display: inline-block;
+        margin-left: 0.3rem;
         opacity: 0;
     }
     th[data-sort='asc']::after {
         content: '▴';
+        margin-left: 0.3rem;
         opacity: 1;
     }
     th[data-sort='desc']::after {
         content: '▾';
+        margin-left: 0.3rem;
         opacity: 1;
     }
 
@@ -1978,7 +1981,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
         position: relative;
     }
 
-    tr:hover::after {
+    tbody > tr:hover::after {
         pointer-events: none;
 
         content: '';
