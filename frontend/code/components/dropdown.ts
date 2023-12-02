@@ -59,6 +59,12 @@ export class DropdownComponent extends ComponentBase {
                 return;
             }
 
+            // Re-assign the currently selected value to the input element
+            this.inputElement.value = this.state.selectedName;
+
+            // Make the text input appear as inactive
+            this.textInputElement.classList.remove('rio-text-input-focused');
+
             // Hide the popup
             this.hidePopup(element);
             this.isOpen = false;
@@ -68,10 +74,19 @@ export class DropdownComponent extends ComponentBase {
         };
 
         this.textInputElement.addEventListener('click', () => {
-            // Hide if open
+            // Already open?
             if (this.isOpen) {
+                // Hide it
                 this.hidePopup(element);
                 this.isOpen = false;
+
+                // Re-assign the currently selected value to the input element
+                this.inputElement.value = this.state.selectedName;
+
+                // Make the text input appear as inactive
+                this.textInputElement.classList.remove(
+                    'rio-text-input-focused'
+                );
                 return;
             }
 
@@ -79,6 +94,9 @@ export class DropdownComponent extends ComponentBase {
             this.showPopup(element);
             this.isOpen = true;
             document.addEventListener('click', outsideClickListener);
+
+            // Make the text input appear as active
+            this.textInputElement.classList.add('rio-text-input-focused');
         });
 
         return element;

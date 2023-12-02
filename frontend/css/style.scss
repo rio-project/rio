@@ -790,7 +790,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     transition: all 0.2s ease-in-out;
 }
 
-.rio-text-input:focus-within .rio-text-input-color-bar {
+.rio-text-input:focus-within .rio-text-input-color-bar,
+.rio-text-input-focused .rio-text-input-color-bar {
     left: 0;
     right: 0;
     opacity: 1;
