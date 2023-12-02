@@ -184,15 +184,13 @@ export async function applyIcon(
 
     // No, load it from the server
     if (promise === undefined) {
-        console.log(`Cache miss for icon ${iconName}`);
+        console.log(`Fetching icon ${iconName} from server`);
 
         promise = fetch(`/rio/icon/${iconName}`).then((response) =>
             response.text()
         );
 
         ICON_PROMISE_CACHE[iconName] = promise;
-    } else {
-        console.log(`Using cached icon for ${iconName}`);
     }
 
     // Apply the icon
