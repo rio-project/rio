@@ -391,8 +391,13 @@ class Session(unicall.Unicall):
         await self._save_settings_now()
 
         if self.running_in_window:
-            window = await self._get_webview_window()
-            window.destroy()
+            import webview  # type: ignore
+
+            # It's possible that the session is being closed because the user
+            # closed the window, so the window may not exist anymore
+            window = webview.active_window()
+            if window is not None:
+                window.destroy()
         else:
             try:
                 await self._remote_close_session()

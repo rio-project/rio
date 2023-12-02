@@ -473,7 +473,8 @@ class App:
 
         if webview is None:
             raise Exception(
-                "The `window` extra is required to use `App.run_in_window`. Run `pip install rio[window]` to install it."
+                "The `window` extra is required to use `App.run_in_window`."
+                " Run `pip install rio[window]` to install it."
             )
 
         # Unfortunately, WebView must run in the main thread, which makes this

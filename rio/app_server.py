@@ -193,7 +193,20 @@ class AppServer(fastapi.FastAPI):
         if self.internal_on_app_start is not None:
             self.internal_on_app_start()
 
-        yield
+        try:
+            yield
+        finally:
+            # Close all sessions
+            results = await asyncio.gather(
+                *(sess._close() for sess in self._active_session_tokens.values()),
+                return_exceptions=True,
+            )
+            for result in results:
+                if isinstance(result, BaseException):
+                    print("Exception in `Session._close()`:")
+                    traceback.print_exception(
+                        type(result), result, result.__traceback__
+                    )
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """
