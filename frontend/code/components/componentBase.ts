@@ -265,7 +265,10 @@ export abstract class ComponentBase {
         this._updateElement(this.element(), deltaState);
     }
 
-    setStateAndNotifyBackend(deltaState: object): void {
+    setStateAndNotifyBackend(
+        deltaState: object,
+        callUpdateElement: boolean = true
+    ): void {
         // Set the state. This also updates the component
         this._setStateDontNotifyBackend(deltaState);
 

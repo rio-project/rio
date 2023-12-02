@@ -1,7 +1,7 @@
 import { Color, ColorSet, Fill } from './models';
 import { colorToCssString } from './cssUtils';
 
-const ICON_SVG_CACHE: { [iconName: string]: string } = {};
+const ICON_PROMISE_CACHE: { [key: string]: Promise<string> } = {};
 
 export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
     // Remove all switcheroos
@@ -174,30 +174,35 @@ function createLinearGradient(
     return gradient;
 }
 
-/// Given an element, load the icon with the given name and apply it to the
-/// element.
-///
-/// The element's size is not affected. Make it however big you want the icon
-/// to be. Any children of the element will be removed.
 export async function applyIcon(
     target: HTMLElement,
     iconName: string,
     cssColor: string
 ): Promise<void> {
-    // Try to load the icon from the cache
-    let svgSource = ICON_SVG_CACHE[iconName];
+    // Is the icon already in the cache?
+    let promise = ICON_PROMISE_CACHE[iconName];
 
-    // If it's not in the cache yet, load it from the server
-    if (svgSource === undefined) {
-        let response = await fetch(`/rio/icon/${iconName}`);
-        svgSource = await response.text();
+    // No, load it from the server
+    if (promise === undefined) {
+        console.log(`Cache miss for icon ${iconName}`);
 
-        // Cache the icon
-        ICON_SVG_CACHE[iconName] = svgSource;
+        promise = fetch(`/rio/icon/${iconName}`).then((response) =>
+            response.text()
+        );
+
+        ICON_PROMISE_CACHE[iconName] = promise;
+    } else {
+        console.log(`Using cached icon for ${iconName}`);
     }
 
-    // Create the SVG element
-    target.innerHTML = svgSource;
+    // Apply the icon
+    try {
+        target.innerHTML = await promise;
+    } catch (err) {
+        console.error(`Error loading icon ${iconName}: ${err}`);
+        delete ICON_PROMISE_CACHE[iconName];
+        return;
+    }
 
     // Apply the color
     let svgRoot = target.querySelector('svg') as SVGSVGElement;
