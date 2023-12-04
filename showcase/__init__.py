@@ -206,7 +206,6 @@ class Sidebar(rio.Component):
                     ),
                     rio.Button(
                         "Spam",
-                        shape="circle",
                         color=rio.Color.CYAN,
                         width=3,
                         height=3,
@@ -340,11 +339,15 @@ class Sidebar(rio.Component):
                 suffix_text="USD",
             ),
             rio.ListView(
+                rio.HeadingListItem("Heading 1"),
                 rio.CustomListItem(rio.Text("Text 1")),
-                rio.SingleLineListItem("Text 2"),
+                rio.SimpleListItem("Text 2"),
                 rio.CustomListItem(
                     rio.Text("Text 3"), on_press=lambda: print("Pressed!")
                 ),
+                rio.HeadingListItem("Heading 2"),
+                rio.SimpleListItem("Filler 1"),
+                rio.SimpleListItem("Filler 2"),
             ),
             # rio.Flow(
             #     rio.Button("Flow-1", margin=0.2),

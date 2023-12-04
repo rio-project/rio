@@ -48,8 +48,7 @@ export class TextComponent extends ComponentBase {
 
         // Text style
         if (deltaState.style !== undefined) {
-            let styleValues = textStyleToCss(deltaState.style);
-            Object.assign(textElement.style, styleValues);
+            Object.assign(textElement.style, textStyleToCss(deltaState.style));
         }
     }
 }

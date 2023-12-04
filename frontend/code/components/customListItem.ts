@@ -2,14 +2,14 @@ import { SingleContainer } from './singleContainer';
 import { MDCRipple } from '@material/ripple';
 import { ComponentState } from './componentBase';
 
-export type ListItemState = ComponentState & {
-    _type_: 'ListItem-builtin';
+export type CustomListItemState = ComponentState & {
+    _type_: 'CustomListItem-builtin';
     child?: number | string;
     pressable?: boolean;
 };
 
-export class ListItemComponent extends SingleContainer {
-    state: Required<ListItemState>;
+export class CustomListItemComponent extends SingleContainer {
+    state: Required<CustomListItemState>;
 
     // If this item has a ripple effect, this is the ripple instance. `null`
     // otherwise.
@@ -17,11 +17,14 @@ export class ListItemComponent extends SingleContainer {
 
     _createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-list-item');
+        element.classList.add('rio-custom-list-item');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: ListItemState): void {
+    _updateElement(
+        element: HTMLElement,
+        deltaState: CustomListItemState
+    ): void {
         // Style the surface depending on whether it is pressable.
         if (deltaState.pressable === true) {
             if (this.mdcRipple === null) {

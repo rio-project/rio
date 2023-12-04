@@ -17,7 +17,7 @@ import { IconComponent } from './components/icon';
 import { ImageComponent } from './components/image';
 import { KeyEventListenerComponent } from './components/keyEventListener';
 import { LinkComponent } from './components/link';
-import { ListItemComponent } from './components/listItem';
+import { CustomListItemComponent } from './components/customListItem';
 import { ListViewComponent } from './components/listView';
 import { MarginComponent } from './components/margin';
 import { MarkdownViewComponent } from './components/markdownView';
@@ -40,6 +40,7 @@ import { SwitcherBarComponent } from './components/switcher_bar';
 import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
+import { HeadingListItemComponent } from './components/headingListItem';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -58,7 +59,8 @@ const componentClasses = {
     'Image-builtin': ImageComponent,
     'KeyEventListener-builtin': KeyEventListenerComponent,
     'Link-builtin': LinkComponent,
-    'ListItem-builtin': ListItemComponent,
+    'HeadingListItem-builtin': HeadingListItemComponent,
+    'CustomListItem-builtin': CustomListItemComponent,
     'ListView-builtin': ListViewComponent,
     'Margin-builtin': MarginComponent,
     'MarkdownView-builtin': MarkdownViewComponent,
