@@ -311,9 +311,16 @@ export class DropdownComponent extends ComponentBase {
         this.optionsElement.innerHTML = '';
 
         if (currentOptionNames.length === 0) {
-            // let noMatchesElement = document.createElement('div');
-            // noMatchesElement.classList.add('rio-dropdown-no-matches');
-            // this.optionsElement.textContent = 'No matches';
+            applyIcon(
+                this.optionsElement,
+                'search',
+                'var(--rio-local-text-color)'
+            );
+
+            // let foo = document.createElement('div');
+            // foo.classList.add('rio-dropdown-option');
+            // foo.textContent = 'fooooo';
+            // this.optionsElement.appendChild(foo);
         } else {
             for (let optionName of currentOptionNames) {
                 let optionElement = document.createElement('div');

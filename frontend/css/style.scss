@@ -921,20 +921,20 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     cursor: pointer;
 }
 
-.rio-dropdown-options > * {
+.rio-dropdown-options > div {
     position: relative;
     padding: 1rem 1rem;
 }
 
-.rio-dropdown-options:empty::after {
-    content: 'No matches';
-    color: var(--rio-local-text-color);
-    opacity: 0.5;
+.rio-dropdown-options > svg {
+    position: relative;
 
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 4rem;
+    height: 4rem;
+    padding: rem;
+    margin: auto;
+
+    opacity: 0.2;
 }
 
 // Spawn a brightly colored element when hovered
