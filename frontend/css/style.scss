@@ -661,11 +661,15 @@ body > * > * > * {
         var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
+// Text Input
+.rio-text-input {
+    cursor: text;
+}
+
 // Input Box: This is a style common to multiple input components, such as
 // `TextInput` and `Dropdown`.
 .rio-input-box {
     pointer-events: auto;
-    cursor: text;
 
     position: relative;
     min-width: 6rem;
@@ -869,6 +873,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 // Dropdown
 .rio-dropdown {
     pointer-events: auto;
+    cursor: pointer;
 
     position: relative;
     display: flex;
