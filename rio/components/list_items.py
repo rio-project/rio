@@ -11,52 +11,32 @@ from . import component_base
 
 __all__ = [
     "CustomListItem",
-    "SingleLineListItem",
+    "HeadingListItem",
+    "SimpleListItem",
 ]
 
 
-class CustomListItem(component_base.FundamentalComponent):
-    child: component_base.Component
-    _: KW_ONLY
-    on_press: rio.EventHandler[[]] = None
-
-    def _custom_serialize(self) -> JsonDoc:
-        return {
-            "pressable": self.on_press is not None,
-        }
-
-    async def _on_message(self, msg: Any) -> None:
-        # Parse the message
-        assert isinstance(msg, dict), msg
-        assert msg["type"] == "press", msg
-
-        msg_type: str = msg["type"]
-        assert isinstance(msg_type, str), msg_type
-
-        if self.on_press is None:
-            return
-
-        # Trigger the press event
-        await self.call_event_handler(self.on_press)
-
-        # Refresh the session
-        await self.session._refresh()
+class HeadingListItem(component_base.FundamentalComponent):
+    text: str
 
 
-class SingleLineListItem(component_base.Component):
+HeadingListItem._unique_id = "HeadingListItem-builtin"
+
+
+class SimpleListItem(component_base.Component):
     text: str
     _: KW_ONLY
     secondary_text: str = ""
-    image_or_icon: Optional[component_base.Component] = None
-    actions: List[component_base.Component] = field(default_factory=list)
+    left_child: Optional[component_base.Component] = None
+    right_child: Optional[List[component_base.Component]] = None
     on_press: rio.EventHandler[[]] = None
 
     def build(self) -> component_base.Component:
         children = []
 
-        # Image or Icon
-        if self.image_or_icon is not None:
-            children.append(self.image_or_icon)
+        # Left child
+        if self.left_child is not None:
+            children.append(self.left_child)
 
         # Main content (text)
         text_children = [
@@ -87,11 +67,11 @@ class SingleLineListItem(component_base.Component):
             )
 
         # Space
-
         children.append(rio.Spacer())
 
-        # Actions, if any
-        children.extend(self.actions)
+        # Right child
+        if self.right_child is not None:
+            children.extend(self.right_child)
 
         # Combine everything
         return CustomListItem(
@@ -104,4 +84,32 @@ class SingleLineListItem(component_base.Component):
         )
 
 
-CustomListItem._unique_id = "ListItem-builtin"
+class CustomListItem(component_base.FundamentalComponent):
+    child: component_base.Component
+    _: KW_ONLY
+    on_press: rio.EventHandler[[]] = None
+
+    def _custom_serialize(self) -> JsonDoc:
+        return {
+            "pressable": self.on_press is not None,
+        }
+
+    async def _on_message(self, msg: Any) -> None:
+        # Parse the message
+        assert isinstance(msg, dict), msg
+        assert msg["type"] == "press", msg
+
+        msg_type: str = msg["type"]
+        assert isinstance(msg_type, str), msg_type
+
+        if self.on_press is None:
+            return
+
+        # Trigger the press event
+        await self.call_event_handler(self.on_press)
+
+        # Refresh the session
+        await self.session._refresh()
+
+
+CustomListItem._unique_id = "CustomListItem-builtin"

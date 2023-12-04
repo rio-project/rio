@@ -14,7 +14,7 @@ class ListView(component_base.FundamentalComponent):
 
     def __init__(
         self,
-        *children: Union[rio.CustomListItem, rio.SingleLineListItem],
+        *children: Union[rio.CustomListItem, rio.HeadingListItem, rio.SimpleListItem],
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -31,7 +31,12 @@ class ListView(component_base.FundamentalComponent):
         assert isinstance(children, tuple), children
         for child in children:
             assert isinstance(
-                child, (rio.CustomListItem, rio.SingleLineListItem)
+                child,
+                (
+                    rio.HeadingListItem,
+                    rio.SimpleListItem,
+                    rio.CustomListItem,
+                ),
             ), child
 
         super().__init__(
