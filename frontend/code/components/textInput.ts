@@ -19,16 +19,16 @@ export class TextInputComponent extends ComponentBase {
     _createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('rio-text-input');
+        element.classList.add('rio-input-box');
         element.classList.add('mdc-ripple-surface');
 
         element.innerHTML = `
             <input type="text" style="order: 2" placeholder="">
-            <div class="rio-text-input-hint-text rio-text-input-prefix-text" style="order: 1"></div>
-            <div class="rio-text-input-hint-text rio-text-input-suffix-text" style="order: 3"></div>
-            <div class="rio-text-input-label"></div>
-            <div class="rio-text-input-plain-bar"></div>
-            <div class="rio-text-input-color-bar"></div>
+            <div class="rio-input-box-hint-text rio-input-box-prefix-text" style="order: 1"></div>
+            <div class="rio-input-box-hint-text rio-input-box-suffix-text" style="order: 3"></div>
+            <div class="rio-input-box-label"></div>
+            <div class="rio-input-box-plain-bar"></div>
+            <div class="rio-input-box-color-bar"></div>
         `;
 
         // Detect value changes and send them to the backend
@@ -68,7 +68,7 @@ export class TextInputComponent extends ComponentBase {
 
         if (deltaState.label !== undefined) {
             let labelElement = element.querySelector(
-                '.rio-text-input-label'
+                '.rio-input-box-label'
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
@@ -79,14 +79,14 @@ export class TextInputComponent extends ComponentBase {
 
         if (deltaState.prefix_text !== undefined) {
             let prefixElement = element.querySelector(
-                '.rio-text-input-prefix-text'
+                '.rio-input-box-prefix-text'
             ) as HTMLElement;
             prefixElement.textContent = deltaState.prefix_text;
         }
 
         if (deltaState.suffix_text !== undefined) {
             let suffixElement = element.querySelector(
-                '.rio-text-input-suffix-text'
+                '.rio-input-box-suffix-text'
             ) as HTMLElement;
             suffixElement.textContent = deltaState.suffix_text;
         }
