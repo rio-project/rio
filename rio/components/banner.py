@@ -47,7 +47,7 @@ class Banner(component_base.Component):
     def build(self) -> rio.Component:
         # Early out: Nothing to show
         if not self.text:
-            return rio.Column()
+            return rio.Spacer(width=0, height=0)
 
         # Prepare the style
         if self.style == "info":
