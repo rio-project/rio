@@ -337,6 +337,7 @@ class Sidebar(rio.Component):
                 text=Sidebar.text_buffer,
                 prefix_text="$",
                 suffix_text="USD",
+                is_valid=False,
             ),
             rio.ListView(
                 rio.HeadingListItem("Heading 1"),
