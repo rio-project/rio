@@ -30,18 +30,18 @@ export class DropdownComponent extends ComponentBase {
         element.classList.add('mdc-ripple-surface');
 
         element.innerHTML = `
-        <div class="rio-text-input">
+        <div class="rio-input-box">
             <input type="text" placeholder="" style="pointer-events: none" disabled>
-            <div class="rio-text-input-label"></div>
+            <div class="rio-input-box-label"></div>
             <div class="rio-dropdown-arrow"></div>
-            <div class="rio-text-input-plain-bar"></div>
-            <div class="rio-text-input-color-bar"></div>
+            <div class="rio-input-box-plain-bar"></div>
+            <div class="rio-input-box-color-bar"></div>
         </div>
         `;
 
         // Expose them as properties
         this.textInputElement = element.querySelector(
-            '.rio-text-input'
+            '.rio-input-box'
         ) as HTMLElement;
 
         this.inputElement = element.querySelector('input') as HTMLInputElement;
@@ -70,7 +70,7 @@ export class DropdownComponent extends ComponentBase {
             this.inputElement.value = this.state.selectedName;
 
             // Make the text input appear as inactive
-            this.textInputElement.classList.remove('rio-text-input-focused');
+            this.textInputElement.classList.remove('rio-input-box-focused');
 
             // Hide the popup
             this.hidePopup(element);
@@ -91,9 +91,7 @@ export class DropdownComponent extends ComponentBase {
                 this.inputElement.value = this.state.selectedName;
 
                 // Make the text input appear as inactive
-                this.textInputElement.classList.remove(
-                    'rio-text-input-focused'
-                );
+                this.textInputElement.classList.remove('rio-input-box-focused');
                 return;
             }
 
@@ -103,7 +101,7 @@ export class DropdownComponent extends ComponentBase {
             document.addEventListener('click', outsideClickListener);
 
             // Make the text input appear as active
-            this.textInputElement.classList.add('rio-text-input-focused');
+            this.textInputElement.classList.add('rio-input-box-focused');
         });
 
         return element;
@@ -353,7 +351,7 @@ export class DropdownComponent extends ComponentBase {
 
         if (deltaState.label !== undefined) {
             let labelElement = element.querySelector(
-                '.rio-text-input-label'
+                '.rio-input-box-label'
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
@@ -367,9 +365,9 @@ export class DropdownComponent extends ComponentBase {
         }
 
         if (deltaState.is_sensitive === true) {
-            this.textInputElement.classList.remove('rio-text-input-disabled');
+            this.textInputElement.classList.remove('rio-input-box-disabled');
         } else {
-            this.textInputElement.classList.add('rio-text-input-disabled');
+            this.textInputElement.classList.add('rio-input-box-disabled');
         }
     }
 }

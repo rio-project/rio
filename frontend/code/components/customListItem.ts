@@ -32,6 +32,7 @@ export class CustomListItemComponent extends SingleContainer {
 
                 element.classList.add('mdc-ripple-surface');
                 element.classList.add('rio-rectangle-ripple');
+                element.style.cursor = 'pointer';
 
                 element.onclick = this._on_press.bind(this);
             }
@@ -42,6 +43,7 @@ export class CustomListItemComponent extends SingleContainer {
 
                 element.classList.remove('mdc-ripple-surface');
                 element.classList.remove('rio-rectangle-ripple');
+                element.style.removeProperty('cursor');
 
                 element.onclick = null;
             }

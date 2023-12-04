@@ -64,7 +64,7 @@ class Palette:
         return Palette(
             background=color,
             background_variant=hct_palette[as_hct.tone + 5],
-            background_active=hct_palette[as_hct.tone + 10],
+            background_active=hct_palette[as_hct.tone + 15],
             foreground=hct_palette[8 if as_hct.tone > 50 else 92],
         )
 
@@ -138,14 +138,14 @@ class Theme:
             background_palette = Palette(
                 background=rio.Color.WHITE,
                 background_variant=rio.Color.from_grey(0.96).blend(primary_color, 0.04),
-                background_active=rio.Color.from_grey(0.96).blend(primary_color, 0.10),
+                background_active=rio.Color.from_grey(0.96).blend(primary_color, 0.15),
                 foreground=rio.Color.from_grey(0.15),
             )
 
             neutral_palette = Palette(
                 background=rio.Color.from_grey(0.97).blend(primary_color, 0.04),
                 background_variant=rio.Color.from_grey(0.93).blend(primary_color, 0.05),
-                background_active=rio.Color.from_grey(0.93).blend(primary_color, 0.10),
+                background_active=rio.Color.from_grey(0.93).blend(primary_color, 0.15),
                 foreground=rio.Color.from_grey(0.1),
             )
 
@@ -160,16 +160,16 @@ class Theme:
 
         else:
             background_palette = Palette(
-                background=rio.Color.from_grey(0.08).blend(primary_color, 0.01),
-                background_variant=rio.Color.from_grey(0.14).blend(primary_color, 0.03),
-                background_active=rio.Color.from_grey(0.14).blend(primary_color, 0.06),
+                background=rio.Color.from_grey(0.08).blend(primary_color, 0.02),
+                background_variant=rio.Color.from_grey(0.14).blend(primary_color, 0.04),
+                background_active=rio.Color.from_grey(0.14).blend(primary_color, 0.10),
                 foreground=rio.Color.from_grey(0.9),
             )
 
             neutral_palette = Palette(
-                background=rio.Color.from_grey(0.16).blend(primary_color, 0.02),
-                background_variant=rio.Color.from_grey(0.2).blend(primary_color, 0.03),
-                background_active=rio.Color.from_grey(0.2).blend(primary_color, 0.06),
+                background=rio.Color.from_grey(0.16).blend(primary_color, 0.03),
+                background_variant=rio.Color.from_grey(0.2).blend(primary_color, 0.04),
+                background_active=rio.Color.from_grey(0.2).blend(primary_color, 0.10),
                 foreground=rio.Color.from_grey(0.9),
             )
 

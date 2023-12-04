@@ -661,8 +661,9 @@ body > * > * > * {
         var(--rectangle-shadow-radius-hover) var(--rectangle-shadow-color-hover);
 }
 
-// Text Input
-.rio-text-input {
+// Input Box: This is a style common to multiple input components, such as
+// `TextInput` and `Dropdown`.
+.rio-input-box {
     pointer-events: auto;
     cursor: text;
 
@@ -679,8 +680,8 @@ body > * > * > * {
         var(--rio-global-corner-radius-small) 0 0;
 }
 
-.rio-text-input:not(.rio-disabled-input) {
-    // Ripple
+.rio-input-box:not(.rio-disabled-input) {
+    // Material Design Ripple
     overflow: hidden;
 
     @include ripple.surface;
@@ -688,12 +689,13 @@ body > * > * > * {
     @include ripple.states;
 }
 
-.rio-text-input:focus-within {
+.rio-input-box:focus-within,
+.rio-input-box.rio-input-box-focused {
     outline: none;
     background-color: var(--rio-local-plain-bg-active);
 }
 
-.rio-text-input > input {
+.rio-input-box > input {
     order: 1;
 
     position: relative;
@@ -710,15 +712,15 @@ body > * > * > * {
     font-size: 1rem;
 }
 
-.rio-text-input > input:active {
+.rio-input-box > input:active {
     background-color: transparent;
 }
 
-.rio-text-input > input:focus-visible {
+.rio-input-box > input:focus-visible {
     outline: none;
 }
 
-.rio-text-input-hint-text {
+.rio-input-box-hint-text {
     margin-bottom: 0.5rem;
 
     color: var(--rio-local-text-color);
@@ -727,20 +729,21 @@ body > * > * > * {
     transition: all 0.13s linear;
 }
 
-.rio-text-input-prefix-text {
+.rio-input-box-prefix-text {
     margin-left: 0.5rem;
 }
 
-.rio-text-input-suffix-text {
+.rio-input-box-suffix-text {
     margin-right: 0.5rem;
 }
 
-input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
-.rio-text-input:focus-within > .rio-text-input-hint-text {
+input:not(:placeholder-shown) ~ .rio-input-box-hint-text,
+.rio-input-box:focus-within > .rio-input-box-hint-text,
+.rio-input-box-focused > .rio-input-box-hint-text {
     opacity: 0.5;
 }
 
-.rio-text-input-label {
+.rio-input-box-label {
     pointer-events: none;
 
     position: absolute;
@@ -753,26 +756,28 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     transition: all 0.13s linear;
 }
 
-input:not(:placeholder-shown) ~ .rio-text-input-label,
-.rio-text-input:focus-within > .rio-text-input-label {
+input:not(:placeholder-shown) ~ .rio-input-box-label,
+.rio-input-box:focus-within > .rio-input-box-label,
+.rio-input-box-focused > .rio-input-box-label {
     opacity: 1;
     top: 0.5rem;
     bottom: unset;
     font-size: 0.8rem;
 }
 
-.rio-text-input:focus-within > .rio-text-input-label {
+.rio-input-box:focus-within > .rio-input-box-label,
+.rio-input-box-focused > .rio-input-box-label {
     color: var(--rio-local-accent-bg);
 }
 
-.rio-text-input-plain-bar,
-.rio-text-input-color-bar {
+.rio-input-box-plain-bar,
+.rio-input-box-color-bar {
     position: absolute;
     bottom: 0;
     height: 0.12rem;
 }
 
-.rio-text-input-plain-bar {
+.rio-input-box-plain-bar {
     background-color: var(--rio-local-text-color);
 
     left: 0;
@@ -780,7 +785,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     opacity: 0.15;
 }
 
-.rio-text-input-color-bar {
+.rio-input-box-color-bar {
     background-color: var(--rio-local-accent-bg);
 
     left: 40%;
@@ -790,8 +795,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     transition: all 0.2s ease-in-out;
 }
 
-.rio-text-input:focus-within .rio-text-input-color-bar,
-.rio-text-input-focused .rio-text-input-color-bar {
+.rio-input-box:focus-within .rio-input-box-color-bar,
+.rio-input-box-focused .rio-input-box-color-bar {
     left: 0;
     right: 0;
     opacity: 1;
@@ -875,7 +880,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     align-items: stretch;
 }
 
-.rio-dropdown > .rio-text-input {
+.rio-dropdown > .rio-input-box {
     flex-grow: 1;
 }
 
@@ -895,7 +900,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     box-shadow: 0 0 0.8rem var(--rio-global-shadow-color);
 }
 
-.rio-dropdown > .rio-text-input > .rio-dropdown-arrow {
+.rio-dropdown > .rio-input-box > .rio-dropdown-arrow {
     pointer-events: none;
 
     margin: 1rem 0;
@@ -1951,6 +1956,12 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     th {
         font-weight: bold;
         cursor: pointer;
+
+        transition: color 0.06s ease-out;
+    }
+
+    th:hover {
+        color: var(--rio-local-accent-bg);
     }
 
     th,
@@ -1977,25 +1988,15 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
 
     // Highlight the row when hovered
     tr {
-        position: relative;
+        transition: background-color 0.06s ease-out;
     }
 
-    tbody > tr:hover::after {
-        pointer-events: none;
-
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--rio-local-accent-bg);
-
-        opacity: 0.1;
+    tbody > tr:hover {
+        background-color: var(--rio-local-plain-bg-active);
     }
 }
 
-// Lists (ListView + ListItem)
+// Lists (ListView + various list items)
 .rio-list-view {
     pointer-events: none;
 
@@ -2017,7 +2018,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-label,
     padding: 0.7rem 1.5rem;
     background-color: var(--rio-local-plain-bg-variant);
 
-    transition: background-color 0.1s ease-in-out;
+    transition: background-color 0.1s ease-out;
 }
 
 .rio-custom-list-item:hover {
