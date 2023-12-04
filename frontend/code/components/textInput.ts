@@ -1,3 +1,4 @@
+import { applyColorSet } from '../designApplication';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type TextInputState = ComponentState & {
@@ -106,7 +107,7 @@ export class TextInputComponent extends ComponentBase {
         if (deltaState.is_valid === false) {
             element.style.setProperty(
                 '--rio-local-text-color',
-                'var(--rio-global-danger-fg)'
+                'var(--rio-global-danger-bg)'
             );
         } else if (deltaState.is_valid === true) {
             element.style.removeProperty('--rio-local-text-color');
