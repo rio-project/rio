@@ -313,7 +313,7 @@ export class DropdownComponent extends ComponentBase {
         if (currentOptionNames.length === 0) {
             applyIcon(
                 this.optionsElement,
-                'search',
+                'error',
                 'var(--rio-local-text-color)'
             );
 
