@@ -59,13 +59,6 @@ class NavigationBar(rio.Component):
                         "Tools",
                         "About Us",
                     ],
-                    icons=[
-                        "home",
-                        "book",
-                        # "tools",
-                        None,
-                        "castle",
-                    ],
                     values=[
                         "",
                         "documentation",

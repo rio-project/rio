@@ -1899,8 +1899,10 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     cursor: pointer;
 
+    padding: 0.7rem 1.5rem;
+
     overflow: hidden;
-    border-radius: $infinite-corner-radius;
+    border-radius: var(--rio-global-corner-radius-large);
 
     @include ripple.surface;
     @include ripple.radius-bounded;
@@ -1918,8 +1920,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-switcher-bar-option-inner > div {
-    margin-left: 1.2rem;
-    margin-right: 1.2rem;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .rio-switcher-bar-marker {
@@ -1933,7 +1935,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     right: 0;
     bottom: 0;
 
-    border-radius: $infinite-corner-radius;
+    border-radius: var(--rio-global-corner-radius-large);
 
     transition:
         left 0.4s $transition-timing-overshoot,

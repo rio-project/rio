@@ -182,7 +182,7 @@ class Sidebar(rio.Component):
                     rio.Row(
                         rio.Text("⇇ Undef space ⇉"),
                     ),
-                    rio.Slider(value=0.1),
+                    rio.Slider(value=0, discrete=False),
                     rio.Button(
                         "Foo",
                         on_press=lambda: print("Button Pressed"),
@@ -275,11 +275,49 @@ class Sidebar(rio.Component):
                         ),
                     ),
                     rio.SwitcherBar(
-                        {
-                            "Short": "hello",
-                            "Very, very long!": "world",
-                        },
+                        names=[
+                            "Home",
+                            "Docs",
+                            "Tools",
+                            "About Us",
+                        ],
+                        icons=[
+                            "home",
+                            "book",
+                            # "tools",
+                            None,
+                            "castle",
+                        ],
+                        values=[
+                            "",
+                            "documentation",
+                            "tools",
+                            "about",
+                        ],
                         orientation="horizontal",
+                        color="primary",
+                    ),
+                    rio.SwitcherBar(
+                        names=[
+                            "Home",
+                            "Docs",
+                            "Tools",
+                            "About Us",
+                        ],
+                        icons=[
+                            "home",
+                            "book",
+                            # "tools",
+                            None,
+                            "castle",
+                        ],
+                        values=[
+                            "",
+                            "documentation",
+                            "tools",
+                            "about",
+                        ],
+                        orientation="vertical",
                         color="primary",
                     ),
                     rio.Stack(
@@ -312,69 +350,6 @@ class Sidebar(rio.Component):
                 scroll_x="never",
             ),
             margin=1.0,
-        )
-
-    def build(self) -> rio.Component:
-        return rio.Column(
-            Card(
-                rio.Column(
-                    rio.Button("foo", is_loading=True),
-                    rio.Dropdown(
-                        {
-                            "foo": "bar",
-                            "spam": "baz",
-                            "a very long option": "a very long value",
-                            "A": "1",
-                            "B": "2",
-                            "C": "3",
-                        },
-                        align_y=0.1,
-                    ),
-                ),
-            ),
-            rio.TextInput(
-                label="Label!",
-                text=Sidebar.text_buffer,
-                prefix_text="$",
-                suffix_text="USD",
-                is_valid=False,
-            ),
-            rio.ListView(
-                rio.HeadingListItem("Heading 1"),
-                rio.CustomListItem(rio.Text("Text 1")),
-                rio.SimpleListItem("Text 2"),
-                rio.CustomListItem(
-                    rio.Text("Text 3"), on_press=lambda: print("Pressed!")
-                ),
-                rio.HeadingListItem("Heading 2"),
-                rio.SimpleListItem("Filler 1"),
-                rio.SimpleListItem("Filler 2"),
-            ),
-            # rio.Flow(
-            #     rio.Button("Flow-1", margin=0.2),
-            #     rio.Button("Flow-2", margin=0.2),
-            #     rio.Button("Flow-3", margin=0.2),
-            #     rio.Button("Flow-4", margin=0.2),
-            #     rio.Button("Flow-5", margin=0.2),
-            #     rio.Button("Flow-6", margin=0.2),
-            #     rio.Button("Flow-7", margin=0.2),
-            #     rio.Button("Flow-8", margin=0.2),
-            # ),
-            #             rio.Text(
-            #                 """Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the 15th century who is thought to have scrambled parts of Cicero's De Finibus Bonorum et Malorum for use in a type specimen book. It usually begins with:
-            #     “Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.”
-            # The purpose of lorem ipsum is to create a natural looking block of text (sentence, paragraph, page, etc.) that doesn't distract from the layout. A practice not without controversy, laying out pages with meaningless filler text can be very useful when the focus is meant to be on design, not content.
-            # The passage experienced a surge in popularity during the 1960s when Letraset used it on their dry-transfer sheets, and again during the 90s as desktop publishers bundled the text with their software. Today it's seen all around the web; on templates, websites, and stock designs. Use our generator to get your own, or read on for the authoritative history of lorem ipsum. """,
-            #                 multiline=True,
-            #             ),
-            FooButton(0),
-            rio.Text("foo bar"),
-            rio.Text("foo                bar"),
-            rio.Text(
-                "foo",
-                height=80,
-            ),
-            spacing=1.0,
         )
 
 
