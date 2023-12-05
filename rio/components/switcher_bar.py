@@ -8,6 +8,7 @@ from uniserde import JsonDoc
 
 import rio
 
+from .. import icon_registry
 from . import component_base
 
 __all__ = [
@@ -24,8 +25,9 @@ class SwitcherBarChangeEvent(Generic[T]):
 
 
 class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
-    options: Mapping[str, T]
-    _: KW_ONLY
+    names: List[str]
+    values: List[T]
+    icon_svg_sources: List[Optional[str]]
     color: rio.ColorSet
     orientation: Literal["horizontal", "vertical"]
     spacing: float
@@ -34,8 +36,10 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
 
     def __init__(
         self,
-        options: Mapping[str, T],
+        values: List[T],
         *,
+        names: Optional[List[str]] = None,
+        icons: Optional[List[Optional[str]]] = None,
         color: rio.ColorSet = "keep",
         orientation: Literal["horizontal", "vertical"] = "horizontal",
         spacing: float = 1.0,
@@ -54,7 +58,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):
-        if not options:
+        if not values:
             raise ValueError("`SwitcherBar` must have at least one option.")
 
         super().__init__(
@@ -72,11 +76,33 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
             align_y=align_y,
         )
 
-        self.options = options
+        self.values = values
         self.color = color
         self.orientation = orientation
         self.spacing = spacing
         self.on_change = on_change
+
+        # Names default to the string representation of the values
+        if names is None:
+            self.names = [str(value) for value in values]
+        else:
+            if len(names) != len(values):
+                raise ValueError("`names` must be the same length as `values`.")
+
+            self.names = names
+
+        # Icons default to `None`. Also, fetch their SVG sources so any errors
+        # are raised now, rather than later.
+        if icons is None:
+            self.icon_svg_sources = [None] * len(values)
+        else:
+            if len(icons) != len(values):
+                raise ValueError("`icons` must be the same length as `values`.")
+
+            registry = icon_registry.IconRegistry.get_singleton()
+            self.icon_svg_sources = [
+                None if icon is None else registry.get_icon_svg(icon) for icon in icons
+            ]
 
         # This is an unsafe assignment, because the value could be `None`. This
         # will be fixed in `on_create`, once the state bindings have been
@@ -87,17 +113,16 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
     def _on_create(self) -> None:
         # Make sure a value is selected
         if self.selected_value is None:
-            self.selected_value = next(iter(self.options.values()))
+            self.selected_value = self.values[0]
 
     def _fetch_selected_name(self) -> str:
-        # The frontend works with names, not values. Get the corresponding
-        # name.
+        # The frontend works with names, not values. Get the corresponding name.
 
         # Avoid hammering a potential state binding
         selected_value = self.selected_value
 
         # Fetch the name
-        for name, value in self.options.items():
+        for name, value in zip(self.names, self.values):
             if value == selected_value:
                 return name
         else:
@@ -106,11 +131,11 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
             )
 
     def _custom_serialize(self) -> JsonDoc:
-        thm = self.session.theme
         result = {
-            "optionNames": list(self.options.keys()),
+            "optionNames": self.names,
+            "optionIcons": self.icon_svg_sources,
             "selectedName": self._fetch_selected_name(),
-            "color": thm._serialize_colorset(self.color),
+            "color": self.session.theme._serialize_colorset(self.color),
         }
 
         return result
@@ -121,9 +146,11 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
 
         # The frontend works with names, not values. Get the corresponding
         # value.
-        try:
-            self.selected_value = self.options[msg["name"]]
-        except KeyError:
+        for name, value in zip(self.names, self.values):
+            if name == msg["name"]:
+                self.selected_value = value
+                break
+        else:
             # Invalid names may be sent due to lag between the frontend and
             # backend. Ignore them.
             return

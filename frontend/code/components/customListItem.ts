@@ -30,8 +30,10 @@ export class CustomListItemComponent extends SingleContainer {
             if (this.mdcRipple === null) {
                 this.mdcRipple = new MDCRipple(element);
 
-                element.classList.add('mdc-ripple-surface');
-                element.classList.add('rio-rectangle-ripple');
+                element.classList.add(
+                    'mdc-ripple-surface',
+                    'rio-rectangle-ripple'
+                );
                 element.style.cursor = 'pointer';
 
                 element.onclick = this._on_press.bind(this);
@@ -41,20 +43,22 @@ export class CustomListItemComponent extends SingleContainer {
                 this.mdcRipple.destroy();
                 this.mdcRipple = null;
 
-                element.classList.remove('mdc-ripple-surface');
-                element.classList.remove('rio-rectangle-ripple');
+                element.classList.remove(
+                    'mdc-ripple-surface',
+                    'rio-rectangle-ripple'
+                );
                 element.style.removeProperty('cursor');
 
                 element.onclick = null;
             }
         }
 
-        // The ripple effect stores the coordinates of its rectangle. Since
-        // rio likes to resize and move around components, the rectangle must be
+        // The ripple effect stores the coordinates of its rectangle. Since rio
+        // likes to resize and move around components, the rectangle must be
         // updated appropriately.
         //
-        // Really, this should be done when the component is resized or moved, but
-        // there is no hook for that. Update seems to work fine.
+        // Really, this should be done when the component is resized or moved,
+        // but there is no hook for that. Update seems to work fine.
         if (this.mdcRipple !== null) {
             requestAnimationFrame(() => {
                 if (this.mdcRipple !== null) {

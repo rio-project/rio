@@ -1883,18 +1883,23 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-switcher-bar {
     pointer-events: auto;
     display: flex;
-    align-items: start;
-    gap: 1;
+    align-items: stretch;
+    justify-content: space-around;
 }
 
-.rio-switcher-bar > * {
+.rio-switcher-bar-option-outer {
     position: relative;
-    padding: 0.4rem;
+}
+
+.rio-switcher-bar-option-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    justify-content: end;
 
     cursor: pointer;
 
-    // MDC Ripple
-    // overflow: hidden;
+    overflow: hidden;
     border-radius: $infinite-corner-radius;
 
     @include ripple.surface;
@@ -1902,7 +1907,23 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     @include ripple.states;
 }
 
+.rio-switcher-bar-option-inner > svg {
+    width: 2rem;
+    height: 2rem;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    margin-bottom: 0.5rem;
+}
+
+.rio-switcher-bar-option-inner > div {
+    margin-left: 1.2rem;
+    margin-right: 1.2rem;
+}
+
 .rio-switcher-bar-marker {
+    pointer-events: none;
     background: var(--rio-local-plain-bg);
     opacity: 0.3;
 
