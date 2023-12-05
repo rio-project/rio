@@ -6,7 +6,8 @@ import { applyColorSet } from '../designApplication';
 
 export type SwitcherBarState = ComponentState & {
     _type_: 'SwitcherBar-builtin';
-    optionNames?: string[];
+    names?: string[];
+    icon_svg_sources?: (string | null)[];
     color?: ColorSet;
     orientation?: 'horizontal' | 'vertical';
     spacing?: number;
@@ -34,21 +35,55 @@ export class SwitcherBarComponent extends ComponentBase {
         let prevPos = this.markerElement.getBoundingClientRect();
 
         // Update the options
-        if (deltaState.optionNames !== undefined) {
+        if (
+            deltaState.names !== undefined ||
+            deltaState.icon_svg_sources !== undefined
+        ) {
+            let names = deltaState.names ?? this.state.names;
+            let iconSvgSources =
+                deltaState.icon_svg_sources ?? this.state.icon_svg_sources;
             element.innerHTML = '';
 
-            for (let optionName of deltaState.optionNames) {
-                let optionElement = document.createElement('div');
-                optionElement.textContent = optionName;
-                element.appendChild(optionElement);
+            // Iterate over both
+            for (let i = 0; i < names.length; i++) {
+                let name = names[i];
+                let iconSvg = iconSvgSources[i];
+
+                let outerOptionElement = document.createElement('div');
+                outerOptionElement.classList.add(
+                    'rio-switcher-bar-option-outer',
+                    'rio-single-container'
+                );
+                element.appendChild(outerOptionElement);
+
+                let innerOptionElement = document.createElement('div');
+                innerOptionElement.classList.add(
+                    'rio-switcher-bar-option-inner'
+                );
+                outerOptionElement.appendChild(innerOptionElement);
+
+                // Icon
+                let iconElement;
+                if (iconSvg === null) {
+                    // iconElement = document.createElement('svg');
+                    // optionElement.appendChild(iconElement);
+                } else {
+                    innerOptionElement.innerHTML = iconSvg;
+                    iconElement = innerOptionElement.children[0] as HTMLElement;
+                }
+
+                // Text
+                let textElement = document.createElement('div');
+                innerOptionElement.appendChild(textElement);
+                textElement.textContent = name;
 
                 // Add a ripple effect
-                MDCRipple.attachTo(optionElement);
+                MDCRipple.attachTo(outerOptionElement);
 
                 // Detect clicks
-                optionElement.addEventListener('click', () => {
+                outerOptionElement.addEventListener('click', () => {
                     this.sendMessageToBackend({
-                        name: optionName,
+                        name: name,
                     });
                 });
             }
@@ -78,17 +113,18 @@ export class SwitcherBarComponent extends ComponentBase {
         // Place the marker at the selected option
         if (
             deltaState.selectedName !== undefined ||
-            deltaState.optionNames !== undefined
+            deltaState.names !== undefined ||
+            deltaState.icon_svg_sources !== undefined
         ) {
             // What's the currently selected option?
             let selectedName =
                 deltaState.selectedName ?? this.state.selectedName;
-            let optionNames = deltaState.optionNames ?? this.state.optionNames;
-            let selectedIndex = optionNames.indexOf(selectedName);
+            let names = deltaState.names ?? this.state.names;
+            let selectedIndex = names.indexOf(selectedName);
 
             // Make sure the index is valid
             if (selectedIndex == -1) {
-                throw `SwitcherBar: selected option ${selectedName} not found`;
+                throw `SwitcherBar: selected option \`${selectedName}\` not found`;
             }
 
             // Move the marker to the correct position

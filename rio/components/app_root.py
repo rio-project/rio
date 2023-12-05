@@ -84,10 +84,8 @@ class Sidebar(component_base.Component):
                 align_x=0,
             ),
             rio.SwitcherBar(
-                {
-                    "Foo": "foo",
-                    "Bar": "bar",
-                },
+                names=["Foo", "Bar"],
+                values=["foo", "bar"],
                 orientation="vertical",
                 width=25,
                 margin=2,
@@ -95,9 +93,8 @@ class Sidebar(component_base.Component):
             ),
             rio.Spacer(),
             rio.SwitcherBar(
-                {
-                    "Settings": "settings",
-                },
+                names=["Settings"],
+                values=["settings"],
                 orientation="vertical",
                 width=25,
                 margin=2,
