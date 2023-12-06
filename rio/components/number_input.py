@@ -123,7 +123,9 @@ class NumberInput(component_base.Component):
             value = 0
 
         # Limit the number of decimals
-        value = round(value, self.decimals)
+        #
+        # Ensure the value is an integer, if the number of decimals is 0
+        value = round(value, None if self.decimals == 0 else self.decimals)
 
         # Clamp the value
         if self.minimum is not None:
