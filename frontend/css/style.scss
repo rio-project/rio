@@ -2055,3 +2055,47 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     height: 100%;
     background-color: var(--mdc-theme-primary);
 }
+
+// Connection lost popup
+#rio-connection-lost-popup {
+    pointer-events: none;
+
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: $z-index-error-popup;
+
+    background-color: transparent;
+
+    transition: background-color 1s ease-in-out;
+}
+
+#rio-connection-lost-popup.rio-connection-lost-popup-visible {
+    display: flex;
+    align-items: stretch;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#rio-connection-lost-popup > * {
+    position: absolute;
+    flex-grow: 1;
+
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+    transform: translateY(-5rem);
+
+    transition:
+        opacity 0.3s ease-in-out,
+        transform 0.3s $transition-timing-overshoot;
+}
+
+#rio-connection-lost-popup.rio-connection-lost-popup-visible > * {
+    opacity: 1;
+    transform: translateY(0);
+}
