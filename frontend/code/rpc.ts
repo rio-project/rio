@@ -30,8 +30,24 @@ export type JsonRpcResponse = {
     };
 };
 
-function getConnectionLostPopup(): HTMLElement | null {
-    return document.getElementById('rio-connection-lost-popup');
+function setConnectionLostPopupVisible(visible: boolean): void {
+    let connectionLostPopup = document.getElementById(
+        'rio-connection-lost-popup'
+    ) as HTMLElement;
+
+    if (visible) {
+        connectionLostPopup.style.display = 'block';
+
+        // Flush the style change
+        connectionLostPopup.offsetHeight;
+
+        connectionLostPopup.classList.add('rio-connection-lost-popup-visible');
+    } else {
+        connectionLostPopup.classList.remove(
+            'rio-connection-lost-popup-visible'
+        );
+        connectionLostPopup.style.display = 'none';
+    }
 }
 
 function createWebsocket(connectionAttempt: number = 1): WebSocket {
@@ -88,11 +104,7 @@ function sendInitialMessage(): void {
 function onOpen(): void {
     console.log('Websocket connection opened');
 
-    let connectionLostPopup = getConnectionLostPopup();
-    if (connectionLostPopup !== null) {
-        connectionLostPopup.style.opacity = '0';
-        connectionLostPopup.style.display = 'none';
-    }
+    setConnectionLostPopupVisible(false);
 
     // Some proxies kill idle websocket connections. Send pings occasionally to
     // keep the connection alive.
@@ -143,7 +155,7 @@ function onClose(connectionAttempt: number, event: Event) {
     clearInterval(pingPongHandlerId);
 
     // Show the user that the connection was lost
-    displayConnectionLostPopup();
+    setConnectionLostPopupVisible(true);
 }
 
 export function sendMessageOverWebsocket(message: object) {
@@ -308,17 +320,4 @@ export async function processMessageReturnResponse(
     }
 
     return rpcResponse;
-}
-
-function displayConnectionLostPopup(): void {
-    let connectionLostPopup = getConnectionLostPopup()!;
-    connectionLostPopup.style.display = 'inline-grid';
-
-    // The popup spawns with opacity 0. Fade it in.
-    //
-    // For some reason `requestAnimationFrame` doesn't work here. Use an actual
-    // timeout instead.
-    setTimeout(() => {
-        connectionLostPopup.style.opacity = '1';
-    }, 100);
 }

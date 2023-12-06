@@ -1,14 +1,10 @@
-from pathlib import Path
+import sys
 from typing import *  # type: ignore
 
 import revel
-import uvicorn
 from revel import error, fatal, print, success, warning
-from typing_extensions import TypeAlias
 
-import rio.snippets
-
-from . import project, project_setup
+from . import project, project_setup, run_project
 
 __all__ = [
     "app",
@@ -60,7 +56,6 @@ def new(
     type: Literal["app", "website"],
     template: Optional[project_setup.TemplatesLiteral] = None,
 ) -> None:
-    # Project setup is surprisingly complex. Handle it in another file
     project_setup.create_project(
         nicename=nicename,
         type=type,
@@ -86,17 +81,10 @@ def run(
     port: Optional[int] = None,
     public: bool = False,
 ) -> None:
-    # TODO: Verify the parameters are okay. i.e. `port` is a valid port number
-
-    # Load the project
     with project.RioProject.try_load() as proj:
-        main_module = proj.main_module
-        fastapi_app_variable = proj.fastapi_app_variable
-
-    # Delegate to uvicorn
-    uvicorn.run(
-        f"{main_module}:{fastapi_app_variable}",
-        host="0.0.0.0" if public else "127.0.0.1",
-        port=proj.debug_port if port is None else port,
-        reload=True,
-    )
+        runner = run_project.RunningApp(
+            proj=proj,
+            port=port,
+            public=public,
+        )
+        runner.run()

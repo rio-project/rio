@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 import secrets
+import socket
 from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
@@ -188,3 +189,19 @@ def escape_markdown_code(text: str) -> str:
     """
     # TODO: Find a proper function for this. The current one is a total hack.
     return re.sub(MARKDOWN_CODE_ESCAPE, r"\\\1", text)
+
+
+def choose_free_port(host: str) -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind((host, 0))
+        return sock.getsockname()[1]
+
+
+def ensure_valid_port(host: str, port: Optional[int]) -> int:
+    if port is None:
+        return choose_free_port(host)
+
+    # if _port_is_in_use(host, port):
+    #     raise ValueError(f"The port {host}:{port} is already in use")
+
+    return port

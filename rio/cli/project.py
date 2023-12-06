@@ -66,6 +66,10 @@ class RioProject:
         return value
 
     @property
+    def project_directory(self) -> Path:
+        return self._file_path.parent
+
+    @property
     def main_module(self) -> str:
         return self._get_key("main_module", str, "TODO")
 
