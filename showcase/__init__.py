@@ -29,21 +29,6 @@ class SomeData:
     foo_bar: bool = False
 
 
-class Card(rio.Component):
-    child: rio.Component
-
-    def build(self) -> rio.Component:
-        return rio.Rectangle(
-            child=rio.Container(
-                self.child,
-                margin=1.0,
-            ),
-            style=CARD_STYLE,
-            hover_style=CARD_STYLE_HOVER,
-            transition_time=0.2,
-        )
-
-
 class KeyEventTester(rio.Component):
     event: rio.KeyDownEvent = rio.KeyDownEvent("unknown", "unknown", "", frozenset())
 
@@ -106,7 +91,7 @@ class Sidebar(rio.Component):
         self.popup_visible = not self.popup_visible
 
     def build(self) -> rio.Component:
-        return Card(
+        return rio.Card(
             child=rio.ScrollContainer(
                 rio.Column(
                     rio.Text(

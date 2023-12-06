@@ -144,7 +144,7 @@ class Theme:
 
             neutral_palette = Palette(
                 background=rio.Color.from_grey(0.97).blend(primary_color, 0.04),
-                background_variant=rio.Color.from_grey(0.93).blend(primary_color, 0.05),
+                background_variant=rio.Color.from_grey(0.93).blend(primary_color, 0.07),
                 background_active=rio.Color.from_grey(0.93).blend(primary_color, 0.15),
                 foreground=rio.Color.from_grey(0.1),
             )
