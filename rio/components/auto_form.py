@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import dataclasses
 import enum
-from dataclasses import KW_ONLY
+from dataclasses import KW_ONLY, dataclass, is_dataclass
+from functools import partial
 from typing import *  # type: ignore
 
 import rio
@@ -17,78 +19,42 @@ def prettify_name(name: str) -> str:
     return " ".join(p.title() for p in parts)
 
 
+@dataclass
+class AutoFormChangeEvent:
+    field_name: str
+    value: Any
+
+
 class AutoForm(component_base.Component):
-    # Not yet ready for release - do not use.
-
+    value: Any
     _: KW_ONLY
-    spacing: float = 0.5
-    label_width: float = 15.0
-    error_message: Optional[str] = None
-    submit_text: str = "Submit"
+    on_change: rio.EventHandler[[AutoFormChangeEvent]] = None
 
-    # Internal
-    _is_loading: bool = False
+    @rio.event.on_create
+    def _on_create(self) -> None:
+        # Make sure the passed value is a dataclass
+        if not is_dataclass(self.value):
+            raise TypeError(
+                f"The value to `AutoForm` must be a dataclass, not `{type(self.value)}`"
+            )
 
-    def validate(self) -> Optional[str]:
-        """
-        Override this method to validate the form's values. If a string is
-        returned it will be displayed to the user, and the form will not be
-        submittable.
-        """
-        return None
+    async def _update_value(self, field_name: str, value: Any) -> None:
+        # Update the value
+        setattr(self, field_name, value)
 
-    async def on_submit(self) -> None:
-        """
-        Called when the user clicks the submit button. Override this method to
-        perform some action when the form is submitted.
-        """
-        pass
-
-    async def _on_submit(self) -> None:
-        # Display the loading indicator
-        self._is_loading = True
-        await self.force_refresh()
-
-        # Delegate to the user's submit method
-        try:
-            await self.call_event_handler(self.on_submit)
-        finally:
-            self._is_loading = False
-
-    def make_notification_bar(
-        self,
-        text: str,
-        level: Literal["info", "warning", "error"],
-    ) -> rio.Component:
-        return banner.Banner(
-            text=text,
-            style=level,
-        )
-
-    def make_switch(self, is_on: bool) -> rio.Component:
-        return switch.Switch(is_on=is_on)
-
-    def make_button(
-        self,
-        *,
-        text: str,
-        on_press: rio.EventHandler[[]],
-        is_sensitive: bool,
-        is_loading: bool,
-        is_major: bool,
-    ) -> rio.Component:
-        return rio.Button(
-            text_or_child == text,
-            style="major" if is_major else "minor",
-            on_press=on_press,
-            is_sensitive=is_sensitive,
-            is_loading=is_loading,
+        # Trigger the event
+        await self.call_event_handler(
+            self.on_change,
+            AutoFormChangeEvent(
+                field_name=field_name,
+                value=value,
+            ),
         )
 
     def _build_input_field(
         self,
         field_name: str,
-        field_type: type,
+        field_type: Type,
     ) -> rio.Component:
         # Get sensible type information
         origin = get_origin(field_type)
@@ -96,32 +62,36 @@ class AutoForm(component_base.Component):
         field_type = field_type if origin is None else origin
         del origin
 
-        # Grab the field instance
-        field_instance = vars(type(self))[field_name]
+        # Grab the value
+        value = getattr(self.value, field_name)
 
         # `bool` -> `Switch`
         if field_type is bool:
-            return self.make_switch(
-                is_on=field_instance,
+            return switch.Switch(
+                is_on=value,
+                on_change=lambda e: self._update_value(field_name, e.is_on),
             )
 
         # `int` -> `NumberInput`
         if field_type is int:
             return number_input.NumberInput(
-                value=field_instance,
+                value=value,
                 decimals=0,
+                on_change=lambda e: self._update_value(field_name, e.value),
             )
 
         # `float` -> `NumberInput`
         if field_type is float:
             return number_input.NumberInput(
-                value=field_instance,
+                value=value,
+                on_change=lambda e: self._update_value(field_name, e.value),
             )
 
         # `str` -> `TextInput`
         if field_type is str:
             return rio.TextInput(
-                text=field_instance,
+                text=value,
+                on_change=lambda e: self._update_value(field_name, e.text),
             )
 
         # `Literal` or `Enum` -> `Dropdown`
@@ -133,57 +103,39 @@ class AutoForm(component_base.Component):
 
             return rio.Dropdown(
                 mapping,
-                selected_value=field_instance,
+                selected_value=value,
+                on_change=lambda e: self._update_value(field_name, e.value),
             )
 
         # Unsupported type
         raise TypeError(f"AutoForm does not support fields of type `{field_type}`")
 
     def build(self) -> rio.Component:
-        rows: List[rio.Component] = []
-
-        # Look for errors
-        error_message = (
-            self.validate() if self.error_message is None else self.error_message
+        grid = rio.Grid(
+            row_spacing=0.5,
+            column_spacing=1,
         )
 
-        # Display any errors
-        if error_message is not None:
-            rows.append(
-                self.make_notification_bar(
-                    text=error_message,
-                    level="error",
-                )
+        # Iterate over the class' fields and build the input fields
+        for ii, field in enumerate(dataclasses.fields(self.value)):
+            field_py_name = field.name
+            field_type = field.type
+            field_nicename = prettify_name(field_py_name)
+
+            # Skip fields that are not supported
+            try:
+                input_component = self._build_input_field(field_py_name, field_type)
+            except TypeError:
+                continue
+
+            # Add a label
+            grid.add_child(
+                rio.Text(text=field_nicename, align_x=0),
+                ii,
+                0,
             )
 
-        # One row per field
-        for field_name, field_type in inspection.get_type_annotations(
-            type(self)
-        ).items():
-            rows.append(
-                rio.Row(
-                    text.Text(
-                        prettify_name(field_name),
-                        width=self.label_width,
-                    ),
-                    self._build_input_field(field_name, field_type),
-                    spacing=self.spacing,
-                )
-            )
+            # And a input field
+            grid.add_child(input_component, ii, 1)
 
-        # Add a submit button
-        rows.append(
-            self.make_button(
-                text=self.submit_text,
-                on_press=self._on_submit,
-                is_sensitive=not self._is_loading and error_message is None,
-                is_loading=self._is_loading,
-                is_major=True,
-            )
-        )
-
-        # Wrap everything in one container
-        return rio.Column(
-            *rows,
-            spacing=self.spacing,
-        )
+        return grid

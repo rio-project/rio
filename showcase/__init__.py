@@ -1,4 +1,5 @@
-from dataclasses import field
+import dataclasses
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -18,6 +19,14 @@ CARD_STYLE = rio.BoxStyle(
 CARD_STYLE_HOVER = CARD_STYLE.replace(
     # fill=theme.surface_active_color,
 )
+
+
+@dataclass
+class SomeData:
+    a: int = 1
+    b: str = "foo"
+    c: List[int] = dataclasses.field(default_factory=list)
+    foo_bar: bool = False
 
 
 class Card(rio.Component):
@@ -110,6 +119,7 @@ class Sidebar(rio.Component):
                         style="heading2",
                         margin_top=0.6,
                     ),
+                    rio.AutoForm(SomeData()),
                     rio.Grid(
                         [
                             rio.TextInput(
