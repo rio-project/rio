@@ -37,12 +37,12 @@ class NavigationBar(rio.Component):
                 rio.Row(
                     rio.Image(
                         Path("website/assets/rio-logo.png"),
-                        width=1.7,
-                        height=1.7,
+                        width=1.8,
+                        height=1.8,
                         margin_left=2.5,
                     ),
                     rio.Text(
-                        "rio",
+                        "Rio",
                         style=rio.TextStyle(
                             font_size=1.5,
                             font_weight="bold",
