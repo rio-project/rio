@@ -30,10 +30,14 @@ export type JsonRpcResponse = {
     };
 };
 
-function setConnectionLostPopupVisible(visible: boolean): void {
+export function setConnectionLostPopupVisible(visible: boolean): void {
     let connectionLostPopup = document.getElementById(
         'rio-connection-lost-popup'
-    ) as HTMLElement;
+    );
+
+    if (connectionLostPopup === null) {
+        return;
+    }
 
     if (visible) {
         connectionLostPopup.style.display = 'block';

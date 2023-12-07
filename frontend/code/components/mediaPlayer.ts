@@ -399,6 +399,24 @@ export class MediaPlayerComponent extends ComponentBase {
                     this.setVolume(Math.max(this.mediaPlayer.volume - 0.1, 0));
                     break;
 
+                // Number keys seek to a percentage of the video
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    let percentage = parseInt(event.key) / 10;
+                    this.mediaPlayer.currentTime =
+                        this.mediaPlayer.duration * percentage;
+
+                    this.interact();
+                    break;
+
                 // All other keys are ignored
                 default:
                     return;
