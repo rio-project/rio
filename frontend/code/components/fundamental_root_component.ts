@@ -1,5 +1,6 @@
 import { replaceChildrenAndResetCssProperties } from '../componentManagement';
 import { ComponentId } from '../models';
+import { setConnectionLostPopupVisible } from '../rpc';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type FundamentalRootComponentState = ComponentState & {
@@ -32,5 +33,7 @@ export class FundamentalRootComponent extends ComponentBase {
 
         let connectionLostPopup = element.lastElementChild as HTMLElement;
         connectionLostPopup.id = 'rio-connection-lost-popup';
+
+        setConnectionLostPopupVisible(false);
     }
 }
