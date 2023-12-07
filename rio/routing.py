@@ -77,6 +77,7 @@ class Page:
     page_url: str
     build: Callable[[], rio.Component]
     _: KW_ONLY
+    name: Optional[str] = None
     icon: Optional[str] = None
     show_in_navigation = True
     children: List["Page"] = field(default_factory=list)

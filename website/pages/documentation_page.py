@@ -2,10 +2,7 @@ from typing import *  # type: ignore
 from typing import Any  # type: ignore
 
 import rio
-import rio_docs
-from rio.components.component_base import Component
 
-from .. import components as comps
 from .. import structure, theme
 
 
@@ -15,26 +12,37 @@ class Outliner(rio.Component):
         await self.force_refresh()
 
     def build(self) -> rio.Component:
-        docs_page = self.session.active_page_instances[1]
+        docs_page = self.session.active_page_instances[0]
 
-        subpages = {}
+        print()
+        for child in docs_page.children:
+            print(child.page_url)
+
+        if not docs_page.children:
+            return rio.Spacer(width=0, height=0)
+
+        sub_names = []
+        sub_urls = []
         for page in docs_page.children:
-            subpages[page.page_url.replace("-", " ").capitalize()] = page.page_url
-
-        if not subpages:
-            subpages["Placeholder"] = "placeholder"
+            sub_names.append(page.page_url.replace("-", " ").capitalize())
+            sub_urls.append(page.page_url)
 
         return rio.Column(
+            rio.Text("Current Section", style="heading2"),
+            rio.Card(
+                rio.SwitcherBar(
+                    names=sub_names,
+                    values=sub_urls,
+                    selected_value="placeholder",
+                    color="primary",
+                    orientation="vertical",
+                ),
+            ),
             rio.IconButton(
                 icon="arrow-back",
                 on_press=lambda: self.session.navigate_to("/documentation"),
                 color="primary",
                 align_x=0.5,
-            ),
-            rio.SwitcherBar(
-                subpages,
-                selected_value="placeholder",
-                color="primary",
             ),
             spacing=1,
         )
@@ -127,16 +135,14 @@ class DocumentationPage(rio.Component):
             section_name = None
 
         return rio.Row(
-            rio.Overlay(
-                Outliner(
-                    align_y=0.5,
-                    align_x=0,
-                ),
+            Outliner(
+                margin_left=1,
+                align_y=0.5,
             ),
             rio.PageView(
-                margin_left=30,
-                margin_top=3,
                 width="grow",
                 height="grow",
             ),
+            spacing=2,
+            margin_top=3,
         )

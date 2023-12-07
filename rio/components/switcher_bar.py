@@ -126,9 +126,8 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
             if value == selected_value:
                 return name
         else:
-            raise ValueError(
-                f"There is no option with value `{self.selected_value!r}`."
-            )
+            # If nothing matches, just select the first option
+            return self.names[0]
 
     def _custom_serialize(self) -> JsonDoc:
         result = {
