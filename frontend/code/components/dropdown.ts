@@ -297,46 +297,106 @@ export class DropdownComponent extends ComponentBase {
         this.popupElement.remove();
     }
 
-    _updateOptionEntries() {
-        let element = this.element();
-
-        // Find all options which should currently be displayed
-        let currentOptionNames: string[] = [];
-
-        for (let optionName of this.state.optionNames) {
-            if (optionName.toLowerCase().includes(this.inputElement.value)) {
-                currentOptionNames.push(optionName);
-            }
+    /// Find needle in haystack, returning a HTMLElement with the matched
+    /// sections highlighted. If no match is found, return null. Needle must be
+    /// lowercase.
+    _highlightMatches(
+        haystack: string,
+        needleLower: string
+    ): HTMLElement | null {
+        // Special case: Empty needle matches everything, and would cause a hang
+        // in the while loop below
+        if (needleLower.length === 0) {
+            const container = document.createElement('div');
+            container.textContent = haystack;
+            return container;
         }
 
-        // Update the HTML to reflect them
-        this.optionsElement.innerHTML = '';
+        // Create a div element to hold the highlighted content
+        const container = document.createElement('div');
 
-        if (currentOptionNames.length === 0) {
+        // Start searching
+        let startIndex = 0;
+        let haystackLower = haystack.toLowerCase();
+        let index = haystackLower.indexOf(needleLower, startIndex);
+
+        while (index !== -1) {
+            // Add the text before the match as a text node
+            container.appendChild(
+                document.createTextNode(haystack.substring(startIndex, index))
+            );
+
+            // Add the matched portion as a highlighted span
+            const span = document.createElement('span');
+            span.className = 'rio-dropdown-option-highlight';
+            span.textContent = haystack.substring(
+                index,
+                index + needleLower.length
+            );
+            container.appendChild(span);
+
+            // Update the start index for the next search
+            startIndex = index + needleLower.length;
+
+            // Find the next occurrence of needle in haystack
+            index = haystackLower.indexOf(needleLower, startIndex);
+        }
+
+        // Add any remaining text after the last match
+        container.appendChild(
+            document.createTextNode(haystack.substring(startIndex))
+        );
+
+        // Was anything found?
+        return container.children.length === 0 ? null : container;
+    }
+
+    /// Update the visible options based on everything matching the search
+    /// filter
+    _updateOptionEntries() {
+        let element = this.element();
+        this.optionsElement.innerHTML = '';
+        let needleLower = this.inputElement.value.toLowerCase();
+
+        // Find matching options
+        for (let optionName of this.state.optionNames) {
+            let match = this._highlightMatches(optionName, needleLower);
+
+            if (match === null) {
+                continue;
+            }
+
+            match.classList.add('rio-dropdown-option');
+            this.optionsElement.appendChild(match);
+
+            match.addEventListener('click', () => {
+                this.hidePopup();
+                this.isOpen = false;
+                this.inputElement.value = optionName;
+                this.sendMessageToBackend({
+                    name: optionName,
+                });
+            });
+
+            match.addEventListener('mouseenter', () => {
+                this._highlightOption(match);
+            });
+        }
+
+        // If only one option was found, highlight it
+        if (this.optionsElement.children.length === 1) {
+            this._highlightOption(
+                this.optionsElement.firstElementChild as HTMLElement
+            );
+        }
+
+        // Was anything found?
+        if (this.optionsElement.children.length === 0) {
             applyIcon(
                 this.optionsElement,
                 'error',
                 'var(--rio-local-text-color)'
             );
-        } else {
-            for (let optionName of currentOptionNames) {
-                let optionElement = document.createElement('div');
-                optionElement.classList.add('rio-dropdown-option');
-                optionElement.textContent = optionName;
-                this.optionsElement.appendChild(optionElement);
-
-                optionElement.addEventListener('click', () => {
-                    this.hidePopup();
-                    this.inputElement.value = optionName;
-                    this.sendMessageToBackend({
-                        name: optionName,
-                    });
-                });
-
-                optionElement.addEventListener('mouseenter', () => {
-                    this._highlightOption(optionElement);
-                });
-            }
         }
 
         // Because the popup isn't a child element of the dropdown, manually
