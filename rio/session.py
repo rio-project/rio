@@ -35,6 +35,7 @@ from . import (
     font,
     global_state,
     inspection,
+    maybes,
     routing,
     self_serializing,
     text_style,
@@ -855,6 +856,22 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
 
         if isinstance(type_, typing.TypeVar):
             raise WontSerialize()
+
+        # Numpy types.
+        #
+        # These are only defined if numpy is available and loaded. Note that
+        # this uses the actual datatypes, rather than annotated ones, since
+        # these will typically be annotated as just `int`, when in reality
+        # they're e.g. `numpy.int64`.
+        #
+        # Because of that, they also need to be checked before any types they
+        # may be misinterpreted as, such as `int`.
+        try:
+            np_serializer = maybes.NUMPY_SERIALIZERS[type(value)]
+        except KeyError:
+            pass
+        else:
+            return np_serializer(value)
 
         # Basic JSON values
         if type_ in (bool, int, float, str, None):

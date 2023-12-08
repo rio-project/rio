@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-import socket
 import sys
 import threading
 import webbrowser
@@ -16,7 +15,7 @@ import uvicorn
 
 import rio
 
-from . import app_server, assets, common, debug
+from . import app_server, assets, common, debug, maybes
 from .common import ImageLike
 
 # Only available with the `window` extra
@@ -321,6 +320,11 @@ class App:
         arguments.
         """
         port = common.ensure_valid_port(host, port)
+
+        # Make sure all globals are initialized. This should be done as late as
+        # possible, because it depends on which modules have been imported into
+        # `sys.modules`.
+        maybes.initialize()
 
         # Suppress stdout messages if requested
         kwargs = {}
