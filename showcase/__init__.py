@@ -90,6 +90,9 @@ class Sidebar(rio.Component):
     def _on_toggle_popup(self) -> None:
         self.popup_visible = not self.popup_visible
 
+    def _on_slider_change(self, evt: rio.SliderChangeEvent) -> None:
+        print(f"Slider has changed to {evt.value}")
+
     def build(self) -> rio.Component:
         return rio.Card(
             child=rio.ScrollContainer(
@@ -178,7 +181,25 @@ class Sidebar(rio.Component):
                     rio.Row(
                         rio.Text("⇇ Undef space ⇉"),
                     ),
-                    rio.Slider(value=0, discrete=False),
+                    rio.Slider(
+                        on_change=self._on_slider_change,
+                    ),
+                    rio.Slider(
+                        minimum=-5,
+                        maximum=-2,
+                        on_change=self._on_slider_change,
+                    ),
+                    rio.Slider(
+                        minimum=-5,
+                        maximum=2,
+                        on_change=self._on_slider_change,
+                    ),
+                    rio.Slider(
+                        minimum=2,
+                        maximum=10,
+                        step_size=2,
+                        on_change=self._on_slider_change,
+                    ),
                     rio.Button(
                         "Foo",
                         on_press=lambda: print("Button Pressed"),
