@@ -910,6 +910,11 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transform: translateY(-50%);
 }
 
+.rio-dropdown-option-highlight {
+    font-weight: bold;
+    color: var(--rio-local-accent-bg);
+}
+
 .rio-dropdown-options {
     flex-grow: 1;
 
