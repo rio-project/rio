@@ -77,8 +77,11 @@ export class TextInputComponent extends ComponentBase {
             labelElement.textContent = deltaState.label;
 
             // Adapt the minimum height, depending on whether there is a label
-            element.style.height =
-                deltaState.label.length > 0 ? '3.3rem' : '2.3rem';
+            if (deltaState.label.length > 0) {
+                element.classList.add('rio-input-box-with-label');
+            } else {
+                element.classList.remove('rio-input-box-with-label');
+            }
         }
 
         if (deltaState.prefix_text !== undefined) {
