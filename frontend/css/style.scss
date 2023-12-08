@@ -684,6 +684,10 @@ body > * > * > * {
         var(--rio-global-corner-radius-small) 0 0;
 }
 
+.rio-input-box.rio-input-box-with-label > input {
+    padding-top: 1.7rem;
+}
+
 .rio-input-box:not(.rio-disabled-input) {
     // Material Design Ripple
     overflow: hidden;
@@ -876,13 +880,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     cursor: pointer;
 
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-.rio-dropdown > .rio-input-box {
-    flex-grow: 1;
 }
 
 .rio-dropdown-popup {
@@ -901,13 +898,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     box-shadow: 0 0 0.8rem var(--rio-global-shadow-color);
 }
 
-.rio-dropdown > .rio-input-box > .rio-dropdown-arrow {
+.rio-dropdown.rio-input-box > .rio-dropdown-arrow {
     pointer-events: none;
 
     order: 2;
 
     margin: 0 1rem;
-    // margin-top: 50%;
     width: 1.3rem;
     height: 1.3rem;
 
