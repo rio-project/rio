@@ -15,15 +15,12 @@ __all__ = [
 ]
 
 
-T = TypeVar("T", bound=float)
-
-
 @dataclass
-class SliderChangeEvent(Generic[T]):
-    value: T
+class SliderChangeEvent:
+    value: float
 
 
-class Slider(component_base.FundamentalComponent, Generic[T]):
+class Slider(component_base.FundamentalComponent):
     """
     A component for selecting a single value from a range.
 
@@ -32,84 +29,31 @@ class Slider(component_base.FundamentalComponent, Generic[T]):
     range you can specify.
 
     Attributes:
-        min: The minimum value the slider can be set to.
+        minimum: The minimum value the slider can be set to.
 
-        max: The maximum value the slider can be set to.
+        maximum: The maximum value the slider can be set to.
 
         value: The current value of the slider.
 
         is_sensitive: Whether the slider should respond to user input.
     """
 
-    min: T
-    max: T
-    value: T
-    discrete: bool
+    minimum: float
+    maximum: float
+    value: float
+    step_size: float
     is_sensitive: bool
-    on_change: rio.EventHandler[SliderChangeEvent[T]]
-
-    @overload
-    def __new__(
-        cls,
-        *,
-        min: int = 0,
-        max: int = 100,
-        value: Optional[int] = None,
-        discrete: Literal[True] = True,
-        is_sensitive: bool = True,
-        on_change: rio.EventHandler[SliderChangeEvent[int]] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["grow"], float] = 1.3,
-        height: Union[Literal["grow"], float] = 1.3,
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
-    ) -> Slider[int]:
-        ...
-
-    @overload
-    def __new__(
-        cls,
-        *,
-        min: float = 0,
-        max: float = 1,
-        value: Optional[float] = None,
-        discrete: bool = False,
-        is_sensitive: bool = True,
-        on_change: rio.EventHandler[SliderChangeEvent[float]] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["grow"], float] = 1.3,
-        height: Union[Literal["grow"], float] = 1.3,
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
-    ) -> Slider[float]:
-        ...
-
-    def __new__(cls, *args, **kwargs):  # type: ignore
-        return super().__new__(cls)
+    on_change: rio.EventHandler[SliderChangeEvent]
 
     def __init__(
         self,
         *,
-        min: Optional[float] = None,
-        max: Optional[float] = None,
+        minimum: float = 0,
+        maximum: float = 1,
+        step_size: float = 0,
         value: Optional[float] = None,
-        discrete: bool = False,
         is_sensitive: bool = True,
-        on_change: rio.EventHandler[SliderChangeEvent[T]] = None,
+        on_change: rio.EventHandler[SliderChangeEvent] = None,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -123,6 +67,16 @@ class Slider(component_base.FundamentalComponent, Generic[T]):
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):
+        if maximum <= minimum:
+            raise ValueError(
+                f"`maximum` must be greater than `minimum`. Got {maximum} <= {minimum}"
+            )
+
+        if step_size < 0:
+            raise ValueError(
+                f"`step_size` must be greater than or equal to 0. Got {step_size}"
+            )
+
         super().__init__(
             key=key,
             margin=margin,
@@ -138,34 +92,23 @@ class Slider(component_base.FundamentalComponent, Generic[T]):
             align_y=align_y,
         )
 
-        if min is None:
-            min = 0
-
-        if max is None:
-            max = 100 if discrete else 1
-
         if value is None:
-            value = min + (max - min) / 2
+            value = minimum + (maximum - minimum) / 2
 
-            if discrete:
-                value = round(value)
+        if step_size != 0:
+            value = round(value / step_size) * step_size
 
-        self.min = min  # type: ignore
-        self.max = max  # type: ignore
-        self.value = value  # type: ignore
-        self.discrete = discrete
+        value = max(minimum, min(value, maximum))
+
+        self.minimum = minimum
+        self.maximum = maximum
+        self.step_size = step_size
+        self.value = value
         self.is_sensitive = is_sensitive
         self.on_change = on_change
 
-    # TODO: When `min` or `max` is changed, make sure the value is still within
+    # TODO: When `minimum` or `maximum` is changed, make sure the value is still within
     # the range
-
-    def _custom_serialize(self) -> JsonDoc:
-        return {
-            "min": self.min,
-            "max": self.max,
-            "value": self.value,
-        }
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event
@@ -176,7 +119,7 @@ class Slider(component_base.FundamentalComponent, Generic[T]):
         else:
             assert isinstance(new_value, (int, float)), new_value
             await self.call_event_handler(
-                self.on_change,  # type: ignore
+                self.on_change,
                 SliderChangeEvent(new_value),
             )
 

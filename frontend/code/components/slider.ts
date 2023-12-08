@@ -2,10 +2,10 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { MDCSlider } from '@material/slider';
 
 export type SliderState = ComponentState & {
-    min?: number;
-    max?: number;
+    minimum?: number;
+    maximum?: number;
     value?: number;
-    discrete?: boolean;
+    step_size?: number;
     is_sensitive?: boolean;
 };
 
@@ -32,29 +32,31 @@ export class SliderComponent extends ComponentBase {
         );
     }
 
-    private onSliderChange(): void {
+    private onSliderChange(event: Event): void {
+        console.log(event);
         let value = this.mdcSlider.getValue();
 
-        if (!this.state.discrete) {
-            let min = this.state.min;
-            let max = this.state.max;
-
-            value = min + (value / 1000) * (max - min);
+        if (value !== this.state.value) {
+            this.setStateAndNotifyBackend({
+                value: value,
+            });
         }
-
-        this.setStateAndNotifyBackend({
-            value: value,
-        });
     }
 
     _updateElement(element: HTMLElement, deltaState: SliderState): void {
-        if (deltaState.min !== undefined || deltaState.max !== undefined) {
-            let min = deltaState.min ?? this.state.min;
-            let max = deltaState.max ?? this.state.max;
+        if (
+            deltaState.minimum !== undefined ||
+            deltaState.maximum !== undefined ||
+            deltaState.step_size !== undefined
+        ) {
+            let min = deltaState.minimum ?? this.state.minimum;
+            let max = deltaState.maximum ?? this.state.maximum;
+            let step = deltaState.step_size ?? this.state.step_size;
+            step = step == 0 ? 0.0001 : step;
             let value = deltaState.value ?? this.state.value;
 
             element.innerHTML = `
-            <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}">
+            <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}" step="${step}">
             <div class="mdc-slider__track">
                 <div class="mdc-slider__track--inactive"></div>
                 <div class="mdc-slider__track--active">
@@ -72,22 +74,14 @@ export class SliderComponent extends ComponentBase {
         if (deltaState.value !== undefined) {
             let value = deltaState.value;
 
-            if (!(deltaState.discrete ?? this.state.discrete)) {
-                // Convert between the component's units and the backend's.
-                let min =
-                    deltaState.min === undefined
-                        ? this.state['min']
-                        : deltaState.min;
+            // The server can send invalid values due to reconciliation. Fix
+            // them.
+            value = Math.max(value, deltaState.minimum ?? this.state.minimum);
+            value = Math.min(value, deltaState.maximum ?? this.state.maximum);
 
-                let max =
-                    deltaState.max === undefined
-                        ? this.state['max']
-                        : deltaState.max;
-
-                value = ((value - min) / (max - min)) * 1000;
-            }
-
-            this.mdcSlider.setValue(value);
+            let step = deltaState.step_size ?? this.state.step_size;
+            step = step == 0 ? 0.0001 : step;
+            value = Math.round(value / step) * step;
         }
 
         if (deltaState.is_sensitive !== undefined) {
