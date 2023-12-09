@@ -74,8 +74,8 @@ class RioProject:
         return self._get_key("main_module", str, "TODO")
 
     @property
-    def fastapi_app_variable(self) -> str:
-        return self._get_key("fastapi_app_variable", str, "fastapi_app")
+    def app_variable(self) -> str:
+        return self._get_key("app_variable", str, "app")
 
     @property
     def debug_port(self) -> int:

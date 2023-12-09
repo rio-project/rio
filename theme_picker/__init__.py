@@ -370,7 +370,7 @@ class AppRoot(rio.Component):
         )
 
 
-rio_app = rio.App(
+app = rio.App(
     name="Theme Picker",
     build=AppRoot,
     assets_dir=Path(__file__).parent / "assets",
@@ -378,9 +378,9 @@ rio_app = rio.App(
 
 
 if __name__ == "__main__":
-    rio_app.run_as_web_server(
+    app.run_as_web_server(
         port=8001,
         quiet=False,
     )
 else:
-    fastapi_app = rio_app.as_fastapi()
+    fastapi_app = app.as_fastapi()

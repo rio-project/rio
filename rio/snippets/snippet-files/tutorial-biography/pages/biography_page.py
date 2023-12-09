@@ -110,11 +110,8 @@ class BiographyPage(rio.Component):
                 ),
                 comps.Projects(),
                 rio.Overlay(
-                    rio.Button(
+                    rio.IconButton(
                         icon="mail:fill",
-                        shape="circle",
-                        width=4,
-                        height=4,
                         margin_right=3,
                         margin_bottom=3,
                         align_x=1,

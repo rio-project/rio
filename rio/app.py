@@ -101,7 +101,7 @@ class App:
     A basic setup may look like this:
 
     ```py
-    rio_app = rio.App(
+    app = rio.App(
         name="My App",
         build=MyAppRoot,
     )
@@ -110,20 +110,20 @@ class App:
     You can then run this app, either as a local application in a window:
 
     ```py
-    rio_app.run_in_window()
+    app.run_in_window()
     ```
 
     Or you can create and run a webserver:
 
     ```py
-    rio_app.run_as_web_server()
+    app.run_as_web_server()
     ```
 
     Or create a server, without running it. This allows you to start the script
     externally with tools such as uvicorn:
 
     ```py
-    fastapi_app = rio_app.as_fastapi()
+    fastapi_app = app.as_fastapi()
     ```
 
     Attributes:
@@ -286,12 +286,12 @@ class App:
         you to run the app with a custom server, such as uvicorn:
 
         ```py
-        rio_app = rio.App(
+        app = rio.App(
             name="My App",
             build=MyAppRoot,
         )
 
-        fastapi_app = rio_app.as_fastapi()
+        fastapi_app = app.as_fastapi()
         ```
 
         You can then run this app with uvicorn:
@@ -367,12 +367,12 @@ class App:
         app. This is the simplest way to run a Rio app.
 
         ```py
-        rio_app = rio.App(
+        app = rio.App(
             name="My App",
             build=MyAppRoot,
         )
 
-        rio_app.run_as_web_server()
+        app.run_as_web_server()
         ```
 
         The will synchronously block until the server is shut down.
@@ -410,12 +410,12 @@ class App:
         way to access your app.
 
         ```py
-        rio_app = rio.App(
+        app = rio.App(
             name="My App",
             build=MyAppRoot,
         )
 
-        rio_app.run_in_browser()
+        app.run_in_browser()
         ```
 
         Args:
@@ -454,12 +454,12 @@ class App:
         package your app as a standalone executable.
 
         ```py
-        rio_app = rio.App(
+        app = rio.App(
             name="My App",
             build=MyAppRoot,
         )
 
-        rio_app.run_in_window()
+        app.run_in_window()
         ```
 
         This method requires the `window` extra. If you don't have it installed,
@@ -516,8 +516,7 @@ class App:
                 timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
             )
             server = uvicorn.Server(config)
-
-            asyncio.run(server.serve())
+            server.run()
 
         server_thread = threading.Thread(target=run_web_server)
         server_thread.start()
