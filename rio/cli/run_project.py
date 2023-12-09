@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import sys
 import threading
 import time
@@ -11,18 +12,12 @@ import revel
 import uvicorn
 import watchfiles
 from revel import error, fatal, print, success, warning
-from typing_extensions import TypeAlias
 
 import rio.cli
 import rio.snippets
 
 from .. import common
-from . import project
-
-__all__ = [
-    "run_project",
-]
-
+from . import project, snapshot
 
 LOGO_TEXT = r"""  _____  _
  |  __ \(_)
@@ -49,10 +44,14 @@ class RunningApp:
         proj: project.RioProject,
         port: Optional[int],
         public: bool,
+        quiet: bool,
+        release: bool,
     ) -> None:
         self.proj = proj
-        self.port = port
+        self._port = port
         self.public = public
+        self.quiet = quiet
+        self.release = release
 
         # If the app is currently running, this is the task for it
         self._running_app_task: Optional[asyncio.Task] = None
@@ -60,49 +59,35 @@ class RunningApp:
         # Contains any changes that need to be applied to the project
         self._event_queue: asyncio.Queue[Event] = asyncio.Queue()
 
-        # A revel text line that's docket to the bottom of the terminal. Set via
-        # `_set_status`
-        self._status_line: revel.TextLine = revel.TextLine()  # Just a placeholder
-
         # A list of running tasks belonging to this `RunningApp`
         self._running_tasks: List[asyncio.Task] = []
 
-    def _set_status(
-        self,
-        text: str,
-        *,
-        level: Literal["success", "info", "warning", "error"] = "info",
-    ) -> None:
-        if level == "success":
-            color = "[green]"
-        elif level == "info":
-            color = "[]"
-        elif level == "warning":
-            color = "[yellow]"
-        else:
-            assert level == "error"
-            color = "[red]"
+        # The snapshot of the python interpreter when the app was started
+        self._snapshot: Optional[snapshot.Snapshot] = None
 
-        self._status_line.text = f"{color}{text}[/]"
+        # If running, the current uvicorn server
+        self._uvicorn_server: Optional[uvicorn.Server] = None
+
+    @property
+    def _host(self) -> str:
+        return "0.0.0.0" if self.public else "127.0.0.1"
 
     def _setup_cli_screen(self) -> None:
         print()
         print(f"[bold primary]{LOGO_TEXT}[/]")
         print()
         print()
-        self._status_line = print("Preparing", dock=True)
 
     def run(self) -> None:
         # Initialize
         self._setup_cli_screen()
 
         # Find a port to run on
-        host = "0.0.0.0" if self.public else "127.0.0.1"
-        if self.port is None:
-            self.port = common.choose_free_port(host)
+        if self._port is None:
+            self._port = common.choose_free_port(self._host)
         else:
-            if not common.ensure_valid_port(host, self.port):
-                error(f"The port [bold]{self.port}[/] is already in use.")
+            if not common.ensure_valid_port(self._host, self._port):
+                error(f"The port [bold]{self._port}[/] is already in use.")
                 print(f"Each port can only be used by one app at a time.")
                 print(
                     f"Try using another port, or let Rio choose one for you, by not specifying any port."
@@ -118,14 +103,24 @@ class RunningApp:
 
         # Clean up
         finally:
-            self._set_status("Shutting down")
+            print("Shutting down")
+            if self._uvicorn_server is not None:
+                self._uvicorn_server.should_exit = True
+
             for task in self._running_tasks:
                 task.cancel()
 
-            self._status_line.undock()
-
         # Force exit, so no bugs in the app can keep the process alive
         sys.exit(0)
+
+    def _file_triggers_reload(self, path: Path) -> bool:
+        if path.suffix == ".py":
+            return True
+
+        if path.name in ("rio.toml",):
+            return True
+
+        return False
 
     async def _watcher_task(self) -> None:
         """
@@ -134,19 +129,72 @@ class RunningApp:
         async for changes in watchfiles.awatch(self.proj.project_directory):
             for change, path in changes:
                 path = Path(path)
-                if path.suffix != ".py":
+
+                if not self._file_triggers_reload(path):
                     continue
 
                 await self._event_queue.put(
                     FileChanged(
-                        time.monotonic(),
+                        time.monotonic_ns(),
                         path,
                     )
                 )
 
-    async def _run_app_server(self, on_ready_lock: asyncio.Lock) -> None:
-        await asyncio.sleep(3)  # TODO
-        on_ready_lock.release()
+    async def _run_app_server(self) -> None:
+        assert self._uvicorn_server is None, "The uvicorn server is already running!?"
+
+        # Import the app module
+        try:
+            app_module = importlib.import_module(self.proj.main_module)
+        except Exception as e:
+            error(f"Could not import `{self.proj.main_module}`: {e}")
+            return
+
+        # Try to get the app variable
+        try:
+            app = getattr(app_module, self.proj.app_variable)
+        except AttributeError:
+            error(
+                f"Could not find the app variable `{self.proj.app_variable}` in `{self.proj.main_module}`"
+            )
+            return
+
+        # Make sure the app is indeed a Rio app
+        if not isinstance(app, rio.App):
+            error(
+                f"The app variable `{self.proj.app_variable}` in `{self.proj.main_module}` is not a Rio app, but `{type(app)}`"
+            )
+            return
+
+        # Run the app
+        ready_lock = asyncio.Lock()
+        await ready_lock.acquire()
+
+        def run_uvicorn() -> None:
+            # The port has been set before
+            assert self._port is not None
+            assert self._uvicorn_server is None
+
+            # Set up a uvicorn server
+            config = uvicorn.Config(
+                app._as_fastapi(
+                    running_in_window=False,  # TODO
+                    validator_factory=None,
+                    internal_on_app_start=ready_lock.release,
+                ),
+                host=self._host,
+                port=self._port,
+                log_level="error" if self.quiet else "info",
+                timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
+            )
+            self._uvicorn_server = uvicorn.Server(config)
+            self._uvicorn_server.run()
+
+        uvicorn_thread = threading.Thread(target=run_uvicorn)
+        uvicorn_thread.start()
+
+        # Wait for the app to be ready
+        await ready_lock.acquire()
 
     async def _restart_app_server(self) -> None:
         """
@@ -155,44 +203,45 @@ class RunningApp:
         """
         # Stop the old app, if it's running
         if self._running_app_task is not None:
-            self._set_status("Stopping app server")
+            print("Stopping app server")
             self._running_app_task.cancel()
 
+        # Restore the python interpreter to the state it was in when the app was
+        # started
+        self.snapshot.restore()
+
         # Start the new app
-        self._set_status("Starting app")
-        ready_lock = asyncio.Lock()
-        await ready_lock.acquire()
-        self._running_app_task = asyncio.create_task(
-            self._run_app_server(ready_lock), name="rio run: app server"
-        )
-
-        self._running_tasks.append(self._running_app_task)
-
-        # Wait for the app to be ready
-        await ready_lock.acquire()
+        print("Starting app")
+        self._running_app_task = await self._run_app_server()
 
         # Done!
         success("App is ready")
-        self._set_status("[bold]Running[/]", level="success")
+        success("[bold]Running[/]")
 
     async def _arbiter_task(self) -> None:
         # Start watching for file changes
-        watcher_task = asyncio.create_task(
-            self._watcher_task(), name="rio run: file watcher"
-        )
-        self._running_tasks.append(watcher_task)
+        if not self.release:
+            watcher_task = asyncio.create_task(
+                self._watcher_task(), name="rio run: file watcher"
+            )
+            self._running_tasks.append(watcher_task)
+
+        # Take a snapshot of the current state of the python interpreter
+        self.snapshot = snapshot.Snapshot()
 
         # Monotonic timestamp of when the last command was given to restart the
         # app. Any further events which would trigger a reload up to this time
         # can be safely ignored.
-        last_reload_started_at = time.monotonic()
+        last_reload_started_at = time.monotonic_ns()
 
         # Start the app for the first time
         await self._restart_app_server()
 
         # Inform the user how to connect
         host = "0.0.0.0" if self.public else "127.0.0.1"
-        app_url = f"http://{host}:{self.port}"
+        app_url = f"http://{host}:{self._port}"
+
+        print()
         print(f"[green]Your app is running at {app_url}[/]")
 
         if self.public:
@@ -219,12 +268,12 @@ class RunningApp:
                     continue
 
                 # Reload the app
-                last_reload_started_at = time.monotonic()
+                last_reload_started_at = time.monotonic_ns()
+
                 rel_path = event.path_to_file.relative_to(self.proj.project_directory)
                 print()
-
                 print(f"[bold]{rel_path}[/] has changed -> Reloading")
-                self._set_status("Reloading", level="warning")
+                warning("Reloading")
 
                 await self._restart_app_server()
 

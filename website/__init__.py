@@ -149,7 +149,7 @@ pages = [
 ]
 
 
-rio_app = rio.App(
+app = rio.App(
     name="Rio",
     build=AppRoot,
     icon=ASSETS_DIR / "rio-logo.png",
@@ -162,7 +162,7 @@ rio_app = rio.App(
 
 
 if __name__ == "__main__":
-    rio_app._run_as_web_server(
+    app._run_as_web_server(
         host="127.0.0.1",
         port=8001,
         quiet=False,
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         internal_on_app_start=None,
     )
 else:
-    fastapi_app = rio_app._as_fastapi(
+    fastapi_app = app._as_fastapi(
         running_in_window=False,
         validator_factory=rio.debug.Validator,
         internal_on_app_start=None,

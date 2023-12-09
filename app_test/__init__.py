@@ -8,7 +8,7 @@ import rio.debug
 theme = rio.Theme.from_color()
 
 
-rio_app = rio.App(
+app = rio.App(
     name="App Showcase",
     build=rio.AppRoot,
     default_attachments=[
@@ -17,4 +17,4 @@ rio_app = rio.App(
 )
 
 
-fastapi_app = rio_app.as_fastapi()
+fastapi_app = app.as_fastapi()

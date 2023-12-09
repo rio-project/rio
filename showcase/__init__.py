@@ -462,7 +462,7 @@ def validator_factory(sess: rio.Session) -> rio.debug.Validator:
     )
 
 
-rio_app = rio.App(
+app = rio.App(
     name="Rio Showcase",
     build=ComponentShowcase,
     on_session_start=lambda sess: print("Session Started"),
@@ -472,7 +472,7 @@ rio_app = rio.App(
 
 
 if __name__ == "__main__":
-    rio_app._run_as_web_server(
+    app._run_as_web_server(
         host="127.0.0.1",
         port=8001,
         quiet=False,
@@ -480,7 +480,7 @@ if __name__ == "__main__":
         internal_on_app_start=None,
     )
 else:
-    fastapi_app = rio_app._as_fastapi(
+    fastapi_app = app._as_fastapi(
         running_in_window=False,
         validator_factory=validator_factory,
         internal_on_app_start=None,

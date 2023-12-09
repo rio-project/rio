@@ -156,8 +156,8 @@ from . import components as comps
 # Define a theme for Rio to use.
 #
 # You can modify the colors here to adapt the appearance of your app or website.
-# The most important parameters are listed, but there is more available! You
-# can find them all in the docs TODO: Add link.
+# The most important parameters are listed, but more are available! You can find
+# them all in the docs TODO: Add link.
 theme = rio.Theme.from_color(
     primary_color=rio.Color.from_hex("b002ef"),
     secondary_color=rio.Color.from_hex("329afc"),
@@ -166,7 +166,7 @@ theme = rio.Theme.from_color(
 
 
 # Create the Rio app
-rio_app = rio.App(
+app = rio.App(
     name={nicename!r},
     build={root_widget_name},
     pages=[{page_string}
@@ -184,7 +184,7 @@ rio_app = rio.App(
 #
 # This allows you to run it either via the `rio run` command, or using tools
 # such as `uvicorn`.
-fastapi_app = rio_app.as_fastapi()
+fastapi_app = app.as_fastapi()
 """
         )
 
@@ -322,7 +322,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import {python_name}
 
 # Run the app
-{python_name}.rio_app.run_in_window()
+{python_name}.app.run_in_window()
 """
             )
 

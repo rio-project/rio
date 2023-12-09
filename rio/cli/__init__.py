@@ -67,24 +67,36 @@ def new(
     summary="Run the current project",
     parameters=[
         revel.Parameter(
+            "release",
+            summary="Disables debug mode and automatic reloading",
+        ),
+        revel.Parameter(
             "port",
             summary="Port to run the HTTP server on",
         ),
         revel.Parameter(
             "public",
-            summary="Whether the app should be available on the local network, or just the local device",
+            summary="Whether the app should be available on the local network, rather than just the local device",
+        ),
+        revel.Parameter(
+            "quiet",
+            summary="Suppresses HTTP logs and other noise",
         ),
     ],
 )
 def run(
     *,
+    release: bool = False,
     port: Optional[int] = None,
     public: bool = False,
+    quiet: bool = True,
 ) -> None:
     with project.RioProject.try_load() as proj:
         runner = run_project.RunningApp(
             proj=proj,
             port=port,
             public=public,
+            quiet=quiet,
+            release=release,
         )
         runner.run()
