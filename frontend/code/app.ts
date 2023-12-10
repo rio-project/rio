@@ -11,6 +11,9 @@ export const sessionToken: string = '{session_token}';
 export const pingPongIntervalSeconds: number = '{ping_pong_interval}';
 
 // @ts-ignore
+export const debug_mode: boolean = '{debug_mode}';
+
+// @ts-ignore
 const childAttributeNames: { [id: string]: string[] } =
     '{child_attribute_names}';
 globalThis.childAttributeNames = childAttributeNames;

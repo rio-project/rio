@@ -154,24 +154,6 @@ app = rio.App(
     build=AppRoot,
     icon=ASSETS_DIR / "rio-logo.png",
     pages=pages,
-    default_attachments=[
-        theme.THEME,
-    ],
+    theme=theme.THEME,
     assets_dir=ASSETS_DIR,
 )
-
-
-if __name__ == "__main__":
-    app._run_as_web_server(
-        host="127.0.0.1",
-        port=8001,
-        quiet=False,
-        validator_factory=rio.debug.Validator,
-        internal_on_app_start=None,
-    )
-else:
-    fastapi_app = app._as_fastapi(
-        running_in_window=False,
-        validator_factory=rio.debug.Validator,
-        internal_on_app_start=None,
-    )

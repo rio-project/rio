@@ -261,6 +261,7 @@ class App:
     def _as_fastapi(
         self,
         *,
+        debug_mode: bool,
         running_in_window: bool,
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
         internal_on_app_start: Optional[Callable[[], None]],
@@ -270,6 +271,7 @@ class App:
         """
         return app_server.AppServer(
             self,
+            debug_mode=debug_mode,
             running_in_window=running_in_window,
             on_session_start=self._on_session_start,
             on_session_end=self._on_session_end,
@@ -278,7 +280,10 @@ class App:
             internal_on_app_start=internal_on_app_start,
         )
 
-    def as_fastapi(self):
+    def as_fastapi(
+        self,
+        debug_mode: bool = False,
+    ) -> fastapi.FastAPI:
         """
         Return a FastAPI instance that serves this app.
 
@@ -301,6 +306,7 @@ class App:
         ```
         """
         return self._as_fastapi(
+            debug_mode=debug_mode,
             running_in_window=False,
             validator_factory=None,
             internal_on_app_start=None,
@@ -312,6 +318,7 @@ class App:
         host: str,
         port: int,
         quiet: bool,
+        debug_mode: bool = False,
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
         internal_on_app_start: Optional[Callable[[], None]],
     ) -> None:
@@ -340,6 +347,7 @@ class App:
 
         # Create the FastAPI server
         fastapi_app = self._as_fastapi(
+            debug_mode=debug_mode,
             running_in_window=False,
             validator_factory=validator_factory,
             internal_on_app_start=internal_on_app_start,
@@ -445,6 +453,7 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
+        debug_mode: bool = False,
     ) -> None:
         """
         Runs the app in a local window.
@@ -499,6 +508,7 @@ class App:
         # Start the server, and release the lock once it's running
         def run_web_server():
             fastapi_app = self._as_fastapi(
+                debug_mode=debug_mode,
                 running_in_window=True,
                 validator_factory=None,
                 internal_on_app_start=lock.release,

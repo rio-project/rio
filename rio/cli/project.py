@@ -65,6 +65,10 @@ class RioProject:
         # Done
         return value
 
+    def _set_key(self, key_name: str, value: Any) -> None:
+        self._toml_dict[key_name] = value
+        self._dirty_keys.add(key_name)
+
     @property
     def project_directory(self) -> Path:
         return self._file_path.parent
@@ -80,6 +84,19 @@ class RioProject:
     @property
     def debug_port(self) -> int:
         return self._get_key("debug_port", int, 0)
+
+    @property
+    def app_type(self) -> Literal["app", "website"]:
+        result = self._get_key("app_type", str, "website")
+
+        if result not in ("app", "website"):
+            warning(
+                f"`rio.toml` contains an invalid value for `app_type`: expected `app` or `website`, got `{result}`"
+            )
+            result = "website"
+            self._set_key("app_type", result)
+
+        return result
 
     @staticmethod
     def try_load() -> "RioProject":
