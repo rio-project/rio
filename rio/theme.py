@@ -115,6 +115,7 @@ class Theme:
         cls,
         primary_color: Optional[rio.Color] = None,
         secondary_color: Optional[rio.Color] = None,
+        neutral_color: Optional[rio.Color] = None,
         success_color: Optional[rio.Color] = None,
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
@@ -142,12 +143,19 @@ class Theme:
                 foreground=rio.Color.from_grey(0.15),
             )
 
-            neutral_palette = Palette(
-                background=rio.Color.from_grey(0.97).blend(primary_color, 0.04),
-                background_variant=rio.Color.from_grey(0.93).blend(primary_color, 0.07),
-                background_active=rio.Color.from_grey(0.93).blend(primary_color, 0.15),
-                foreground=rio.Color.from_grey(0.1),
-            )
+            if neutral_color is None:
+                neutral_palette = Palette(
+                    background=rio.Color.from_grey(0.97).blend(primary_color, 0.04),
+                    background_variant=rio.Color.from_grey(0.93).blend(
+                        primary_color, 0.07
+                    ),
+                    background_active=rio.Color.from_grey(0.93).blend(
+                        primary_color, 0.15
+                    ),
+                    foreground=rio.Color.from_grey(0.1),
+                )
+            else:
+                neutral_palette = Palette._from_color(neutral_color, light)
 
             disabled_palette = Palette(
                 rio.Color.from_grey(0.7),
@@ -166,12 +174,19 @@ class Theme:
                 foreground=rio.Color.from_grey(0.9),
             )
 
-            neutral_palette = Palette(
-                background=rio.Color.from_grey(0.16).blend(primary_color, 0.03),
-                background_variant=rio.Color.from_grey(0.2).blend(primary_color, 0.04),
-                background_active=rio.Color.from_grey(0.2).blend(primary_color, 0.10),
-                foreground=rio.Color.from_grey(0.9),
-            )
+            if neutral_color is None:
+                neutral_palette = Palette(
+                    background=rio.Color.from_grey(0.16).blend(primary_color, 0.03),
+                    background_variant=rio.Color.from_grey(0.2).blend(
+                        primary_color, 0.04
+                    ),
+                    background_active=rio.Color.from_grey(0.2).blend(
+                        primary_color, 0.10
+                    ),
+                    foreground=rio.Color.from_grey(0.9),
+                )
+            else:
+                neutral_palette = Palette._from_color(neutral_color, light)
 
             disabled_palette = Palette(
                 rio.Color.from_grey(0.2),

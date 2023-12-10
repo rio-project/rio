@@ -412,6 +412,10 @@ class Session(unicall.Unicall):
     async def _get_webview_window(self):
         import webview  # type: ignore
 
+        assert (
+            self.running_in_window
+        ), f"Can't get the window when not running inside one"
+
         # The window may not have opened yet, so we'll wait until it exists
         while True:
             window = webview.active_window()

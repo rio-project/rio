@@ -1,6 +1,7 @@
 main_module = "website"
 debug_port = 8001
 app_variable = "app"
+app_type = "app"
 
 [app]
 

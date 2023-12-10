@@ -95,6 +95,7 @@ class AppServer(fastapi.FastAPI):
     def __init__(
         self,
         app_: app.App,
+        debug_mode: bool,
         running_in_window: bool,
         on_session_start: rio.EventHandler[rio.Session],
         on_session_end: rio.EventHandler[rio.Session],
@@ -105,6 +106,7 @@ class AppServer(fastapi.FastAPI):
         super().__init__(lifespan=__class__._lifespan)
 
         self.app = app_
+        self.debug_mode = debug_mode
         self.running_in_window = running_in_window
         self.on_session_start = on_session_start
         self.on_session_end = on_session_end
@@ -327,6 +329,11 @@ class AppServer(fastapi.FastAPI):
         html = html.replace(
             '"{ping_pong_interval}"',
             str(self.app._ping_pong_interval.total_seconds()),
+        )
+
+        html = html.replace(
+            '"{debug_mode}"',
+            json.dumps(self.debug_mode),
         )
 
         html = html.replace("{title}", self.app.name)

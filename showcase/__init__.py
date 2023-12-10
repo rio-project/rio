@@ -481,6 +481,7 @@ if __name__ == "__main__":
     )
 else:
     fastapi_app = app._as_fastapi(
+        debug_mode=True,
         running_in_window=False,
         validator_factory=validator_factory,
         internal_on_app_start=None,

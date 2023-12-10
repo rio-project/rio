@@ -97,6 +97,7 @@ def run(
             port=port,
             public=public,
             quiet=quiet,
-            release=release,
+            debug_mode=not release,
+            run_in_window=proj.app_type == "app",
         )
         runner.run()
