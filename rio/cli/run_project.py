@@ -56,6 +56,10 @@ class RunningApp:
         debug_mode: bool,
         run_in_window: bool,
     ) -> None:
+        assert not (
+            run_in_window and public
+        ), "Can't run in a local window over the network, wtf!?"
+
         self.proj = proj
         self._port = port
         self.public = public
@@ -261,18 +265,22 @@ class RunningApp:
         await app_ready_event.wait()
 
         # Inform the user how to connect
-        print()
-        print(f"[green]Your app is running at {self._url}[/]")
+        if not self.run_in_window:
+            print()
+            print(f"[green]Your app is running at {self._url}[/]")
 
-        if self.public:
-            warning(
-                f"Running in [bold]public[/] mode. All devices on your network can access the app."
-            )
-            warning(f"Only run in public mode if you trust your network")
+            if self.public:
+                warning(
+                    f"Running in [bold]public[/] mode. All devices on your network can access the app."
+                )
+                warning(f"Only run in public mode if you trust your network!")
+            else:
+                print(
+                    f"[dim]Running in [bold]local[/] mode. Only this device can access the app.[/]"
+                )
+
         else:
-            print(
-                f"[dim]Running in [bold]local[/] mode. Only this device can access the app.[/]"
-            )
+            success("Ready")
 
         print()
 
