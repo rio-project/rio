@@ -67,10 +67,6 @@ def new(
     summary="Run the current project",
     parameters=[
         revel.Parameter(
-            "release",
-            summary="Disables debug mode and automatic reloading",
-        ),
-        revel.Parameter(
             "port",
             summary="Port to run the HTTP server on",
         ),
@@ -83,21 +79,46 @@ def new(
             summary="Suppresses HTTP logs and other noise",
         ),
     ],
+    details="""
+The `run` command runs the current project for debugging. If your project is a
+website, it will be hosted on a local HTTP server, and you can view it in your
+browser. If the project is a app, it will be displayed in a window instead.
+
+Rio will constantly watch your project for changes, and automatically reload
+the app or website when it detects a change. This makes it easy to iterate on
+your project without having to manually restart it.
+
+The `port` and `public` options are ignored if the project is an app, since
+they only make sense for websites.
+""",
 )
 def run(
     *,
-    release: bool = False,
     port: Optional[int] = None,
     public: bool = False,
     quiet: bool = True,
 ) -> None:
     with project.RioProject.try_load() as proj:
+        # Some options only make sense for websites
+        if proj.app_type == "app":
+            if port is not None:
+                port = None
+                warning(
+                    "Ignoring the `port` option, since this project is not a website"
+                )
+
+            if public:
+                public = False
+                warning(
+                    "Ignoring the `public` option, since this project is not a website"
+                )
+
         runner = run_project.RunningApp(
             proj=proj,
             port=port,
             public=public,
             quiet=quiet,
-            debug_mode=not release,
+            debug_mode=True,
             run_in_window=proj.app_type == "app",
         )
         runner.run()
