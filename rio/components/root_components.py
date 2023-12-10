@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
-
-import rio
+from typing import *  # type: ignore
 
 from .component_base import Component, FundamentalComponent
 

@@ -1,3 +1,5 @@
+from typing import *  # type: ignore
+
 from ..common import URL
 from .component_base import FundamentalComponent
 
