@@ -22,9 +22,9 @@ class Snapshot:
 
     def restore(self) -> None:
         # Find new tasks and cancel them
-        for task in asyncio.all_tasks():
-            if task not in self._running_tasks:
-                task.cancel()
+        # for task in asyncio.all_tasks():
+        #     if task not in self._running_tasks:
+        #         task.cancel()
 
         # Find new modules and unload them
         for module_name in list(sys.modules.keys()):

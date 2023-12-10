@@ -15,6 +15,7 @@ import uvicorn
 import watchfiles
 from revel import error, fatal, print, success, warning
 
+import rio.app_server
 import rio.cli
 import rio.snippets
 
@@ -83,6 +84,15 @@ class RunningApp:
         # Released when the app is loaded for the first time, and thus the
         # window should be displayed
         self._show_webview_event = threading.Event()
+
+        # If the uvicorn server is running, this is it
+        self._uvicorn_server: Optional[uvicorn.Server] = None
+
+        # If the app is running, this is the `rio.AppServer` instance
+        self._app_server: Optional[rio.app_server.AppServer] = None
+
+        # If a webview is being displayed, this is the window
+        self._webview_window: Optional["webview.Window"] = None  # type: ignore
 
     @property
     def _host(self) -> str:
@@ -168,8 +178,13 @@ class RunningApp:
             await wait_forever_event.wait()
 
         # Clean up
+        #
+        # Wait for the window to actually be created first
         finally:
-            webview.stop()
+            while self._webview_window is None:
+                await asyncio.sleep(0.1)
+
+            self._webview_window.destroy()
 
     def _show_webview(self) -> None:
         """
@@ -181,13 +196,12 @@ class RunningApp:
         self._show_webview_event.wait()
 
         # Create the window
-        window = webview.create_window(
+        self._webview_window = webview.create_window(
             "Rio (debug)"
             if self.debug_mode
             else "Rio",  # TODO: Get the app's name, if possible
             f"http://{self._host}:{self._port}",
         )
-        print("WINDOW", window)
         webview.start()
 
         # Shut everything down
@@ -241,7 +255,7 @@ class RunningApp:
 
         self._uvicorn_task = asyncio.create_task(
             self._worker_uvicorn(
-                on_ready=app_ready_event.set,
+                on_ready_or_failed=app_ready_event.set,
             )
         )
         await app_ready_event.wait()
@@ -283,37 +297,13 @@ class RunningApp:
                 print()
                 print(f"[bold]{rel_path}[/] has changed -> Reloading")
 
-                # Stop the app, if it's running
-                if self._uvicorn_task is not None:
-                    print("Stopping app")
-                    self._uvicorn_task.cancel()
-
-                    try:
-                        await self._uvicorn_task
-                    except asyncio.CancelledError:
-                        pass
-
                 # Restore the python interpreter to the state it was before the
                 # app was started
                 state_before_app.restore()
 
-                # Start the app again
-                print("Restarting app")
-                app_ready_event = asyncio.Event()
-
-                last_reload_started_at = time.monotonic_ns()
-                self._uvicorn_task = asyncio.create_task(
-                    self._worker_uvicorn(
-                        on_ready=lambda: self._run_in_mainloop(
-                            app_ready_event.set,
-                        ),
-                    )
-                )
-
-                # Wait for the app to be ready
-                await app_ready_event.wait()
+                # Restart the app
+                await self._restart_app()
                 success("Ready")
-
             else:
                 raise NotImplementedError(f'Unknown event "{event}"')
 
@@ -344,23 +334,12 @@ class RunningApp:
                     )
                 )
 
-    async def _worker_uvicorn(
-        self,
-        *,
-        on_ready: Callable[[], None],
-    ) -> None:
-        """
-        Runs the app. It will serve the latest version of the project on the
-        specified host and port.
-
-        The function returns only once the app does.
-        """
+    def _load_app(self) -> Optional[rio.App]:
         # Import the app module
         try:
             app_module = importlib.import_module(self.proj.main_module)
         except Exception as e:
             error(f"Could not import `{self.proj.main_module}`: {e}")
-            on_ready()
             return
 
         # Try to get the app variable
@@ -370,7 +349,6 @@ class RunningApp:
             error(
                 f"Could not find the app variable `{self.proj.app_variable}` in `{self.proj.main_module}`"
             )
-            on_ready()
             return
 
         # Make sure the app is indeed a Rio app
@@ -378,45 +356,62 @@ class RunningApp:
             error(
                 f"The app variable `{self.proj.app_variable}` in `{self.proj.main_module}` is not a Rio app, but `{type(app)}`"
             )
-            on_ready()
             return
 
-        # The port has been set before
+        return app
+
+    async def _worker_uvicorn(
+        self,
+        *,
+        on_ready_or_failed: Callable[[], None],
+    ) -> None:
+        """
+        Runs the app. It will serve the latest version of the project on the
+        specified host and port.
+
+        The function returns only once the app does.
+        """
         assert self._port is not None
+        assert self._uvicorn_server is None, "Can't start the server twice"
+        assert self._app_server is None, "Can't start the server twice"
 
-        import socket
+        # Load the app
+        app = self._load_app()
 
-        global our_socket
+        if app is None:
+            on_ready_or_failed()
+            return
 
-        print("creating socket")
-        our_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # our_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        our_socket.bind((self._host, self._port))
-        our_socket.listen(5)
+        # Create the app server
+        app_server = app._as_fastapi(
+            debug_mode=self.debug_mode,
+            running_in_window=False,  # TODO
+            validator_factory=None,
+            internal_on_app_start=lambda: self._run_in_mainloop(
+                app_has_started_event.set
+            ),
+        )
+
+        assert isinstance(app_server, rio.app_server.AppServer), app_server
+        self._app_server = app_server
 
         # Set up a uvicorn server, but don't start it yet
         config = uvicorn.Config(
-            app._as_fastapi(
-                debug_mode=self.debug_mode,
-                running_in_window=False,  # TODO
-                validator_factory=None,
-                internal_on_app_start=lambda: self._run_in_mainloop(
-                    app_has_started_event.set
-                ),
-            ),
+            self._app_server,
             host=self._host,
             port=self._port,
             log_level="error" if self.quiet else "info",
             timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
         )
-        uvicorn_server = uvicorn.Server(config)
+        self._uvicorn_server = uvicorn.Server(config)
 
         # Run uvicorn in a separate thread
         app_has_started_event: asyncio.Event = asyncio.Event()
         app_has_finished_event: asyncio.Event = asyncio.Event()
 
         def run_uvicorn() -> None:
-            uvicorn_server.run(sockets=[our_socket])
+            assert self._uvicorn_server is not None
+            self._uvicorn_server.run()
             self._run_in_mainloop(app_has_finished_event.set)
 
         uvicorn_thread = threading.Thread(target=run_uvicorn)
@@ -427,21 +422,56 @@ class RunningApp:
             await app_has_started_event.wait()
 
             # Trigger the event
-            on_ready()
+            on_ready_or_failed()
 
             # Wait for either the app to stop, or until the task is canceled
             wait_forever_event = asyncio.Event()
             await wait_forever_event.wait()
 
         except asyncio.CancelledError:
-            uvicorn_server.should_exit = True
+            self._uvicorn_server.should_exit = True
 
         finally:
             await app_has_finished_event.wait()
 
-            # Reuse the same socket
-            our_socket.close()
+    async def _restart_app(self) -> None:
+        """
+        This function expects that uvicorn is already running. It loads the app
+        and injects it into the already running uvicorn server.
+        """
+        assert self._uvicorn_task is not None, "Can't restart the app without uvicorn"
+        assert self._uvicorn_server is not None, "Can't restart the app without uvicorn"
+        assert (
+            self._app_server is not None
+        ), "Can't restart the app without it already running"
 
-            # Wait for the port to be released
-            while not common.ensure_valid_port(self._host, self._port):
-                await asyncio.sleep(0.1)
+        # Load the new app
+        app = self._load_app()
+
+        if app is None:
+            return
+
+        # Inject it into the server
+        self._app_server.app = app
+
+        # Tell all clients to reconnect
+        await self._evaluate_javascript("window.location.reload()")
+
+    async def _evaluate_javascript(self, javascript_source: str) -> None:
+        """
+        Runs the given javascript source in all connected sessions. Does not
+        wait for or return the result.
+        """
+        assert (
+            self._app_server is not None
+        ), "Can't run javascript without the app running"
+
+        for sess in self._app_server._active_session_tokens.values():
+
+            async def callback() -> None:
+                await sess._evaluate_javascript(javascript_source)
+
+            asyncio.create_task(
+                callback(),
+                name=f"Eval JS in session {sess._session_token}",
+            )
