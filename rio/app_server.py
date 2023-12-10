@@ -200,7 +200,7 @@ class AppServer(fastapi.FastAPI):
         finally:
             # Close all sessions
             results = await asyncio.gather(
-                *(sess._close() for sess in self._active_session_tokens.values()),
+                *(sess._close(True) for sess in self._active_session_tokens.values()),
                 return_exceptions=True,
             )
             for result in results:

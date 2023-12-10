@@ -393,7 +393,7 @@ class RunningApp:
         # Create the app server
         app_server = app._as_fastapi(
             debug_mode=self.debug_mode,
-            running_in_window=False,  # TODO
+            running_in_window=self.run_in_window,
             validator_factory=None,
             internal_on_app_start=lambda: self._run_in_mainloop(
                 app_has_started_event.set
@@ -462,8 +462,22 @@ class RunningApp:
         # Inject it into the server
         self._app_server.app = app
 
-        # Tell all clients to reconnect
-        await self._evaluate_javascript("window.location.reload()")
+        # Tell all sessions to reconnect, and close old sessions
+        #
+        # This can't use `self._evaluate_javascript` it would race with closing
+        # the sessions.
+        for sess in list(self._app_server._active_session_tokens.values()):
+            # Tell the session to reload
+            #
+            # TODO: Should there be some waiting period here, so that the
+            # session has time to save settings first and shut down in general?
+            await self._evaluate_javascript("window.location.reload()")
+
+            # Close it
+            asyncio.create_task(
+                sess._close(close_remote_session=False),
+                name=f'Close session "{sess._session_token}"',
+            )
 
     async def _evaluate_javascript(self, javascript_source: str) -> None:
         """
