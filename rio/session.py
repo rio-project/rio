@@ -375,9 +375,9 @@ class Session(unicall.Unicall):
         return self._active_page_instances
 
     def close(self) -> None:
-        self.create_task(self._close())
+        self.create_task(self._close(True))
 
-    async def _close(self) -> None:
+    async def _close(self, close_remote_session: bool) -> None:
         try:
             del self._app_server._active_session_tokens[self._session_token]
         except KeyError:
@@ -391,19 +391,21 @@ class Session(unicall.Unicall):
         # Save the settings
         await self._save_settings_now()
 
-        if self.running_in_window:
-            import webview  # type: ignore
+        # Close the tab / window
+        if close_remote_session:
+            if self.running_in_window:
+                import webview  # type: ignore
 
-            # It's possible that the session is being closed because the user
-            # closed the window, so the window may not exist anymore
-            window = webview.active_window()
-            if window is not None:
-                window.destroy()
-        else:
-            try:
-                await self._remote_close_session()
-            except RuntimeError:  # Websocket is already closed
-                pass
+                # It's possible that the session is being closed because the
+                # user closed the window, so the window may not exist anymore
+                window = webview.active_window()
+                if window is not None:
+                    window.destroy()
+            else:
+                try:
+                    await self._remote_close_session()
+                except RuntimeError:  # Websocket is already closed
+                    pass
 
         # Cancel all running tasks
         for task in self._running_tasks:
