@@ -68,6 +68,16 @@ def check_class(cls: type, docs: rio_docs.ClassDocs) -> None:
 
 
 def main() -> None:
+    print_chapter("Saving you hours of debugging")
+    print(
+        f"Note: If you get an error about an undefined value (usually a "
+        "type), you're most likely missing a `from typing import *` in one "
+        "of rio's files.\n\n"
+        "An easy way to find out is to run this script in a debugger and "
+        "have it stop on exceptions. Go up one scope in the stack and "
+        "display the value of `globalns`."
+    )
+
     # Find all items that should be documented
     print_chapter("Looking for items needing documentation")
     target_items: List[Union[type, Callable[..., Any]]] = list(
