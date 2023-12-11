@@ -1,8 +1,7 @@
-main_module = "website"
+main_module = "webkite"
 debug_port = 8001
 app_variable = "app"
 app_type = "website"
-
 
 [app]
 

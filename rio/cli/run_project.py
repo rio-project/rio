@@ -1,7 +1,6 @@
 import asyncio
-import importlib
-import inspect
-import os
+import importlib.util
+import socket
 import sys
 import threading
 import time
@@ -104,7 +103,18 @@ class RunningApp:
 
     @property
     def _url(self) -> str:
-        return f"http://{self._host}:{self._port}"
+        if self.public:
+            # Get the local IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(
+                ("8.8.8.8", 80)
+            )  # Doesn't send data, because UDP is connectionless
+            local_ip = s.getsockname()[0]
+            s.close()
+        else:
+            local_ip = "127.0.0.1"
+
+        return f"http://{local_ip}:{self._port}"
 
     def _run_in_mainloop(
         self,
@@ -342,11 +352,45 @@ class RunningApp:
                     )
                 )
 
+    def _import_app_module(self) -> Any:
+        """
+        Python's importing is bizarre. This function tries to hide all of that
+        and imports the module, as specified by the user. This can raise a
+        variety of exceptions, since the module's code is evaluated.
+        """
+        # Path to the module
+        module_path = self.proj.project_directory / self.proj.main_module
+
+        # Path to the module, as thought of by a drunk python
+        if module_path.is_dir():
+            import_path = module_path / "__init__.py"
+        else:
+            import_path = module_path.with_name(module_path.name + ".py")
+
+            if not import_path.exists() or not import_path.is_file():
+                raise FileNotFoundError(
+                    f"Cannot find any module named `{module_path}` in the project directory `{self.proj.project_directory}`"
+                )
+
+        # Import the module
+        spec = importlib.util.spec_from_file_location(module_path.name, import_path)
+        assert spec is not None, "When does this happen?"
+
+        module = importlib.util.module_from_spec(spec)
+
+        # Run it
+        assert spec.loader is not None, "When does this happen?"
+        spec.loader.exec_module(module)
+
+        return module
+
     def _load_app(self) -> Optional[rio.App]:
         # Import the app module
         try:
-            app_module = importlib.import_module(self.proj.main_module)
+            app_module = self._import_app_module()
         except Exception as e:
+            print(type(e))
+            print(e)
             error(f"Could not import `{self.proj.main_module}`: {e}")
             return
 
