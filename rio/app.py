@@ -67,7 +67,8 @@ def make_default_connection_lost_component() -> rio.Component:
                         ),
                     ),
                     spacing=1,
-                    margin=2,
+                    margin_x=2.5,
+                    margin_y=1.5,
                 ),
                 style=rio.BoxStyle(
                     fill=self.session.theme.neutral_palette.background,

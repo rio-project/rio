@@ -40,7 +40,7 @@ class Event:
 
 @dataclass
 class FileChanged(Event):
-    timestamp: float  # Monothonic timestamp of the change
+    timestamp: float  # Monotonic timestamp of the change
     path_to_file: Path
 
 
@@ -224,7 +224,7 @@ class RunningApp:
     def arbiter_sync(self) -> None:
         # Print some initial messages
         print()
-        print(f"[bold primary]{LOGO_TEXT}[/]")
+        print(f"[bold green]{LOGO_TEXT}[/]")
         print()
         print()
         print("Starting")
@@ -373,7 +373,9 @@ class RunningApp:
                 )
 
         # Import the module
-        spec = importlib.util.spec_from_file_location(module_path.name, import_path)
+        spec = importlib.util.spec_from_file_location(
+            self.proj.main_module, import_path
+        )
         assert spec is not None, "When does this happen?"
 
         module = importlib.util.module_from_spec(spec)
