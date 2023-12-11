@@ -903,11 +903,9 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     order: 2;
 
-    margin: 0 1rem;
+    margin: 0 0.7rem 0.4rem 0.7rem;
     width: 1.3rem;
     height: 1.3rem;
-
-    transform: translateY(-50%);
 }
 
 .rio-dropdown-option-highlight {
