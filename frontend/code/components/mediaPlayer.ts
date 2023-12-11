@@ -150,32 +150,34 @@ export class MediaPlayerComponent extends ComponentBase {
 
     /// Update the UI to reflect the current playback and loading progress
     _updateProgress(): void {
+        // The duration may not be known yet if the browser hasn't loaded
+        // the metadata. And if we don't know the duration, we can't really
+        // display much.
+        let duration = this.mediaPlayer.duration;
+        if (isNaN(duration)) {
+            this.timelinePlayed.style.width = '0';
+            this.timelineLoaded.style.width = '0';
+            this.playtimeLabel.textContent = '0:00';
+            return;
+        }
+
+        let currentTime = this.mediaPlayer.currentTime;
+
         // Progress Slider
-        let progress = this.mediaPlayer.currentTime / this.mediaPlayer.duration;
+        let progress = currentTime / duration;
         let percentage = `${progress * 100}%`;
 
         this.timelinePlayed.style.width = percentage;
 
         // Progress Label
-        //
-        // The duration may not be known yet if the browser hasn't loaded
-        // the metadata.
-        if (isNaN(this.mediaPlayer.duration)) {
-            this.playtimeLabel.textContent = '0:00';
-        } else {
-            let playedString = this._durationToString(
-                this.mediaPlayer.currentTime
-            );
-            let durationString = this._durationToString(
-                this.mediaPlayer.duration
-            );
-            this.playtimeLabel.textContent = `${playedString} / ${durationString}`;
-        }
+        let playedString = this._durationToString(currentTime);
+        let durationString = this._durationToString(duration);
+        this.playtimeLabel.textContent = `${playedString} / ${durationString}`;
 
         // Loaded Amount
         let loadedFraction =
             this.mediaPlayer.buffered.length > 0
-                ? this.mediaPlayer.buffered.end(0) / this.mediaPlayer.duration
+                ? this.mediaPlayer.buffered.end(0) / duration
                 : 0;
         this.timelineLoaded.style.width = `${loadedFraction * 100}%`;
     }
@@ -345,9 +347,13 @@ export class MediaPlayerComponent extends ComponentBase {
             this.setVolume(volume);
         });
 
-        this.mediaPlayer.addEventListener(
-            'timeupdate',
-            this._updateProgress.bind(this)
+        this.muteButton.addEventListener(
+            'wheel',
+            this._onVolumeWheelEvent.bind(this)
+        );
+        this.volumeOuter.addEventListener(
+            'wheel',
+            this._onVolumeWheelEvent.bind(this)
         );
 
         this.mediaPlayer.addEventListener('dblclick', () => {
@@ -393,10 +399,10 @@ export class MediaPlayerComponent extends ComponentBase {
 
                 // Up and down arrow keys change the volume
                 case 'ArrowUp':
-                    this.setVolume(Math.min(this.mediaPlayer.volume + 0.1, 1));
+                    this._volumeUp();
                     break;
                 case 'ArrowDown':
-                    this.setVolume(Math.max(this.mediaPlayer.volume - 0.1, 0));
+                    this._volumeDown();
                     break;
 
                 // Number keys seek to a percentage of the video
@@ -461,6 +467,7 @@ export class MediaPlayerComponent extends ComponentBase {
             }
 
             // Update the slider
+            // TODO: Set width to 0% if muted?
             this.volumeCurrent.style.width = `${newHumanVolume * 100}%`;
 
             // Update the state and notify the backend
@@ -479,7 +486,6 @@ export class MediaPlayerComponent extends ComponentBase {
         applyIcon(this.playButton, 'play-arrow:fill', 'white');
         applyIcon(this.fullscreenButton, 'fullscreen', 'white');
         applyIcon(this.muteButton, 'volume-up:fill', 'white');
-        this._updateProgress();
         return element;
     }
 
@@ -493,6 +499,14 @@ export class MediaPlayerComponent extends ComponentBase {
 
             if (mediaUrl !== this.mediaPlayer.src) {
                 this.mediaPlayer.src = mediaUrl;
+
+                // Reset the time/progress bar (otherwise if the file can't be
+                // played, the player would simply remains in whatever state it
+                // was before)
+                this._updateProgress();
+
+                // Start the timeout that hides the controls
+                this.interact();
             }
         }
 
@@ -541,6 +555,24 @@ export class MediaPlayerComponent extends ComponentBase {
                 this.mediaPlayer.onended = null;
             }
         }
+    }
+
+    private _onVolumeWheelEvent(event: WheelEvent): void {
+        if (event.deltaY < 0) {
+            this._volumeUp();
+        } else {
+            this._volumeDown();
+        }
+    }
+
+    private _volumeUp(): void {
+        let humanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
+        this.setVolume(Math.min(humanVolume + 0.1, 1));
+    }
+
+    private _volumeDown(): void {
+        let humanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
+        this.setVolume(Math.max(humanVolume - 0.1, 0));
     }
 
     private _onError(event: string | Event): void {
