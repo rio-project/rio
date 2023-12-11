@@ -1521,7 +1521,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             Tuple[user_settings_module.UserSettings, Iterable[str]]
         ],
     ) -> None:
-        delta_settings = {}
+        delta_settings: Dict[str, Any] = {}
 
         for settings, dirty_attributes in settings_to_save:
             prefix = f"{settings.section_name}:" if settings.section_name else ""
