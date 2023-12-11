@@ -7,14 +7,24 @@ Some values are not initialized at all, if the required module isn't in
 used.
 """
 
+from __future__ import annotations
+
 import sys
 from typing import *  # type: ignore
+
+if TYPE_CHECKING:
+    import pandas
+    import polars
 
 _IS_INITIALIZED = False
 
 
 # Maps numpy datatypes to a function which JSON-serializes them.
 NUMPY_SERIALIZERS: Dict[Type, Callable[[Type], Any]] = {}
+
+# If the libraries are available, these contain the DataFrame type
+PANDAS_DATAFRAME_TYPES: Tuple[Type[pandas.DataFrame], ...] = ()
+POLARS_DATAFRAME_TYPES: Tuple[Type[polars.DataFrame], ...] = ()
 
 
 def initialize() -> None:
@@ -24,7 +34,7 @@ def initialize() -> None:
     have already been imported - some functionality is not initialized if those
     other modules aren't used.
     """
-    global _IS_INITIALIZED, NUMPY_SERIALIZERS
+    global _IS_INITIALIZED, NUMPY_SERIALIZERS, PANDAS_DATAFRAME_TYPES, POLARS_DATAFRAME_TYPES
 
     # Already initialized?
     if _IS_INITIALIZED:
@@ -48,6 +58,15 @@ def initialize() -> None:
             np.int64: int,
             np.float32: float,
             np.float64: float,
-            np.bytes_: bytes,
             np.str_: str,
         }
+
+    if "pandas" in sys.modules:
+        import pandas
+
+        PANDAS_DATAFRAME_TYPES = (pandas.DataFrame,)
+
+    if "polars" in sys.modules:
+        import polars
+
+        POLARS_DATAFRAME_TYPES = (polars.DataFrame,)
