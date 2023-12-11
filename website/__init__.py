@@ -126,7 +126,7 @@ def _make_documentation_pages() -> List[rio.Page]:
 
 
 # Merge all pages
-pages = [
+all_pages = [
     # Top Level Views
     rio.Page(
         "",
@@ -153,7 +153,7 @@ app = rio.App(
     name="Rio",
     build=AppRoot,
     icon=ASSETS_DIR / "rio-logo.png",
-    pages=pages,
+    pages=all_pages,
     theme=theme.THEME,
     assets_dir=ASSETS_DIR,
 )
