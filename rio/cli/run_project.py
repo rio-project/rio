@@ -4,6 +4,7 @@ import socket
 import sys
 import threading
 import time
+import traceback
 import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
@@ -266,39 +267,8 @@ class RunningApp:
 
         # Start the app for the first time
         app_ready_event = asyncio.Event()
-
-        self._uvicorn_task = asyncio.create_task(
-            self._worker_uvicorn(
-                on_ready_or_failed=app_ready_event.set,
-            )
-        )
+        await self._start_or_restart_app(app_ready_event.set)
         await app_ready_event.wait()
-
-        # Inform the user how to connect
-        if not self.run_in_window:
-            print()
-            print(f"[green]Your app is running at {self._url}[/]")
-
-            if self.public:
-                warning(
-                    f"Running in [bold]public[/] mode. All devices on your network can access the app."
-                )
-                warning(f"Only run in public mode if you trust your network!")
-            else:
-                print(
-                    f"[dim]Running in [bold]local[/] mode. Only this device can access the app.[/]"
-                )
-
-        else:
-            success("Ready")
-
-        print()
-
-        # The app is ready. Either open the webview, or a browser
-        if self.run_in_window:
-            self._webview_task = asyncio.create_task(self._worker_webview())
-        else:
-            webbrowser.open(self._url)
 
         # Listen for events and react to them
         while True:
@@ -320,7 +290,9 @@ class RunningApp:
                 state_before_app.restore()
 
                 # Restart the app
-                await self._restart_app()
+                app_ready_event = asyncio.Event()
+                await self._start_or_restart_app(app_ready_event.set)
+                await app_ready_event.wait()
                 success("Ready")
             else:
                 raise NotImplementedError(f'Unknown event "{event}"')
@@ -391,9 +363,8 @@ class RunningApp:
         try:
             app_module = self._import_app_module()
         except Exception as e:
-            print(type(e))
-            print(e)
             error(f"Could not import `{self.proj.main_module}`: {e}")
+            traceback.print_exc()
             return
 
         # Try to get the app variable
@@ -414,8 +385,66 @@ class RunningApp:
 
         return app
 
+    async def _start_or_restart_app(
+        self,
+        on_ready_or_failed: Callable[[], None],
+    ) -> None:
+        """
+        Starts the app, or restarts it if it is already running.
+        """
+        # Load the app
+        app = self._load_app()
+
+        if app is None:
+            on_ready_or_failed()
+            return
+
+        # Not running yet - start it
+        if self._uvicorn_task is None:
+            on_ready_event = asyncio.Event()
+            self._uvicorn_task = asyncio.create_task(
+                self._worker_uvicorn(
+                    app,
+                    on_ready_or_failed=on_ready_event.set,
+                )
+            )
+            await on_ready_event.wait()
+            on_ready_or_failed()
+
+            # The app was just successfully started. Inform the user
+            if not self.run_in_window:
+                print()
+                print(f"[green]Your app is running at {self._url}[/]")
+
+                if self.public:
+                    warning(
+                        f"Running in [bold]public[/] mode. All devices on your network can access the app."
+                    )
+                    warning(f"Only run in public mode if you trust your network!")
+                else:
+                    print(
+                        f"[dim]Running in [bold]local[/] mode. Only this device can access the app.[/]"
+                    )
+
+            else:
+                success("Ready")
+
+            print()
+
+            # Either open the webview, or a browser
+            if self.run_in_window:
+                self._webview_task = asyncio.create_task(self._worker_webview())
+            else:
+                webbrowser.open(self._url)
+
+        # Already running - restart it
+        else:
+            await self._restart_app(app)
+            on_ready_or_failed()
+
     async def _worker_uvicorn(
         self,
+        app: rio.App,
         *,
         on_ready_or_failed: Callable[[], None],
     ) -> None:
@@ -428,13 +457,6 @@ class RunningApp:
         assert self._port is not None
         assert self._uvicorn_server is None, "Can't start the server twice"
         assert self._app_server is None, "Can't start the server twice"
-
-        # Load the app
-        app = self._load_app()
-
-        if app is None:
-            on_ready_or_failed()
-            return
 
         # Create the app server
         app_server = app._as_fastapi(
@@ -488,7 +510,10 @@ class RunningApp:
         finally:
             await app_has_finished_event.wait()
 
-    async def _restart_app(self) -> None:
+    async def _restart_app(
+        self,
+        app: rio.App,
+    ) -> None:
         """
         This function expects that uvicorn is already running. It loads the app
         and injects it into the already running uvicorn server.
@@ -498,12 +523,6 @@ class RunningApp:
         assert (
             self._app_server is not None
         ), "Can't restart the app without it already running"
-
-        # Load the new app
-        app = self._load_app()
-
-        if app is None:
-            return
 
         # Inject it into the server
         self._app_server.app = app
