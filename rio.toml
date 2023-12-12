@@ -1,4 +1,4 @@
 [app]
-app_type = "website"    # This is either "website" or "app"\n')
-main_module = "website" # The name of your Python module\n')
-app_variable = "app"    # The name of your `rio.App` variable\n')
+app_type = "website"    # This is either "website" or "app"
+main_module = "website" # The name of your Python module
+app_variable = "app"    # The name of your `rio.App` variable

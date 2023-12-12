@@ -31,11 +31,14 @@ TEMPLATE_DEPENDENCIES: Dict[Optional[TemplatesLiteral], Set[str]] = {
         "common-templates/sample_page.py",
     },
     "biography": {
+        # Assets
+        # "tutorial-biography/jane-doe.jpg",
+        # "tutorial-biography/john-doe.jpg",
         # Components
         "tutorial-biography/about_me.py",
         "tutorial-biography/contact.py",
         "tutorial-biography/history.py",
-        "tutorial-biography/project.py",
+        "tutorial-biography/projects.py",
         "tutorial-biography/skill_bars.py",
         # Pages
         "tutorial-biography/biography_page.py",
@@ -230,7 +233,7 @@ def create_project(
         f.write("# This is the configuration file for Rio,\n")
         f.write("# an easy to use app & web framework for Python.\n")
         f.write("\n")
-        f.write(f"[app]")
+        f.write(f"[app]\n")
         f.write(f'app_type = "{type}"  # This is either "website" or "app"\n')
         f.write(f'main_module = "{python_name}"  # The name of your Python module\n')
         f.write(f'app_variable = "app"  # The name of your `rio.App` variable\n')
