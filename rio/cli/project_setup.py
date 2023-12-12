@@ -229,11 +229,11 @@ def create_project(
     with open(project_dir / "rio.toml", "w") as f:
         f.write("# This is the configuration file for Rio,\n")
         f.write("# an easy to use app & web framework for Python.\n")
-
         f.write("\n")
-
-        f.write(f'main_module = "{python_name}"\n')
-        f.write(f'fastapi_app_variable = "fastapi_app"\n')
+        f.write(f"[app]")
+        f.write(f'app_type = "{type}"  # This is either "website" or "app"\n')
+        f.write(f'main_module = "{python_name}"  # The name of your Python module\n')
+        f.write(f'app_variable = "app"  # The name of your `rio.App` variable\n')
 
     # Create the main module and its subdirectories
     main_module_dir = project_dir / python_name

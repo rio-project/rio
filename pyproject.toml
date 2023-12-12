@@ -35,10 +35,10 @@ uniserde = "^0.3.8"
 uvicorn = { extras = ["standard"], version = "^0.23.2" }
 yarl = "^1.9.2"
 material-color-utilities-python = "^0.1.5"
-toml = "^0.10.2"
 httpx = "^0.25.1"
 watchfiles = "^0.21.0"
 gitignore-parser = "^0.1.9"
+tomlkit = "^0.12.3"
 
 [tool.poetry.extras]
 window = ["cefpython3", "platformdirs", "pygobject", "pywebview"]
