@@ -184,17 +184,8 @@ class RunningApp:
         print("Shutting down")
 
         # Stop any running tasks
-        if self._uvicorn_task is not None:
-            self._uvicorn_task.cancel()
-
-        if self._watch_files_task is not None:
-            self._watch_files_task.cancel()
-
-        if self._webview_task is not None:
-            self._webview_task.cancel()
-
-        if self._arbiter_task is not None:
-            self._arbiter_task.cancel()
+        for task in asyncio.all_tasks():
+            task.cancel()
 
     def run(self) -> None:
         # The webview needs to be shown from the main thread. So, if running
