@@ -392,6 +392,9 @@ class RunningApp:
 
         module = importlib.util.module_from_spec(spec)
 
+        # Register the module
+        sys.modules[self.proj.main_module] = module
+
         # Run it
         assert spec.loader is not None, "When does this happen?"
         spec.loader.exec_module(module)
