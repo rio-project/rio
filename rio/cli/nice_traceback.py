@@ -56,7 +56,11 @@ def format_exception_raw(
 
         if line.strip():
             # If this is the last line, highlight the error
-            if frame is tb_list[-1]:
+            if (
+                frame is tb_list[-1]
+                and hasattr(frame, "colno")
+                and hasattr(frame, "end_colno")
+            ):
                 assert frame.colno is not None
                 assert frame.end_colno is not None
 
