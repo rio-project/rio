@@ -5,7 +5,9 @@ from typing import *  # type: ignore
 
 import gitignore_parser
 import revel
-import toml
+import tomlkit
+import tomlkit.exceptions
+import tomlkit.items
 import uniserde
 from revel import *  # type: ignore
 from revel import fatal
@@ -15,6 +17,9 @@ __all__ = [
 ]
 
 T = TypeVar("T")
+
+
+NO_DEFAULT = object()
 
 
 class RioProject:
@@ -30,30 +35,54 @@ class RioProject:
         # All of the data from the `rio.toml` file
         self._toml_dict = toml_dict
 
-        # Which keys have been modified and thus must be written back to the
-        # `rio.toml` file
-        self._dirty_keys: Set[str] = set()
+        # Which sections & keys have been modified and thus must be written back
+        # to the `rio.toml` file
+        self._dirty_keys: Set[Tuple[str, str]] = set()
 
         # Contains the parsed `.rioignore` file. When called with a path, it
         # returns True if the path should be ignored as per the `.rioignore`
         # file.
         self._ignore_func: Callable[[str], bool] = ignore_func
 
-    def _get_key(
+    def get_key(
         self,
+        section_name: str,
         key_name: str,
         type: Type[T],
-        default_value: Any,
+        default_value: Any = NO_DEFAULT,
     ) -> T:
-        # Try to fetch the value from the toml file
+        """
+        Fetches the value of a key from the `rio.toml` file. If the key is
+        missing, the default value is returned instead. If the default value is
+        not provided, a fatal error is displayed and the program exits.
+        """
+        # Try to get the section
+        section: Dict[str, Any]
+
         try:
-            value = self._toml_dict[key_name]
+            section = self._toml_dict[section_name]  # type: ignore
+        except KeyError:
+            if default_value is NO_DEFAULT:
+                fatal(
+                    f"`rio.toml` is missing the `{section_name}` section",
+                    status_code=1,
+                )
+
+            section: Dict[str, Any] = {}
+
+        # Try to get the key
+        try:
+            value = section[key_name]
 
         # There is no value, use the default
         except KeyError:
-            self._toml_dict[key_name] = default_value
-            self._dirty_keys.add(key_name)
-            return default_value
+            if default_value is NO_DEFAULT:
+                fatal(
+                    f"`rio.toml` is missing the `{key_name}` key. Please add it to the [[{section_name}] section.",
+                    status_code=1,
+                )
+
+            value = default_value
 
         # Make sure the value is the correct type
         if not isinstance(value, type):
@@ -65,38 +94,50 @@ class RioProject:
         # Done
         return value
 
-    def _set_key(self, key_name: str, value: Any) -> None:
-        self._toml_dict[key_name] = value
-        self._dirty_keys.add(key_name)
+    def set_key(self, section_name: str, key_name: str, value: Any) -> None:
+        """
+        Sets the value of a key in the `rio.toml` file. The value is not written
+        to disk until `write()` is called.
+        """
+        # Get the section
+        try:
+            section = self._toml_dict[section_name]
+        except KeyError:
+            section = self._toml_dict[section_name] = {}
+
+        # Make sure the section is indeed a section
+        if not isinstance(section, dict):
+            fatal(
+                f"`rio.toml` contains an invalid value for `{section_name}`: this should be a section, not `{type(section)}`",
+                status_code=1,
+            )
+
+        # Set the key
+        section[key_name] = value
+        self._dirty_keys.add((section_name, key_name))
 
     @property
     def project_directory(self) -> Path:
         return self._file_path.parent
 
     @property
+    def app_type(self) -> Literal["app", "website"]:
+        result = self.get_key("app", "app_type", str, "website")
+
+        if result not in ("app", "website"):
+            fatal(
+                f"`rio.toml` contains an invalid value for `app.app_type`: It should be either `app` or `website`, not `{result}`"
+            )
+
+        return result
+
+    @property
     def main_module(self) -> str:
-        return self._get_key("main_module", str, "TODO")
+        return self.get_key("app", "main_module", str)
 
     @property
     def app_variable(self) -> str:
-        return self._get_key("app_variable", str, "app")
-
-    @property
-    def debug_port(self) -> int:
-        return self._get_key("debug_port", int, 0)
-
-    @property
-    def app_type(self) -> Literal["app", "website"]:
-        result = self._get_key("app_type", str, "website")
-
-        if result not in ("app", "website"):
-            warning(
-                f"`rio.toml` contains an invalid value for `app_type`: expected `app` or `website`, got `{result}`"
-            )
-            result = "website"
-            self._set_key("app_type", result)
-
-        return result
+        return self.get_key("app", "app_variable", str, "app")
 
     @staticmethod
     def try_load() -> "RioProject":
@@ -129,7 +170,7 @@ class RioProject:
         logging.debug(f"Loading `{rio_toml_path}`")
 
         try:
-            rio_toml_dict = toml.load(rio_toml_path)
+            rio_toml_dict = tomlkit.load(rio_toml_path.open()).unwrap()
 
         # No such file. Offer to create one
         except FileNotFoundError:
@@ -153,9 +194,9 @@ class RioProject:
             )
 
         # Invalid syntax
-        except toml.TomlDecodeError as e:
+        except tomlkit.exceptions.TOMLKitError as e:
             fatal(
-                f"There is a syntax error in the `rio.toml` file: {e}",
+                f"There is an error in `rio.toml`: {e}",
                 status_code=1,
             )
 
@@ -202,16 +243,49 @@ class RioProject:
         """
         logging.debug(f"Writing `{self._file_path}`")
 
+        # Are there even any changes to write?
+        if not self._dirty_keys:
+            return
+
         # Make sure the parent directory exists
         self._file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Fetch an up-to-date copy of the file contents, with all formatting
+        # intact
+        try:
+            new_toml_dict = tomlkit.loads(self._file_path.read_text())
+
+        # If it can't be read, preserve all known values
+        except (OSError, tomlkit.exceptions.TOMLKitError) as e:
+            new_toml_dict = tomlkit.TOMLDocument()
+
+            self._dirty_keys.clear()
+            for section_name, section in self._toml_dict.items():
+                if not isinstance(section, dict):
+                    continue
+
+                for key_name, value in section.items():
+                    self._dirty_keys.add((section_name, key_name))
+
+        # Update the freshly read toml with all latent changes
+        for section_name, key_name in self._dirty_keys:
+            try:
+                section = new_toml_dict[section_name]
+            except KeyError:
+                section = new_toml_dict[section_name] = tomlkit.table()
+
+            section[key_name] = self._toml_dict[section_name][key_name]  # type: ignore
 
         # Write the file
         try:
             with self._file_path.open("w") as f:
-                toml.dump(self._toml_dict, f)
+                tomlkit.dump(new_toml_dict, f)
 
         except OSError as e:
             fatal(
                 f"Couldn't write `{self._file_path}`: {e}",
                 status_code=1,
             )
+
+        # The project is now clean
+        self._dirty_keys.clear()
