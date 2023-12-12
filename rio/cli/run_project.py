@@ -266,9 +266,7 @@ class RunningApp:
         last_reload_started_at = time.monotonic_ns()
 
         # Start the app for the first time
-        app_ready_event = asyncio.Event()
-        await self._start_or_restart_app(app_ready_event.set)
-        await app_ready_event.wait()
+        await self._start_or_restart_app()
 
         # Listen for events and react to them
         while True:
@@ -290,10 +288,9 @@ class RunningApp:
                 state_before_app.restore()
 
                 # Restart the app
-                app_ready_event = asyncio.Event()
-                await self._start_or_restart_app(app_ready_event.set)
-                await app_ready_event.wait()
-                success("Ready")
+                await self._start_or_restart_app()
+
+            # ???
             else:
                 raise NotImplementedError(f'Unknown event "{event}"')
 
@@ -387,17 +384,20 @@ class RunningApp:
 
     async def _start_or_restart_app(
         self,
-        on_ready_or_failed: Callable[[], None],
-    ) -> None:
+    ) -> bool:
         """
-        Starts the app, or restarts it if it is already running.
+        Starts the app, or restarts it if it is already running. Returns only
+        once the app is ready or failed to start.
+
+        Returns `True` if the app was started successfully, `False` if it
+        failed.
         """
         # Load the app
         app = self._load_app()
 
         if app is None:
-            on_ready_or_failed()
-            return
+            error("Couldn't load the app. Fix the issue above and try again.")
+            return False
 
         # Not running yet - start it
         if self._uvicorn_task is None:
@@ -409,7 +409,6 @@ class RunningApp:
                 )
             )
             await on_ready_event.wait()
-            on_ready_or_failed()
 
             # The app was just successfully started. Inform the user
             if not self.run_in_window:
@@ -437,10 +436,12 @@ class RunningApp:
             else:
                 webbrowser.open(self._url)
 
+            return True
+
         # Already running - restart it
-        else:
-            await self._restart_app(app)
-            on_ready_or_failed()
+        await self._restart_app(app)
+        success("Ready")
+        return True
 
     async def _worker_uvicorn(
         self,
