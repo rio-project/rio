@@ -71,7 +71,7 @@ class SimpleListItem(component_base.Component):
 
         # Right child
         if self.right_child is not None:
-            children.extend(self.right_child)
+            children.append(self.right_child)
 
         # Combine everything
         return CustomListItem(
