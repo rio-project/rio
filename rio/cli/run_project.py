@@ -1,10 +1,11 @@
 import asyncio
+import html
 import importlib.util
+import json
 import socket
 import sys
 import threading
 import time
-import traceback
 import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,10 +18,11 @@ from revel import error, fatal, print, success, warning
 
 import rio.app_server
 import rio.cli
+import rio.icon_registry
 import rio.snippets
 
 from .. import common
-from . import project, snapshot
+from . import nice_traceback, project, snapshot
 
 try:
     import webview  # type: ignore
@@ -43,6 +45,47 @@ class Event:
 class FileChanged(Event):
     timestamp: float  # Monotonic timestamp of the change
     path_to_file: Path
+
+
+def make_traceback_html(
+    *,
+    err: Union[str, BaseException],
+    project_directory: Path,
+) -> str:
+    icon_registry = rio.icon_registry.IconRegistry.get_singleton()
+    error_icon_svg = icon_registry.get_icon_svg("error")
+
+    if isinstance(err, str):
+        traceback_html = html.escape(err)
+    else:
+        traceback_html = nice_traceback.format_exception_html(
+            err,
+            relpath=project_directory,
+        )
+
+    return f"""
+<div>
+    <div class="rio-traceback">
+        <div class="rio-traceback-header">
+            {error_icon_svg}
+            <div>Couldn't load the app</div>
+        </div>
+        <div class="rio-traceback-message">
+            Fix the issue below. The app will automatically reload once you save the
+            file.
+        </div>
+        <div class="rio-traceback-traceback">{traceback_html}</div>
+        <div class="rio-traceback-footer">
+            Need help?
+            <div class="rio-traceback-footer-links">
+                <a class="rio-text-link" target="_blank" href="https://todo.discord.com">Ask on our Discord</a>
+                <a class="rio-text-link" target="_blank" href="https://chat.openai.com">Ask ChatGPT</a>
+                <a class="rio-text-link" target="_blank" href="https://revel.dev/documentation">Read the docs</a>
+            </div>
+        </div>
+    </div>
+</div>
+"""
 
 
 class RunningApp:
@@ -355,32 +398,56 @@ class RunningApp:
 
         return module
 
-    def _load_app(self) -> Optional[rio.App]:
+    def _load_app(self) -> Union[rio.App, BaseException, str]:
         # Import the app module
         try:
             app_module = self._import_app_module()
-        except Exception as e:
-            error(f"Could not import `{self.proj.main_module}`: {e}")
-            traceback.print_exc()
-            return
+        except BaseException as err:
+            error(f"Could not import `{self.proj.main_module}`:")
+            print(
+                nice_traceback.format_exception_revel(
+                    err,
+                    relpath=self.proj.project_directory,
+                )
+            )
+            return err
 
         # Try to get the app variable
         try:
             app = getattr(app_module, self.proj.app_variable)
-        except AttributeError:
+        except AttributeError as err:
             error(
                 f"Could not find the app variable `{self.proj.app_variable}` in `{self.proj.main_module}`"
             )
-            return
+            return err
 
         # Make sure the app is indeed a Rio app
         if not isinstance(app, rio.App):
-            error(
-                f"The app variable `{self.proj.app_variable}` in `{self.proj.main_module}` is not a Rio app, but `{type(app)}`"
-            )
-            return
+            message = f"The app variable `{self.proj.app_variable}` in `{self.proj.main_module}` is not a Rio app, but `{type(app)}`"
+            error(message)
+            return message
 
         return app
+
+    async def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
+        """
+        Displays a popup with the traceback in the rio UI.
+        """
+        popup_html = make_traceback_html(
+            err=err,
+            project_directory=self.proj.project_directory,
+        )
+
+        await self._evaluate_javascript(
+            f"""
+// Override the popup with the traceback message
+let popup = document.getElementById("rio-connection-lost-popup");
+popup.innerHTML = {json.dumps(popup_html)};
+
+// Spawn the popup
+window.setConnectionLostPopupVisible(true);
+""",
+        )
 
     async def _start_or_restart_app(
         self,
@@ -395,8 +462,13 @@ class RunningApp:
         # Load the app
         app = self._load_app()
 
-        if app is None:
+        if isinstance(app, (str, BaseException)):
+            print()
             error("Couldn't load the app. Fix the issue above and try again.")
+
+            if self._uvicorn_server is not None:
+                await self._spawn_traceback_popups(app)
+
             return False
 
         # Not running yet - start it

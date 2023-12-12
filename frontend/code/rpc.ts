@@ -54,6 +54,8 @@ export function setConnectionLostPopupVisible(visible: boolean): void {
     }
 }
 
+globalThis.setConnectionLostPopupVisible = setConnectionLostPopupVisible;
+
 function createWebsocket(connectionAttempt: number = 1): WebSocket {
     let url = new URL(
         `/rio/ws?sessionToken=${sessionToken}`,
