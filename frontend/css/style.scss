@@ -1208,6 +1208,22 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     object-fit: contain;
 }
 
+.rio-media-player-alt-display {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    width: 50%;
+    height: 50%;
+    max-width: 20rem;
+    max-height: 20rem;
+    aspect-ratio: 1;
+
+    opacity: 0.5;
+
+    transform: translate(-50%, -50%);
+}
+
 .rio-media-player-controls {
     position: absolute;
     left: 0;

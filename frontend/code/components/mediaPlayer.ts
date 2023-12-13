@@ -1,7 +1,6 @@
 import { fillToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
 import { Fill } from '../models';
-import { callRemoteMethodDiscardResponse } from '../rpc';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type MediaPlayerState = ComponentState & {
@@ -23,6 +22,7 @@ export class MediaPlayerComponent extends ComponentBase {
     state: Required<MediaPlayerState>;
 
     private mediaPlayer: HTMLVideoElement;
+    private altDisplay: HTMLElement;
     private controls: HTMLElement;
 
     private playButton: HTMLElement;
@@ -192,6 +192,7 @@ export class MediaPlayerComponent extends ComponentBase {
         element.innerHTML = `
             <div>
                 <video></video>
+                <div class="rio-media-player-alt-display"></div>
                 <div class="rio-media-player-controls">
                     <!-- Timeline -->
                     <div class="rio-media-player-timeline">
@@ -230,6 +231,12 @@ export class MediaPlayerComponent extends ComponentBase {
         `;
 
         this.mediaPlayer = element.querySelector('video') as HTMLVideoElement;
+        this.altDisplay = element.querySelector(
+            '.rio-media-player-alt-display'
+        ) as HTMLElement;
+
+        console.log('ALT', this.altDisplay);
+
         this.controls = element.querySelector(
             '.rio-media-player-controls'
         ) as HTMLElement;
@@ -477,12 +484,27 @@ export class MediaPlayerComponent extends ComponentBase {
             });
         });
 
-        this.mediaPlayer.addEventListener(
-            'loadedmetadata',
-            this._updateProgress.bind(this)
-        );
+        this.mediaPlayer.addEventListener('loadedmetadata', () => {
+            // Update the progress bar and label
+            this._updateProgress();
+
+            // Is this a video or audio?
+            let isVideo = this.mediaPlayer.videoWidth > 0;
+
+            // For videos, show the player and hide the alt display
+            if (isVideo) {
+                this.mediaPlayer.style.removeProperty('display');
+                this.altDisplay.style.display = 'none';
+            }
+            // For audio, hide the player and show the alt display
+            else {
+                this.mediaPlayer.style.display = 'none';
+                this.altDisplay.style.removeProperty('display');
+            }
+        });
 
         // Initialize
+        applyIcon(this.altDisplay, 'music-note:fill', 'white');
         applyIcon(this.playButton, 'play-arrow:fill', 'white');
         applyIcon(this.fullscreenButton, 'fullscreen', 'white');
         applyIcon(this.muteButton, 'volume-up:fill', 'white');
