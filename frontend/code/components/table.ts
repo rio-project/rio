@@ -13,7 +13,7 @@ export class TableComponent extends ComponentBase {
     private tableHeader: HTMLElement;
     private tableBody: HTMLElement;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('table');
         element.classList.add('rio-table');
 
@@ -26,7 +26,7 @@ export class TableComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLTableElement, deltaState: TableState): void {
+    updateElement(element: HTMLTableElement, deltaState: TableState): void {
         if (deltaState.data !== undefined) {
             let showRowNumbers =
                 deltaState.show_row_numbers ?? this.state.show_row_numbers;

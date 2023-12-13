@@ -13,7 +13,7 @@ export class SliderComponent extends ComponentBase {
     state: Required<SliderState>;
     private mdcSlider: MDCSlider;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-slider', 'mdc-slider');
@@ -43,7 +43,7 @@ export class SliderComponent extends ComponentBase {
         }
     }
 
-    _updateElement(element: HTMLElement, deltaState: SliderState): void {
+    updateElement(element: HTMLElement, deltaState: SliderState): void {
         if (
             deltaState.minimum !== undefined ||
             deltaState.maximum !== undefined ||

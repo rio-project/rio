@@ -166,13 +166,13 @@ function convertMarkdown(
 export class MarkdownViewComponent extends ComponentBase {
     state: Required<MarkdownViewState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         const element = document.createElement('div');
         element.classList.add('rio-markdown-view');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: MarkdownViewState): void {
+    updateElement(element: HTMLElement, deltaState: MarkdownViewState): void {
         if (deltaState.text !== undefined) {
             let defaultLanguage =
                 deltaState.default_language || this.state.default_language;

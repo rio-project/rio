@@ -244,7 +244,7 @@ export class MediaPlayerComponent extends ComponentBase {
         this.timelineLoaded.style.width = `${loadedFraction * 100}%`;
     }
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add(
             'rio-media-player',
@@ -507,7 +507,7 @@ export class MediaPlayerComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(
+    updateElement(
         element: HTMLMediaElement,
         deltaState: MediaPlayerState
     ): void {

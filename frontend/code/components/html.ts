@@ -7,11 +7,11 @@ export type HtmlState = ComponentState & {
 export class HtmlComponent extends ComponentBase {
     state: Required<HtmlState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         return document.createElement('div');
     }
 
-    _updateElement(element: HTMLAnchorElement, deltaState: HtmlState): void {
+    updateElement(element: HTMLAnchorElement, deltaState: HtmlState): void {
         if (deltaState.html !== undefined) {
             element.innerHTML = deltaState.html;
         }

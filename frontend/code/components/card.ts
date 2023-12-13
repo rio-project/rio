@@ -2,7 +2,7 @@ import { applyColorSet } from '../designApplication';
 import { ColorSet, ComponentId } from '../models';
 import { ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
-import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { replaceOnlyChild } from '../componentManagement';
 
 export type CardState = ComponentState & {
     _type_: 'Card-builtin';
@@ -19,7 +19,7 @@ export class CardComponent extends SingleContainer {
     state: Required<CardState>;
     marginCss: string;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-card');
@@ -38,13 +38,9 @@ export class CardComponent extends SingleContainer {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: CardState): void {
+    updateElement(element: HTMLElement, deltaState: CardState): void {
         // Update the child
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            element,
-            deltaState.child
-        );
+        replaceOnlyChild(element.id, element, deltaState.child);
 
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {

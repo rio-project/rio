@@ -18,7 +18,7 @@ export class ImageComponent extends ComponentBase {
 
     private imageElement: HTMLImageElement;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-image');
         element.classList.add('rio-zero-size-request-container');
@@ -34,7 +34,7 @@ export class ImageComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: ImageState): void {
+    updateElement(element: HTMLElement, deltaState: ImageState): void {
         let imgElement = element.firstElementChild as HTMLImageElement;
 
         if (

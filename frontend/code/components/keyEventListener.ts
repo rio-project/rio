@@ -694,13 +694,13 @@ export type KeyEventListenerState = ComponentState & {
 export class KeyEventListenerComponent extends SingleContainer {
     state: Required<KeyEventListenerState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.tabIndex = -1; // So that it can receive keyboard events
         return element;
     }
 
-    _updateElement(
+    updateElement(
         element: HTMLElement,
         deltaState: KeyEventListenerState
     ): void {

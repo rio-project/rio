@@ -9,7 +9,7 @@ export class ProgressBarComponent extends ComponentBase {
     state: Required<ProgressBarState>;
     private mdcProgress: MDCLinearProgress;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('mdc-linear-progress');
@@ -34,7 +34,7 @@ export class ProgressBarComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: ProgressBarState): void {
+    updateElement(element: HTMLElement, deltaState: ProgressBarState): void {
         // No progress specified
         if (deltaState.progress === undefined) {
         }

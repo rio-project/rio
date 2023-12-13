@@ -32,7 +32,7 @@ function applyStyle(element: HTMLElement, style: any) {
 export class PlotComponent extends ComponentBase {
     state: Required<PlotState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.style.display = 'inline-block';
 
@@ -41,7 +41,7 @@ export class PlotComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: PlotState): void {
+    updateElement(element: HTMLElement, deltaState: PlotState): void {
         element.innerHTML = '';
         loadPlotly(() => {
             let plotJson = JSON.parse(deltaState.plotJson);

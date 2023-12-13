@@ -23,7 +23,7 @@ export class ButtonComponent extends SingleContainer {
     // accident, it starts out disabled and enables itself after a short delay.
     private isStillInitiallyDisabled: boolean = true;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-button', 'mdc-ripple-surface');
@@ -62,7 +62,7 @@ export class ButtonComponent extends SingleContainer {
         }, state.initially_disabled_for * 1000);
     }
 
-    _updateElement(element: HTMLElement, deltaState: ButtonState): void {
+    updateElement(element: HTMLElement, deltaState: ButtonState): void {
         // Set the shape
         if (deltaState.shape !== undefined) {
             element.classList.remove(

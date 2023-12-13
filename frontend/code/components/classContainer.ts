@@ -10,14 +10,11 @@ export type ClassContainerState = ComponentState & {
 export class ClassContainerComponent extends SingleContainer {
     state: Required<ClassContainerState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         return document.createElement('div');
     }
 
-    _updateElement(
-        element: HTMLElement,
-        deltaState: ClassContainerState
-    ): void {
+    updateElement(element: HTMLElement, deltaState: ClassContainerState): void {
         if (deltaState.classes !== undefined) {
             // Remove all old values
             element.className = '';

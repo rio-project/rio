@@ -1,7 +1,8 @@
-import { replaceChildrenAndResetCssProperties } from '../componentManagement';
+import { replaceChildren } from '../componentManagement';
 import { ComponentId } from '../models';
 import { setConnectionLostPopupVisible } from '../rpc';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ComponentState } from './componentBase';
+import { SingleContainer } from './singleContainer';
 
 export type FundamentalRootComponentState = ComponentState & {
     _type_: 'FundamentalRootComponent';
@@ -9,27 +10,21 @@ export type FundamentalRootComponentState = ComponentState & {
     connection_lost_component: ComponentId;
 };
 
-export class FundamentalRootComponent extends ComponentBase {
+export class FundamentalRootComponent extends SingleContainer {
     state: Required<FundamentalRootComponentState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         return document.createElement('div');
     }
 
-    _updateElement(
+    updateElement(
         element: HTMLElement,
         deltaState: FundamentalRootComponentState
     ): void {
-        replaceChildrenAndResetCssProperties(
-            element.id,
-            element,
-            [deltaState.child, deltaState.connection_lost_component],
-            true
-        );
-
-        for (let childElement of element.children) {
-            childElement.classList.add('rio-single-container');
-        }
+        replaceChildren(element.id, element, [
+            deltaState.child,
+            deltaState.connection_lost_component,
+        ]);
 
         let connectionLostPopup = element.lastElementChild as HTMLElement;
         connectionLostPopup.classList.add('rio-connection-lost-popup');

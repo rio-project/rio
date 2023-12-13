@@ -1,4 +1,4 @@
-import { replaceChildrenAndResetCssProperties } from '../componentManagement';
+import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 
@@ -29,7 +29,7 @@ export class SlideshowComponent extends ComponentBase {
 
     private progressBarOpacity: number = 1;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
         element.classList.add('rio-slideshow');
@@ -67,10 +67,10 @@ export class SlideshowComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: SlideshowState): void {
+    updateElement(element: HTMLElement, deltaState: SlideshowState): void {
         // Update the children
         if (deltaState.children !== undefined) {
-            replaceChildrenAndResetCssProperties(
+            replaceChildren(
                 element.id,
                 this.childContainer,
                 deltaState.children,

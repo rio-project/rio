@@ -76,13 +76,13 @@ export class RectangleComponent extends SingleContainer {
     // `null` otherwise.
     private mdcRipple: MDCRipple | null = null;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-rectangle');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: RectangleState): void {
+    updateElement(element: HTMLElement, deltaState: RectangleState): void {
         setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
 
         if (deltaState.transition_time !== undefined) {

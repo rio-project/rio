@@ -1,6 +1,6 @@
 import {
     getInstanceByComponentId,
-    replaceChildrenAndResetCssProperties,
+    replaceChildren,
 } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
@@ -12,18 +12,14 @@ export type StackState = ComponentState & {
 export class StackComponent extends ComponentBase {
     state: Required<StackState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-stack');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: StackState): void {
-        replaceChildrenAndResetCssProperties(
-            element.id,
-            element,
-            deltaState.children
-        );
+    updateElement(element: HTMLElement, deltaState: StackState): void {
+        replaceChildren(element.id, element, deltaState.children);
     }
 
     updateChildLayouts(): void {

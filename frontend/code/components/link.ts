@@ -1,4 +1,4 @@
-import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { replaceOnlyChild } from '../componentManagement';
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
 
@@ -16,7 +16,7 @@ export class LinkComponent extends SingleContainer {
         return 'child_component';
     }
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let containerElement = document.createElement('a');
         containerElement.classList.add('rio-link');
 
@@ -49,14 +49,14 @@ export class LinkComponent extends SingleContainer {
         return containerElement;
     }
 
-    _updateElement(element: HTMLAnchorElement, deltaState: LinkState): void {
+    updateElement(element: HTMLAnchorElement, deltaState: LinkState): void {
         // Child Text?
         if (
             deltaState.child_text !== undefined &&
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            replaceOnlyChildAndResetCssProperties(element.id, element, null);
+            replaceOnlyChild(element.id, element, null);
 
             // Add the new text
             let textElement = document.createElement('div');
@@ -72,11 +72,7 @@ export class LinkComponent extends SingleContainer {
             deltaState.child_component !== undefined &&
             deltaState.child_component !== null
         ) {
-            replaceOnlyChildAndResetCssProperties(
-                element.id,
-                element,
-                deltaState.child_component
-            );
+            replaceOnlyChild(element.id, element, deltaState.child_component);
             element.classList.remove('rio-text-link');
         }
 

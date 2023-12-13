@@ -26,7 +26,7 @@ export class DropdownComponent extends ComponentBase {
     // The currently highlighted option, if any
     private highlightedOptionName: HTMLElement | null = null;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the elements
         let element = document.createElement('div');
         element.classList.add(
@@ -400,7 +400,7 @@ export class DropdownComponent extends ComponentBase {
             this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
     }
 
-    _updateElement(element: HTMLElement, deltaState: DropdownState): void {
+    updateElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
             this.state.optionNames = deltaState.optionNames;
             this._updateOptionEntries();

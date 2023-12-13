@@ -12,43 +12,43 @@ export type TextState = ComponentState & {
 export class TextComponent extends ComponentBase {
     state: Required<TextState>;
 
-    _createElement(): HTMLElement {
-        let containerElement = document.createElement('div');
-        containerElement.classList.add('rio-text');
-
-        let textElement = document.createElement('div');
-        containerElement.appendChild(textElement);
-
-        return containerElement;
+    createElement(): HTMLElement {
+        let element = document.createElement('div');
+        element.classList.add('rio-text');
+        return element;
     }
 
-    _updateElement(containerElement: HTMLElement, deltaState: TextState): void {
-        let textElement = containerElement.firstElementChild as HTMLElement;
-
+    updateElement(element: HTMLElement, deltaState: TextState): void {
         // Text content
         //
         // Make sure not to allow any linebreaks if the text is not multiline.
         if (deltaState.text !== undefined) {
-            textElement.innerText = deltaState.text.replace(/\n/g, ' ');
+            element.innerText = deltaState.text.replace(/\n/g, ' ');
         }
 
         // Multiline
         if (deltaState.multiline !== undefined) {
-            textElement.style.whiteSpace = deltaState.multiline
+            element.style.whiteSpace = deltaState.multiline
                 ? 'pre-wrap'
                 : 'pre';
         }
 
         // Selectable
         if (deltaState.selectable !== undefined) {
-            textElement.style.userSelect = deltaState.selectable
-                ? 'text'
-                : 'none';
+            element.style.userSelect = deltaState.selectable ? 'text' : 'none';
         }
 
         // Text style
         if (deltaState.style !== undefined) {
-            Object.assign(textElement.style, textStyleToCss(deltaState.style));
+            Object.assign(element.style, textStyleToCss(deltaState.style));
         }
+    }
+
+    updateRequestedWidth(): void {
+        this.requestedWidth = 50;
+    }
+
+    updateRequestedHeight(): void {
+        this.requestedHeight = 30;
     }
 }
