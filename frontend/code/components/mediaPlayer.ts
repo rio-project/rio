@@ -42,6 +42,8 @@ export class MediaPlayerComponent extends ComponentBase {
     private _lastInteractionAt: number = 0;
     private _overlayVisible: boolean = true;
 
+    private _isFullScreen: boolean = false;
+
     /// Update the overlay's opacity to be what it currently should be.
     _updateOverlay(): void {
         let visibilityBefore = this._overlayVisible;
@@ -122,12 +124,20 @@ export class MediaPlayerComponent extends ComponentBase {
 
     /// Enter/Exit fullscreen mode
     toggleFullscreen(): void {
-        if (document.fullscreenElement) {
-            applyIcon(this.fullscreenButton, 'fullscreen', 'white');
+        if (this._isFullScreen) {
             document.exitFullscreen();
         } else {
-            applyIcon(this.fullscreenButton, 'fullscreen-exit', 'white');
             this.element().requestFullscreen();
+        }
+    }
+
+    private _onFullscreenChange(): void {
+        this._isFullScreen = document.fullscreenElement === this.element();
+
+        if (this._isFullScreen) {
+            applyIcon(this.fullscreenButton, 'fullscreen-exit', 'white');
+        } else {
+            applyIcon(this.fullscreenButton, 'fullscreen', 'white');
         }
     }
 
@@ -326,6 +336,10 @@ export class MediaPlayerComponent extends ComponentBase {
         this.fullscreenButton.addEventListener('click', () => {
             this.toggleFullscreen();
         });
+        document.addEventListener(
+            'fullscreenchange',
+            this._onFullscreenChange.bind(this)
+        );
 
         this.timelineOuter.addEventListener('click', (event: MouseEvent) => {
             let rect = this.timelineOuter.getBoundingClientRect();
@@ -371,72 +385,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this.toggleFullscreen();
         });
 
-        this.mediaPlayer.addEventListener('keydown', (event: KeyboardEvent) => {
-            if (!this.state.controls) {
-                return;
-            }
-
-            switch (event.key) {
-                // Space plays/pauses the video
-                case ' ':
-                    if (this.mediaPlayer.paused) {
-                        this.mediaPlayer.play();
-                    } else {
-                        this.mediaPlayer.pause();
-                    }
-                    break;
-
-                // M mutes/unmutes the video
-                case 'm':
-                    this.setMute(!this.mediaPlayer.muted);
-                    break;
-
-                // F toggles fullscreen
-                case 'f':
-                    this.toggleFullscreen();
-                    break;
-
-                // Left and right arrow keys seek the video
-                case 'ArrowLeft':
-                    this.mediaPlayer.currentTime -= 5;
-                    break;
-                case 'ArrowRight':
-                    this.mediaPlayer.currentTime += 5;
-                    break;
-
-                // Up and down arrow keys change the volume
-                case 'ArrowUp':
-                    this._volumeUp();
-                    break;
-                case 'ArrowDown':
-                    this._volumeDown();
-                    break;
-
-                // Number keys seek to a percentage of the video
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                    let percentage = parseInt(event.key) / 10;
-                    this.mediaPlayer.currentTime =
-                        this.mediaPlayer.duration * percentage;
-
-                    this.interact();
-                    break;
-
-                // All other keys are ignored
-                default:
-                    return;
-            }
-
-            event.preventDefault();
-        });
+        element.addEventListener('keydown', this._onKeyPress, true);
 
         this.mediaPlayer.addEventListener('play', () => {
             applyIcon(this.playButton, 'pause:fill', 'white');
@@ -450,43 +399,14 @@ export class MediaPlayerComponent extends ComponentBase {
             applyIcon(this.playButton, 'play-arrow:fill', 'white');
         });
 
-        this.mediaPlayer.addEventListener('volumechange', () => {
-            // Don't do anything if the volume is the same as before
-            let newHumanVolume = this.linearVolumeToHuman(
-                this.mediaPlayer.volume
-            );
-
-            let volumeHasChanged =
-                Math.abs(newHumanVolume - this.state.volume) > 0.01;
-            let mutedHasChanged = this.mediaPlayer.muted !== this.state.muted;
-
-            if (!volumeHasChanged && !mutedHasChanged) {
-                return;
-            }
-
-            // Update the mute button's icon
-            if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
-                applyIcon(this.muteButton, 'volume-off:fill', 'white');
-            } else if (this.mediaPlayer.volume < 0.5) {
-                applyIcon(this.muteButton, 'volume-down:fill', 'white');
-            } else {
-                applyIcon(this.muteButton, 'volume-up:fill', 'white');
-            }
-
-            // Update the slider
-            // TODO: Set width to 0% if muted?
-            this.volumeCurrent.style.width = `${newHumanVolume * 100}%`;
-
-            // Update the state and notify the backend
-            this.setStateAndNotifyBackend({
-                volume: newHumanVolume,
-                muted: this.mediaPlayer.muted,
-            });
-        });
+        this.mediaPlayer.addEventListener(
+            'volumechange',
+            this._onVolumeChange.bind(this)
+        );
 
         this.mediaPlayer.addEventListener('loadedmetadata', () => {
-            // Update the progress bar and label
             this._updateProgress();
+            this._onVolumeChange();
 
             // Is this a video or audio?
             let isVideo = this.mediaPlayer.videoWidth > 0;
@@ -554,6 +474,11 @@ export class MediaPlayerComponent extends ComponentBase {
             this.setMute(deltaState.muted);
         }
 
+        // Force the volume display to update, since it usually only updates on
+        // changes, i.e. when the <video> element's state differs from the
+        // component's state.
+        this._updateVolumeSliderAndIcon();
+
         if (deltaState.background !== undefined) {
             Object.assign(element.style, fillToCss(deltaState.background));
         }
@@ -579,12 +504,57 @@ export class MediaPlayerComponent extends ComponentBase {
         }
     }
 
+    private _onVolumeChange(): void {
+        // Don't do anything if the volume is the same as before
+        let newHumanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
+
+        let volumeHasChanged =
+            Math.abs(newHumanVolume - this.state.volume) > 0.01;
+        let mutedHasChanged = this.mediaPlayer.muted !== this.state.muted;
+
+        if (!volumeHasChanged && !mutedHasChanged) {
+            return;
+        }
+
+        this._updateVolumeSliderAndIcon();
+
+        // Update the state and notify the backend
+        this.setStateAndNotifyBackend({
+            volume: newHumanVolume,
+            muted: this.mediaPlayer.muted,
+        });
+    }
+
+    private _updateVolumeSliderAndIcon(): void {
+        let newHumanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
+
+        // Update the mute button's icon
+        if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
+            // When muted, the volume slider displays 0
+            this.volumeCurrent.style.width = '0';
+            applyIcon(this.muteButton, 'volume-off:fill', 'white');
+        } else {
+            this.volumeCurrent.style.width = `${newHumanVolume * 100}%`;
+
+            if (newHumanVolume < 0.5) {
+                applyIcon(this.muteButton, 'volume-down:fill', 'white');
+            } else {
+                applyIcon(this.muteButton, 'volume-up:fill', 'white');
+            }
+        }
+    }
+
     private _onVolumeWheelEvent(event: WheelEvent): void {
         if (event.deltaY < 0) {
             this._volumeUp();
-        } else {
+        } else if (event.deltaY !== 0) {
             this._volumeDown();
+        } else {
+            return;
         }
+
+        event.stopPropagation();
+        event.preventDefault();
     }
 
     private _volumeUp(): void {
@@ -607,6 +577,82 @@ export class MediaPlayerComponent extends ComponentBase {
         this.sendMessageToBackend({
             type: 'onPlaybackEnd',
         });
+    }
+
+    private _onKeyPress(event: KeyboardEvent): void {
+        if (!this.state.controls) {
+            return;
+        }
+
+        switch (event.key) {
+            // Space plays/pauses the video
+            case ' ':
+                if (this.mediaPlayer.paused) {
+                    this.mediaPlayer.play();
+                } else {
+                    this.mediaPlayer.pause();
+                }
+                break;
+
+            // M mutes/unmutes the video
+            case 'm':
+                this.setMute(!this.mediaPlayer.muted);
+                break;
+
+            // F toggles fullscreen
+            case 'f':
+                this.toggleFullscreen();
+                break;
+
+            // Left and right arrow keys seek the video
+            case 'ArrowLeft':
+                this.mediaPlayer.currentTime -= 5;
+                break;
+            case 'ArrowRight':
+                this.mediaPlayer.currentTime += 5;
+                break;
+
+            // Up and down arrow keys change the volume
+            case 'ArrowUp':
+                this._volumeUp();
+                break;
+            case 'ArrowDown':
+                this._volumeDown();
+                break;
+
+            // Number keys seek to a percentage of the video
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                let percentage = parseInt(event.key) / 10;
+                this.mediaPlayer.currentTime =
+                    this.mediaPlayer.duration * percentage;
+
+                this.interact();
+                break;
+
+            // Escape exists fullscreen mode (browsers usually have this built
+            // in, but just in case)
+            case 'Escape':
+                if (this._isFullScreen) {
+                    this.toggleFullscreen();
+                }
+                break;
+
+            // All other keys are ignored
+            default:
+                return;
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
     }
 
     grabKeyboardFocus(): void {
