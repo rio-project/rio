@@ -362,7 +362,7 @@ class RunningApp:
         variety of exceptions, since the module's code is evaluated.
         """
         # Path to the module
-        module_path = self.proj.project_directory / self.proj.main_module
+        module_path = self.proj.module_path
 
         # Path to the module, as thought of by a drunk python
         if module_path.is_dir():
