@@ -192,7 +192,7 @@ export class MediaPlayerComponent extends ComponentBase {
         element.innerHTML = `
             <div>
                 <video></video>
-                <div class="rio-media-player-alt-display"></div>
+                <div class="rio-media-player-alt-display" style="display: none"></div>
                 <div class="rio-media-player-controls">
                     <!-- Timeline -->
                     <div class="rio-media-player-timeline">
