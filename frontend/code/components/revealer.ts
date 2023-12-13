@@ -1,4 +1,4 @@
-import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { replaceOnlyChild } from '../componentManagement';
 import { applyIcon } from '../designApplication';
 import { ComponentBase, ComponentState } from './componentBase';
 
@@ -70,7 +70,7 @@ function collapseRevealer(elem: HTMLElement): void {
 export class RevealerComponent extends ComponentBase {
     state: Required<RevealerState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-revealer');
@@ -123,7 +123,7 @@ export class RevealerComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: RevealerState): void {
+    updateElement(element: HTMLElement, deltaState: RevealerState): void {
         // Update the header
         if (deltaState.header === null) {
             let header = element.querySelector(
@@ -148,11 +148,7 @@ export class RevealerComponent extends ComponentBase {
         let contentInner = element.querySelector(
             '.rio-revealer-content-inner'
         ) as HTMLElement;
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            contentInner,
-            deltaState.content
-        );
+        replaceOnlyChild(element.id, contentInner, deltaState.content);
 
         // Expand / collapse
         if (deltaState.is_expanded === true) {

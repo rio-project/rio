@@ -27,7 +27,7 @@ export class ColorPickerComponent extends ComponentBase {
 
     private latentEventHandlers: any[] = [];
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the elements
         let containerElement = document.createElement('div');
         containerElement.classList.add('rio-color-picker');
@@ -113,7 +113,7 @@ export class ColorPickerComponent extends ComponentBase {
         return containerElement;
     }
 
-    _updateElement(
+    updateElement(
         colorPicker: HTMLElement,
         deltaState: ColorPickerState
     ): void {

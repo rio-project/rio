@@ -10,7 +10,7 @@ export type HeadingListItemState = ComponentState & {
 export class HeadingListItemComponent extends SingleContainer {
     state: Required<HeadingListItemState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add('rio-heading-list-item');
@@ -23,7 +23,7 @@ export class HeadingListItemComponent extends SingleContainer {
         return element;
     }
 
-    _updateElement(
+    updateElement(
         element: HTMLElement,
         deltaState: HeadingListItemState
     ): void {

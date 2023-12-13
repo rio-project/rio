@@ -15,16 +15,13 @@ export class CustomListItemComponent extends SingleContainer {
     // otherwise.
     private mdcRipple: MDCRipple | null = null;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-custom-list-item');
         return element;
     }
 
-    _updateElement(
-        element: HTMLElement,
-        deltaState: CustomListItemState
-    ): void {
+    updateElement(element: HTMLElement, deltaState: CustomListItemState): void {
         // Style the surface depending on whether it is pressable.
         if (deltaState.pressable === true) {
             if (this.mdcRipple === null) {

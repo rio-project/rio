@@ -17,7 +17,7 @@ export class TextInputComponent extends ComponentBase {
 
     private inputElement: HTMLInputElement;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
         element.classList.add(
@@ -65,7 +65,7 @@ export class TextInputComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: TextInputState): void {
+    updateElement(element: HTMLElement, deltaState: TextInputState): void {
         if (deltaState.text !== undefined) {
             this.inputElement.value = deltaState.text;
         }

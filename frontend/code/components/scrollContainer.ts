@@ -1,6 +1,6 @@
 import {
     getInstanceByComponentId,
-    replaceOnlyChildAndResetCssProperties,
+    replaceOnlyChild,
 } from '../componentManagement';
 import { SCROLL_BAR_SIZE } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
@@ -34,7 +34,7 @@ export class ScrollContainerComponent extends ComponentBase {
     // And finally, there's the child component of the ScrollContainer, which must
     // never be smaller than the ScrollContainer itself. This is achieved by
     // giving it a `min-width` and `min-height` of 100%.
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add(
             'rio-scroll-container',
@@ -110,7 +110,7 @@ export class ScrollContainerComponent extends ComponentBase {
         this.setMinSizeComponentImpl(minWidth, minHeight);
     }
 
-    _updateElement(
+    updateElement(
         element: HTMLElement,
         deltaState: ScrollContainerState
     ): void {
@@ -124,11 +124,7 @@ export class ScrollContainerComponent extends ComponentBase {
                 this.setMinSizeComponentImpl(null, null);
             }
 
-            replaceOnlyChildAndResetCssProperties(
-                element.id,
-                this._innerElement,
-                deltaState.child
-            );
+            replaceOnlyChild(element.id, this._innerElement, deltaState.child);
 
             let child = getInstanceByComponentId(deltaState.child);
             child.replaceLayoutCssProperties({});

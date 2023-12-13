@@ -1,5 +1,10 @@
 import { SingleContainer } from './singleContainer';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
+import {
+    getInstanceByComponentId,
+    replaceOnlyChild,
+} from '../componentManagement';
+import { pixelsPerEm } from '../app';
 
 export type MarginState = ComponentState & {
     _type_: 'Margin-builtin';
@@ -10,30 +15,51 @@ export type MarginState = ComponentState & {
     margin_bottom?: number;
 };
 
-export class MarginComponent extends SingleContainer {
+export class MarginComponent extends ComponentBase {
     state: Required<MarginState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-margin');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: MarginState): void {
-        if (deltaState.margin_left !== undefined) {
-            element.style.paddingLeft = `${deltaState.margin_left}em`;
-        }
+    updateElement(element: HTMLElement, deltaState: MarginState): void {
+        replaceOnlyChild(element.id, element, deltaState.child);
 
-        if (deltaState.margin_top !== undefined) {
-            element.style.paddingTop = `${deltaState.margin_top}em`;
-        }
+        this.makeLayoutDirty();
+    }
 
-        if (deltaState.margin_right !== undefined) {
-            element.style.paddingRight = `${deltaState.margin_right}em`;
-        }
+    updateRequestedWidth(): void {
+        this.requestedWidth =
+            getInstanceByComponentId(this.state.child).requestedWidth +
+            pixelsPerEm * this.state.margin_left +
+            pixelsPerEm * this.state.margin_right;
+    }
 
-        if (deltaState.margin_bottom !== undefined) {
-            element.style.paddingBottom = `${deltaState.margin_bottom}em`;
-        }
+    updateAllocatedWidth(): void {
+        let childInstance = getInstanceByComponentId(this.state.child);
+        childInstance.allocatedWidth =
+            this.allocatedWidth -
+            pixelsPerEm * this.state.margin_left -
+            pixelsPerEm * this.state.margin_right;
+    }
+
+    updateRequestedHeight(): void {
+        this.requestedHeight =
+            getInstanceByComponentId(this.state.child).requestedHeight +
+            pixelsPerEm * this.state.margin_top +
+            pixelsPerEm * this.state.margin_bottom;
+    }
+
+    updateAllocatedHeight(): void {
+        let childInstance = getInstanceByComponentId(this.state.child);
+        childInstance.allocatedHeight =
+            this.allocatedHeight -
+            pixelsPerEm * this.state.margin_top -
+            pixelsPerEm * this.state.margin_bottom;
+
+        let childElement = childInstance.element();
+        childElement.style.left = `${this.state.margin_left}rem`;
+        childElement.style.top = `${this.state.margin_top}rem`;
     }
 }

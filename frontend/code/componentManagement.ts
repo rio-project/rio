@@ -42,6 +42,7 @@ import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
 import { HeadingListItemComponent } from './components/headingListItem';
 import { initializeDebugger } from './debugger';
+import { updateLayout } from './layouting';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -91,15 +92,11 @@ globalThis.componentClasses = componentClasses;
 
 const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
 
-export function getInstanceByElement(element: HTMLElement): ComponentBase {
-    return elementsToInstances.get(element);
-}
-
 export function getElementByComponentId(id: ComponentId): HTMLElement {
     let element = document.getElementById(`rio-id-${id}`);
 
     if (element === null) {
-        throw `Could not find html element with id ${id}`;
+        throw `Could not find html element with id rio-id-${id}`;
     }
 
     return element;
@@ -112,6 +109,15 @@ export function getInstanceByComponentId(id: ComponentId): ComponentBase {
 
     if (instance === undefined) {
         throw `Could not find component with id ${id}`;
+    }
+
+    return instance;
+}
+export function getInstanceByElement(element: HTMLElement): ComponentBase {
+    let instance = elementsToInstances.get(element);
+
+    if (instance === undefined) {
+        throw `This element does not correspond to a component`;
     }
 
     return instance;
@@ -403,6 +409,7 @@ export function updateComponentStates(
 
         // Build the component
         element = instance.createElement();
+        element.id = elementId;
 
         // Store the component's class name in the element. Used for debugging.
         element.setAttribute('dbg-py-class', deltaState._python_type_!);
@@ -424,8 +431,6 @@ export function updateComponentStates(
     }
 
     // Update all components mentioned in the message
-    let componentsNeedingLayoutUpdate = new Set<ComponentBase>();
-
     for (let id in deltaStates) {
         let deltaState = deltaStates[id];
         let element = getElementByComponentId(id);
@@ -439,29 +444,7 @@ export function updateComponentStates(
             ...instance.state,
             ...deltaState,
         };
-
-        // Queue the component and its parent for a layout update
-        componentsNeedingLayoutUpdate.add(instance);
-
-        let parentElement = getParentComponentElementIncludingInjected(
-            element!
-        );
-        if (parentElement) {
-            let parentInstance = elementsToInstances.get(parentElement);
-
-            if (!parentInstance) {
-                throw `Failed to find parent component for ${id}`;
-            }
-
-            componentsNeedingLayoutUpdate.add(parentInstance);
-        }
     }
-
-    // Components that have changed, or had their parents changed need to have
-    // their layout updated
-    componentsNeedingLayoutUpdate.forEach((component) => {
-        component.updateChildLayouts();
-    });
 
     // Replace the root component if requested
     if (rootComponentId !== null) {
@@ -488,6 +471,9 @@ export function updateComponentStates(
         instance.onDestruction(element as HTMLElement);
     }
     latentComponents.remove();
+
+    // Update the layout
+    updateLayout();
 }
 
 function canHaveKeyboardFocus(instance: ComponentBase): boolean {
@@ -534,7 +520,7 @@ function restoreKeyboardFocus(
     }
 }
 
-export function replaceOnlyChildAndResetCssProperties(
+export function replaceOnlyChild(
     parentId: string,
     parentElement: HTMLElement,
     childId: null | undefined | number | string
@@ -571,13 +557,9 @@ export function replaceOnlyChildAndResetCssProperties(
     let newElement = getElementByComponentId(childId);
     parentElement?.appendChild(newElement);
     newElement.dataset.parentId = parentId;
-
-    // Reset the new child's CSS properties
-    let childInstance = getInstanceByComponentId(childId);
-    childInstance.resetCssProperties();
 }
 
-export function replaceChildrenAndResetCssProperties(
+export function replaceChildren(
     parentId: string,
     parentElement: HTMLElement,
     childIds: undefined | (number | string)[],
@@ -618,9 +600,6 @@ export function replaceChildrenAndResetCssProperties(
                 parentElement.appendChild(wrap(newElement!));
                 newElement.dataset.parentId = parentId;
 
-                let newInstance = getInstanceByComponentId(curId);
-                newInstance.resetCssProperties();
-
                 curIdIndex++;
             }
             break;
@@ -650,9 +629,6 @@ export function replaceChildrenAndResetCssProperties(
         let newElement = getElementByComponentId(curId);
         parentElement.insertBefore(wrap(newElement!), curElement);
         newElement.dataset.parentId = parentId;
-
-        let newInstance = getInstanceByComponentId(curId);
-        newInstance.resetCssProperties();
 
         curIdIndex++;
     }

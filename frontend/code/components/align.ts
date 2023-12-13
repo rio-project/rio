@@ -1,6 +1,6 @@
 import {
     getInstanceByComponentId,
-    replaceOnlyChildAndResetCssProperties,
+    replaceOnlyChild,
 } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
@@ -14,55 +14,58 @@ export type AlignState = ComponentState & {
 export class AlignComponent extends ComponentBase {
     state: Required<AlignState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-align');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: AlignState): void {
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            element,
-            deltaState.child
-        );
+    updateElement(element: HTMLElement, deltaState: AlignState): void {
+        replaceOnlyChild(element.id, element, deltaState.child);
+
+        this.makeLayoutDirty();
     }
 
-    updateChildLayouts(): void {
-        // Prepare the list of CSS properties to apply to the child
-        let align_x: number = this.state['align_x']!;
-        let align_y: number = this.state['align_y']!;
+    updateRequestedWidth(): void {
+        this.requestedWidth = getInstanceByComponentId(
+            this.state.child
+        ).requestedWidth;
+    }
 
-        let cssProperties = {};
+    updateAllocatedWidth(): void {
+        let childInstance = getInstanceByComponentId(this.state.child);
+        let childElement = childInstance.element();
 
-        let transform_x: number;
-        if (align_x === null) {
-            cssProperties['width'] = '100%';
-            transform_x = 0;
+        if (this.state.align_x === null) {
+            childInstance.allocatedWidth = this.allocatedWidth;
+            childElement.style.left = '0';
         } else {
-            cssProperties['width'] = 'fit-content';
-            cssProperties['left'] = `${align_x * 100}%`;
-            transform_x = align_x * -100;
+            childInstance.allocatedWidth = childInstance.requestedWidth;
+            childElement.style.left =
+                (this.allocatedWidth - childInstance.requestedWidth) *
+                    this.state.align_x +
+                'px';
         }
+    }
 
-        let transform_y: number;
-        if (align_y === null) {
-            cssProperties['height'] = '100%';
-            transform_y = 0;
+    updateRequestedHeight(): void {
+        this.requestedHeight = getInstanceByComponentId(
+            this.state.child
+        ).requestedHeight;
+    }
+
+    updateAllocatedHeight(): void {
+        let childInstance = getInstanceByComponentId(this.state.child);
+        let childElement = childInstance.element();
+
+        if (this.state.align_y === null) {
+            childInstance.allocatedHeight = this.allocatedHeight;
+            childElement.style.top = '0';
         } else {
-            cssProperties['height'] = 'fit-content';
-            cssProperties['top'] = `${align_y * 100}%`;
-            transform_y = align_y * -100;
+            childInstance.allocatedHeight = childInstance.requestedHeight;
+            childElement.style.top =
+                (this.allocatedHeight - childInstance.requestedHeight) *
+                    this.state.align_y +
+                'px';
         }
-
-        if (transform_x !== 0 || transform_y !== 0) {
-            cssProperties[
-                'transform'
-            ] = `translate(${transform_x}%, ${transform_y}%)`;
-        }
-
-        // Apply the CSS properties to the child
-        let child = getInstanceByComponentId(this.state['child']);
-        child.replaceLayoutCssProperties(cssProperties);
     }
 }

@@ -1,4 +1,4 @@
-import { replaceChildrenAndResetCssProperties } from '../componentManagement';
+import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type FlowState = ComponentState & {
@@ -12,7 +12,7 @@ export class FlowComponent extends ComponentBase {
 
     inner: HTMLElement;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-flow', 'rio-zero-size-request-container');
 
@@ -22,13 +22,9 @@ export class FlowComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: FlowState): void {
+    updateElement(element: HTMLElement, deltaState: FlowState): void {
         // Update the children
-        replaceChildrenAndResetCssProperties(
-            element.id,
-            this.inner,
-            deltaState.children
-        );
+        replaceChildren(element.id, this.inner, deltaState.children);
 
         // Spacing
         if (deltaState.spacing !== undefined) {

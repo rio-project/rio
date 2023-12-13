@@ -56,11 +56,11 @@ export class MouseEventListenerComponent extends SingleContainer {
     private _dragStart: MouseEvent;
     private _dragStartComponent: ComponentId;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         return document.createElement('div');
     }
 
-    _updateElement(
+    updateElement(
         element: HTMLElement,
         deltaState: MouseEventListenerState
     ): void {

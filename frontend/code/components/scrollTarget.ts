@@ -1,4 +1,4 @@
-import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { replaceOnlyChild } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ScrollTargetState = ComponentState & {
@@ -16,7 +16,7 @@ export class ScrollTargetComponent extends ComponentBase {
         this._minSizeComponentImpl[0] = 'fit-content';
     }
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         // We need to set the element's id, but elements for components must all
         // have ids of the form `rio-id-...`. So we must create a container
         // for our <a> element.
@@ -30,14 +30,10 @@ export class ScrollTargetComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: ScrollTargetState): void {
+    updateElement(element: HTMLElement, deltaState: ScrollTargetState): void {
         let anchorElement = element.firstElementChild as HTMLElement;
 
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            anchorElement,
-            deltaState.child
-        );
+        replaceOnlyChild(element.id, anchorElement, deltaState.child);
 
         if (deltaState.id !== undefined) {
             anchorElement.id = deltaState.id;

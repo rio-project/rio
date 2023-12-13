@@ -1,6 +1,6 @@
 import { pixelsPerEm } from '../app';
-import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
 import { commitCss } from '../utils';
+import { replaceOnlyChild } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type DrawerState = ComponentState & {
@@ -27,7 +27,7 @@ export class DrawerComponent extends ComponentBase {
 
     private isFirstUpdate: boolean = true;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-drawer');
 
@@ -48,18 +48,10 @@ export class DrawerComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: DrawerState): void {
+    updateElement(element: HTMLElement, deltaState: DrawerState): void {
         // Update the children
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            this.anchorContainer,
-            deltaState.anchor
-        );
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            this.contentContainer,
-            deltaState.content
-        );
+        replaceOnlyChild(element.id, this.anchorContainer, deltaState.anchor);
+        replaceOnlyChild(element.id, this.contentContainer, deltaState.content);
 
         // Assign the correct class for the side
         if (deltaState.side !== undefined) {

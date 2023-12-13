@@ -59,13 +59,13 @@ function createSVGPath(
 export class IconComponent extends ComponentBase {
     state: Required<IconState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-icon', 'rio-zero-size-request-container');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: IconState): void {
+    updateElement(element: HTMLElement, deltaState: IconState): void {
         // Remove all children
         element.innerHTML = '';
 

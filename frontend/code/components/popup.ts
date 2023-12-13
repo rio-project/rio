@@ -1,5 +1,5 @@
 import { pixelsPerEm } from '../app';
-import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { replaceOnlyChild } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type PopupState = ComponentState & {
@@ -18,7 +18,7 @@ export class PopupComponent extends ComponentBase {
     private anchorContainer: HTMLElement;
     private contentContainer: HTMLElement;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-popup');
 
@@ -35,18 +35,10 @@ export class PopupComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: PopupState): void {
+    updateElement(element: HTMLElement, deltaState: PopupState): void {
         // Update the children
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            this.anchorContainer,
-            deltaState.anchor
-        );
-        replaceOnlyChildAndResetCssProperties(
-            element.id,
-            this.contentContainer,
-            deltaState.content
-        );
+        replaceOnlyChild(element.id, this.anchorContainer, deltaState.anchor);
+        replaceOnlyChild(element.id, this.contentContainer, deltaState.content);
 
         // Open / Close
         if (deltaState.is_open === true) {

@@ -1,5 +1,5 @@
 import { HtmlExtension } from 'micromark/lib/compile';
-import { replaceChildrenAndResetCssProperties } from '../componentManagement';
+import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ListViewState = ComponentState & {
@@ -9,7 +9,7 @@ export type ListViewState = ComponentState & {
 export class ListViewComponent extends ComponentBase {
     state: Required<ListViewState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-list-view');
         return element;
@@ -49,13 +49,6 @@ export class ListViewComponent extends ComponentBase {
                 nextChild !== null &&
                 this._isGroupedListItem(nextChild as HTMLElement);
 
-            console.log(
-                `EE
-${prevChild?.firstElementChild?.classList} -> ${prevIsGrouped} (${prevChild})
-${curChild.firstElementChild?.classList} -> ${curIsGrouped}
-${nextChild?.firstElementChild?.classList} -> ${nextIsGrouped} (${nextChild})`
-            );
-
             if (!curIsGrouped) {
                 continue;
             }
@@ -85,18 +78,13 @@ ${nextChild?.firstElementChild?.classList} -> ${nextIsGrouped} (${nextChild})`
         }
     }
 
-    _updateElement(element: HTMLElement, deltaState: ListViewState): void {
+    updateElement(element: HTMLElement, deltaState: ListViewState): void {
         if (deltaState.children !== undefined) {
             // Update the children
             //
             // Wrap them all in helper divs, so any CSS properties can be
             // modified without having to worry. Destroying something important.
-            replaceChildrenAndResetCssProperties(
-                element.id,
-                element,
-                deltaState.children,
-                true
-            );
+            replaceChildren(element.id, element, deltaState.children, true);
 
             // Update their CSS properties
             this._updateChildStyles(element);

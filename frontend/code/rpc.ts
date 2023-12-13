@@ -34,7 +34,7 @@ export type JsonRpcResponse = {
 export function setConnectionLostPopupVisible(visible: boolean): void {
     let connectionLostPopup = document.querySelector(
         '.rio-connection-lost-popup'
-    ) as HTMLElement;
+    ) as HTMLElement | null;
 
     if (connectionLostPopup === null) {
         return;

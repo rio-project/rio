@@ -191,8 +191,11 @@ class Session(unicall.Unicall):
         assert base_url.is_absolute(), base_url
         self._base_url = base_url
 
-        # The current page. This is publicly accessible as property
+        # The current page. This is publicly accessible as property. This value
+        # is **always lowercase**. This is to avoid casing issues when
+        # comparing URLs, both in rio and user code.
         assert initial_page.is_absolute(), initial_page
+        assert str(initial_page) == str(initial_page).lower(), initial_page
         self._active_page_url: rio.URL = initial_page
 
         # Also the current page url, but as stack of the actual page instances

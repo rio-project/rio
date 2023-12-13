@@ -1,6 +1,6 @@
 import {
     getElementByComponentId,
-    replaceChildrenAndResetCssProperties,
+    replaceChildren,
 } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
@@ -22,18 +22,14 @@ export type GridState = ComponentState & {
 export class GridComponent extends ComponentBase {
     state: Required<GridState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-grid');
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: GridState): void {
-        replaceChildrenAndResetCssProperties(
-            element.id,
-            element,
-            deltaState._children
-        );
+    updateElement(element: HTMLElement, deltaState: GridState): void {
+        replaceChildren(element.id, element, deltaState._children);
 
         if (deltaState.row_spacing !== undefined) {
             element.style.rowGap = `${deltaState.row_spacing}em`;

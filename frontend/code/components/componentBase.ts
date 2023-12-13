@@ -1,4 +1,9 @@
-import { getChildIds, getInstanceByComponentId } from '../componentManagement';
+import {
+    getChildIds,
+    getInstanceByComponentId,
+    getInstanceByElement,
+    getParentComponentElementIncludingInjected,
+} from '../componentManagement';
 import { callRemoteMethodDiscardResponse } from '../rpc';
 import { EventHandler, DragHandler } from '../eventHandling';
 
@@ -34,35 +39,59 @@ export type ComponentState = {
 export abstract class ComponentBase {
     elementId: string;
     state: Required<ComponentState>;
-    layoutCssProperties: object;
 
-    // There are 3 different parties that can set the minimum size of a component:
-    // 1. The user, by setting the `size`
-    // 2. The implementation of the component
-    // 3. The parent component
-    //
-    // This would be tricky to implement with pure CSS, so we keep track of
-    // all of them with JS.
-    protected _minSizeUser: [string | null, string | null];
-    protected _minSizeComponentImpl: [string | null, string | null];
-    protected _minSizeContainer: [string | null, string | null];
+    layoutDirty: boolean;
+
+    requestedWidth: number;
+    requestedHeight: number;
+
+    allocatedWidth: number;
+    allocatedHeight: number;
 
     private _eventHandlers: EventHandler[] = [];
 
     constructor(elementId: string, state: Required<ComponentState>) {
         this.elementId = elementId;
         this.state = state;
-        this.layoutCssProperties = {};
 
-        this._minSizeUser = [null, null];
-        this._minSizeComponentImpl = [null, null];
-        this._minSizeContainer = [null, null];
+        this.layoutDirty = true;
+
+        this.requestedWidth = 0;
+        this.requestedHeight = 0;
+
+        this.allocatedWidth = 0;
+        this.allocatedHeight = 0;
     }
 
     /// Returns the children of this component. Slowish.
     getDirectChildren(): ComponentBase[] {
         return getChildIds(this.state).map(getInstanceByComponentId);
     }
+
+    /// Returns this element's parent. Returns `null` if this element has no
+    /// parent.
+    tryGetParent(): ComponentBase | null {
+        let parentElement = getParentComponentElementIncludingInjected(
+            this.element()
+        );
+
+        if (parentElement === null) {
+            return null;
+        }
+
+        return getInstanceByElement(parentElement);
+    }
+
+    /// Mark this element's layout as dirty, and chain up to the parent.
+    makeLayoutDirty(): void {
+        let cur: ComponentBase | null = this;
+
+        while (cur !== null && !cur.layoutDirty) {
+            cur.layoutDirty = true;
+            cur = cur.tryGetParent();
+        }
+    }
+
 
     /// Fetches the HTML element associated with this component. This is a slow
     /// operation and should be avoided if possible. Returns `null` if the
@@ -86,109 +115,9 @@ export abstract class ComponentBase {
         return element;
     }
 
-    setMinSizeUser(minWidth: number | null, minHeight: number | null): void {
-        this._minSizeUser = [
-            minWidth === null ? null : `${minWidth}rem`,
-            minHeight === null ? null : `${minHeight}rem`,
-        ];
-        this._updateMinSize();
-    }
-
-    setMinSizeComponentImpl(
-        minWidth: string | null,
-        minHeight: string | null
-    ): void {
-        if (minWidth === '0' || minHeight === '0') {
-            throw new Error(`Bare "0" is not allowed. You must add a unit.`);
-        }
-
-        this._minSizeComponentImpl = [minWidth, minHeight];
-        this._updateMinSize();
-    }
-
-    setMinSizeContainer(
-        minWidth: string | null,
-        minHeight: string | null
-    ): void {
-        if (minWidth === '0' || minHeight === '0') {
-            throw new Error(`Bare "0" is not allowed. You must add a unit.`);
-        }
-
-        this._minSizeContainer = [minWidth, minHeight];
-        this._updateMinSize();
-    }
-
-    private _updateMinSize(): void {
-        let element = this.element();
-
-        let minWidth = this._buildMinSizeString(0);
-        element.style.minWidth = minWidth;
-        if (!element.style.minWidth) {
-            console.error(
-                `Invalid min-width for component #${this.elementId}: ${minWidth}`
-            );
-        }
-
-        let minHeight = this._buildMinSizeString(1);
-        element.style.minHeight = minHeight;
-        if (!element.style.minHeight) {
-            console.error(
-                `Invalid min-height for component #${this.elementId}: ${minHeight}`
-            );
-        }
-    }
-
-    private _buildMinSizeString(index: number): string {
-        // Unfortunately, the string must be valid or it will be ignored. And a
-        // lot of values can't be mixed, for example, `max(100%, 100px)` and
-        // `max(100px, min-content)` are invalid. For debugging it would be nice
-        // to see all 3 values, but unfortunately that's very difficult to do.
-        let sizes = [
-            this._minSizeUser[index],
-            this._minSizeComponentImpl[index],
-            this._minSizeContainer[index],
-        ].filter((size) => size !== null) as string[];
-
-        if (sizes.length === 0) {
-            return 'unset';
-        }
-
-        return sizes[0];
-
-        if (sizes.length === 1) {
-            return sizes[0];
-        }
-
-        if (sizes.every((size) => size === null)) {
-            return 'unset';
-        }
-
-        // Workaround: Just return the first non-null value
-        for (let size of sizes) {
-            if (size !== null) {
-                return size;
-            }
-        }
-
-        // Unfortunately, the string must be valid or it will be ignored. So we
-        // can't just represent unset values as "null". We'll use "-1px"
-        // instead.
-        sizes = sizes.map((size) => size ?? '-1px');
-
-        return `max(${sizes.join(', ')})`;
-    }
-
     /// Creates the HTML element associated with this component. This function does
     /// not attach the element to the DOM, but merely returns it.
-    createElement(): HTMLElement {
-        let element = this._createElement();
-
-        element.id = this.elementId;
-
-        return element;
-    }
-
-    abstract _createElement(): HTMLElement;
+    abstract createElement(): HTMLElement;
 
     /// This method is called after the component's HTML element has been
     /// created. It is intended for components that need to do some additional
@@ -209,64 +138,10 @@ export abstract class ComponentBase {
     ///
     /// The `element` parameter is identical to `this.element()`. It's passed as
     /// an argument because it's more efficient than calling `this.element()`.
-    updateElement(element: HTMLElement, deltaState: ComponentState): void {
-        if (deltaState._size_ !== undefined) {
-            let [width, height] = deltaState._size_;
-            this.setMinSizeUser(width, height);
-        }
-
-        this._updateElement(element, deltaState);
-    }
-
-    abstract _updateElement(
+    abstract updateElement(
         element: HTMLElement,
         deltaState: ComponentState
     ): void;
-
-    /// This method is called at the end of each `updateComponentStates`
-    /// command. It is called for every component that was updated and every
-    /// container that has a child that was updated.
-    ///
-    /// It is intended for containers that need to update the CSS of their
-    /// children depending on the state of the children. For example, a `Row`
-    /// needs to set `flex-grow` on its children depending on whether their
-    /// width is `"grow"` or not.
-    ///
-    /// To assign CSS properties to a child, use the
-    /// `child.replaceLayoutCssProperties() method. These properties will be
-    /// automatically unset if the child is reparented by
-    /// `replaceOnlyChildAndResetCssProperties` or
-    /// `replaceChildrenAndResetCssProperties`.
-    updateChildLayouts(): void {}
-
-    /// Used by the parent for assigning the layout relevant CSS attributes to a
-    /// child's HTML element. This function keeps track of the assigned
-    /// properties, allowing it to remove properties which are no longer
-    /// relevant.
-    replaceLayoutCssProperties(cssProperties: object): void {
-        let element = this.element();
-
-        // Find all properties which are no longer present and remove them
-        for (let key in this.layoutCssProperties) {
-            if (!(key in cssProperties)) {
-                element.style.removeProperty(key);
-            }
-        }
-
-        // Set all properties which are new or changed
-        for (let key in cssProperties) {
-            element.style.setProperty(key, cssProperties[key]);
-        }
-
-        // Keep track of the new properties
-        this.layoutCssProperties = cssProperties;
-    }
-
-    /// Unsets all CSS properties that were set by the parent component.
-    resetCssProperties(): void {
-        this.replaceLayoutCssProperties({});
-        this.setMinSizeContainer(null, null);
-    }
 
     /// Send a message to the python instance corresponding to this component. The
     /// message is an arbitrary JSON object and will be passed to the instance's
@@ -288,7 +163,7 @@ export abstract class ComponentBase {
 
         // Trigger an update
         // @ts-ignore
-        this._updateElement(this.element(), deltaState);
+        this.updateElement(this.element(), deltaState);
     }
 
     setStateAndNotifyBackend(deltaState: object): void {
@@ -323,6 +198,12 @@ export abstract class ComponentBase {
         this._eventHandlers.push(handler);
         return handler;
     }
+
+    abstract updateRequestedWidth(): void;
+    abstract updateRequestedHeight(): void;
+
+    updateAllocatedWidth(): void {}
+    updateAllocatedHeight(): void {}
 }
 
 globalThis.ComponentBase = ComponentBase;

@@ -9,7 +9,7 @@ export type SwitchState = ComponentState & {
 export class SwitchComponent extends ComponentBase {
     state: Required<SwitchState>;
 
-    _createElement(): HTMLElement {
+    createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-switch');
 
@@ -34,7 +34,7 @@ export class SwitchComponent extends ComponentBase {
         return element;
     }
 
-    _updateElement(element: HTMLElement, deltaState: SwitchState): void {
+    updateElement(element: HTMLElement, deltaState: SwitchState): void {
         if (deltaState.is_on !== undefined) {
             if (deltaState.is_on) {
                 element.classList.add('is-on');
