@@ -1,6 +1,7 @@
 import sys
 from typing import *  # type: ignore
 
+import introspection
 import revel
 from revel import error, fatal, print, success, warning
 
@@ -122,3 +123,71 @@ def run(
             run_in_window=proj.app_type == "app",
         )
         runner.run()
+
+
+@app.command(
+    summary="Add a page or component to the project",
+    parameters=[
+        revel.Parameter(
+            "what",
+            summary="Whether to add a `page` or a `component`",
+        ),
+        revel.Parameter(
+            "name",
+            summary="The name of the new page or component",
+        ),
+    ],
+    details="""
+The `add` command adds a new page or component to your project. A python file
+containing some template code will be created in the `pages` or `components`
+folder of your project.
+""",
+)
+def add(what: Literal["page", "component"], /, name: str) -> None:
+    if what == "page":
+        raise NotImplementedError("FIXME: Adding pages is not yet supported")
+
+    with project.RioProject.try_load() as proj:
+        module_path = proj.module_path
+        if not module_path.is_dir():
+            error(
+                f"Cannot add {what}s to a single-file project. Please convert your project into a package."
+            )
+            return
+
+        # Make sure the `pages` or `components` folder exists
+        folder_path = module_path / (what + "s")
+        folder_path.mkdir(exist_ok=True)
+
+        # Create the new file
+        file_name = introspection.convert_case(name, "snake")
+        class_name = introspection.convert_case(name, "pascal")
+
+        file_path = folder_path / (file_name + ".py")
+        if file_path.exists():
+            error(f"File {file_path.relative_to(module_path)} already exists")
+            return
+
+        file_path.write_text(
+            f"""
+import rio
+
+
+class {class_name}(rio.Component):
+    example_state: str = "For demonstration purposes"
+
+    def build(self) -> rio.Component:
+        return rio.Text(self.example_state)
+"""
+        )
+
+        # Import the module in the __init__.py
+        init_py_path = file_path.with_name("__init__.py")
+        try:
+            init_py_code = init_py_path.read_text()
+        except FileNotFoundError:
+            init_py_code = ""
+        init_py_code = (
+            init_py_code.rstrip() + f"\nfrom .{file_name} import {class_name}\n"
+        )
+        init_py_path.write_text(init_py_code)

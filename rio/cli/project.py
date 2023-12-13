@@ -132,6 +132,23 @@ class RioProject:
         return result
 
     @property
+    def module_path(self) -> Path:
+        folder = self.project_directory
+
+        # If a `src` directory exists, look there
+        src_dir = folder / "src"
+        if src_dir.exists():
+            folder = src_dir
+
+        # If a package (folder) exists, use that
+        module_path = folder / self.main_module
+        if module_path.exists():
+            return module_path
+
+        # Otherwise there must be a file
+        return module_path.with_name(self.main_module + ".py")
+
+    @property
     def main_module(self) -> str:
         return self.get_key("app", "main_module", str)
 
