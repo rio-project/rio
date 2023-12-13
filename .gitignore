@@ -1,7 +1,6 @@
 # Python Cache Files
 __pycache__
-*.pyc
-*.pyo
+*.py[cod]
 
 # Code coverage data
 /.coverage

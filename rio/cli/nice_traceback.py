@@ -1,3 +1,9 @@
+"""
+Pretty-strings a traceback. The result looks very similar to Python's default,
+but is colored and just tweaked in general.
+"""
+
+
 import html
 import linecache
 import traceback
@@ -31,7 +37,7 @@ def format_exception_raw(
 
     # Iterate through frames
     for frame in tb_list:
-        # Drop any frames which are part of Rio
+        # Drop any leading frames which are part of Rio
         # TODO
 
         # Make paths relative to the relpath if they're inside it

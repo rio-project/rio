@@ -22,11 +22,17 @@ class Snapshot:
 
     def restore(self) -> None:
         # Find new tasks and cancel them
+        #
+        # TODO: Do this again
         # for task in asyncio.all_tasks():
         #     if task not in self._running_tasks:
         #         task.cancel()
 
         # Find new modules and unload them
+        #
+        # TODO: Only unload modules which are part of the user's module.
+        #       Unloading juggernauts like `torch` would just cause unnecessary
+        #       delays.
         for module_name in list(sys.modules.keys()):
             if module_name not in self._loaded_modules:
                 del sys.modules[module_name]
