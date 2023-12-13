@@ -783,7 +783,7 @@ class Component(metaclass=ComponentMeta):
         return {}
 
     @abstractmethod
-    def build(self) -> "Component":
+    def build(self) -> "rio.Component":
         """
         Return a component tree which represents the UI of this component.
 

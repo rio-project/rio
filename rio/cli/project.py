@@ -12,6 +12,8 @@ import uniserde
 from revel import *  # type: ignore
 from revel import fatal
 
+from . import rioignore
+
 __all__ = [
     "RioProject",
 ]
@@ -27,7 +29,7 @@ class RioProject:
         self,
         file_path: Path,
         toml_dict: uniserde.JsonDoc,
-        ignore_func: Callable[[str], bool],
+        ignores: rioignore.RioIgnore,
     ):
         # Path to the `rio.toml` file. May or may not exist
         self._file_path = file_path
@@ -42,7 +44,11 @@ class RioProject:
         # Contains the parsed `.rioignore` file. When called with a path, it
         # returns True if the path should be ignored as per the `.rioignore`
         # file.
-        self._ignore_func: Callable[[str], bool] = ignore_func
+        self.ignores = ignores
+
+        # Any rules which should be added to the `.rioignore` file. These are
+        # just strings which are appended to the end of the file, one per line.
+        self.rioignore_additions: List[str] = []
 
     def get_key(
         self,
@@ -213,56 +219,45 @@ class RioProject:
         # Invalid syntax
         except tomlkit.exceptions.TOMLKitError as e:
             fatal(
-                f"There is an error in `rio.toml`: {e}",
+                f"There is a problem with `rio.toml`: {e}",
                 status_code=1,
             )
 
         # If a `.rioignore` file exists, parse it
         rioignore_path = project_dir / ".rioignore"
+        ignores = rioignore.RioIgnore(base_dir=project_dir)
 
-        if rioignore_path.exists() and rioignore_path.is_file():
-            try:
-                ignore_func = gitignore_parser.parse_gitignore(rioignore_path)
-
-            except OSError as e:
-                fatal(
-                    f"Couldn't read `.rioignore`: {e}",
-                    status_code=1,
-                )
-        else:
-            ignore_func = lambda _: False
+        try:
+            with rioignore_path.open() as f:
+                ignores.add_patterns_from_file(f)
+        except FileNotFoundError:
+            pass
+        except OSError as e:
+            fatal(
+                f"Couldn't read `.rioignore`: {e}",
+                status_code=1,
+            )
 
         # Instantiate the project
         return RioProject(
             file_path=rio_toml_path,
             toml_dict=rio_toml_dict,
-            ignore_func=ignore_func,
+            ignores=ignores,
         )
-
-    def is_ignored(self, path: Path) -> bool:
-        """
-        Given a path, determine whether it should be ignored, as per the
-        `.rioignore` file.
-        """
-        return self._ignore_func(str(path))
 
     def __enter__(self) -> "RioProject":
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         # Make sure to write any changes back to the `rio.toml` file
-        if self._dirty_keys:
-            self.write()
+        self.write()
 
-    def write(self) -> None:
-        """
-        Write any changes back to the `rio.toml` file.
-        """
-        logging.debug(f"Writing `{self._file_path}`")
-
+    def _write_rio_toml(self) -> None:
         # Are there even any changes to write?
         if not self._dirty_keys:
             return
+
+        logging.debug(f"Writing `{self._file_path}`")
 
         # Make sure the parent directory exists
         self._file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -304,5 +299,39 @@ class RioProject:
                 status_code=1,
             )
 
-        # The project is now clean
+        # The project's keys are now clean
         self._dirty_keys.clear()
+
+    def _write_rioignore(self) -> None:
+        # Are there even any changes to write?
+        if not self.rioignore_additions:
+            return
+
+        # Make sure the parent directory exists
+        rioignore_path = self.project_directory / ".rioignore"
+        rioignore_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Append the lines to the file
+        try:
+            with rioignore_path.open("a") as f:
+                f.write("\n\n")
+
+                for line in self.rioignore_additions:
+                    f.write(line)
+                    f.write("\n")
+
+        except OSError as e:
+            fatal(
+                f"Couldn't write `.rioignore`: {e}",
+                status_code=1,
+            )
+
+    def write(self) -> None:
+        """
+        Write any changes back to the `rio.toml` file.
+        """
+        # Write the `rio.toml` file
+        self._write_rio_toml()
+
+        # Write any additions to the `.rioignore` file
+        self._write_rioignore()

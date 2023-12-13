@@ -5,7 +5,7 @@ import introspection
 import revel
 from revel import error, fatal, print, success, warning
 
-from . import project, project_setup, run_project
+from . import project, project_setup, rioignore, run_project
 
 __all__ = [
     "app",
