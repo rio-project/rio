@@ -37,6 +37,14 @@ function expandRevealer(elem: HTMLElement): void {
 
         contentOuter.style.maxHeight = `${targetHeight}px`;
     });
+
+    // The revealer is now locked into a max size, even if the content changes.
+    // For now, just remove the max size after some time.
+    //
+    // The layout rework should fix this properly.
+    setTimeout(() => {
+        contentOuter.style.removeProperty('max-height');
+    }, 400);
 }
 
 function collapseRevealer(elem: HTMLElement): void {
