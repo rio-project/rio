@@ -193,14 +193,33 @@ export async function applyIcon(
         ICON_PROMISE_CACHE[iconName] = promise;
     }
 
-    // Apply the icon
+    // Avoid races: When calling this function multiple times on the same
+    // element it can sometimes assign the first icon AFTER the second one, thus
+    // ending up with the wrong icon in the end.
+    //
+    // To avoid this, assign the icon that's supposed to be loaded into the HTML
+    // element as a data attribute. Once the icon's source has been fetched,
+    // only apply it if the data attribute still matches the icon name.
+    target.setAttribute('data-rio-icon', iconName);
+
+    // Await the future
+    let svgSource: string;
     try {
-        target.innerHTML = await promise;
+        svgSource = await promise;
     } catch (err) {
         console.error(`Error loading icon ${iconName}: ${err}`);
         delete ICON_PROMISE_CACHE[iconName];
         return;
     }
+
+    // Check if the icon is still needed
+    if (target.getAttribute('data-rio-icon') !== iconName) {
+        return;
+    }
+    target.removeAttribute('data-rio-icon');
+
+    // Apply the icon
+    target.innerHTML = svgSource;
 
     // Apply the color
     let svgRoot = target.querySelector('svg') as SVGSVGElement;
