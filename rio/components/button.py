@@ -83,7 +83,7 @@ class Button(component_base.Component):
                 color=progress_color,
             )
         elif isinstance(self.child, component_base.Component):
-            child = rio.Column(
+            child = rio.Container(
                 self.child,
                 align_x=0.5,
             )
@@ -99,8 +99,8 @@ class Button(component_base.Component):
             child = rio.Row(
                 rio.Icon(
                     self.icon,
-                    height=1.2,
-                    width=1.2,
+                    height=1.4,
+                    width=1.4,
                 ),
                 rio.Text(
                     self.child.strip(),
