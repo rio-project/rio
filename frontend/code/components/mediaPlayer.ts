@@ -18,6 +18,44 @@ export type MediaPlayerState = ComponentState & {
 
 const OVERLAY_TIMEOUT = 2000;
 
+async function hasAudio(element: HTMLMediaElement): Promise<boolean> {
+    // Browser support for these things is poor, so we'll try various methods
+    // and if none of them work, we'll play it safe and say there is audio.
+
+    // @ts-ignore
+    let mozHasAudio: boolean | undefined = element.mozHasAudio;
+    if (mozHasAudio !== undefined) {
+        return mozHasAudio;
+    }
+
+    // @ts-ignore
+    let audioTracks: object[] | undefined = element.audioTracks;
+    if (audioTracks !== undefined) {
+        return audioTracks.length > 0;
+    }
+
+    // @ts-ignore
+    let byteCount: number | undefined = element.webkitAudioDecodedByteCount;
+    if (byteCount !== undefined) {
+        if (byteCount > 0) {
+            return true;
+        }
+
+        // Just because nothing has been decoded yet doesn't mean there's no
+        // audio. Wait a little while and then check again.
+        for (let i = 10; i > 0; i--) {
+            await new Promise((r) => setTimeout(r, 50));
+            // @ts-ignore
+            if (element.webkitAudioDecodedByteCount > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return true;
+}
+
 export class MediaPlayerComponent extends ComponentBase {
     state: Required<MediaPlayerState>;
 
@@ -38,11 +76,12 @@ export class MediaPlayerComponent extends ComponentBase {
 
     private volumeOuter: HTMLElement;
     private volumeCurrent: HTMLElement;
+    private volumeKnob: HTMLElement;
 
     private _lastInteractionAt: number = 0;
     private _overlayVisible: boolean = true;
-
     private _isFullScreen: boolean = false;
+    private _hasAudio: boolean = false;
 
     /// Update the overlay's opacity to be what it currently should be.
     _updateOverlay(): void {
@@ -95,6 +134,11 @@ export class MediaPlayerComponent extends ComponentBase {
         if (mute) {
             this.mediaPlayer.muted = true;
         } else {
+            // If the media doesn't have audio, we can't unmute
+            if (!this._hasAudio) {
+                return;
+            }
+
             this.mediaPlayer.muted = false;
 
             if (this.mediaPlayer.volume == 0) {
@@ -117,7 +161,7 @@ export class MediaPlayerComponent extends ComponentBase {
         this.mediaPlayer.volume = this.humanVolumeToLinear(volume);
 
         // Unmute, if previously muted
-        if (volume > 0 && this.mediaPlayer.muted) {
+        if (volume > 0 && this.mediaPlayer.muted && this._hasAudio) {
             this.mediaPlayer.muted = false;
         }
     }
@@ -282,6 +326,9 @@ export class MediaPlayerComponent extends ComponentBase {
         this.volumeCurrent = element.querySelector(
             '.rio-media-player-volume-current'
         ) as HTMLElement;
+        this.volumeKnob = element.querySelector(
+            '.rio-media-player-volume-knob'
+        ) as HTMLElement;
 
         // Subscribe to events
         this.mediaPlayer.addEventListener(
@@ -289,21 +336,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this._updateProgress.bind(this)
         );
 
-        element.addEventListener('mousemove', this.interact.bind(this));
-        this.timelineOuter.addEventListener(
-            'mousemove',
-            this.interact.bind(this)
-        );
-        this.volumeOuter.addEventListener(
-            'mousemove',
-            this.interact.bind(this)
-        );
-        this.playButton.addEventListener('mousemove', this.interact.bind(this));
-        this.muteButton.addEventListener('mousemove', this.interact.bind(this));
-        this.fullscreenButton.addEventListener(
-            'mousemove',
-            this.interact.bind(this)
-        );
+        element.addEventListener('mousemove', this.interact.bind(this), true);
 
         element.addEventListener('click', (event: Event) => {
             event.stopPropagation();
@@ -365,6 +398,12 @@ export class MediaPlayerComponent extends ComponentBase {
 
         this.volumeOuter.addEventListener('click', (event: MouseEvent) => {
             event.stopPropagation();
+
+            // If the media doesn't have audio, the controls are disabled
+            if (!this._hasAudio) {
+                return;
+            }
+
             let rect = this.volumeOuter.getBoundingClientRect();
             let volume = (event.clientX - rect.left) / rect.width;
             volume = Math.min(1, Math.max(0, volume));
@@ -409,9 +448,9 @@ export class MediaPlayerComponent extends ComponentBase {
             this._onVolumeChange.bind(this)
         );
 
-        this.mediaPlayer.addEventListener('loadedmetadata', () => {
+        this.mediaPlayer.addEventListener('loadedmetadata', async () => {
+            // Update the progress display
             this._updateProgress();
-            this._onVolumeChange();
 
             // Is this a video or audio?
             let isVideo = this.mediaPlayer.videoWidth > 0;
@@ -420,12 +459,26 @@ export class MediaPlayerComponent extends ComponentBase {
             if (isVideo) {
                 this.mediaPlayer.style.removeProperty('display');
                 this.altDisplay.style.display = 'none';
+
+                // Check if the file has audio and enable/disable the controls
+                // accordingly
+                this._hasAudio = await hasAudio(this.mediaPlayer);
             }
             // For audio, hide the player and show the alt display
             else {
                 this.mediaPlayer.style.display = 'none';
                 this.altDisplay.style.removeProperty('display');
+
+                this._hasAudio = true;
             }
+
+            // If there is audio, re-apply the mute setting. It might be out
+            // of sync because unmuting isn't allowed while `_hasAudio` is
+            // `false`.
+            if (this._hasAudio) {
+                this.mediaPlayer.muted = this.state.muted;
+            }
+            this._updateVolumeSliderAndIcon();
         });
 
         // Initialize
@@ -531,17 +584,20 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     private _updateVolumeSliderAndIcon(): void {
-        let newHumanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
+        let humanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
 
         // Update the mute button's icon
         if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
             // When muted, the volume slider displays 0
             this.volumeCurrent.style.width = '0';
-            applyIcon(this.muteButton, 'volume-off:fill', 'white');
-        } else {
-            this.volumeCurrent.style.width = `${newHumanVolume * 100}%`;
 
-            if (newHumanVolume < 0.5) {
+            let color = this._hasAudio ? 'white' : 'gray';
+            applyIcon(this.muteButton, 'volume-off:fill', color);
+            this.volumeKnob.style.background = color;
+        } else {
+            this.volumeCurrent.style.width = `${humanVolume * 100}%`;
+
+            if (humanVolume < 0.5) {
                 applyIcon(this.muteButton, 'volume-down:fill', 'white');
             } else {
                 applyIcon(this.muteButton, 'volume-up:fill', 'white');
@@ -550,6 +606,11 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     private _onVolumeWheelEvent(event: WheelEvent): void {
+        // If the media doesn't have audio, the controls are disabled
+        if (!this._hasAudio) {
+            return;
+        }
+
         if (event.deltaY < 0) {
             this._volumeUp();
         } else if (event.deltaY !== 0) {
