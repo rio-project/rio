@@ -305,7 +305,9 @@ export class MediaPlayerComponent extends ComponentBase {
             this.interact.bind(this)
         );
 
-        element.addEventListener('click', () => {
+        element.addEventListener('click', (event: Event) => {
+            event.stopPropagation();
+
             if (!this.state.controls) {
                 return;
             }
@@ -316,7 +318,9 @@ export class MediaPlayerComponent extends ComponentBase {
             }
         });
 
-        this.playButton.addEventListener('click', () => {
+        this.playButton.addEventListener('click', (event: Event) => {
+            event.stopPropagation();
+
             if (this.mediaPlayer.paused) {
                 this.mediaPlayer.play();
             } else {
@@ -324,11 +328,13 @@ export class MediaPlayerComponent extends ComponentBase {
             }
         });
 
-        this.muteButton.addEventListener('click', () => {
+        this.muteButton.addEventListener('click', (event: Event) => {
+            event.stopPropagation();
             this.setMute(!this.mediaPlayer.muted);
         });
 
-        this.fullscreenButton.addEventListener('click', () => {
+        this.fullscreenButton.addEventListener('click', (event: Event) => {
+            event.stopPropagation();
             this.toggleFullscreen();
         });
         document.addEventListener(
@@ -337,6 +343,7 @@ export class MediaPlayerComponent extends ComponentBase {
         );
 
         this.timelineOuter.addEventListener('click', (event: MouseEvent) => {
+            event.stopPropagation();
             let rect = this.timelineOuter.getBoundingClientRect();
             let progress = (event.clientX - rect.left) / rect.width;
             this.mediaPlayer.currentTime = this.mediaPlayer.duration * progress;
@@ -357,6 +364,7 @@ export class MediaPlayerComponent extends ComponentBase {
         });
 
         this.volumeOuter.addEventListener('click', (event: MouseEvent) => {
+            event.stopPropagation();
             let rect = this.volumeOuter.getBoundingClientRect();
             let volume = (event.clientX - rect.left) / rect.width;
             volume = Math.min(1, Math.max(0, volume));
@@ -372,7 +380,9 @@ export class MediaPlayerComponent extends ComponentBase {
             this._onVolumeWheelEvent.bind(this)
         );
 
-        element.addEventListener('dblclick', () => {
+        element.addEventListener('dblclick', (event: MouseEvent) => {
+            event.stopPropagation();
+
             if (!this.state.controls) {
                 return;
             }
@@ -380,7 +390,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this.toggleFullscreen();
         });
 
-        element.addEventListener('keydown', this._onKeyPress, true);
+        element.addEventListener('keydown', this._onKeyPress);
 
         this.mediaPlayer.addEventListener('play', () => {
             applyIcon(this.playButton, 'pause:fill', 'white');

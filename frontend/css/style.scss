@@ -1209,6 +1209,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-media-player-alt-display {
+    pointer-events: none;
+
     position: absolute;
     left: 50%;
     top: 50%;
