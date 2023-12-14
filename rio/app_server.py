@@ -41,6 +41,7 @@ from . import (
 from .common import URL
 from .components.root_components import HighLevelRootComponent
 from .errors import AssetError
+from .serialization import serialize_json
 
 try:
     import plotly  # type: ignore[missing-import]
@@ -599,8 +600,9 @@ class AppServer(fastapi.FastAPI):
         if self.validator_factory is None:
 
             async def send_message(msg: uniserde.Jsonable) -> None:
+                text = serialize_json(msg)
                 try:
-                    await websocket.send_json(msg)
+                    await websocket.send_text(text)
                 except RuntimeError:  # Socket is already closed
                     pass
 
@@ -620,8 +622,9 @@ class AppServer(fastapi.FastAPI):
                 assert isinstance(validator_instance, debug.Validator)
                 validator_instance.handle_outgoing_message(msg)
 
+                text = serialize_json(msg)
                 try:
-                    await websocket.send_json(msg)
+                    await websocket.send_text(text)
                 except RuntimeError:  # Socket is already closed
                     pass
 

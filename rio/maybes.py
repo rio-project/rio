@@ -12,6 +12,8 @@ from __future__ import annotations
 import sys
 from typing import *  # type: ignore
 
+import introspection
+
 if TYPE_CHECKING:
     import pandas
     import polars
@@ -19,12 +21,19 @@ if TYPE_CHECKING:
 _IS_INITIALIZED = False
 
 
-# Maps numpy datatypes to a function which JSON-serializes them.
-NUMPY_SERIALIZERS: Dict[Type, Callable[[Type], Any]] = {}
+T = TypeVar("T")
 
-# If the libraries are available, these contain the DataFrame type
+
+FLOAT_TYPES = (float, int)
+INT_TYPES = (int,)
+BOOL_TYPES = (bool,)
+STR_TYPES = (str,)
+
 PANDAS_DATAFRAME_TYPES: Tuple[Type[pandas.DataFrame], ...] = ()
 POLARS_DATAFRAME_TYPES: Tuple[Type[polars.DataFrame], ...] = ()
+
+# This is a mapping of "weird" types to the "canonical" type, like `{np.int8: int}`
+TYPE_NORMALIZERS: Mapping[Type[T], Callable[[T], T]] = {}  # type: ignore
 
 
 def initialize() -> None:
@@ -34,7 +43,9 @@ def initialize() -> None:
     have already been imported - some functionality is not initialized if those
     other modules aren't used.
     """
-    global _IS_INITIALIZED, NUMPY_SERIALIZERS, PANDAS_DATAFRAME_TYPES, POLARS_DATAFRAME_TYPES
+    global _IS_INITIALIZED
+    global FLOAT_TYPES, INT_TYPES, BOOL_TYPES, STR_TYPES
+    global PANDAS_DATAFRAME_TYPES, POLARS_DATAFRAME_TYPES
 
     # Already initialized?
     if _IS_INITIALIZED:
@@ -44,22 +55,17 @@ def initialize() -> None:
 
     # Is numpy available and loaded?
     if "numpy" in sys.modules:
-        import numpy as np
+        import numpy
 
-        NUMPY_SERIALIZERS = {
-            np.bool_: bool,
-            np.uint8: int,
-            np.uint16: int,
-            np.uint32: int,
-            np.uint64: int,
-            np.int8: int,
-            np.int16: int,
-            np.int32: int,
-            np.int64: int,
-            np.float32: float,
-            np.float64: float,
-            np.str_: str,
-        }
+        numpy_floats = tuple(introspection.iter_subclasses(numpy.floating))
+        numpy_ints = tuple(introspection.iter_subclasses(numpy.integer))
+        numpy_bools = tuple(introspection.iter_subclasses(numpy.bool_))
+        numpy_strings = tuple(introspection.iter_subclasses(numpy.str_))
+
+        FLOAT_TYPES = (*FLOAT_TYPES, *numpy_floats, *numpy_ints)
+        INT_TYPES += numpy_ints
+        BOOL_TYPES += numpy_bools
+        STR_TYPES += numpy_strings
 
     if "pandas" in sys.modules:
         import pandas
@@ -70,3 +76,13 @@ def initialize() -> None:
         import polars
 
         POLARS_DATAFRAME_TYPES = (polars.DataFrame,)
+
+    # Populate our mapping of type normalizers
+    for canonical_type, weird_types in (
+        (str, STR_TYPES),
+        (bool, BOOL_TYPES),
+        (int, INT_TYPES),
+        (float, FLOAT_TYPES),
+    ):
+        for weird_type in weird_types:
+            TYPE_NORMALIZERS[weird_type] = canonical_type

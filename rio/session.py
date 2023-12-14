@@ -29,15 +29,13 @@ import rio
 from . import (
     app_server,
     assets,
-    color,
     common,
     errors,
     font,
     global_state,
     inspection,
-    maybes,
     routing,
-    self_serializing,
+    serialization,
     text_style,
     theme,
     user_settings_module,
@@ -747,7 +745,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
 
             # Serialize all components which have been visited
             delta_states: Dict[int, JsonDoc] = {
-                component._id: self._serialize_and_host_component(component)
+                component._id: serialization.serialize_and_host_component(component)
                 for component in visited_components
             }
 
@@ -832,161 +830,11 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
 
             for component in self._root_component._iter_component_tree():
                 visited_components.add(component)
-                delta_states[component._id] = self._serialize_and_host_component(
-                    component
-                )
+                delta_states[
+                    component._id
+                ] = serialization.serialize_and_host_component(component)
 
             await self._update_component_states(visited_components, delta_states)
-
-    def _serialize_and_host_value(
-        self,
-        value: Any,
-        type_: type,
-    ) -> Jsonable:
-        """
-        Which values are serialized for state depends on the annotated
-        datatypes. There is no point in sending fancy values over to the client
-        which it can't interpret.
-
-        This function attempts to serialize the value, or raises a
-        `WontSerialize` exception if this value shouldn't be included in the
-        state.
-        """
-        origin = typing.get_origin(type_)
-        args = typing.get_args(type_)
-
-        # Explicit check for some types. These don't play nice with `isinstance` and
-        # similar methods
-        if origin is Callable:
-            raise WontSerialize()
-
-        if isinstance(type_, typing.TypeVar):
-            raise WontSerialize()
-
-        # Numpy types.
-        #
-        # These are only defined if numpy is available and loaded. Note that
-        # this uses the actual datatypes, rather than annotated ones, since
-        # these will typically be annotated as just `int`, when in reality
-        # they're e.g. `numpy.int64`.
-        #
-        # Because of that, they also need to be checked before any types they
-        # may be misinterpreted as, such as `int`.
-        try:
-            np_serializer = maybes.NUMPY_SERIALIZERS[type(value)]
-        except KeyError:
-            pass
-        else:
-            return np_serializer(value)
-
-        # Basic JSON values
-        if type_ in (bool, int, float, str, None):
-            return value
-
-        # Enums
-        if inspect.isclass(type_) and issubclass(type_, enum.Enum):
-            return uniserde.as_json(value, as_type=type_)
-
-        # Sequences of serializable values
-        if origin is list:
-            return [self._serialize_and_host_value(v, args[0]) for v in value]
-
-        # ColorSet
-        # Important: This must happen before the SelfSerializing check, because
-        # `value` might be a `Color`
-        if origin is Union and set(args) == color._color_set_args:
-            thm = self.theme
-            return thm._serialize_colorset(value)
-
-        # Self-Serializing
-        if isinstance(value, self_serializing.SelfSerializing):
-            return value._serialize(self)
-
-        # Optional
-        if origin is Union and len(args) == 2 and type(None) in args:
-            if value is None:
-                return None
-
-            type_ = next(type_ for type_ in args if type_ is not type(None))
-            return self._serialize_and_host_value(value, type_)
-
-        # Literal
-        if origin is Literal:
-            return self._serialize_and_host_value(value, type(value))
-
-        # Components
-        if introspection.safe_is_subclass(type_, rio.Component):
-            return value._id
-
-        # Invalid type
-        raise WontSerialize()
-
-    def _serialize_and_host_component(
-        self,
-        component: rio.Component,
-    ) -> JsonDoc:
-        """
-        Serializes the component, non-recursively. Children are serialized just by
-        their `_id`.
-
-        Non-fundamental components must have been built, and their output cached in
-        the session.
-        """
-        result: JsonDoc = {
-            "_python_type_": type(component).__name__,
-        }
-
-        # Add layout properties, in a more succinct way than sending them
-        # separately
-        result["_margin_"] = (
-            component.margin_left,
-            component.margin_top,
-            component.margin_right,
-            component.margin_bottom,
-        )
-        result["_size_"] = (
-            component.width if isinstance(component.width, (int, float)) else None,
-            component.height if isinstance(component.height, (int, float)) else None,
-        )
-        result["_align_"] = (
-            component.align_x,
-            component.align_y,
-        )
-        result["_grow_"] = (
-            component.width == "grow",
-            component.height == "grow",
-        )
-
-        # If it's a fundamental component, serialize its state because JS needs it.
-        # For non-fundamental components, there's no reason to send the state to
-        # the frontend.
-        if isinstance(component, component_base.FundamentalComponent):
-            for name, type_ in inspection.get_attributes_to_serialize(
-                type(component)
-            ).items():
-                try:
-                    result[name] = self._serialize_and_host_value(
-                        getattr(component, name),
-                        type_,
-                    )
-                except WontSerialize:
-                    pass
-
-        # Encode any internal additional state. Doing it this late allows the custom
-        # serialization to overwrite automatically generated values.
-        if isinstance(component, component_base.FundamentalComponent):
-            result["_type_"] = component._unique_id
-            result.update(component._custom_serialize())
-
-        else:
-            # Take care to add underscores to any properties here, as the
-            # user-defined state is also added and could clash
-            result["_type_"] = "Placeholder"
-            result["_child_"] = self._weak_component_data_by_component[
-                component
-            ].build_result._id
-
-        return result
 
     def _reconcile_tree(
         self,

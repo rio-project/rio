@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
-from typing import Iterable, Literal, Tuple, Union
+from typing import Literal, Tuple, Union
 
 from typing_extensions import TypeAlias
 from uniserde import Jsonable
 
 import rio
 
-from . import assets, self_serializing, session
+from . import assets, session
 from .color import Color
 from .common import ImageLike
+from .self_serializing import SelfSerializing
 
 __all__ = [
     "Fill",
@@ -22,7 +23,7 @@ __all__ = [
 ]
 
 
-class Fill(self_serializing.SelfSerializing, ABC):
+class Fill(SelfSerializing, ABC):
     """
     Base class for how shapes are filled.
 

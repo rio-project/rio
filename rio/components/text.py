@@ -52,10 +52,7 @@ class Text(component_base.FundamentalComponent):
         if isinstance(self.style, str):
             style = self.style
         else:
-            style = self.session._serialize_and_host_value(
-                self.style,
-                text_style.TextStyle,
-            )
+            style = self.style._serialize(self.session)
 
         return {
             "style": style,

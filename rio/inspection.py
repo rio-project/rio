@@ -7,6 +7,7 @@ from typing import *  # type: ignore
 
 from introspection import iter_subclasses, safe_is_subclass
 
+from . import serialization
 from .components import component_base
 
 
@@ -55,71 +56,29 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
 
 
 @functools.lru_cache(maxsize=None)
-def get_attributes_to_serialize(
-    cls: Type[component_base.Component],
-) -> Mapping[str, type]:
-    """
-    Returns a dictionary of attribute names to their types that should be
-    serialized for the given component class.
-    """
-    result: Dict[str, type] = {}
-
-    for attr_name, annotation in get_type_annotations_raw(cls).items():
-        if attr_name in {
-            "_",
-            "_build_generation_",
-            "_explicitly_set_properties_",
-            "_id",
-            "_init_signature_",
-            "_session_",
-            "_state_properties_",
-            "_weak_builder_",
-            "_state_bindings_initialized_",
-            "align_x",
-            "align_y",
-            "grow_x",
-            "grow_y",
-            "height",
-            "margin_bottom",
-            "margin_left",
-            "margin_right",
-            "margin_top",
-            "margin_x",
-            "margin_y",
-            "margin",
-            "width",
-        }:
-            continue
-
-        # Annotation couldn't be eval'd? Then we probably can't serialize it.
-        if isinstance(annotation, str):
-            continue
-
-        result[attr_name] = annotation
-
-    return result
-
-
-@functools.lru_cache(maxsize=None)
 def get_child_component_containing_attribute_names(
     cls: Type[component_base.Component],
 ) -> Collection[str]:
     attr_names: List[str] = []
 
-    for attr_name, annotation in get_attributes_to_serialize(cls).items():
-        origin = get_origin(annotation)
-        if origin is None:
-            origin = annotation
-
-        args = get_args(annotation)
-
-        if safe_is_subclass(origin, component_base.Component):
+    for attr_name, serializer in serialization.get_attribute_serializers(cls).items():
+        # : Component
+        if serializer is serialization._serialize_child_component:
             attr_names.append(attr_name)
-        elif origin is Union:
-            if any(safe_is_subclass(arg, component_base.Component) for arg in args):
+        elif isinstance(serializer, functools.partial):
+            # : Optional[Component]
+            if (
+                serializer.func is serialization._serialize_optional
+                and serializer.keywords["serializer"]
+                is serialization._serialize_child_component
+            ):
                 attr_names.append(attr_name)
-        elif origin is list:
-            if any(safe_is_subclass(arg, component_base.Component) for arg in args):
+            # : List[Component]
+            elif (
+                serializer.func is serialization._serialize_list
+                and serializer.keywords["item_serializer"]
+                is serialization._serialize_child_component
+            ):
                 attr_names.append(attr_name)
 
     return tuple(attr_names)
@@ -130,9 +89,9 @@ def get_child_component_containing_attribute_names_for_builtin_components() -> (
     Mapping[str, Collection[str]]
 ):
     result = {
-        cls._unique_id: get_child_component_containing_attribute_names(cls)  # type: ignore
-        for cls in iter_subclasses(component_base.FundamentalComponent)  # type: ignore
-        if cls._unique_id.endswith("-builtin")  # type: ignore
+        cls._unique_id: get_child_component_containing_attribute_names(cls)
+        for cls in iter_subclasses(component_base.FundamentalComponent)
+        if cls._unique_id.endswith("-builtin")
     }
 
     result.update(

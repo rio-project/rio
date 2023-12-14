@@ -191,3 +191,7 @@ class {class_name}(rio.Component):
             init_py_code.rstrip() + f"\nfrom .{file_name} import {class_name}\n"
         )
         init_py_path.write_text(init_py_code)
+
+        success(
+            f"New {what} created at {file_path.relative_to(proj.project_directory)}"
+        )
