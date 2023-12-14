@@ -1195,14 +1195,14 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 // MediaPlayer
 .rio-media-player {
-    pointer-events: none;
+    pointer-events: auto;
     width: 100%;
     height: 100%;
     position: relative;
 }
 
 .rio-media-player video {
-    pointer-events: auto;
+    pointer-events: none;
     width: 100%;
     height: 100%;
     object-fit: contain;

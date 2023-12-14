@@ -245,8 +245,6 @@ export class MediaPlayerComponent extends ComponentBase {
             '.rio-media-player-alt-display'
         ) as HTMLElement;
 
-        console.log('ALT', this.altDisplay);
-
         this.controls = element.querySelector(
             '.rio-media-player-controls'
         ) as HTMLElement;
@@ -291,10 +289,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this._updateProgress.bind(this)
         );
 
-        this.mediaPlayer.addEventListener(
-            'mousemove',
-            this.interact.bind(this)
-        );
+        element.addEventListener('mousemove', this.interact.bind(this));
         this.timelineOuter.addEventListener(
             'mousemove',
             this.interact.bind(this)
@@ -310,7 +305,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this.interact.bind(this)
         );
 
-        this.mediaPlayer.addEventListener('click', () => {
+        element.addEventListener('click', () => {
             if (!this.state.controls) {
                 return;
             }
@@ -377,7 +372,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this._onVolumeWheelEvent.bind(this)
         );
 
-        this.mediaPlayer.addEventListener('dblclick', () => {
+        element.addEventListener('dblclick', () => {
             if (!this.state.controls) {
                 return;
             }
