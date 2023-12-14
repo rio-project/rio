@@ -4,6 +4,7 @@ import {
     getInstanceByElement,
     getParentComponentElementIncludingInjected,
 } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 import { callRemoteMethodDiscardResponse } from '../rpc';
 import { EventHandler, DragHandler } from '../eventHandling';
 
@@ -21,7 +22,7 @@ export type ComponentState = {
     // How much space to leave on the left, top, right, bottom
     _margin_?: [number, number, number, number];
     // Explicit size request, if any
-    _size_?: [number | null, number | null];
+    _size_?: [number, number];
     // Alignment of the component within its parent, if any
     _align_?: [number | null, number | null];
     // Whether the component would like to receive additional space if there is
@@ -199,11 +200,11 @@ export abstract class ComponentBase {
         return handler;
     }
 
-    abstract updateRequestedWidth(): void;
-    abstract updateRequestedHeight(): void;
+    abstract updateRequestedWidth(ctx: LayoutContext): void;
+    abstract updateRequestedHeight(ctx: LayoutContext): void;
 
-    updateAllocatedWidth(): void {}
-    updateAllocatedHeight(): void {}
+    updateAllocatedWidth(ctx: LayoutContext): void {}
+    updateAllocatedHeight(ctx: LayoutContext): void {}
 }
 
 globalThis.ComponentBase = ComponentBase;

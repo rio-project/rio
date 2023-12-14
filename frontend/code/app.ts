@@ -1,4 +1,9 @@
-import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
+import { getInstanceByElement } from './componentManagement';
+import { updateLayout } from './layouting';
+import {
+    callRemoteMethodDiscardResponse,
+    initWebsocket,
+} from './rpc';
 
 // Most of these don't have to be available in the global scope, however, since
 // these are injected by Python after the build process, there have been issues
@@ -43,10 +48,20 @@ function main() {
 
     // Listen for resize events
     window.addEventListener('resize', (event) => {
+        // Notify the backend
         callRemoteMethodDiscardResponse('onWindowResize', {
             newWidth: window.innerWidth / pixelsPerEm,
             newHeight: window.innerHeight / pixelsPerEm,
         });
+
+        // Re-layout, but only if a root widget already exists
+        let rootElement = document.body.firstElementChild;
+
+        if (rootElement !== null) {
+            let rootInstance = getInstanceByElement(rootElement as HTMLElement);
+            rootInstance.makeLayoutDirty();
+            updateLayout();
+        }
     });
 }
 

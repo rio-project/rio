@@ -1,6 +1,8 @@
 import { TextStyle } from '../models';
 import { textStyleToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
+import { LayoutContext } from '../layouting';
+import { pixelsPerEm } from '../app';
 
 export type TextState = ComponentState & {
     text?: string;
@@ -12,9 +14,15 @@ export type TextState = ComponentState & {
 export class TextComponent extends ComponentBase {
     state: Required<TextState>;
 
+    private inner: HTMLElement;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-text');
+
+        this.inner = document.createElement('div');
+        element.appendChild(this.inner);
+
         return element;
     }
 
@@ -28,27 +36,35 @@ export class TextComponent extends ComponentBase {
 
         // Multiline
         if (deltaState.multiline !== undefined) {
-            element.style.whiteSpace = deltaState.multiline
+            this.inner.style.whiteSpace = deltaState.multiline
                 ? 'pre-wrap'
                 : 'pre';
         }
 
         // Selectable
         if (deltaState.selectable !== undefined) {
-            element.style.userSelect = deltaState.selectable ? 'text' : 'none';
+            this.inner.style.userSelect = deltaState.selectable
+                ? 'text'
+                : 'none';
         }
 
         // Text style
         if (deltaState.style !== undefined) {
-            Object.assign(element.style, textStyleToCss(deltaState.style));
+            Object.assign(this.inner.style, textStyleToCss(deltaState.style));
+        }
+
+        this.makeLayoutDirty();
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        if (this.state.multiline) {
+            this.requestedWidth = 0;
+        } else {
+            this.requestedWidth = this.inner.scrollWidth / pixelsPerEm;
         }
     }
 
-    updateRequestedWidth(): void {
-        this.requestedWidth = 50;
-    }
-
-    updateRequestedHeight(): void {
-        this.requestedHeight = 30;
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = this.inner.scrollHeight / pixelsPerEm;
     }
 }

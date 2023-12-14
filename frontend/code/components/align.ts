@@ -2,6 +2,7 @@ import {
     getInstanceByComponentId,
     replaceOnlyChild,
 } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type AlignState = ComponentState & {
@@ -25,47 +26,45 @@ export class AlignComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(): void {
-        this.requestedWidth = getInstanceByComponentId(
-            this.state.child
-        ).requestedWidth;
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
     }
 
-    updateAllocatedWidth(): void {
-        let childInstance = getInstanceByComponentId(this.state.child);
-        let childElement = childInstance.element();
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        let childInstance = ctx.inst(this.state.child);
+        let childElement = ctx.elem(this.state.child);
 
         if (this.state.align_x === null) {
             childInstance.allocatedWidth = this.allocatedWidth;
             childElement.style.left = '0';
         } else {
             childInstance.allocatedWidth = childInstance.requestedWidth;
+
+            let additionalSpace =
+                this.allocatedWidth - childInstance.requestedWidth;
             childElement.style.left =
-                (this.allocatedWidth - childInstance.requestedWidth) *
-                    this.state.align_x +
-                'px';
+                additionalSpace * this.state.align_x + 'rem';
         }
     }
 
-    updateRequestedHeight(): void {
-        this.requestedHeight = getInstanceByComponentId(
-            this.state.child
-        ).requestedHeight;
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
     }
 
-    updateAllocatedHeight(): void {
-        let childInstance = getInstanceByComponentId(this.state.child);
-        let childElement = childInstance.element();
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        let childInstance = ctx.inst(this.state.child);
+        let childElement = ctx.elem(this.state.child);
 
         if (this.state.align_y === null) {
             childInstance.allocatedHeight = this.allocatedHeight;
             childElement.style.top = '0';
         } else {
             childInstance.allocatedHeight = childInstance.requestedHeight;
+
+            let additionalSpace =
+                this.allocatedHeight - childInstance.requestedHeight;
             childElement.style.top =
-                (this.allocatedHeight - childInstance.requestedHeight) *
-                    this.state.align_y +
-                'px';
+                additionalSpace * this.state.align_y + 'rem';
         }
     }
 }
