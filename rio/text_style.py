@@ -7,9 +7,10 @@ from typing import *  # type: ignore
 from typing_extensions import Self
 from uniserde import JsonDoc
 
-from . import common, self_serializing, session
+from . import common, session
 from .color import Color
 from .fills import FillLike
+from .self_serializing import SelfSerializing
 
 __all__ = [
     "Font",
@@ -18,7 +19,7 @@ __all__ = [
 
 
 @dataclass(frozen=True)
-class Font(self_serializing.SelfSerializing):
+class Font(SelfSerializing):
     name: str
     regular: Union[Path, bytes]
     bold: Union[Path, bytes, None] = None
@@ -49,7 +50,7 @@ ROBOTO_MONO = Font(
 
 
 @dataclass(frozen=True)
-class TextStyle(self_serializing.SelfSerializing):
+class TextStyle(SelfSerializing):
     _: KW_ONLY
     font: Font = ROBOTO
     fill: FillLike = Color.BLACK
@@ -70,7 +71,7 @@ class TextStyle(self_serializing.SelfSerializing):
         underlined: Optional[bool] = None,
         all_caps: Optional[bool] = None,
     ) -> Self:
-        return TextStyle(
+        return type(self)(
             font=self.font if font is None else font,
             fill=self.fill if fill is None else fill,
             font_size=self.font_size if font_size is None else font_size,

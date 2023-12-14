@@ -5,7 +5,7 @@
         "build": "npx vite build frontend/ --outDir ../rio/generated/ --config vite.config.js --emptyOutDir",
         "dev-build": "npm run-script build -- --mode development --minify false",
         "showcase": "python3 -m uvicorn showcase:fastapi_app --host 0.0.0.0 --port 8001 --reload",
-        "website": "python3 -m uvicorn website:fastapi_app --host 0.0.0.0 --port 8001 --reload",
+        "website": "python3 -m rio run",
         "theme_picker": "python3 -m uvicorn theme_picker:fastapi_app --host 0.0.0.0 --port 8001 --reload"
     },
     "dependencies": {

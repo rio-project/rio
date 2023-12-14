@@ -8,7 +8,8 @@ from uniserde import Jsonable
 
 import rio
 
-from . import color, self_serializing, session
+from . import color, session
+from .self_serializing import SelfSerializing
 
 __all__ = [
     "BoxStyle",
@@ -16,7 +17,7 @@ __all__ = [
 
 
 @dataclass(frozen=True)
-class BoxStyle(self_serializing.SelfSerializing):
+class BoxStyle(SelfSerializing):
     fill: rio.Fill
     stroke_color: rio.Color
     stroke_width: float
@@ -82,27 +83,27 @@ class BoxStyle(self_serializing.SelfSerializing):
                 corner_radius,
             )
 
-        return BoxStyle(
+        return type(self)(
             fill=self.fill if fill is None else fill,
             # Stroke rio.Color
             stroke_color=self.stroke_color if stroke_color is None else stroke_color,
             # Stroke Width
             stroke_width=self.stroke_width if stroke_width is None else stroke_width,
             # Corner Radius
-            corner_radius=self.corner_radius
-            if corner_radius is None
-            else corner_radius,
+            corner_radius=(
+                self.corner_radius if corner_radius is None else corner_radius
+            ),
             # shadow
             shadow_color=self.shadow_color if shadow_color is None else shadow_color,
-            shadow_radius=self.shadow_radius
-            if shadow_radius is None
-            else shadow_radius,
-            shadow_offset_x=self.shadow_offset_x
-            if shadow_offset_x is None
-            else shadow_offset_x,
-            shadow_offset_y=self.shadow_offset_y
-            if shadow_offset_y is None
-            else shadow_offset_y,
+            shadow_radius=(
+                self.shadow_radius if shadow_radius is None else shadow_radius
+            ),
+            shadow_offset_x=(
+                self.shadow_offset_x if shadow_offset_x is None else shadow_offset_x
+            ),
+            shadow_offset_y=(
+                self.shadow_offset_y if shadow_offset_y is None else shadow_offset_y
+            ),
         )
 
     def _serialize(self, sess: session.Session) -> Jsonable:

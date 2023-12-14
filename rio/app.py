@@ -355,7 +355,7 @@ class App:
 
         # Serve
         uvicorn.run(
-            fastapi_app,
+            app=fastapi_app,
             host=host,
             port=port,
             **kwargs,

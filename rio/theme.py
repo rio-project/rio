@@ -61,7 +61,7 @@ class Palette:
         as_hct = material_color_utilities_python.Hct.fromInt(color._as_material_argb)
         hct_palette = TonalPalette(as_hct.hue, as_hct.chroma)
 
-        return Palette(
+        return cls(
             background=color,
             background_variant=hct_palette[as_hct.tone + 5],
             background_active=hct_palette[as_hct.tone + 15],
