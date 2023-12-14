@@ -1,10 +1,6 @@
-import { SingleContainer } from './singleContainer';
 import { ComponentBase, ComponentState } from './componentBase';
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
-import { pixelsPerEm } from '../app';
+import { replaceOnlyChild } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 
 export type MarginState = ComponentState & {
     _type_: 'Margin-builtin';
@@ -29,36 +25,36 @@ export class MarginComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(): void {
+    updateRequestedWidth(ctx: LayoutContext): void {
         this.requestedWidth =
-            getInstanceByComponentId(this.state.child).requestedWidth +
-            pixelsPerEm * this.state.margin_left +
-            pixelsPerEm * this.state.margin_right;
+            ctx.inst(this.state.child).requestedWidth +
+            this.state.margin_left +
+            this.state.margin_right;
     }
 
-    updateAllocatedWidth(): void {
-        let childInstance = getInstanceByComponentId(this.state.child);
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        let childInstance = ctx.inst(this.state.child);
         childInstance.allocatedWidth =
             this.allocatedWidth -
-            pixelsPerEm * this.state.margin_left -
-            pixelsPerEm * this.state.margin_right;
+            this.state.margin_left -
+            this.state.margin_right;
     }
 
-    updateRequestedHeight(): void {
+    updateRequestedHeight(ctx: LayoutContext): void {
         this.requestedHeight =
-            getInstanceByComponentId(this.state.child).requestedHeight +
-            pixelsPerEm * this.state.margin_top +
-            pixelsPerEm * this.state.margin_bottom;
+            ctx.inst(this.state.child).requestedHeight +
+            this.state.margin_top +
+            this.state.margin_bottom;
     }
 
-    updateAllocatedHeight(): void {
-        let childInstance = getInstanceByComponentId(this.state.child);
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        let childInstance = ctx.inst(this.state.child);
         childInstance.allocatedHeight =
             this.allocatedHeight -
-            pixelsPerEm * this.state.margin_top -
-            pixelsPerEm * this.state.margin_bottom;
+            this.state.margin_top -
+            this.state.margin_bottom;
 
-        let childElement = childInstance.element();
+        let childElement = ctx.elem(this.state.child);
         childElement.style.left = `${this.state.margin_left}rem`;
         childElement.style.top = `${this.state.margin_top}rem`;
     }
