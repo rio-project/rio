@@ -1,5 +1,6 @@
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCSlider } from '@material/slider';
+// TODO
 
 export type SliderState = ComponentState & {
     minimum?: number;

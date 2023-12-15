@@ -1,7 +1,7 @@
-import { HtmlExtension } from 'micromark/lib/compile';
 import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
+// TODO
 export type ListViewState = ComponentState & {
     children?: (number | string)[];
 };

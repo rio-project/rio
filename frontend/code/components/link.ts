@@ -2,6 +2,7 @@ import { replaceOnlyChild } from '../componentManagement';
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
 
+// TODO
 export type LinkState = ComponentState & {
     child_text?: string | null;
     child_component?: number | string | null;

@@ -1,8 +1,9 @@
 import { applyColorSet } from '../designApplication';
 import { ColorSet, ComponentId } from '../models';
-import { ComponentState } from './componentBase';
-import { SingleContainer } from './singleContainer';
+import { ComponentBase, ComponentState } from './componentBase';
 import { replaceOnlyChild } from '../componentManagement';
+
+// TODO
 
 export type CardState = ComponentState & {
     _type_: 'Card-builtin';
@@ -15,7 +16,7 @@ export type CardState = ComponentState & {
     color?: ColorSet;
 };
 
-export class CardComponent extends SingleContainer {
+export class CardComponent extends ComponentBase {
     state: Required<CardState>;
     marginCss: string;
 

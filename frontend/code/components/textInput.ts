@@ -1,5 +1,5 @@
-import { applyColorSet } from '../designApplication';
 import { ComponentBase, ComponentState } from './componentBase';
+// TODO
 
 export type TextInputState = ComponentState & {
     _type_: 'textInput';

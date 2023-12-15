@@ -1,6 +1,7 @@
 import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
+// TODO
 export type FlowState = ComponentState & {
     _type_: 'flow';
     children?: (number | string)[];

@@ -2,6 +2,7 @@ import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
 import { textStyleToCss } from '../cssUtils';
 
+// TODO
 export type HeadingListItemState = ComponentState & {
     _type_: 'CustomListItem-builtin';
     text?: string;

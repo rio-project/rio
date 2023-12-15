@@ -2,6 +2,8 @@ import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 
+// TODO
+
 const switchDuration = 0.8;
 const progressBarFadeDuration = 0.2;
 
@@ -95,6 +97,8 @@ export class SlideshowComponent extends ComponentBase {
 
                 ++ii;
             }
+
+            this.makeLayoutDirty();
         }
 
         // Corner radius
