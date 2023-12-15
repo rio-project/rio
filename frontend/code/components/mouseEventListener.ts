@@ -3,6 +3,7 @@ import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
 import { DragHandler } from '../eventHandling';
 import { ComponentId } from '../models';
+import { replaceOnlyChild } from '../componentManagement';
 
 function eventMouseButtonToString(event: MouseEvent): object {
     return {
@@ -64,6 +65,11 @@ export class MouseEventListenerComponent extends SingleContainer {
         element: HTMLElement,
         deltaState: MouseEventListenerState
     ): void {
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
+        }
+
         if (deltaState.reportMouseDown) {
             element.onmousedown = (e) => {
                 this.sendMessageToBackend({

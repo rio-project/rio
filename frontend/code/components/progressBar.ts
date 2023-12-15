@@ -1,5 +1,6 @@
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCLinearProgress } from '@material/linear-progress';
+// TODO
 
 export type ProgressBarState = ComponentState & {
     progress?: number | null;

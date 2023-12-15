@@ -1,15 +1,15 @@
-import {
-    getInstanceByComponentId,
-    replaceChildren,
-} from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { replaceChildren } from '../componentManagement';
+import { ComponentState } from './componentBase';
+import { SingleContainer } from './singleContainer';
+
+// TODO: set child z-indices, if necessary!?
 
 export type StackState = ComponentState & {
     _type_: 'stack';
     children?: number[];
 };
 
-export class StackComponent extends ComponentBase {
+export class StackComponent extends SingleContainer {
     state: Required<StackState>;
 
     createElement(): HTMLElement {
@@ -20,15 +20,6 @@ export class StackComponent extends ComponentBase {
 
     updateElement(element: HTMLElement, deltaState: StackState): void {
         replaceChildren(element.id, element, deltaState.children);
-    }
-
-    updateChildLayouts(): void {
-        let zIndex = 0;
-        for (let childId of this.state.children) {
-            let child = getInstanceByComponentId(childId);
-
-            child.replaceLayoutCssProperties({ zIndex: `${zIndex}` });
-            zIndex += 1;
-        }
+        this.makeLayoutDirty();
     }
 }

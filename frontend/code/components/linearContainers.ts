@@ -8,6 +8,7 @@ export type LinearContainerState = ComponentState & {
     children?: (number | string)[];
     spacing?: number;
 };
+// TODO
 
 class LinearContainer extends ComponentBase {
     state: Required<LinearContainerState>;

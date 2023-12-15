@@ -1,6 +1,13 @@
 import { replaceOnlyChild } from '../componentManagement';
 import { applyIcon } from '../designApplication';
 import { ComponentBase, ComponentState } from './componentBase';
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
+// TODO
 
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';

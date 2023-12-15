@@ -74,11 +74,9 @@ export class IconComponent extends ComponentBase {
 
         // Size
         //
-        // The SVG has no size on it's own. This is so it scales up, rather than
-        // staying a fixed size. However, this removes it's "size request". If a
+        // The SVG has no size on its own. This is so it scales up, rather than
+        // staying a fixed size. However, this removes its "size request". If a
         // size was provided by the backend, apply that explicitly.
-        //
-        // TODO / FIXME: Shouldn't this account for the aspect ratio?
         if (deltaState._size_ !== undefined) {
             let [width, height] = deltaState._size_;
             let svgElement = element.firstElementChild as SVGSVGElement;

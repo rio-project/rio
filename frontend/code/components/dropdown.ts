@@ -2,6 +2,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { SCROLL_BAR_SIZE } from '../utils';
 import { applyIcon } from '../designApplication';
 
+// TODO
 export type DropdownState = ComponentState & {
     _type_: 'dropdown';
     optionNames?: string[];

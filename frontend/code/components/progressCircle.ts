@@ -2,6 +2,7 @@ import { colorToCssString } from '../cssUtils';
 import { applyColorSet } from '../designApplication';
 import { ColorSet } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
+// TODO
 
 export type ProgressCircleState = ComponentState & {
     _type_: 'progressCircle';

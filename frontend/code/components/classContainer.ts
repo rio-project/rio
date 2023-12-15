@@ -1,5 +1,6 @@
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
+import { replaceOnlyChild } from '../componentManagement';
 
 export type ClassContainerState = ComponentState & {
     _type_: 'ClassContainer-builtin';
@@ -15,6 +16,11 @@ export class ClassContainerComponent extends SingleContainer {
     }
 
     updateElement(element: HTMLElement, deltaState: ClassContainerState): void {
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
+        }
+
         if (deltaState.classes !== undefined) {
             // Remove all old values
             element.className = '';

@@ -4,6 +4,7 @@ import {
 } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
+// TODO
 type GridChildPosition = {
     row: number;
     column: number;

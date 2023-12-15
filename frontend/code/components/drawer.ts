@@ -3,6 +3,7 @@ import { commitCss } from '../utils';
 import { replaceOnlyChild } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 
+// TODO
 export type DrawerState = ComponentState & {
     _type_: 'Drawer-builtin';
     anchor?: number | string;

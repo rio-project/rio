@@ -1,5 +1,6 @@
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
+import { replaceOnlyChild } from '../componentManagement';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values
 const HARDWARE_KEY_MAP = {
@@ -741,6 +742,11 @@ export class KeyEventListenerComponent extends SingleContainer {
             };
         } else {
             element.onkeyup = null;
+        }
+
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
         }
     }
 

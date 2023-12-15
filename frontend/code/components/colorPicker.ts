@@ -2,6 +2,8 @@ import { Color } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from '../colorConversion';
 
+// TODO
+
 export type ColorPickerState = ComponentState & {
     color?: Color;
     pick_opacity?: boolean;

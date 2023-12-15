@@ -1,14 +1,10 @@
-import { createUnparsedSourceFile } from 'typescript';
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { ColorSet } from '../models';
 import { applyColorSet } from '../designApplication';
-import {
-    commitCss,
-    disableTransitions,
-    enableTransitions,
-    withoutTransitions,
-} from '../utils';
+import { commitCss, withoutTransitions } from '../utils';
+
+// TODO
 
 export type SwitcherBarState = ComponentState & {
     _type_: 'SwitcherBar-builtin';
