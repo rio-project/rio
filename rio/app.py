@@ -237,7 +237,7 @@ class App:
             build = rio.PageView
 
         if theme is None:
-            theme = rio.Theme.from_color()
+            theme = rio.Theme.pair_from_color()
 
         self.name = name
         self._build = _validate_build_function(build)

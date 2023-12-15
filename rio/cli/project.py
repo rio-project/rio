@@ -1,4 +1,5 @@
 import logging
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
@@ -21,7 +22,8 @@ __all__ = [
 T = TypeVar("T")
 
 
-NO_DEFAULT = object()
+DEFAULT_FATAL = object()
+DEFAULT_KEYERROR = object()
 
 
 class RioProject:
@@ -55,12 +57,16 @@ class RioProject:
         section_name: str,
         key_name: str,
         type: Type[T],
-        default_value: Any = NO_DEFAULT,
+        default_value: Any,
     ) -> T:
         """
         Fetches the value of a key from the `rio.toml` file. If the key is
-        missing, the default value is returned instead. If the default value is
-        not provided, a fatal error is displayed and the program exits.
+        missing, and a default value was provided it is returned instead.
+
+        If the default value is `DEFAULT_FATAL`, an error is displayed and the
+        program exits.
+
+        If the default value is `DEFAULT_KEYERROR`, a `KeyError` is raised.
         """
         # Try to get the section
         section: Dict[str, Any]
@@ -68,11 +74,14 @@ class RioProject:
         try:
             section = self._toml_dict[section_name]  # type: ignore
         except KeyError:
-            if default_value is NO_DEFAULT:
+            if default_value is DEFAULT_FATAL:
                 fatal(
                     f"`rio.toml` is missing the `{section_name}` section",
                     status_code=1,
                 )
+
+            if default_value is DEFAULT_KEYERROR:
+                raise KeyError(key_name)
 
             section: Dict[str, Any] = {}
 
@@ -82,11 +91,14 @@ class RioProject:
 
         # There is no value, use the default
         except KeyError:
-            if default_value is NO_DEFAULT:
+            if default_value is DEFAULT_FATAL:
                 fatal(
                     f"`rio.toml` is missing the `{key_name}` key. Please add it to the [[{section_name}] section.",
                     status_code=1,
                 )
+
+            if default_value is DEFAULT_KEYERROR:
+                raise KeyError(key_name)
 
             value = default_value
 
@@ -127,6 +139,23 @@ class RioProject:
         return self._file_path.parent
 
     @property
+    def module_path(self) -> Path:
+        folder = self.project_directory
+
+        # If a `src` directory exists, look there
+        src_dir = folder / "src"
+        if src_dir.exists():
+            folder = src_dir
+
+        # If a package (folder) exists, use that
+        module_path = folder / self.app_main_module
+        if module_path.exists():
+            return module_path
+
+        # Otherwise there must be a file
+        return module_path.with_name(self.app_main_module + ".py")
+
+    @property
     def app_type(self) -> Literal["app", "website"]:
         result = self.get_key("app", "app_type", str, "website")
 
@@ -138,29 +167,48 @@ class RioProject:
         return result
 
     @property
-    def module_path(self) -> Path:
-        folder = self.project_directory
-
-        # If a `src` directory exists, look there
-        src_dir = folder / "src"
-        if src_dir.exists():
-            folder = src_dir
-
-        # If a package (folder) exists, use that
-        module_path = folder / self.main_module
-        if module_path.exists():
-            return module_path
-
-        # Otherwise there must be a file
-        return module_path.with_name(self.main_module + ".py")
-
-    @property
-    def main_module(self) -> str:
-        return self.get_key("app", "main_module", str)
+    def app_main_module(self) -> str:
+        return self.get_key("app", "main_module", str, DEFAULT_FATAL)
 
     @property
     def app_variable(self) -> str:
         return self.get_key("app", "app_variable", str, "app")
+
+    @property
+    def deploy_name(self) -> str:
+        # Is a name already stored in the `rio.toml`?
+        try:
+            return self.get_key("deploy", "name", str, DEFAULT_KEYERROR)
+        except KeyError:
+            pass
+
+        # Ask the user for a name, and make sure it's suitable for URLs
+        print(
+            "What should your app be called? This name will be used as part of the URL."
+        )
+        print(
+            'For example, if you name your app "my-app", it will be deployed at `https://rio.dev/.../my-app`.'
+        )
+
+        while True:
+            name = input("App name: ")
+
+            allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789-"
+            normalized = re.sub("[^" + allowed_chars + "]", "-", name.lower())
+
+            if name == normalized:
+                break
+
+            normalized = re.sub("-+", "-", normalized)
+            print(f"`{name}` cannot be used for app names. Is `{normalized}` okay?")
+
+            if revel.select_yes_no("", default_value=True):
+                name = normalized
+                break
+
+        # Store the name
+        self.set_key("deploy", "name", name)
+        return name
 
     @staticmethod
     def try_load() -> "RioProject":

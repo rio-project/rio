@@ -377,14 +377,14 @@ class RunningApp:
 
         # Import the module
         spec = importlib.util.spec_from_file_location(
-            self.proj.main_module, import_path
+            self.proj.app_main_module, import_path
         )
         assert spec is not None, "When does this happen?"
 
         module = importlib.util.module_from_spec(spec)
 
         # Register the module
-        sys.modules[self.proj.main_module] = module
+        sys.modules[self.proj.app_main_module] = module
 
         # Run it
         assert spec.loader is not None, "When does this happen?"
@@ -397,7 +397,7 @@ class RunningApp:
         try:
             app_module = self._import_app_module()
         except BaseException as err:
-            error(f"Could not import `{self.proj.main_module}`:")
+            error(f"Could not import `{self.proj.app_main_module}`:")
             print(
                 nice_traceback.format_exception_revel(
                     err,
@@ -411,13 +411,13 @@ class RunningApp:
             app = getattr(app_module, self.proj.app_variable)
         except AttributeError as err:
             error(
-                f"Could not find the app variable `{self.proj.app_variable}` in `{self.proj.main_module}`"
+                f"Could not find the app variable `{self.proj.app_variable}` in `{self.proj.app_main_module}`"
             )
             return err
 
         # Make sure the app is indeed a Rio app
         if not isinstance(app, rio.App):
-            message = f"The app variable `{self.proj.app_variable}` in `{self.proj.main_module}` is not a Rio app, but `{type(app)}`"
+            message = f"The app variable `{self.proj.app_variable}` in `{self.proj.app_main_module}` is not a Rio app, but `{type(app)}`"
             error(message)
             return message
 
