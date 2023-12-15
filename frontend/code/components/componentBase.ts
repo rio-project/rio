@@ -200,8 +200,13 @@ export abstract class ComponentBase {
         return handler;
     }
 
-    abstract updateRequestedWidth(ctx: LayoutContext): void;
-    abstract updateRequestedHeight(ctx: LayoutContext): void;
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 0;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 0;
+    }
 
     updateAllocatedWidth(ctx: LayoutContext): void {}
     updateAllocatedHeight(ctx: LayoutContext): void {}

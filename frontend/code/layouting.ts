@@ -73,7 +73,7 @@ export class LayoutContext {
             }
 
             let element = child.element();
-            element.style.width = `${child.allocatedWidth}px`;
+            element.style.width = `${child.allocatedWidth * pixelsPerEm}px`;
         }
     }
 
@@ -115,7 +115,7 @@ export class LayoutContext {
             child.layoutDirty = false;
 
             let element = child.element();
-            element.style.height = `${child.allocatedHeight}px`;
+            element.style.height = `${child.allocatedHeight * pixelsPerEm}px`;
         }
     }
 
@@ -156,8 +156,8 @@ export class LayoutContext {
         // Allocate all available space to the root component, but at least as
         // much as it requested. If this is more than the window it will scroll.
         rootInstance.allocatedWidth = Math.max(
-            window.innerWidth,
-            rootInstance.requestedWidth * pixelsPerEm
+            window.innerWidth / pixelsPerEm,
+            rootInstance.requestedWidth
         );
 
         // Distribute the just received width to all children
@@ -170,8 +170,8 @@ export class LayoutContext {
 
         // Once again, allocate all available space to the root component.
         rootInstance.allocatedHeight = Math.max(
-            window.innerHeight,
-            rootInstance.requestedHeight * pixelsPerEm
+            window.innerHeight / pixelsPerEm,
+            rootInstance.requestedHeight
         );
 
         // Distribute the just received height to all children

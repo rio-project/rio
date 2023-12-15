@@ -3,6 +3,7 @@ import { colorToCssString, fillToCss } from '../cssUtils';
 import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { SingleContainer } from './singleContainer';
+import { replaceOnlyChild } from '../componentManagement';
 
 export type RectangleState = ComponentState & {
     _type_: 'Rectangle-builtin';
@@ -83,7 +84,14 @@ export class RectangleComponent extends SingleContainer {
     }
 
     updateElement(element: HTMLElement, deltaState: RectangleState): void {
-        setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
+        if (deltaState.style !== undefined) {
+            setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
+        }
+
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
+        }
 
         if (deltaState.transition_time !== undefined) {
             element.style.transitionDuration = `${deltaState.transition_time}s`;

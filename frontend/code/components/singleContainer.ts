@@ -33,6 +33,10 @@ export abstract class SingleContainer extends ComponentBase {
     updateAllocatedHeight(ctx: LayoutContext): void {
         for (let child of ctx.directChildren(this)) {
             child.allocatedHeight = this.allocatedHeight;
+
+            let element = child.element();
+            element.style.left = '0';
+            element.style.top = '0';
         }
     }
 }

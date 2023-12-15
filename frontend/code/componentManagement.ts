@@ -211,7 +211,7 @@ function createLayoutComponentStates(
             _python_type_: 'Margin (injected)',
             _key_: null,
             _margin_: [0, 0, 0, 0],
-            _size_: [null, null],
+            _size_: [0, 0],
             _grow_: entireState['_grow_'],
             _rio_internal_: true,
             // @ts-ignore
@@ -409,6 +409,7 @@ export function updateComponentStates(
 
         // Build the component
         element = instance.createElement();
+        element.classList.add('rio-component');
         element.id = elementId;
 
         // Store the component's class name in the element. Used for debugging.
@@ -438,6 +439,17 @@ export function updateComponentStates(
         // Perform updates specific to this component type
         let instance = elementsToInstances.get(element!) as ComponentBase;
         instance.updateElement(element, deltaState);
+
+        // If the component's requested width or height has changed, request a
+        // re-layout.
+        let width_changed =
+            Math.abs(deltaState._size_![0] - instance.state._size_[0]) > 1e-6;
+        let height_changed =
+            Math.abs(deltaState._size_![1] - instance.state._size_[1]) > 1e-6;
+
+        if (width_changed || height_changed) {
+            instance.makeLayoutDirty();
+        }
 
         // Update the component's state
         instance.state = {

@@ -3,6 +3,7 @@ import { textStyleToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
 import { LayoutContext } from '../layouting';
 import { pixelsPerEm } from '../app';
+import { getTextDimensions } from '../layout_helpers';
 
 export type TextState = ComponentState & {
     text?: string;
@@ -31,7 +32,7 @@ export class TextComponent extends ComponentBase {
         //
         // Make sure not to allow any linebreaks if the text is not multiline.
         if (deltaState.text !== undefined) {
-            element.innerText = deltaState.text.replace(/\n/g, ' ');
+            this.inner.innerText = deltaState.text.replace(/\n/g, ' ');
         }
 
         // Multiline
@@ -58,10 +59,18 @@ export class TextComponent extends ComponentBase {
 
     updateRequestedWidth(ctx: LayoutContext): void {
         if (this.state.multiline) {
+            // TODO: Consider the min content width? It likely wouldn't have
+            // much of an effect but slow everything down.
             this.requestedWidth = 0;
         } else {
-            this.requestedWidth = this.inner.scrollWidth / pixelsPerEm;
+            [this.requestedWidth, this.requestedHeight] = getTextDimensions(
+                this.state.text,
+                this.state.style
+            );
         }
+        console.log(
+            `REQUESTING: ${this.requestedWidth}  ${this.inner.textContent}  ${this.state.multiline}`
+        );
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {

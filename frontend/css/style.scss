@@ -522,36 +522,24 @@ body > * > * > * {
     grid-column: 1;
 }
 
-// Some components, for example `Stack`, need a `min-width` or `min-height`. But
-// the `width` and `height` assigned in python also need to be taken into
-// account. (Even though it's called `width` in python, in css it's actually the
-// `min-width`.) So instead of assigning fixed `width` and `height` values to
-// the HTML element, JS will assign `--min-width` and `--min-height` variables.
-// Then the CSS can use `min-width: max(var(--min-width), ...)` to get the
-// correct result.
+// All components
 .rio-component {
-    position: relative;
-}
-
-// Column
-.rio-column,
-.rio-column > div.rio-undefined-space + div {
-    pointer-events: none;
-
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    min-width: fit-content;
+    position: absolute;
 }
 
 // Row
-.rio-row,
-.rio-row > div.rio-undefined-space + div {
+.rio-row {
     pointer-events: none;
+}
 
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
+.rio-row-undefined-space {
+    position: absolute;
+    height: 100%;
+}
+
+// Column
+.rio-column {
+    pointer-events: none;
 }
 
 // Undefined Space Highlight
@@ -567,7 +555,6 @@ body > * > * > * {
 
 .rio-undefined-space {
     pointer-events: auto;
-    flex-grow: 1;
 
     background-image: linear-gradient(
         -45deg,

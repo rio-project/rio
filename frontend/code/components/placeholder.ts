@@ -16,5 +16,6 @@ export class PlaceholderComponent extends SingleContainer {
 
     updateElement(element: HTMLElement, deltaState: PlaceholderState): void {
         replaceOnlyChild(element.id, element, deltaState._child_);
+        this.makeLayoutDirty();
     }
 }
