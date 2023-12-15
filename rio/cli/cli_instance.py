@@ -7,17 +7,19 @@ import revel
 import tomlkit
 from revel import error, fatal, print, warning
 
-from . import api_client
+from . import rio_api
 
 
 class CliInstance:
     """
-    Singleton class for reading and writing CLI settings.
+    Singleton class which abstracts away the environment for the Rio CLI. It
+    handles access to commonly used functionality such as the configuration file
+    and the API client.
     """
 
     _instance = None
     _config: tomlkit.TOMLDocument
-    _api_client: Optional[api_client.RioApi]
+    _api_client: Optional[rio_api.RioApi]
 
     def __new__(cls):
         # Already initialized?
@@ -41,22 +43,36 @@ class CliInstance:
 
         return self
 
+    async def __aenter__(self) -> "CliInstance":
+        return self
+
+    async def __aexit__(self, *args) -> None:
+        if self._api_client is not None:
+            await self._api_client.close()
+
     @property
     def auth_token(self) -> Optional[str]:
+        """
+        Tries to get the auth token from the keyring. Returns `None` if no token
+        was stored in the keyring yet.
+        """
         return keyring.get_password("rio", "rioApiAuthToken")
 
     @auth_token.setter
     def auth_token(self, value: str) -> None:
+        """
+        Stores the given auth token in the keyring.
+        """
         keyring.set_password("rio", "rioApiAuthToken", value)
 
-    async def get_api_client(self, *, logged_in: bool = True) -> api_client.RioApi:
+    async def get_api_client(self, *, logged_in: bool = True) -> rio_api.RioApi:
         """
         Return an API client for the Rio API. If `logged_in` is True, the
         client will be authenticated, prompting the user to login if necessary.
         """
         # If there is no client yet, create one
         if self._api_client is None:
-            self._api_client = api_client.RioApi()
+            self._api_client = rio_api.RioApi()
 
         # Authenticate, if necessary
         if logged_in and not self._api_client.is_logged_in:

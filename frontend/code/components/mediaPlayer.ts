@@ -429,7 +429,7 @@ export class MediaPlayerComponent extends ComponentBase {
             this.toggleFullscreen();
         });
 
-        element.addEventListener('keydown', this._onKeyPress);
+        element.addEventListener('keydown', this._onKeyPress.bind(this));
 
         this.mediaPlayer.addEventListener('play', () => {
             applyIcon(this.playButton, 'pause:fill', 'white');
@@ -646,6 +646,8 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     private _onKeyPress(event: KeyboardEvent): void {
+        console.log('PRESS', event.key);
+
         if (!this.state.controls) {
             return;
         }
