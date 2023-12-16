@@ -1,3 +1,4 @@
+import { getChildIds, getInstanceByComponentId } from '../componentManagement';
 import { callRemoteMethodDiscardResponse } from '../rpc';
 
 /// Base for all component states. Updates received from the backend are
@@ -40,6 +41,11 @@ export abstract class ComponentBase {
         this._minSizeUser = [null, null];
         this._minSizeComponentImpl = [null, null];
         this._minSizeContainer = [null, null];
+    }
+
+    /// Returns the children of this component. Slowish.
+    getDirectChildren(): ComponentBase[] {
+        return getChildIds(this.state).map(getInstanceByComponentId);
     }
 
     /// Fetches the HTML element associated with this component. This is a slow

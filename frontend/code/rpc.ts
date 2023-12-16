@@ -1,8 +1,9 @@
-import { pingPongIntervalSeconds, pixelsPerEm, sessionToken } from './app';
+import { pixelsPerEm } from './app';
 import {
     getInstanceByComponentId,
     updateComponentStates,
 } from './componentManagement';
+import { initializeDebugger } from './debugger';
 import {
     requestFileUpload,
     registerFont,
@@ -58,7 +59,7 @@ globalThis.setConnectionLostPopupVisible = setConnectionLostPopupVisible;
 
 function createWebsocket(connectionAttempt: number = 1): WebSocket {
     let url = new URL(
-        `/rio/ws?sessionToken=${sessionToken}`,
+        `/rio/ws?sessionToken=${globalThis.SESSION_TOKEN}`,
         window.location.href
     );
     url.protocol = url.protocol.replace('http', 'ws');
@@ -121,7 +122,7 @@ function onOpen(): void {
             params: ['ping'],
             id: `ping-${Date.now()}`,
         });
-    }, pingPongIntervalSeconds * 1000) as any;
+    }, globalThis.PING_PONG_INTERVAL_SECONDS * 1000) as any;
 }
 
 async function onMessage(event: any) {

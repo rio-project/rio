@@ -31,6 +31,8 @@ html[data-theme='dark'] {
 $z-index-overlay: 10000;
 $z-index-popup: 10001;
 $z-index-error-popup: 10002;
+$z-index-debugger: 10003;
+$z-index-debugger-highlighter: 10004;
 
 // "Infinite" corner radius, for creating pill shapes
 $infinite-corner-radius: 99999px;
@@ -2201,4 +2203,204 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-traceback-yellow {
     color: var(--rio-global-warning-bg);
+}
+
+.rio-debugger {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin-left: 1rem;
+    z-index: $z-index-debugger;
+
+    display: flex;
+    flex-direction: row;
+
+    background-image: linear-gradient(
+        -45deg,
+        var(--rio-local-plain-bg) 25%,
+        var(--rio-global-debugger-bg) 25%,
+        var(--rio-global-debugger-bg) 50%,
+        var(--rio-local-plain-bg) 50%,
+        var(--rio-local-plain-bg) 75%,
+        var(--rio-global-debugger-bg) 75%,
+        var(--rio-global-debugger-bg)
+    );
+    background-size: 3rem 3rem;
+}
+
+.rio-debugger-navigation {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1rem;
+
+    // There's an overzealous rule which tries to scale up the root component,
+    // but also matches the debugger
+    //
+    // FIXME: Should no longer be needed after the layout rework
+    min-width: unset;
+    max-width: unset;
+
+    background: var(--rio-global-debugger-bg);
+
+    // Separate it from the rest of the page
+    border-left: 1px solid var(--rio-local-text-color);
+}
+
+.rio-debugger-navigation > *:first-child {
+    margin-top: 1rem;
+}
+
+.rio-debugger-navigation > *:last-child {
+    margin-bottom: 1rem;
+}
+
+.rio-debugger-navigation-button {
+    pointer-events: auto;
+    cursor: pointer;
+
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.5rem;
+
+    // MDC Ripple
+    overflow: hidden;
+
+    @include ripple.surface;
+    @include ripple.radius-bounded;
+    @include ripple.states;
+}
+
+.rio-debugger-content {
+    // There's an overzealous rule which tries to scale up the root component,
+    // but also matches the debugger
+    //
+    // FIXME: Should no longer be needed after the layout rework
+    min-width: unset;
+    max-width: unset;
+
+    min-width: 20rem;
+    height: 100vh;
+    padding: 1rem;
+
+    border-left: 1px solid var(--rio-local-text-color);
+}
+
+.rio-debugger-tree-view {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 0.5rem;
+}
+
+.rio-debugger-header {
+}
+
+.rio-debugger-tree-component-tree {
+    flex-grow: 1;
+    position: relative;
+}
+
+.rio-debugger-tree-component-tree > * {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.rio-debugger-tree-component-details {
+    min-height: 20rem;
+}
+
+.rio-debugger-tree-component-docs-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    color: var(--rio-local-accent-bg);
+
+    div {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+}
+
+.rio-debugger-component-tree-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.rio-debugger-component-tree-item-header {
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 1;
+
+    position: relative;
+    padding: 0.3rem 0.6rem;
+}
+
+.rio-debugger-component-tree-item-header::after {
+    pointer-events: none;
+    content: '';
+    display: block;
+
+    z-index: -1;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    background: var(--rio-global-secondary-bg);
+    border-radius: $infinite-corner-radius;
+
+    opacity: 0;
+
+    transition: opacity 0.1s ease-in-out;
+}
+
+.rio-debugger-component-tree-item-header-weakly-selected {
+    font-weight: bold;
+}
+
+.rio-debugger-component-tree-item-header-strongly-selected {
+    font-weight: bold;
+    color: var(--rio-global-secondary-fg);
+}
+
+.rio-debugger-component-tree-item-header:hover::after {
+    opacity: 0.2;
+}
+
+.rio-debugger-component-tree-item-header-weakly-selected::after {
+    opacity: 0.2;
+}
+
+.rio-debugger-component-tree-item-header-strongly-selected::after {
+    opacity: 1;
+}
+
+.rio-debugger-component-tree-item-children {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.rio-debugger-component-highlighter {
+    pointer-events: none;
+
+    position: fixed;
+    border: 0.3rem solid var(--rio-global-primary-bg);
+    border-radius: 1rem;
+    z-index: $z-index-debugger-highlighter;
+
+    box-shadow: 0 0 0 max(100vh, 100vw) rgba(0, 0, 0, 0.6);
 }

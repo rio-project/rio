@@ -41,6 +41,7 @@ import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
 import { HeadingListItemComponent } from './components/headingListItem';
+import { initializeDebugger } from './debugger';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -87,8 +88,6 @@ const componentClasses = {
 };
 
 globalThis.componentClasses = componentClasses;
-
-const componentTreeRootElement = document.body;
 
 const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
 
@@ -225,13 +224,33 @@ function createLayoutComponentStates(
     return resultId;
 }
 
+/// Given a state, return the ids of all its children
+export function getChildIds(state: ComponentState): ComponentId[] {
+    let result: ComponentId[] = [];
+
+    let propertyNamesWithChildren =
+        globalThis.CHILD_ATTRIBUTE_NAMES[state['_type_']!] || [];
+
+    for (let propertyName of propertyNamesWithChildren) {
+        let propertyValue = state[propertyName];
+
+        if (Array.isArray(propertyValue)) {
+            result.push(...propertyValue);
+        } else if (propertyValue !== null && propertyValue !== undefined) {
+            result.push(propertyValue);
+        }
+    }
+
+    return result;
+}
+
 function replaceChildrenWithLayoutComponents(
     deltaState: ComponentState,
     childIds: Set<string>,
     message: { [id: string]: ComponentState }
 ): void {
     let propertyNamesWithChildren =
-        globalThis.childAttributeNames[deltaState['_type_']!] || [];
+        globalThis.CHILD_ATTRIBUTE_NAMES[deltaState['_type_']!] || [];
 
     function cleanId(id: string): string {
         return id.split('-')[0];
@@ -430,8 +449,15 @@ export function updateComponentStates(
     // Replace the root component if requested
     if (rootComponentId !== null) {
         let rootElement = getElementByComponentId(rootComponentId);
-        componentTreeRootElement.innerHTML = '';
-        componentTreeRootElement.appendChild(rootElement);
+        document.body.appendChild(rootElement);
+
+        // Initialize the debugger, or not
+        //
+        // TODO: This should absolutely not be done here. It's just a convenient
+        // spot for development.
+        if (globalThis.RIO_DEBUG_MODE && globalThis.rioDebugger === undefined) {
+            initializeDebugger();
+        }
     }
 
     // Restore the keyboard focus

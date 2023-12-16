@@ -68,6 +68,10 @@ def new(
     summary="Run the current project",
     parameters=[
         revel.Parameter(
+            "release",
+            summary="Switches between release and debug mode",
+        ),
+        revel.Parameter(
             "port",
             summary="Port to run the HTTP server on",
         ),
@@ -95,6 +99,7 @@ they only make sense for websites.
 )
 def run(
     *,
+    release: bool = False,
     port: Optional[int] = None,
     public: bool = False,
     quiet: bool = True,
@@ -119,7 +124,7 @@ def run(
             port=port,
             public=public,
             quiet=quiet,
-            debug_mode=True,
+            debug_mode=not release,
             run_in_window=proj.app_type == "app",
         )
         runner.run()
