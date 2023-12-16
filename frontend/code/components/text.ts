@@ -3,7 +3,7 @@ import { textStyleToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
 import { LayoutContext } from '../layouting';
 import { pixelsPerEm } from '../app';
-import { getTextDimensions } from '../layout_helpers';
+import { getTextDimensions } from '../layoutHelpers';
 
 export type TextState = ComponentState & {
     text?: string;

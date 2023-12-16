@@ -483,6 +483,7 @@ export function updateComponentStates(
     // Remove the latent components
     for (let element of latentComponents.children) {
         let instance = elementsToInstances.get(element as HTMLElement)!;
+        console.log(element, instance);
         instance.onDestruction(element as HTMLElement);
     }
     latentComponents.remove();
