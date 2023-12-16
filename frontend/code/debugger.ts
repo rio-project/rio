@@ -23,6 +23,7 @@ class Debugger {
                 <div class="rio-debugger-navigation-button"></div>
                 <div class="rio-debugger-navigation-button"></div>
                 <div class="rio-debugger-navigation-button"></div>
+                <div class="rio-debugger-navigation-button"></div>
                 <div style="flex-grow: 1;"></div>
                 <a href="https://rio.dev" target="_blank" class="rio-debugger-navigation-rio-logo">
                     <img src="/rio/asset/rio-logo.png">
@@ -36,7 +37,7 @@ class Debugger {
             '.rio-debugger-content'
         ) as HTMLElement;
 
-        let [treeNavButton, fooNavButton, adminPageNavButton] =
+        let [treeNavButton, fooNavButton, adminPageNavButton, docsButton] =
             this.rootElement.getElementsByClassName(
                 'rio-debugger-navigation-button'
             ) as HTMLCollectionOf<HTMLElement>;
@@ -53,6 +54,7 @@ class Debugger {
             'monitoring',
             'var(--rio-local-text-color)'
         );
+        applyIcon(docsButton, 'code', 'var(--rio-local-text-color)');
 
         // Add the event listeners
         // TODO
