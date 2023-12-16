@@ -32,7 +32,7 @@ export class FundamentalRootComponent extends ComponentBase {
         }
 
         let connectionLostPopup = element.lastElementChild as HTMLElement;
-        connectionLostPopup.id = 'rio-connection-lost-popup';
+        connectionLostPopup.classList.add('rio-connection-lost-popup');
 
         setConnectionLostPopupVisible(false);
     }

@@ -119,7 +119,7 @@ class StateBinding:
         self.recursively_mark_children_as_dirty()
 
     def recursively_mark_children_as_dirty(self) -> None:
-        to_do = [self]
+        to_do: List[StateBinding] = [self]
 
         while to_do:
             cur = to_do.pop()

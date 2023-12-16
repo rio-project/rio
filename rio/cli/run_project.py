@@ -435,7 +435,7 @@ class RunningApp:
         await self._evaluate_javascript(
             f"""
 // Override the popup with the traceback message
-let popup = document.getElementById("rio-connection-lost-popup");
+let popup = document.querySelector(".rio-connection-lost-popup");
 popup.innerHTML = {json.dumps(popup_html)};
 
 // Spawn the popup

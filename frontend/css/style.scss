@@ -2074,7 +2074,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 // Connection lost popup
-#rio-connection-lost-popup {
+.rio-connection-lost-popup {
     pointer-events: none;
 
     position: fixed;
@@ -2089,13 +2089,13 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transition: background-color 1s ease-in-out;
 }
 
-#rio-connection-lost-popup.rio-connection-lost-popup-visible {
+.rio-connection-lost-popup.rio-connection-lost-popup-visible {
     display: flex;
     align-items: stretch;
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-#rio-connection-lost-popup > * {
+.rio-connection-lost-popup > * {
     position: absolute;
     flex-grow: 1;
 
@@ -2112,7 +2112,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
         transform 0.3s $transition-timing-overshoot;
 }
 
-#rio-connection-lost-popup.rio-connection-lost-popup-visible > * {
+.rio-connection-lost-popup.rio-connection-lost-popup-visible > * {
     opacity: 1;
     transform: translateY(0);
 }

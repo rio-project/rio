@@ -26,7 +26,7 @@ export class LinkComponent extends SingleContainer {
         // by the browser.
         containerElement.addEventListener(
             'click',
-            (event) => {
+            (event: MouseEvent) => {
                 if (this.state.isPage) {
                     this.sendMessageToBackend({
                         page: this.state.targetUrl,
@@ -34,6 +34,13 @@ export class LinkComponent extends SingleContainer {
 
                     event.stopPropagation();
                     event.preventDefault();
+                } else {
+                    // Delete the connection-lost-popup, otherwise it would
+                    // become visible for a little while
+                    let connectionLostPopup = document.querySelector(
+                        '.rio-connection-lost-popup'
+                    ) as HTMLElement;
+                    connectionLostPopup.remove();
                 }
             },
             { capture: true }
