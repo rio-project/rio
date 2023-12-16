@@ -480,8 +480,9 @@ window.setConnectionLostPopupVisible(true);
             if self.debug_mode:
                 warning("Rio is running in DEBUG mode.")
                 warning(
-                    "Debug mode includes helpful tools for development, but is slower and disables security checks. Never use it in production!"
+                    "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
                 )
+                warning("Run with `--release` to disable debug mode.")
 
             if not self.run_in_window:
                 print()

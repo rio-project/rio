@@ -25,6 +25,8 @@ GENERATED_DIR = PACKAGE_ROOT_DIR / "generated"
 RIO_ASSETS_DIR = PACKAGE_ROOT_DIR / "assets"
 HOSTED_ASSETS_DIR = RIO_ASSETS_DIR / "hosted"
 
+RIO_LOGO_ASSET_PATH = HOSTED_ASSETS_DIR / "rio-logo.png"
+
 SNIPPETS_DIR = PACKAGE_ROOT_DIR / "snippets" / "snippet-files"
 
 if os.name == "nt":

@@ -36,7 +36,7 @@ class NavigationBar(rio.Component):
             child=rio.Row(
                 rio.Row(
                     rio.Image(
-                        Path("website/assets/rio-logo.png"),
+                        rio.common.RIO_LOGO_ASSET_PATH,
                         width=1.8,
                         height=1.8,
                         margin_left=2.5,

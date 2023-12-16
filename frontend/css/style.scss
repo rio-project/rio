@@ -2257,6 +2257,26 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     margin-bottom: 1rem;
 }
 
+.rio-debugger-navigation-rio-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+
+    text-decoration: none;
+
+    img {
+        width: 2.5rem;
+        height: 2.5rem;
+        object-fit: contain;
+    }
+
+    div {
+        font-weight: bold;
+        color: var(--rio-local-text-color);
+    }
+}
+
 .rio-debugger-navigation-button {
     pointer-events: auto;
     cursor: pointer;
