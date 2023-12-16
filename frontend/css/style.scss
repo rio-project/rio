@@ -2253,15 +2253,15 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     margin-top: 1rem;
 }
 
-.rio-debugger-navigation > *:last-child {
-    margin-bottom: 1rem;
-}
-
 .rio-debugger-navigation-rio-logo {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.3rem;
+    z-index: 1;
+
+    padding: 3rem 0 1rem 0;
 
     text-decoration: none;
 
@@ -2275,6 +2275,33 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
         font-weight: bold;
         color: var(--rio-local-text-color);
     }
+
+    &:hover div {
+        color: var(--rio-global-secondary-fg);
+    }
+}
+
+.rio-debugger-navigation-rio-logo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+
+    background: linear-gradient(
+        to top,
+        var(--rio-global-secondary-bg),
+        transparent
+    );
+
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+}
+
+.rio-debugger-navigation-rio-logo:hover::before {
+    opacity: 1;
 }
 
 .rio-debugger-navigation-button {
@@ -2385,10 +2412,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     opacity: 0;
 
     transition: opacity 0.1s ease-in-out;
-}
-
-.rio-debugger-component-tree-item-header-weakly-selected {
-    font-weight: bold;
 }
 
 .rio-debugger-component-tree-item-header-strongly-selected {
