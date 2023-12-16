@@ -1,3 +1,4 @@
+import { MDCRipple } from '@material/ripple';
 import { getInstanceByComponentId } from './componentManagement';
 import { ComponentBase } from './components/componentBase';
 import { FundamentalRootComponent } from './components/fundamental_root_component';
@@ -20,10 +21,7 @@ class Debugger {
         this.rootElement.innerHTML = `
             <div class="rio-debugger-content"></div>
             <div class="rio-debugger-navigation">
-                <div class="rio-debugger-navigation-button"></div>
-                <div class="rio-debugger-navigation-button"></div>
-                <div class="rio-debugger-navigation-button"></div>
-                <div class="rio-debugger-navigation-button"></div>
+                <div class="rio-debugger-navigation-marker"></div>
                 <div style="flex-grow: 1;"></div>
                 <a href="https://rio.dev" target="_blank" class="rio-debugger-navigation-rio-logo">
                     <img src="/rio/asset/rio-logo.png">
@@ -37,30 +35,39 @@ class Debugger {
             '.rio-debugger-content'
         ) as HTMLElement;
 
-        let [treeNavButton, fooNavButton, adminPageNavButton, docsButton] =
-            this.rootElement.getElementsByClassName(
-                'rio-debugger-navigation-button'
-            ) as HTMLCollectionOf<HTMLElement>;
-
-        // Add icons
-        applyIcon(
-            treeNavButton,
-            'account-tree:fill',
-            'var(--rio-local-text-color)'
-        );
-        applyIcon(fooNavButton, 'terminal', 'var(--rio-local-text-color)');
-        applyIcon(
-            adminPageNavButton,
-            'monitoring',
-            'var(--rio-local-text-color)'
-        );
-        applyIcon(docsButton, 'code', 'var(--rio-local-text-color)');
-
-        // Add the event listeners
-        // TODO
+        // Initialize the buttons, in reverse order
+        this.makeNavButton('AI', 'chat-bubble:fill', 'aiChat');
+        this.makeNavButton('Docs', 'library-books:fill', 'docs');
+        this.makeNavButton('Stats', 'monitor-heart:fill', 'admin');
+        this.makeNavButton('Tree', 'view-quilt:fill', 'componentTree');
 
         // For now, just show the tree view
         this.contentContainer.appendChild(this.makeTreeView());
+    }
+
+    makeNavButton(text: string, icon: string, navTarget: string) {
+        // Create the element
+        let navBar = this.rootElement.querySelector(
+            '.rio-debugger-navigation'
+        ) as HTMLElement;
+
+        let element = document.createElement('div');
+        element.classList.add('rio-debugger-navigation-button');
+        navBar.insertBefore(element, navBar.firstElementChild);
+
+        // Add the icon
+        let iconElem = document.createElement('div');
+        element.appendChild(iconElem);
+        applyIcon(iconElem, icon, 'currentColor');
+
+        // Add a label
+        let label = document.createElement('div');
+        label.textContent = text;
+        element.appendChild(label);
+
+        // MDC Ripple
+        element.classList.add('mdc-ripple-surface');
+        MDCRipple.attachTo(element);
     }
 
     highlightTreeItemAndParents(instance: ComponentBase) {
@@ -244,7 +251,7 @@ class Debugger {
 
         applyIcon(
             docsLink.firstElementChild as HTMLElement,
-            'code',
+            'library-books',
             'currentColor'
         );
 
