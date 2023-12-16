@@ -78,6 +78,8 @@ class Link(component_base.FundamentalComponent):
 
         self.target_url = target_url
 
+        self._explicitly_set_properties_.update(("child_text", "child_component"))
+
     async def _on_message(self, msg: Any) -> None:
         assert isinstance(msg, dict), msg
 
