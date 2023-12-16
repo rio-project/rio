@@ -530,16 +530,21 @@ body > * > * > * {
 // Row
 .rio-row {
     pointer-events: none;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
 }
 
-.rio-row-undefined-space {
-    position: absolute;
-    height: 100%;
+.rio-row > * {
+    position: relative !important;
 }
 
 // Column
 .rio-column {
     pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 // Undefined Space Highlight
@@ -554,20 +559,20 @@ body > * > * > * {
 }
 
 .rio-undefined-space {
-    pointer-events: auto;
+    pointer-events: none;
+    flex-grow: 1;
 
     background-image: linear-gradient(
         -45deg,
-        transparent 25%,
-        var(--rio-global-warning-bg) 25%,
-        var(--rio-global-warning-bg) 50%,
+        var(--rio-global-warning-bg) 15%,
+        transparent 15%,
         transparent 50%,
-        transparent 75%,
-        var(--rio-global-warning-bg) 75%,
-        var(--rio-global-warning-bg)
+        var(--rio-global-warning-bg) 50%,
+        var(--rio-global-warning-bg) 65%,
+        transparent 65%
     );
     background-size: 3rem 3rem;
-    animation: barber-pole 1.5s linear infinite;
+    animation: barber-pole 1s linear infinite;
 }
 
 // Grid
@@ -655,10 +660,6 @@ body > * > * > * {
 
     border-radius: var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small) 0 0;
-}
-
-.rio-input-box.rio-input-box-with-label > input {
-    padding-top: 1.7rem;
 }
 
 .rio-input-box:not(.rio-disabled-input) {
@@ -2005,7 +2006,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    min-width: fit-content;
 }
 
 .rio-heading-list-item {

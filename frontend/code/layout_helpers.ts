@@ -4,6 +4,9 @@ import { TextStyle } from './models';
 
 const _textDimensionsCache = new Map<string, [number, number]>();
 
+let cacheHits: number = 0;
+let cacheMisses: number = 0;
+
 /// Returns the width and height of the given text in pixels. Does not cache
 /// the result.
 export function getTextDimensions(
@@ -18,12 +21,19 @@ export function getTextDimensions(
         key = `${style.fontName}+${style.fontWeight}+${style.italic}+${style.underlined}+${style.allCaps}`;
     }
 
+    // Display cache statistics
+    if (cacheHits + cacheMisses > 0) {
+        console.log(`Cache hit rate: ${cacheHits / (cacheHits + cacheMisses)}`);
+    }
+
     // Check the cache
     let cached = _textDimensionsCache.get(key);
 
     if (cached !== undefined) {
+        cacheHits++;
         return cached;
     }
+    cacheMisses++;
 
     // Spawn an element to measure the text
     let element = document.createElement('div');

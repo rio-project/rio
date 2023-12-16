@@ -16,20 +16,16 @@ class LinearContainer extends ComponentBase {
     protected undef1: HTMLElement;
     protected undef2: HTMLElement;
 
-    protected nGrowers: number; // Number of children that grow in the primary axis
+    protected nGrowers: number; // Number of children that grow in the major axis
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
 
         this.undef1 = document.createElement('div');
         this.undef1.classList.add('rio-undefined-space');
-        this.undef1.classList.add('rio-row-undefined-space');
-        this.undef1.style.left = '0';
 
         this.undef2 = document.createElement('div');
         this.undef2.classList.add('rio-undefined-space');
-        this.undef2.classList.add('rio-row-undefined-space');
-        this.undef2.style.right = '0';
 
         return element;
     }
@@ -38,8 +34,13 @@ class LinearContainer extends ComponentBase {
         element: HTMLElement,
         deltaState: LinearContainerState
     ): void {
-        // Update the children
+        // Children
         replaceChildren(element.id, element, deltaState.children);
+
+        // Spacing
+        if (deltaState.spacing !== undefined) {
+            element.style.gap = `${deltaState.spacing}rem`;
+        }
 
         // Re-layout
         this.makeLayoutDirty();
@@ -50,7 +51,6 @@ export class RowComponent extends LinearContainer {
     createElement(): HTMLElement {
         let element = super.createElement();
         element.classList.add('rio-row');
-
         return element;
     }
 
@@ -64,7 +64,6 @@ export class RowComponent extends LinearContainer {
             this.requestedWidth += child.requestedWidth;
             // @ts-ignore
             this.nGrowers += child.state['_grow_'][0] as number;
-            console.log('CHILD', child.requestedWidth);
         }
 
         // Account for spacing
@@ -76,9 +75,6 @@ export class RowComponent extends LinearContainer {
         let additionalSpace = this.allocatedWidth - this.requestedWidth;
         let spacePerGrower = additionalSpace / this.nGrowers;
 
-        // Assign the allocated width to the children
-        //
-        // If there is undefined space it's added later
         for (let child of ctx.directChildren(this)) {
             child.allocatedWidth = child.requestedWidth;
 
@@ -102,7 +98,6 @@ export class RowComponent extends LinearContainer {
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Is all allocated space used? Highlight any undefined space
         let additionalSpace = this.allocatedWidth - this.requestedWidth;
-        let position = 0;
 
         if (this.nGrowers > 0 || Math.abs(additionalSpace) < 1e-6) {
             this.undef1.remove();
@@ -115,15 +110,9 @@ export class RowComponent extends LinearContainer {
 
             if (element.children.length === 0) {
                 element.appendChild(this.undef1);
-                this.undef1.style.width = '100%';
             } else {
-                element.insertBefore(this.undef1, element.firstChild);
+                element.insertBefore(this.undef1, element.children[0]);
                 element.appendChild(this.undef2);
-
-                position += additionalSpace / 2;
-                let size = `${position}rem`;
-                this.undef1.style.width = size;
-                this.undef2.style.width = size;
             }
 
             console.log(
@@ -140,10 +129,11 @@ export class RowComponent extends LinearContainer {
 
             // Move it around
             let element = child.element();
-            element.style.left = `${position}rem`;
+            element.style.left = '0';
             element.style.top = '0';
 
-            position += child.allocatedWidth + this.state.spacing;
+            // Grow?
+            // element.style.flexGrow = child.state['_grow_'][0] ? '1' : '0';
         }
     }
 }

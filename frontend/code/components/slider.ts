@@ -1,3 +1,4 @@
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCSlider } from '@material/slider';
 // TODO
@@ -98,5 +99,13 @@ export class SliderComponent extends ComponentBase {
         requestAnimationFrame(() => {
             this.mdcSlider.layout();
         });
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 10;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 5;
     }
 }

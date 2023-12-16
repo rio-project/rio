@@ -1,4 +1,6 @@
 import { ComponentBase, ComponentState } from './componentBase';
+import { getTextDimensions } from '../layout_helpers';
+import { LayoutContext } from '../layouting';
 // TODO
 
 export type TextInputState = ComponentState & {
@@ -16,6 +18,9 @@ export class TextInputComponent extends ComponentBase {
     state: Required<TextInputState>;
 
     private inputElement: HTMLInputElement;
+
+    private prefixTextWidth: number = 0;
+    private suffixTextWidth: number = 0;
 
     createElement(): HTMLElement {
         // Create the element
@@ -76,11 +81,15 @@ export class TextInputComponent extends ComponentBase {
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
-            // Adapt the minimum height, depending on whether there is a label
-            if (deltaState.label.length > 0) {
-                element.classList.add('rio-input-box-with-label');
-            } else {
-                element.classList.remove('rio-input-box-with-label');
+            // Update the layout, if needed
+            //
+            // If a label is set, the height needs to increase to make room for
+            // it, when floating above the entered text.
+            let newHeight = deltaState.label.length > 0 ? 3.3 : 2.0;
+
+            if (newHeight !== this.requestedHeight) {
+                this.requestedHeight = newHeight;
+                this.makeLayoutDirty();
             }
         }
 
@@ -89,6 +98,13 @@ export class TextInputComponent extends ComponentBase {
                 '.rio-input-box-prefix-text'
             ) as HTMLElement;
             prefixElement.textContent = deltaState.prefix_text;
+
+            // Update the layout, if needed
+            this.prefixTextWidth = getTextDimensions(
+                deltaState.prefix_text,
+                'text'
+            )[0];
+            this.makeLayoutDirty();
         }
 
         if (deltaState.suffix_text !== undefined) {
@@ -96,6 +112,13 @@ export class TextInputComponent extends ComponentBase {
                 '.rio-input-box-suffix-text'
             ) as HTMLElement;
             suffixElement.textContent = deltaState.suffix_text;
+
+            // Update the layout, if needed
+            this.prefixTextWidth = getTextDimensions(
+                deltaState.suffix_text,
+                'text'
+            )[0];
+            this.makeLayoutDirty();
         }
 
         if (deltaState.is_secret !== undefined) {
@@ -122,5 +145,15 @@ export class TextInputComponent extends ComponentBase {
 
     grabKeyboardFocus(): void {
         this.inputElement.focus();
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = this.prefixTextWidth + this.suffixTextWidth + 6;
+        this.requestedWidth = Math.max(this.requestedWidth, 13);
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        // This is set during the updateElement() call, so there is nothing to
+        // do here.
     }
 }

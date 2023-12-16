@@ -2,6 +2,7 @@ import { applyColorSet } from '../designApplication';
 import { ColorSet, ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { replaceOnlyChild } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 
 // TODO
 
@@ -19,6 +20,8 @@ export type CardState = ComponentState & {
 export class CardComponent extends ComponentBase {
     state: Required<CardState>;
     marginCss: string;
+
+    innerMarginAmount: number = 0;
 
     createElement(): HTMLElement {
         // Create the element
@@ -46,30 +49,20 @@ export class CardComponent extends ComponentBase {
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {
             if (deltaState.corner_radius === null) {
-                element.style.borderRadius =
-                    'var(--rio-global-corner-radius-medium)';
-                this.marginCss = 'var(--rio-global-corner-radius-medium)';
+                this.innerMarginAmount = 1.5;
+                element.style.borderRadius = '1.5rem';
             } else if (typeof deltaState.corner_radius === 'number') {
+                this.innerMarginAmount = deltaState.corner_radius;
                 element.style.borderRadius = `${deltaState.corner_radius}rem`;
-                this.marginCss = `${deltaState.corner_radius}rem`;
             } else {
-                element.style.borderRadius = `${deltaState.corner_radius[0]}em ${deltaState.corner_radius[1]}em ${deltaState.corner_radius[2]}em ${deltaState.corner_radius[3]}em`;
-
-                let maxRadius = Math.max(
+                this.innerMarginAmount = Math.max(
                     deltaState.corner_radius[0],
                     deltaState.corner_radius[1],
                     deltaState.corner_radius[2],
                     deltaState.corner_radius[3]
                 );
-                this.marginCss = `${maxRadius}rem`;
+                element.style.borderRadius = `${deltaState.corner_radius[0]}rem ${deltaState.corner_radius[1]}rem ${deltaState.corner_radius[2]}rem ${deltaState.corner_radius[3]}rem`;
             }
-        }
-
-        // Update the inner margin
-        if (deltaState.inner_margin === true) {
-            element.style.padding = this.marginCss;
-        } else {
-            element.style.removeProperty('padding');
         }
 
         // Report presses?
@@ -96,6 +89,55 @@ export class CardComponent extends ComponentBase {
         // Style
         if (deltaState.color !== undefined) {
             applyColorSet(element, deltaState.color);
+        }
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        if (this.state.child === null) {
+            this.requestedWidth = 0;
+        } else {
+            this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
+        }
+
+        if (this.state.inner_margin) {
+            this.requestedWidth += this.innerMarginAmount * 2;
+        }
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        if (this.state.child !== null) {
+            ctx.inst(this.state.child).allocatedWidth = this.allocatedWidth;
+        }
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        if (this.state.child === null) {
+            this.requestedHeight = 0;
+            return;
+        } else {
+            this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
+        }
+
+        if (this.state.inner_margin) {
+            this.requestedHeight += this.innerMarginAmount * 2;
+        }
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        if (this.state.child === null) {
+            return;
+        }
+
+        let child = ctx.inst(this.state.child);
+        child.allocatedHeight = this.allocatedHeight;
+
+        let element = child.element();
+        if (this.state.inner_margin) {
+            element.style.left = `${this.innerMarginAmount}rem`;
+            element.style.top = `${this.innerMarginAmount}rem`;
+        } else {
+            element.style.left = '0';
+            element.style.top = '0';
         }
     }
 }

@@ -1,4 +1,5 @@
 import { replaceChildren } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
 // TODO
@@ -88,6 +89,40 @@ export class ListViewComponent extends ComponentBase {
 
             // Update their CSS properties
             this._updateChildStyles(element);
+
+            // Update the layout
+            this.makeLayoutDirty();
+        }
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 16;
+
+        for (let child of ctx.directChildren(this)) {
+            this.requestedWidth = Math.max(
+                this.requestedWidth,
+                child.requestedWidth
+            );
+        }
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        for (let child of ctx.directChildren(this)) {
+            child.allocatedWidth = this.allocatedWidth;
+        }
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 9;
+
+        for (let child of ctx.directChildren(this)) {
+            this.requestedHeight += child.requestedHeight;
+        }
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        for (let child of ctx.directChildren(this)) {
+            child.allocatedHeight = child.requestedHeight;
         }
     }
 }
