@@ -1613,6 +1613,12 @@ document.body.removeChild(a)
             "--rio-global-shadow-color": f"#{thm.shadow_color.hex}",
         }
 
+        # Colors derived from, but not stored in the theme
+        debugger_background_color = thm.neutral_palette.background.blend(
+            thm.warning_palette.background, 0.05
+        )
+        variables["--rio-global-debugger-bg"] = f"#{debugger_background_color.hex}"
+
         # Palettes
         palette_names = (
             "primary",

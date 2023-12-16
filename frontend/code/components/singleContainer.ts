@@ -13,7 +13,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 /// 3. Implements `updateChildLayouts`
 ///
 /// This class automatically knows in which attribute the child is stored thanks
-/// to `globalThis.childAttributeNames`.
+/// to `globalThis.CHILD_ATTRIBUTE_NAMES`.
 export abstract class SingleContainer extends ComponentBase {
     constructor(elementId: string, state: Required<ComponentState>) {
         super(elementId, state);
@@ -50,7 +50,7 @@ export abstract class SingleContainer extends ComponentBase {
 
     childAttributeName(): string {
         let childAttributeNames =
-            globalThis.childAttributeNames[this.state['_type_']];
+            globalThis.CHILD_ATTRIBUTE_NAMES[this.state['_type_']];
 
         if (childAttributeNames === undefined) {
             throw new Error(

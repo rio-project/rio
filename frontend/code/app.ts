@@ -1,26 +1,28 @@
-import {
-    JsonRpcMessage,
-    callRemoteMethodDiscardResponse,
-    initWebsocket,
-    processMessageReturnResponse,
-} from './rpc';
+import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
 
-export const sessionToken: string = '{session_token}';
-
-// @ts-ignore
-export const pingPongIntervalSeconds: number = '{ping_pong_interval}';
-
-// @ts-ignore
-export const debug_mode: boolean = '{debug_mode}';
-
-// @ts-ignore
-const childAttributeNames: { [id: string]: string[] } =
-    '{child_attribute_names}';
-globalThis.childAttributeNames = childAttributeNames;
+// Most of these don't have to be available in the global scope, however, since
+// these are injected by Python after the build process, there have been issues
+// with some build tool inlining their placeholders, which in turn lead to
+// incorrect code.
+//
+// Assigning them to `globalThis` convinces the build tool to leave them alone.
+globalThis.SESSION_TOKEN = '{session_token}';
+globalThis.PING_PONG_INTERVAL_SECONDS = '{ping_pong_interval}';
+globalThis.RIO_DEBUG_MODE = '{debug_mode}';
+globalThis.CHILD_ATTRIBUTE_NAMES = '{child_attribute_names}';
 
 export let pixelsPerEm = 16;
 
 function main() {
+    console.log('RIO DEBUG', globalThis.RIO_DEBUG_MODE);
+
+    // Display a warning if running in debug mode
+    if (globalThis.RIO_DEBUG_MODE) {
+        console.warn(
+            'Rio is running in DEBUG mode.\nDebug mode includes helpful tools for development, but is slower and disables security checks. Never use it in production!'
+        );
+    }
+
     // Connect to the websocket
     initWebsocket();
 
