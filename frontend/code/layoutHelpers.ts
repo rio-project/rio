@@ -16,9 +16,9 @@ export function getTextDimensions(
     // Build a key for the cache
     let key;
     if (typeof style === 'string') {
-        key = style;
+        key = `${style}+${text}`;
     } else {
-        key = `${style.fontName}+${style.fontWeight}+${style.italic}+${style.underlined}+${style.allCaps}`;
+        key = `${style.fontName}+${style.fontWeight}+${style.italic}+${style.underlined}+${style.allCaps}+${text}`;
     }
 
     // Display cache statistics
@@ -40,8 +40,6 @@ export function getTextDimensions(
     element.innerText = text;
     Object.assign(element.style, textStyleToCss(style));
     element.style.position = 'absolute';
-    // element.style.width = 'min-content';
-    // element.style.height = 'min-content';
 
     document.body.appendChild(element);
 

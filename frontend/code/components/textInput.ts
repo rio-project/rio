@@ -1,5 +1,5 @@
 import { ComponentBase, ComponentState } from './componentBase';
-import { getTextDimensions } from '../layout_helpers';
+import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 // TODO
 

@@ -35,6 +35,8 @@ class LinearContainer extends ComponentBase {
         deltaState: LinearContainerState
     ): void {
         // Children
+        this.undef1.remove();
+        this.undef2.remove();
         replaceChildren(element.id, element, deltaState.children);
 
         // Spacing
@@ -100,8 +102,6 @@ export class RowComponent extends LinearContainer {
         let additionalSpace = this.allocatedWidth - this.requestedWidth;
 
         if (this.nGrowers > 0 || Math.abs(additionalSpace) < 1e-6) {
-            this.undef1.remove();
-            this.undef2.remove();
         } else {
             // If there is no child elements make a single undefined space take
             // up everything. This way there is no unsightly disconnect between
