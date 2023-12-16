@@ -24,7 +24,10 @@ class Debugger {
                 <div class="rio-debugger-navigation-button"></div>
                 <div class="rio-debugger-navigation-button"></div>
                 <div style="flex-grow: 1;"></div>
-                <div style="height: 0rem;"></div>  <!-- Adds space due to flex gap --><div>Rio<br>Logo</div>
+                <a href="https://rio.dev" target="_blank" class="rio-debugger-navigation-rio-logo">
+                    <img src="/rio/asset/rio-logo.png">
+                    <div>Rio</div>
+                </a>
             </div>
         `;
 
@@ -41,7 +44,7 @@ class Debugger {
         // Add icons
         applyIcon(
             treeNavButton,
-            'dashboard:fill',
+            'account-tree:fill',
             'var(--rio-local-text-color)'
         );
         applyIcon(fooNavButton, 'terminal', 'var(--rio-local-text-color)');

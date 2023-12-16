@@ -1603,6 +1603,7 @@ document.body.removeChild(a)
         Updates the client's theme to match the given one.
         """
         self.theme = thm
+        is_light_theme = thm.neutral_palette.background.perceived_brightness > 0.5
         # Build the set of all CSS variables that must be set
 
         # Miscellaneous
@@ -1614,8 +1615,9 @@ document.body.removeChild(a)
         }
 
         # Colors derived from, but not stored in the theme
+        blend_factor = 0.06 if is_light_theme else 0.02
         debugger_background_color = thm.neutral_palette.background.blend(
-            thm.warning_palette.background, 0.05
+            thm.warning_palette.background, blend_factor
         )
         variables["--rio-global-debugger-bg"] = f"#{debugger_background_color.hex}"
 
