@@ -2,11 +2,9 @@ import { applyColorSet } from '../designApplication';
 import { ColorSet } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
-import { SingleContainer } from './singleContainer';
 import { replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
-
-// TODO
+import { SingleContainer } from './singleContainer';
 
 export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
@@ -16,10 +14,9 @@ export type ButtonState = ComponentState & {
     child?: number | string;
     is_sensitive?: boolean;
     initially_disabled_for?: number;
-    square_aspect_ratio?: boolean;
 };
 
-export class ButtonComponent extends ComponentBase {
+export class ButtonComponent extends SingleContainer {
     state: Required<ButtonState>;
     private mdcRipple: MDCRipple;
 
@@ -54,10 +51,6 @@ export class ButtonComponent extends ComponentBase {
                 type: 'press',
             });
         };
-
-        requestAnimationFrame(() => {
-            this.mdcRipple.layout();
-        });
 
         return element;
     }
@@ -129,43 +122,14 @@ export class ButtonComponent extends ComponentBase {
 
             applyColorSet(element, colorSet);
         }
-
-        // Some buttons need to keep their aspect ratio square
-        if (deltaState.square_aspect_ratio === true) {
-            element.style.aspectRatio = '1';
-        } else if (deltaState.square_aspect_ratio === false) {
-            element.style.aspectRatio = '';
-        }
-
-        // The ripple stores the coordinates of its rectangle. Since rio likes
-        // to resize and move around components, the rectangle must be updated
-        // appropriately.
-        //
-        // Really, this should be done when the component is resized or moved,
-        // but there is no hook for that. Update seems to work fine for now.
-        requestAnimationFrame(() => {
-            this.mdcRipple.layout();
-        });
-    }
-
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
-    }
-
-    updateAllocatedWidth(ctx: LayoutContext): void {
-        ctx.inst(this.state.child).allocatedWidth = this.allocatedWidth;
-    }
-
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let child = ctx.inst(this.state.child);
-        child.allocatedHeight = this.allocatedHeight;
+        super.updateAllocatedHeight(ctx);
 
-        let element = child.element();
-        element.style.left = '0';
-        element.style.top = '0';
+        // The ripple stores the coordinates of its rectangle. Since Rio likes
+        // to resize and move around components, the rectangle must be updated
+        // appropriately.
+        this.mdcRipple.layout();
     }
 }

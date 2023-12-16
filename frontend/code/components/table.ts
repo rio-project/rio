@@ -94,7 +94,7 @@ export class TableComponent extends ComponentBase {
 
         for (let [columnName, values] of Object.entries(data)) {
             let headerCell = document.createElement('th');
-            headerCell.innerText = columnName;
+            headerCell.textContent = columnName;
             headerCell.addEventListener(
                 'click',
                 this.onHeaderClick.bind(this, columnName)
@@ -116,7 +116,7 @@ export class TableComponent extends ComponentBase {
 
             for (let [i, values] of columnValues.entries()) {
                 let cellElement = document.createElement('td');
-                cellElement.innerText = values[row].toString();
+                cellElement.textContent = values[row].toString();
                 cellElement.style.textAlign = columnAlignments[i];
                 rowElement.appendChild(cellElement);
             }
@@ -152,7 +152,7 @@ export class TableComponent extends ComponentBase {
         let i = 1;
         for (let row of this.tableBody.getElementsByTagName('tr')) {
             let cell = document.createElement('td');
-            cell.innerText = `${i}.`;
+            cell.textContent = `${i}.`;
             cell.style.textAlign = 'right';
             cell.style.opacity = '0.5';
             row.insertBefore(cell, row.firstChild);

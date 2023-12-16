@@ -26,10 +26,7 @@ export class ClassContainerComponent extends SingleContainer {
             element.className = '';
 
             // Add all new values
-            element.classList.add(
-                'rio-single-container',
-                ...deltaState.classes
-            );
+            element.classList.add(...deltaState.classes);
         }
     }
 }

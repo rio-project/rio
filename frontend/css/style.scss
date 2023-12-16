@@ -463,13 +463,6 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 }
 
 // General
-.rio-single-container {
-    display: inline-grid;
-    align-items: stretch;
-    justify-content: stretch;
-    min-width: min-content;
-}
-
 a {
     color: var(--rio-local-accent-bg);
 }

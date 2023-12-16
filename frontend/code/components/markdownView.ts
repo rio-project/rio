@@ -130,7 +130,7 @@ function convertMarkdown(
         ) as HTMLButtonElement;
 
         copyButton.addEventListener('click', () => {
-            const codeToCopy = (codeBlockInner as HTMLElement).innerText;
+            const codeToCopy = (codeBlockInner as HTMLElement).textContent;
             const textArea = document.createElement('textarea');
             textArea.value = codeToCopy;
             document.body.appendChild(textArea);

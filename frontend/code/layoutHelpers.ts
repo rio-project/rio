@@ -13,6 +13,15 @@ export function getTextDimensions(
     text: string,
     style: 'heading1' | 'heading2' | 'heading3' | 'text' | 'dim' | TextStyle
 ): [number, number] {
+    // Make sure the text isn't just whitespace, as that results in a wrong [0,
+    // 0]
+    //
+    // FIXME: Still imperfect, as now all whitespace is the same width, and an
+    // empty string has a width.
+    if (text.trim().length === 0) {
+        text = 'l';
+    }
+
     // Build a key for the cache
     let key;
     if (typeof style === 'string') {
@@ -37,7 +46,7 @@ export function getTextDimensions(
 
     // Spawn an element to measure the text
     let element = document.createElement('div');
-    element.innerText = text;
+    element.textContent = text;
     Object.assign(element.style, textStyleToCss(style));
     element.style.position = 'absolute';
 
