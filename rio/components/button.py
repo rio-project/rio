@@ -126,7 +126,6 @@ class Button(component_base.Component):
             is_loading=self.is_loading,
             width=8,
             initially_disabled_for=self.initially_disabled_for,
-            square_aspect_ratio=False,
         )
 
     def __str__(self) -> str:
@@ -224,7 +223,9 @@ class IconButton(component_base.Component):
             width=self.size,
             height=self.size,
             initially_disabled_for=self.initially_disabled_for,
-            square_aspect_ratio=True,
+            # Make sure the button has a square aspect ratio
+            align_x=0.5,
+            align_y=0.5,
         )
 
 
@@ -238,7 +239,6 @@ class _ButtonInternal(component_base.FundamentalComponent):
     is_sensitive: bool
     is_loading: bool
     initially_disabled_for: float
-    square_aspect_ratio: bool
 
     async def _on_message(self, msg: Any) -> None:
         # Parse the message

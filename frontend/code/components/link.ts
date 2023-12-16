@@ -62,7 +62,7 @@ export class LinkComponent extends SingleContainer {
             // Add the new text
             let textElement = document.createElement('div');
             element.appendChild(textElement);
-            textElement.innerText = deltaState.child_text;
+            textElement.textContent = deltaState.child_text;
 
             // Update the CSS classes
             element.classList.add('rio-text-link');

@@ -148,7 +148,7 @@ export class RevealerComponent extends ComponentBase {
             ) as HTMLElement;
 
             header.style.removeProperty('display');
-            label.innerText = deltaState.header;
+            label.textContent = deltaState.header;
         }
 
         // Update the child

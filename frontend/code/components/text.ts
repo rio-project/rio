@@ -5,6 +5,8 @@ import { LayoutContext } from '../layouting';
 import { pixelsPerEm } from '../app';
 import { getTextDimensions } from '../layoutHelpers';
 
+// TODO
+
 export type TextState = ComponentState & {
     text?: string;
     multiline?: boolean;
@@ -32,7 +34,7 @@ export class TextComponent extends ComponentBase {
         //
         // Make sure not to allow any linebreaks if the text is not multiline.
         if (deltaState.text !== undefined) {
-            this.inner.innerText = deltaState.text.replace(/\n/g, ' ');
+            this.inner.textContent = deltaState.text.replace(/\n/g, ' ');
         }
 
         // Multiline
@@ -74,6 +76,7 @@ export class TextComponent extends ComponentBase {
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {
+        // Wrong, if the text is hidden
         this.requestedHeight = this.inner.scrollHeight / pixelsPerEm;
     }
 }
