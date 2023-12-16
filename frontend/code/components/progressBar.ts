@@ -1,3 +1,4 @@
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCLinearProgress } from '@material/linear-progress';
 // TODO
@@ -50,5 +51,13 @@ export class ProgressBarComponent extends ComponentBase {
             this.mdcProgress.determinate = true;
             this.mdcProgress.progress = deltaState.progress;
         }
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 3;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 1;
     }
 }

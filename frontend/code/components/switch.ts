@@ -1,3 +1,4 @@
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
@@ -65,5 +66,13 @@ export class SwitchComponent extends ComponentBase {
         // TODO: The off state and the insensitive state currently look
         // identical. Make them look different. The switch animation also kinda
         // reacts to user input even if not sensitive.
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 10;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 5;
     }
 }

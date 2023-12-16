@@ -41,7 +41,7 @@ export abstract class ComponentBase {
     elementId: string;
     state: Required<ComponentState>;
 
-    layoutDirty: boolean;
+    isLayoutDirty: boolean;
 
     requestedWidth: number;
     requestedHeight: number;
@@ -55,7 +55,7 @@ export abstract class ComponentBase {
         this.elementId = elementId;
         this.state = state;
 
-        this.layoutDirty = true;
+        this.isLayoutDirty = true;
 
         this.requestedWidth = 0;
         this.requestedHeight = 0;
@@ -87,8 +87,8 @@ export abstract class ComponentBase {
     makeLayoutDirty(): void {
         let cur: ComponentBase | null = this;
 
-        while (cur !== null && !cur.layoutDirty) {
-            cur.layoutDirty = true;
+        while (cur !== null && !cur.isLayoutDirty) {
+            cur.isLayoutDirty = true;
             cur = cur.tryGetParent();
         }
     }

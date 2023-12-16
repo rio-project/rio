@@ -448,6 +448,9 @@ export function updateComponentStates(
             Math.abs(deltaState._size_![1] - instance.state._size_[1]) > 1e-6;
 
         if (width_changed || height_changed) {
+            console.log(
+                `Triggering re-layout because component #${id} changed size: ${instance.state._size_} -> ${deltaState._size_}`
+            );
             instance.makeLayoutDirty();
         }
 

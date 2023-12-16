@@ -38,7 +38,7 @@ export class LayoutContext {
     }
 
     private updateRequestedWidthRecursive(component: ComponentBase) {
-        if (!component.layoutDirty) return;
+        if (!component.isLayoutDirty) return;
 
         for (let child of this.directChildren(component)) {
             this.updateRequestedWidthRecursive(child);
@@ -52,7 +52,7 @@ export class LayoutContext {
     }
 
     private updateAllocatedWidthRecursive(component: ComponentBase) {
-        if (!component.layoutDirty) return;
+        if (!component.isLayoutDirty) return;
 
         let children = component.getDirectChildren();
         let childAllocatedWidths = children.map(
@@ -65,10 +65,10 @@ export class LayoutContext {
             let child = children[i];
 
             if (child.allocatedWidth !== childAllocatedWidths[i]) {
-                child.layoutDirty = true;
+                child.isLayoutDirty = true;
             }
 
-            if (child.layoutDirty) {
+            if (child.isLayoutDirty) {
                 this.updateAllocatedWidthRecursive(child);
             }
 
@@ -78,7 +78,7 @@ export class LayoutContext {
     }
 
     private updateRequestedHeightRecursive(component: ComponentBase) {
-        if (!component.layoutDirty) return;
+        if (!component.isLayoutDirty) return;
 
         for (let child of this.directChildren(component)) {
             this.updateRequestedHeightRecursive(child);
@@ -92,7 +92,7 @@ export class LayoutContext {
     }
 
     private updateAllocatedHeightRecursive(component: ComponentBase) {
-        if (!component.layoutDirty) return;
+        if (!component.isLayoutDirty) return;
 
         let children = this.directChildren(component);
         let childAllocatedHeights = children.map(
@@ -105,14 +105,14 @@ export class LayoutContext {
             let child = children[i];
 
             if (child.allocatedHeight !== childAllocatedHeights[i]) {
-                child.layoutDirty = true;
+                child.isLayoutDirty = true;
             }
 
-            if (child.layoutDirty) {
+            if (child.isLayoutDirty) {
                 this.updateAllocatedHeightRecursive(child);
             }
 
-            child.layoutDirty = false;
+            child.isLayoutDirty = false;
 
             let element = child.element();
             element.style.height = `${child.allocatedHeight * pixelsPerEm}px`;

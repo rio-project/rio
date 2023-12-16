@@ -1,5 +1,6 @@
 import { fillToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
+import { LayoutContext } from '../layouting';
 import { Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
@@ -794,5 +795,13 @@ export class MediaPlayerComponent extends ComponentBase {
         this.sendMessageToBackend({
             type: 'onPlaybackEnd',
         });
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 16;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 9;
     }
 }

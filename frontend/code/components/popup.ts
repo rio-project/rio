@@ -1,5 +1,6 @@
 import { pixelsPerEm } from '../app';
 import { replaceOnlyChild } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
@@ -144,5 +145,36 @@ export class PopupComponent extends ComponentBase {
         // Set the position of the popup
         this.contentContainer.style.left = spawnPointX + 'px';
         this.contentContainer.style.top = spawnPointY + 'px';
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = ctx.inst(this.state.anchor).requestedWidth;
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        ctx.inst(this.state.anchor).allocatedWidth = this.allocatedWidth;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = ctx.inst(this.state.anchor).requestedHeight;
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        // Pass on the allocated space
+        let anchorInst = ctx.inst(this.state.anchor);
+        anchorInst.allocatedHeight = this.allocatedHeight;
+
+        let contentInst = ctx.inst(this.state.content);
+        contentInst.allocatedWidth = this.allocatedWidth;
+        contentInst.allocatedHeight = this.allocatedHeight;
+
+        // And position the children
+        let anchorElem = ctx.elem(this.state.anchor);
+        anchorElem.style.left = '0';
+        anchorElem.style.top = '0';
+
+        let contentElem = ctx.elem(this.state.content);
+        contentElem.style.left = '0';
+        contentElem.style.top = '0';
     }
 }

@@ -1,8 +1,10 @@
 import { applyColorSet } from '../designApplication';
 import { ColorSet } from '../models';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { SingleContainer } from './singleContainer';
+import { replaceOnlyChild } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 
 // TODO
 
@@ -17,7 +19,7 @@ export type ButtonState = ComponentState & {
     square_aspect_ratio?: boolean;
 };
 
-export class ButtonComponent extends SingleContainer {
+export class ButtonComponent extends ComponentBase {
     state: Required<ButtonState>;
     private mdcRipple: MDCRipple;
 
@@ -34,9 +36,11 @@ export class ButtonComponent extends SingleContainer {
         this.mdcRipple = new MDCRipple(element);
 
         // Detect button presses
-        element.onmouseup = (e) => {
+        element.onmouseup = (event) => {
+            event.stopPropagation();
+
             // Only react to left clicks
-            if (e.button !== 0) {
+            if (event.button !== 0) {
                 return;
             }
 
@@ -65,6 +69,12 @@ export class ButtonComponent extends SingleContainer {
     }
 
     updateElement(element: HTMLElement, deltaState: ButtonState): void {
+        // Update the child
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
+        }
+
         // Set the shape
         if (deltaState.shape !== undefined) {
             element.classList.remove(
@@ -136,5 +146,26 @@ export class ButtonComponent extends SingleContainer {
         requestAnimationFrame(() => {
             this.mdcRipple.layout();
         });
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        ctx.inst(this.state.child).allocatedWidth = this.allocatedWidth;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        let child = ctx.inst(this.state.child);
+        child.allocatedHeight = this.allocatedHeight;
+
+        let element = child.element();
+        element.style.left = '0';
+        element.style.top = '0';
     }
 }
