@@ -2230,11 +2230,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-navigation {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 2rem;
 
     // There's an overzealous rule which tries to scale up the root component,
     // but also matches the debugger
@@ -2250,7 +2251,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-navigation > *:first-child {
-    margin-top: 1rem;
+    margin-top: 2rem;
 }
 
 .rio-debugger-navigation-rio-logo {
@@ -2297,21 +2298,34 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     );
 
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 1s ease-out;
 }
 
 .rio-debugger-navigation-rio-logo:hover::before {
     opacity: 1;
+    transition: opacity 0.15s ease-out;
 }
 
 .rio-debugger-navigation-button {
     pointer-events: auto;
     cursor: pointer;
-
     position: relative;
-    width: 2.5rem;
-    height: 2.5rem;
-    padding: 0.5rem;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 6rem;
+    padding: 0 0.3rem;
+    margin: 0 0.3rem;
+    border-radius: $infinite-corner-radius;
+
+    * > svg {
+        width: 2rem;
+        height: 2rem;
+    }
 
     // MDC Ripple
     overflow: hidden;
@@ -2319,6 +2333,18 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
+}
+
+.rio-debugger-navigation-marker {
+    position: absolute;
+    left: 0.3rem;
+    right: 0.3rem;
+    height: 6rem;
+
+    background: var(--rio-global-primary-bg);
+    border-radius: $infinite-corner-radius;
+
+    opacity: 0.3;
 }
 
 .rio-debugger-content {
@@ -2345,6 +2371,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-header {
+    margin-bottom: 1rem;
 }
 
 .rio-debugger-tree-component-tree {
