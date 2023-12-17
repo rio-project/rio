@@ -1615,11 +1615,11 @@ document.body.removeChild(a)
         }
 
         # Colors derived from, but not stored in the theme
-        blend_factor = 0.06 if is_light_theme else 0.02
-        debugger_background_color = thm.neutral_palette.background.blend(
+        blend_factor = 0.06 if is_light_theme else 0.03
+        debugger_stripe_color = thm.debugger_palette.background.blend(
             thm.warning_palette.background, blend_factor
         )
-        variables["--rio-global-debugger-bg"] = f"#{debugger_background_color.hex}"
+        variables["--rio-global-debugger-bg-stripe"] = f"#{debugger_stripe_color.hex}"
 
         # Palettes
         palette_names = (
@@ -1628,6 +1628,7 @@ document.body.removeChild(a)
             "background",
             "neutral",
             "disabled",
+            "debugger",
             "success",
             "warning",
             "danger",
