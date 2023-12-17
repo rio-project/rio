@@ -2354,8 +2354,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     border-radius: $infinite-corner-radius;
 
     * > svg {
-        width: 2rem;
-        height: 2rem;
+        width: 1.7rem;
+        height: 1.7rem;
     }
 
     // MDC Ripple
@@ -2371,8 +2371,20 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transition: background-color 0.1s ease-in-out;
 }
 
-.rio-debugger-navigation-button-selected {
-    color: var(--rio-global-primary-bg);
+.rio-debugger-navigation-marker {
+    pointer-events: none;
+    position: absolute;
+    left: 0.3rem;
+    right: 0.3rem;
+
+    background: var(--rio-global-primary-bg);
+    border-radius: $infinite-corner-radius;
+
+    opacity: 0.3;
+    transition:
+        top 0.4s $transition-timing-overshoot,
+        height 0.4s $transition-timing-overshoot,
+        opacity 0.2s ease-in-out;
 }
 
 .rio-debugger-content {
@@ -2519,11 +2531,11 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-debugger-component-highlighter {
     pointer-events: none;
-
     position: fixed;
-    border: 0.3rem solid var(--rio-global-primary-bg);
-    border-radius: 1rem;
     z-index: $z-index-debugger-highlighter;
 
-    box-shadow: 0 0 0 max(100vh, 100vw) rgba(0, 0, 0, 0.6);
+    border: 0.4rem solid var(--rio-global-secondary-bg);
+    padding: 0.2rem;
+    border-radius: 1rem;
+    box-shadow: 0 0 0 9999rem rgba(0, 0, 0, 0.6);
 }
