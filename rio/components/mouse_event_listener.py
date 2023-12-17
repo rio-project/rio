@@ -60,6 +60,19 @@ class MouseLeaveEvent(_MousePositionedEvent):
     pass
 
 
+@dataclass
+class MouseDragEvent:
+    button: MouseButton
+
+    start_x: float
+    start_y: float
+    start_component: rio.Component
+
+    end_x: float
+    end_y: float
+    end_component: rio.Component
+
+
 class MouseEventListener(component_base.FundamentalComponent):
     """
     Allows you to listen for mouse events on a component.
@@ -94,6 +107,7 @@ class MouseEventListener(component_base.FundamentalComponent):
     on_mouse_move: rio.EventHandler[MouseMoveEvent] = None
     on_mouse_enter: rio.EventHandler[MouseEnterEvent] = None
     on_mouse_leave: rio.EventHandler[MouseLeaveEvent] = None
+    on_mouse_drag: rio.EventHandler[MouseDragEvent] = None
 
     def _custom_serialize(self) -> JsonDoc:
         return {
@@ -102,6 +116,7 @@ class MouseEventListener(component_base.FundamentalComponent):
             "reportMouseMove": self.on_mouse_move is not None,
             "reportMouseEnter": self.on_mouse_enter is not None,
             "reportMouseLeave": self.on_mouse_leave is not None,
+            "reportMouseDrag": self.on_mouse_drag is not None,
         }
 
     async def _on_message(self, msg: Any) -> None:
@@ -156,6 +171,24 @@ class MouseEventListener(component_base.FundamentalComponent):
                 MouseLeaveEvent(
                     x=msg["x"],
                     y=msg["y"],
+                ),
+            )
+
+        elif msg_type == "mouseDrag":
+            await self.call_event_handler(
+                self.on_mouse_drag,
+                MouseDragEvent(
+                    button=msg["button"],
+                    start_x=msg["startX"],
+                    start_y=msg["startY"],
+                    start_component=self.session._weak_components_by_id[
+                        msg["startComponent"]
+                    ],
+                    end_x=msg["endX"],
+                    end_y=msg["endY"],
+                    end_component=self.session._weak_components_by_id[
+                        msg["endComponent"]
+                    ],
                 ),
             )
 

@@ -91,6 +91,10 @@ globalThis.componentClasses = componentClasses;
 
 const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
 
+export function getInstanceByElement(element: HTMLElement): ComponentBase {
+    return elementsToInstances.get(element);
+}
+
 export function getElementByComponentId(id: ComponentId): HTMLElement {
     let element = document.getElementById(`rio-id-${id}`);
 
