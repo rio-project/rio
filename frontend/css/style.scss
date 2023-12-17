@@ -2384,7 +2384,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transition:
         top 0.4s $transition-timing-overshoot,
         height 0.4s $transition-timing-overshoot,
-        opacity 0.2s ease-in-out;
+        opacity 0.1s ease-in-out;
 }
 
 .rio-debugger-content {

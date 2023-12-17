@@ -171,8 +171,16 @@ export class Debugger {
 
         // Navigate when clicked
         element.addEventListener('click', (event) => {
-            event?.stopPropagation();
-            this.navigateTo(navTarget);
+            event.stopPropagation();
+
+            // If this page is already selected deselect it
+            if (this.displayedPageName === navTarget) {
+                this.navigateTo(null);
+            }
+            // Otherwise switch to it
+            else {
+                this.navigateTo(navTarget);
+            }
         });
     }
 }
