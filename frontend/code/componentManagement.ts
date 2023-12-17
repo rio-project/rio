@@ -192,8 +192,11 @@ function createLayoutComponentStates(
         message[marginId] = {
             _type_: 'Margin-builtin',
             _python_type_: 'Margin (injected)',
+            _key_: null,
+            _margin_: [0, 0, 0, 0],
             _size_: [null, null],
             _grow_: entireState['_grow_'],
+            _rio_internal_: true,
             // @ts-ignore
             child: resultId,
             margin_left: margin[0],
@@ -211,8 +214,11 @@ function createLayoutComponentStates(
         message[alignId] = {
             _type_: 'Align-builtin',
             _python_type_: 'Align (injected)',
+            _key_: null,
+            _margin_: [0, 0, 0, 0],
             _size_: entireState['_size_'],
             _grow_: entireState['_grow_'],
+            _rio_internal_: true,
             // @ts-ignore
             child: resultId,
             align_x: align[0],

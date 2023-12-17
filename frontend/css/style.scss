@@ -31,8 +31,8 @@ html[data-theme='dark'] {
 $z-index-overlay: 10000;
 $z-index-popup: 10001;
 $z-index-error-popup: 10002;
-$z-index-debugger: 10003;
-$z-index-debugger-highlighter: 10004;
+$z-index-debugger-highlighter: 10003;
+$z-index-debugger: 10004;
 
 // "Infinite" corner radius, for creating pill shapes
 $infinite-corner-radius: 99999px;
@@ -2441,13 +2441,33 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-tree-component-details {
-    min-height: 20rem;
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    row-gap: 0.5rem;
+    column-gap: 0.5rem;
+}
+
+.rio-debugger-tree-component-details-heading {
+    display: flex;
+    align-items: end;
+    justify-content: stretch;
+}
+
+.rio-debugger-tree-component-details-key-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rio-debugger-tree-component-details-key-container > *:first-child {
+    width: 1.2rem;
+    height: 1.2rem;
 }
 
 .rio-debugger-tree-component-docs-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-top: 1rem;
 
     color: var(--rio-local-accent-bg);
 
@@ -2534,8 +2554,14 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     position: fixed;
     z-index: $z-index-debugger-highlighter;
 
+    // The border width is also referenced in JavaScript!
+    //
+    // If you change this, make sure to also update the code which placed the
+    // highlighter in the first place. It needs to be offset by the border width
+    // and padding to make sure that the highlighter is placed correctly.
     border: 0.4rem solid var(--rio-global-secondary-bg);
-    padding: 0.2rem;
+    padding: 0rem;
+
     border-radius: 1rem;
     box-shadow: 0 0 0 9999rem rgba(0, 0, 0, 0.6);
 }

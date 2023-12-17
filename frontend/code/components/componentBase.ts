@@ -5,13 +5,26 @@ import { EventHandler, DragHandler } from '../eventHandling';
 /// Base for all component states. Updates received from the backend are
 /// partial, hence most properties may be undefined.
 export type ComponentState = {
+    // The component type's unique id. Crucial so the client knows what kind of
+    // component to spawn.
     _type_?: string;
+    // Debugging information. Useful both for developing rio itself, and also
+    // displayed to developers in Rio's debugger
     _python_type_?: string;
+    // Debugging information
     _key_?: string | null;
+    // How much space to leave on the left, top, right, bottom
     _margin_?: [number, number, number, number];
+    // Explicit size request, if any
     _size_?: [number | null, number | null];
+    // Alignment of the component within its parent, if any
     _align_?: [number | null, number | null];
+    // Whether the component would like to receive additional space if there is
+    // any left over
     _grow_?: [boolean, boolean];
+    // Debugging information: The debugger may not display components to the
+    // developer if they're considered internal
+    _rio_internal_?: boolean;
 };
 
 /// Base class for all components
