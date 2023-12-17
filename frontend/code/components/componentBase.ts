@@ -307,7 +307,7 @@ export abstract class ComponentBase {
 
         // Notify the debugger, if any
         if (globalThis.rioDebugger !== undefined) {
-            globalThis.rioDebugger.onComponentStateChange({
+            globalThis.rioDebugger.afterComponentStateChange({
                 componentIdString: deltaState,
             });
         }

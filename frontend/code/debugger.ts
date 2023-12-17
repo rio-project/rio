@@ -176,12 +176,15 @@ export class Debugger {
         });
     }
 
-    /// Called by the outside world when changes to component states are made,
-    /// giving the debugger a chance to update its display.
-    public onComponentStateChange(deltaStates: {
+    /// Called by the outside world after changes to component states have
+    /// occurred, giving the debugger a chance to update its display.
+    public afterComponentStateChange(deltaStates: {
         [key: string]: { [key: string]: any };
     }) {
-        console.log('TODO: Handle state updates');
+        // Pass on the information to the current driver
+        if (this.currentDriver !== null) {
+            this.currentDriver.afterComponentStateChange(deltaStates);
+        }
     }
 }
 

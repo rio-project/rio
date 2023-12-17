@@ -213,7 +213,7 @@ export async function processMessageReturnResponse(
 
             // Notify the debugger, if any
             if (globalThis.rioDebugger !== undefined) {
-                globalThis.rioDebugger.onComponentStateChange(
+                globalThis.rioDebugger.afterComponentStateChange(
                     message.params.deltaStates
                 );
             }
