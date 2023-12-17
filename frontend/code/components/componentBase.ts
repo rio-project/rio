@@ -6,7 +6,7 @@ import { callRemoteMethodDiscardResponse } from '../rpc';
 export type ComponentState = {
     _type_?: string;
     _python_type_?: string;
-    _key_?: string;
+    _key_?: string | null;
     _margin_?: [number, number, number, number];
     _size_?: [number | null, number | null];
     _align_?: [number | null, number | null];

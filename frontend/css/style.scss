@@ -140,6 +140,49 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // TODO
 }
 
+.rio-switcheroo-debugger {
+    // Color scheme for anything debugger related. Similar to the neutral
+    // palette.
+
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-debugger-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-debugger-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-debugger-bg-active);
+
+    --rio-local-accent-bg: var(--rio-global-secondary-bg);
+    --rio-local-accent-fg: var(--rio-global-secondary-fg);
+
+    // Text Styles
+    --rio-local-heading1-color: var(--rio-global-heading1-color);
+    --rio-local-heading1-background: var(--rio-global-heading1-background);
+    --rio-local-heading1-background-clip: var(
+        --rio-global-heading1-background-clip
+    );
+    --rio-local-heading1-fill-color: var(--rio-global-heading1-fill-color);
+
+    --rio-local-heading2-color: var(--rio-global-heading2-color);
+    --rio-local-heading2-background: var(--rio-global-heading2-background);
+    --rio-local-heading2-background-clip: var(
+        --rio-global-heading2-background-clip
+    );
+    --rio-local-heading2-fill-color: var(--rio-global-heading2-fill-color);
+
+    --rio-local-heading3-color: var(--rio-global-heading3-color);
+    --rio-local-heading3-background: var(--rio-global-heading3-background);
+    --rio-local-heading3-background-clip: var(
+        --rio-global-heading3-background-clip
+    );
+    --rio-local-heading3-fill-color: var(--rio-global-heading3-fill-color);
+
+    --rio-local-text-color: var(--rio-global-debugger-fg);
+    --rio-local-text-background: 'none';
+    --rio-local-text-background-clip: 'border-box';
+    --rio-local-text-fill-color: 'transparent';
+
+    // Material Design Web
+    // TODO
+}
+
 .rio-switcheroo-primary {
     // surface := primary
     //
@@ -579,7 +622,7 @@ body > * > * > * {
     }
 
     to {
-        background-position: 2rem 0rem;
+        background-position: 3rem 0rem;
     }
 }
 
@@ -597,8 +640,8 @@ body > * > * > * {
         var(--rio-global-warning-bg) 75%,
         var(--rio-global-warning-bg)
     );
-    background-size: 2rem 2rem;
-    animation: barber-pole 0.7s linear infinite;
+    background-size: 3rem 3rem;
+    animation: barber-pole 1.5s linear infinite;
 }
 
 // Grid
@@ -2216,17 +2259,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     display: flex;
     flex-direction: row;
 
-    background-image: linear-gradient(
-        -45deg,
-        var(--rio-local-plain-bg) 25%,
-        var(--rio-global-debugger-bg) 25%,
-        var(--rio-global-debugger-bg) 50%,
-        var(--rio-local-plain-bg) 50%,
-        var(--rio-local-plain-bg) 75%,
-        var(--rio-global-debugger-bg) 75%,
-        var(--rio-global-debugger-bg)
-    );
-    background-size: 3rem 3rem;
+    // Separate it from the rest of the page
+    border-left: 1px solid var(--rio-local-text-color);
 }
 
 .rio-debugger-navigation {
@@ -2235,7 +2269,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     flex-direction: column;
     align-items: stretch;
     justify-content: space-between;
-    gap: 2rem;
+    gap: 1rem;
 
     // There's an overzealous rule which tries to scale up the root component,
     // but also matches the debugger
@@ -2244,14 +2278,11 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     min-width: unset;
     max-width: unset;
 
-    background: var(--rio-global-debugger-bg);
-
-    // Separate it from the rest of the page
-    border-left: 1px solid var(--rio-local-text-color);
+    background: var(--rio-global-debugger-bg-stripe);
 }
 
 .rio-debugger-navigation > *:first-child {
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
 .rio-debugger-navigation-rio-logo {
@@ -2303,7 +2334,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-debugger-navigation-rio-logo:hover::before {
     opacity: 1;
-    transition: opacity 0.15s ease-out;
+    transition: opacity 0.1s ease-out;
 }
 
 .rio-debugger-navigation-button {
@@ -2333,18 +2364,15 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
+
+    // Selection / animation
+    color: var(--rio-local-text-color);
+
+    transition: background-color 0.1s ease-in-out;
 }
 
-.rio-debugger-navigation-marker {
-    position: absolute;
-    left: 0.3rem;
-    right: 0.3rem;
-    height: 6rem;
-
-    background: var(--rio-global-primary-bg);
-    border-radius: $infinite-corner-radius;
-
-    opacity: 0.3;
+.rio-debugger-navigation-button-selected {
+    color: var(--rio-global-primary-bg);
 }
 
 .rio-debugger-content {
@@ -2355,11 +2383,20 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     min-width: unset;
     max-width: unset;
 
-    min-width: 20rem;
     height: 100vh;
-    padding: 1rem;
 
-    border-left: 1px solid var(--rio-local-text-color);
+    background-image: linear-gradient(
+        -45deg,
+        var(--rio-global-debugger-bg) 25%,
+        var(--rio-global-debugger-bg-stripe) 25%,
+        var(--rio-global-debugger-bg-stripe) 50%,
+        var(--rio-global-debugger-bg) 50%,
+        var(--rio-global-debugger-bg) 75%,
+        var(--rio-global-debugger-bg-stripe) 75%,
+        var(--rio-global-debugger-bg-stripe)
+    );
+    background-size: 3rem 3rem;
+    animation: barber-pole 7s linear infinite;
 }
 
 .rio-debugger-tree-view {
@@ -2368,6 +2405,9 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     align-items: stretch;
     justify-content: stretch;
     gap: 0.5rem;
+
+    min-width: 20rem;
+    padding: 1rem;
 }
 
 .rio-debugger-header {
@@ -2418,6 +2458,10 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     position: relative;
     padding: 0.3rem 0.6rem;
+
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
 }
 
 .rio-debugger-component-tree-item-header::after {
@@ -2441,6 +2485,15 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transition: opacity 0.1s ease-in-out;
 }
 
+.rio-debugger-component-tree-item-header > div > svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.rio-debugger-component-tree-item-header-weakly-selected {
+    font-weight: bold;
+}
+
 .rio-debugger-component-tree-item-header-strongly-selected {
     font-weight: bold;
     color: var(--rio-global-secondary-fg);
@@ -2455,7 +2508,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-component-tree-item-header-strongly-selected::after {
-    opacity: 1;
+    opacity: 0.8;
 }
 
 .rio-debugger-component-tree-item-children {

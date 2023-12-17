@@ -48,6 +48,7 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
     """
     result: JsonDoc = {
         "_python_type_": type(component).__name__,
+        "_key_": component.key,
     }
 
     # Add layout properties, in a more succinct way than sending them

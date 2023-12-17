@@ -10,18 +10,22 @@ class Debugger {
     rootElement: HTMLElement;
     contentContainer: HTMLElement;
 
+    // A string representing which page is currently being displayed in the
+    // content container. `null` means that no page is being displayed and the
+    // container is hidden.
+    displayedPageName: string | null = null;
+
     constructor() {
         // Spawn the debugger's HTML
         this.rootElement = document.createElement('div');
         this.rootElement.classList.add('rio-debugger');
-        this.rootElement.classList.add('rio-switcheroo-neutral');
+        this.rootElement.classList.add('rio-switcheroo-debugger');
 
         document.body.appendChild(this.rootElement);
 
         this.rootElement.innerHTML = `
             <div class="rio-debugger-content"></div>
             <div class="rio-debugger-navigation">
-                <div class="rio-debugger-navigation-marker"></div>
                 <div style="flex-grow: 1;"></div>
                 <a href="https://rio.dev" target="_blank" class="rio-debugger-navigation-rio-logo">
                     <img src="/rio/asset/rio-logo.png">
@@ -40,9 +44,52 @@ class Debugger {
         this.makeNavButton('Docs', 'library-books:fill', 'docs');
         this.makeNavButton('Stats', 'monitor-heart:fill', 'admin');
         this.makeNavButton('Tree', 'view-quilt:fill', 'componentTree');
+    }
 
-        // For now, just show the tree view
-        this.contentContainer.appendChild(this.makeTreeView());
+    /// Display the given page in the content container, replacing the current
+    /// one.
+    navigateTo(pageName: string | null) {
+        // Already there?
+        if (pageName === this.displayedPageName) {
+            return;
+        }
+
+        // Clean up
+        if (this.displayedPageName !== null) {
+            // Unselect the old button
+            let oldButton = this.rootElement.querySelector(
+                '.rio-debugger-navigation-button-selected'
+            ) as HTMLElement;
+
+            oldButton.classList.remove(
+                'rio-debugger-navigation-button-selected'
+            );
+
+            // Remove the current page
+            this.contentContainer.innerHTML = '';
+        }
+
+        // Update the state
+        this.displayedPageName = pageName;
+
+        // Done?
+        if (pageName === null) {
+            return;
+        }
+
+        // Select the new button
+        let newButton = this.rootElement.querySelector(
+            `#rio-debugger-navigation-button-${pageName}`
+        ) as HTMLElement;
+
+        newButton.classList.add('rio-debugger-navigation-button-selected');
+
+        // Add the new page
+        if (pageName === 'componentTree') {
+            this.contentContainer.appendChild(this.makeTreeView());
+        } else {
+            console.error(`Unknown debugger page: ${pageName}`);
+        }
     }
 
     makeNavButton(text: string, icon: string, navTarget: string) {
@@ -52,6 +99,7 @@ class Debugger {
         ) as HTMLElement;
 
         let element = document.createElement('div');
+        element.id = `rio-debugger-navigation-button-${navTarget}`;
         element.classList.add('rio-debugger-navigation-button');
         navBar.insertBefore(element, navBar.firstElementChild);
 
@@ -68,6 +116,12 @@ class Debugger {
         // MDC Ripple
         element.classList.add('mdc-ripple-surface');
         MDCRipple.attachTo(element);
+
+        // Navigate when clicked
+        element.addEventListener('click', (event) => {
+            event?.stopPropagation();
+            this.navigateTo(navTarget);
+        });
     }
 
     highlightTreeItemAndParents(instance: ComponentBase) {
@@ -135,14 +189,41 @@ class Debugger {
         element.appendChild(header);
 
         // Add the children
+        let children = instance.getDirectChildren();
         let childElement = document.createElement('div');
         childElement.classList.add('rio-debugger-component-tree-item-children');
         childElement.style.marginLeft = '0.7rem';
         childElement.style.display = 'none';
         element.appendChild(childElement);
 
-        for (let childInfo of instance.getDirectChildren()) {
+        for (let childInfo of children) {
             this.makeTreeNode(childElement, childInfo, level + 1);
+        }
+
+        // Add icons to give additional information
+        let icons: string[] = [];
+
+        // Icon: Container
+        if (children.length <= 1) {
+        } else if (children.length > 9) {
+            icons.push('filter-9-plus');
+        } else {
+            icons.push(`filter-${children.length}`);
+        }
+
+        // Icon: Key
+        if (instance.state._key_ !== null) {
+            icons.push('key');
+        }
+
+        let spacer = document.createElement('div');
+        spacer.style.flexGrow = '1';
+        header.appendChild(spacer);
+
+        for (let icon of icons) {
+            let iconElement = document.createElement('div');
+            header.appendChild(iconElement);
+            applyIcon(iconElement, icon, 'currentColor');
         }
 
         // Toggle the children when the element is clicked
