@@ -15,7 +15,7 @@ __all__ = [
 
 class Text(component_base.FundamentalComponent):
     """
-    Displays unfornatted text.
+    Displays unformatted text.
 
     `Text` displays text without any formatting, making it one of the most
     commonly used components in Rio.

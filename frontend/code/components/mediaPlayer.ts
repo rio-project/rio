@@ -82,6 +82,7 @@ export class MediaPlayerComponent extends ComponentBase {
     private _overlayVisible: boolean = true;
     private _isFullScreen: boolean = false;
     private _hasAudio: boolean = false;
+    private _notifyBackend: boolean = true;
 
     /// Update the overlay's opacity to be what it currently should be.
     _updateOverlay(): void {
@@ -158,10 +159,17 @@ export class MediaPlayerComponent extends ComponentBase {
 
     /// Set the volume of the video
     setVolume(volume: number): void {
-        this.mediaPlayer.volume = this.humanVolumeToLinear(volume);
+        // Floating point math makes it pretty much impossible to hit 0, so if
+        // the volume is low enough we'll clamp it to 0.
+        let linearVolume = this.humanVolumeToLinear(volume);
+        if (linearVolume < 0.0001) {
+            linearVolume = 0;
+        }
+
+        this.mediaPlayer.volume = linearVolume;
 
         // Unmute, if previously muted
-        if (volume > 0 && this.mediaPlayer.muted && this._hasAudio) {
+        if (linearVolume > 0 && this.mediaPlayer.muted && this._hasAudio) {
             this.mediaPlayer.muted = false;
         }
     }
@@ -377,9 +385,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
         this.timelineOuter.addEventListener('click', (event: MouseEvent) => {
             event.stopPropagation();
-            let rect = this.timelineOuter.getBoundingClientRect();
-            let progress = (event.clientX - rect.left) / rect.width;
-            this.mediaPlayer.currentTime = this.mediaPlayer.duration * progress;
+            this._seekFromMousePosition(event);
         });
 
         this.timelineOuter.addEventListener(
@@ -396,6 +402,13 @@ export class MediaPlayerComponent extends ComponentBase {
             this.timelineHover.style.opacity = '0';
         });
 
+        this.addDragHandler(
+            this.timelineOuter,
+            this._onTimelineDragStart.bind(this),
+            this._onTimelineDrag.bind(this),
+            this._onTimelineDragEnd.bind(this)
+        );
+
         this.volumeOuter.addEventListener('click', (event: MouseEvent) => {
             event.stopPropagation();
 
@@ -404,11 +417,15 @@ export class MediaPlayerComponent extends ComponentBase {
                 return;
             }
 
-            let rect = this.volumeOuter.getBoundingClientRect();
-            let volume = (event.clientX - rect.left) / rect.width;
-            volume = Math.min(1, Math.max(0, volume));
-            this.setVolume(volume);
+            this._setVolumeFromMousePosition(event);
         });
+
+        this.addDragHandler(
+            this.volumeOuter,
+            this._onVolumeDrag.bind(this),
+            this._onVolumeDrag.bind(this),
+            this._onVolumeDragEnd.bind(this)
+        );
 
         this.muteButton.addEventListener(
             'wheel',
@@ -577,17 +594,19 @@ export class MediaPlayerComponent extends ComponentBase {
         this._updateVolumeSliderAndIcon();
 
         // Update the state and notify the backend
-        this.setStateAndNotifyBackend({
-            volume: newHumanVolume,
-            muted: this.mediaPlayer.muted,
-        });
+        if (this._notifyBackend) {
+            this.setStateAndNotifyBackend({
+                volume: newHumanVolume,
+                muted: this.mediaPlayer.muted,
+            });
+        }
     }
 
     private _updateVolumeSliderAndIcon(): void {
         let humanVolume = this.linearVolumeToHuman(this.mediaPlayer.volume);
 
         // Update the mute button's icon
-        if (this.mediaPlayer.muted || this.mediaPlayer.volume == 0) {
+        if (this.mediaPlayer.muted || this.mediaPlayer.volume === 0) {
             // When muted, the volume slider displays 0
             this.volumeCurrent.style.width = '0';
 
@@ -633,21 +652,57 @@ export class MediaPlayerComponent extends ComponentBase {
         this.setVolume(Math.max(humanVolume - 0.1, 0));
     }
 
-    private _onError(event: string | Event): void {
-        this.sendMessageToBackend({
-            type: 'onError',
+    private _onVolumeDrag(event: MouseEvent): void {
+        // While dragging, change the volume but don't send it to the backend
+        // yet
+        this._notifyBackend = false;
+        this._setVolumeFromMousePosition(event);
+    }
+
+    private _onVolumeDragEnd(event: MouseEvent): void {
+        // Now that the user has stopped dragging, send the final volume to the
+        // backend. We don't need to do anything else, since releasing the mouse
+        // doesn't change the volume. (Only moving the mouse does.)
+        this._notifyBackend = true;
+
+        this.setStateAndNotifyBackend({
+            volume: this.linearVolumeToHuman(this.mediaPlayer.volume),
         });
     }
 
-    private _onPlaybackEnd(event: Event): void {
-        this.sendMessageToBackend({
-            type: 'onPlaybackEnd',
-        });
+    private _setVolumeFromMousePosition(event: MouseEvent): void {
+        let rect = this.volumeOuter.getBoundingClientRect();
+        let volume = (event.clientX - rect.left) / rect.width;
+        volume = Math.min(1, Math.max(0, volume));
+        this.setVolume(volume);
+    }
+
+    private _getProgressFractionFromMousePosition(event: MouseEvent): number {
+        let rect = this.timelineOuter.getBoundingClientRect();
+        return (event.clientX - rect.left) / rect.width;
+    }
+
+    private _onTimelineDragStart(event: MouseEvent): void {
+        this.mediaPlayer.pause(); // Pause the playback while dragging
+        this._onTimelineDrag(event);
+    }
+
+    private _onTimelineDrag(event: MouseEvent): void {
+        let progress = this._getProgressFractionFromMousePosition(event);
+        this.timelinePlayed.style.width = `${progress * 100}%`;
+        this.mediaPlayer.currentTime = this.mediaPlayer.duration * progress;
+    }
+
+    private _onTimelineDragEnd(event: MouseEvent): void {
+        this.mediaPlayer.play();
+    }
+
+    private _seekFromMousePosition(event: MouseEvent): void {
+        let progress = this._getProgressFractionFromMousePosition(event);
+        this.mediaPlayer.currentTime = this.mediaPlayer.duration * progress;
     }
 
     private _onKeyPress(event: KeyboardEvent): void {
-        console.log('PRESS', event.key);
-
         if (!this.state.controls) {
             return;
         }
@@ -725,5 +780,17 @@ export class MediaPlayerComponent extends ComponentBase {
 
     grabKeyboardFocus(): void {
         this.element().focus();
+    }
+
+    private _onError(event: string | Event): void {
+        this.sendMessageToBackend({
+            type: 'onError',
+        });
+    }
+
+    private _onPlaybackEnd(event: Event): void {
+        this.sendMessageToBackend({
+            type: 'onPlaybackEnd',
+        });
     }
 }

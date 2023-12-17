@@ -1,5 +1,6 @@
 import { getChildIds, getInstanceByComponentId } from '../componentManagement';
 import { callRemoteMethodDiscardResponse } from '../rpc';
+import { EventHandler, DragHandler } from '../eventHandling';
 
 /// Base for all component states. Updates received from the backend are
 /// partial, hence most properties may be undefined.
@@ -32,6 +33,8 @@ export abstract class ComponentBase {
     protected _minSizeUser: [string | null, string | null];
     protected _minSizeComponentImpl: [string | null, string | null];
     protected _minSizeContainer: [string | null, string | null];
+
+    private _eventHandlers: EventHandler[] = [];
 
     constructor(elementId: string, state: Required<ComponentState>) {
         this.elementId = elementId;
@@ -182,7 +185,11 @@ export abstract class ComponentBase {
     /// This method is called right before the component's HTML element is
     /// removed from the DOM. It can be used for cleaning up event handlers and
     /// helper HTML elements (like popups).
-    onDestruction(element: HTMLElement): void {}
+    onDestruction(element: HTMLElement): void {
+        for (let handler of this._eventHandlers) {
+            handler.disconnect();
+        }
+    }
 
     /// Given a partial state update, this function updates the component's HTML
     /// element to reflect the new state.
@@ -281,6 +288,17 @@ export abstract class ComponentBase {
             componentId: parseInt(this.elementId.substring('rio-id-'.length)),
             deltaState: deltaState,
         });
+    }
+
+    addDragHandler(
+        element: HTMLElement,
+        onStart: null | ((event: MouseEvent) => void) = null,
+        onMove: null | ((event: MouseEvent) => void) = null,
+        onEnd: null | ((event: MouseEvent) => void) = null
+    ): DragHandler {
+        let handler = new DragHandler(element, onStart, onMove, onEnd);
+        this._eventHandlers.push(handler);
+        return handler;
     }
 }
 
