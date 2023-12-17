@@ -44,7 +44,7 @@ export class DebuggerTreeDriver {
             </div>
             <div class="rio-debugger-tree-component-details"></div>
             <a class="rio-debugger-tree-component-docs-link rio-link">
-                <div></div> View Documentation
+                <div></div> Documentation
             </a>
         `;
 
@@ -575,8 +575,9 @@ export class DebuggerTreeDriver {
         makeCell(4, 1, align_y, valueStyle);
 
         // Link to documentation
-        // TODO: Determine whether this is a Rio component or not
-        let isRioComponent = Math.random() < 0.5;
+        // TODO: Properly determine whether this is a Rio component or not
+        let isRioComponent = selectedComponent.state._type_ !== 'Placeholder';
+
         if (isRioComponent) {
             let docUrl = `https://rio.dev/documentation/${selectedComponent.state._python_type_.toLowerCase()}`;
 
