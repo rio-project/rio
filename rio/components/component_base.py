@@ -430,6 +430,14 @@ class Component(metaclass=ComponentMeta):
         defaultdict[event.EventTag, Tuple[Callable[..., Any], ...]]
     ] = defaultdict(tuple)
 
+    # Whether this component class is built into Rio, rather than user defined,
+    # or from a library.
+    _rio_builtin_: ClassVar[bool] = False
+
+    # Whether this instance is internal to Rio, e.g. because the spawning
+    # component is a high-level component defined in Rio.
+    _rio_internal_: bool = dataclasses.field(default=False, init=False, repr=False)
+
     @classmethod
     def _preprocess_dataclass_fields(cls):
         # When a field has a default value (*not* default factory!), the
@@ -526,6 +534,17 @@ class Component(metaclass=ComponentMeta):
                         _periodic_event_worker(weakref.ref(self), event_handler),
                         name=f"`rio.event.periodic` event worker for {self}",
                     )
+
+        # Track whether this instance is internal to Rio. This is the case if
+        # this component's creator is defined in Rio.
+        creator = global_state.currently_building_component
+        if creator is None:
+            assert type(self).__qualname__ == "HighLevelRootComponent", type(
+                self
+            ).__qualname__
+            self._rio_internal_ = True
+        else:
+            self._rio_internal_ = creator._rio_builtin_
 
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)
@@ -687,6 +706,9 @@ class Component(metaclass=ComponentMeta):
             or event.EventTag.ON_UNMOUNT in cls._rio_event_handlers_
         ):
             cls._watch_tree_mount_and_unmount_ = True
+
+        # Is this class built into Rio?
+        cls._rio_builtin_ = cls.__module__.startswith("rio.")
 
     @classmethod
     def _initialize_state_properties(

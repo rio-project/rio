@@ -21,13 +21,11 @@ export class Debugger {
         // Spawn the debugger's HTML
         this.rootElement = document.createElement('div');
         this.rootElement.classList.add('rio-debugger');
-        this.rootElement.classList.add('rio-switcheroo-debugger');
-
         document.body.appendChild(this.rootElement);
 
         this.rootElement.innerHTML = `
-            <div class="rio-debugger-content"></div>
-            <div class="rio-debugger-navigation">
+            <div class="rio-debugger-content rio-switcheroo-neutral"></div>
+            <div class="rio-debugger-navigation rio-switcheroo-background">
                 <div class="rio-debugger-navigation-marker"></div>
                 <div style="flex-grow: 1;"></div>
                 <a href="https://rio.dev" target="_blank" class="rio-debugger-navigation-rio-logo">

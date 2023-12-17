@@ -92,7 +92,6 @@ class Theme:
     background_palette: Palette
     neutral_palette: Palette
     disabled_palette: Palette
-    debugger_palette: Palette
 
     success_palette: Palette
     warning_palette: Palette
@@ -132,20 +131,6 @@ class Theme:
         if secondary_color is None:
             secondary_color = rio.Color.from_hex("329afc")
 
-        # Semantic colors
-        if success_color is None:
-            success_color = rio.Color.from_hex("1E8E3E")
-
-        if warning_color is None:
-            warning_color = rio.Color.from_hex("F9A825")
-
-        if danger_color is None:
-            danger_color = rio.Color.from_hex("B3261E")
-
-        success_palette = Palette._from_color(success_color, light)
-        warning_palette = Palette._from_color(warning_color, light)
-        danger_palette = Palette._from_color(danger_color, light)
-
         # Extract palettes from the material theme
         primary_palette = Palette._from_color(primary_color, light)
         secondary_palette = Palette._from_color(secondary_color, light)
@@ -179,10 +164,6 @@ class Theme:
                 rio.Color.from_grey(0.4),
             )
 
-            debugger_palette = Palette._from_color(
-                neutral_palette.background.blend(warning_color, 0.10), light
-            )
-
             shadow_color = rio.Color.from_rgb(0.1, 0.1, 0.4, 0.3)
 
         else:
@@ -214,11 +195,21 @@ class Theme:
                 rio.Color.from_grey(0.6),
             )
 
-            debugger_palette = Palette._from_color(
-                neutral_palette.background.blend(warning_color, 0.6), light
-            )
-
             shadow_color = rio.Color.from_rgb(0.0, 0.0, 0.1, 0.35)
+
+        # Semantic colors
+        if success_color is None:
+            success_color = rio.Color.from_hex("1E8E3E")
+
+        if warning_color is None:
+            warning_color = rio.Color.from_hex("F9A825")
+
+        if danger_color is None:
+            danger_color = rio.Color.from_hex("B3261E")
+
+        success_palette = Palette._from_color(success_color, light)
+        warning_palette = Palette._from_color(warning_color, light)
+        danger_palette = Palette._from_color(danger_color, light)
 
         # Text styles
         heading1_style = rio.TextStyle(
@@ -238,7 +229,6 @@ class Theme:
             background_palette=background_palette,
             neutral_palette=neutral_palette,
             disabled_palette=disabled_palette,
-            debugger_palette=debugger_palette,
             success_palette=success_palette,
             warning_palette=warning_palette,
             danger_palette=danger_palette,
