@@ -1,6 +1,6 @@
 import { MDCRipple } from '@material/ripple';
 import { applyIcon } from './designApplication';
-import { DebuggerTree as DebuggerTreeDriver } from './debuggerTree';
+import { DebuggerTreeDriver as DebuggerTreeDriver } from './debuggerTree';
 
 export class Debugger {
     rootElement: HTMLElement;
@@ -58,23 +58,18 @@ export class Debugger {
         oldButton: HTMLElement | null,
         newButton: HTMLElement | null
     ) {
-        console.log('MARKER: ', this.marker);
-
         // If the button should be hidden, just do that
         if (newButton === null) {
-            console.log('MARKER: hiding');
             this.marker.style.opacity = '0';
             return;
         }
 
         // Where should the marker be at?
         let targetRect = newButton.getBoundingClientRect();
-        console.log('MARKER: target', targetRect);
 
         // If the button was previously hidden teleport it to the correct
         // location, then fade it in
         if (oldButton === null) {
-            console.log('MARKER: teleporting');
             // Disable CSS transitions
             this.marker.style.transition = 'none';
             this.marker.offsetHeight;
@@ -92,7 +87,6 @@ export class Debugger {
         }
 
         // Otherwise move it there
-        console.log('MARKER: moving');
         this.marker.style.top = `${targetRect.top}px`;
         this.marker.style.height = `${targetRect.height}px`;
     }
@@ -137,7 +131,7 @@ export class Debugger {
 
         // Add the new page
         if (pageName === 'componentTree') {
-            this.currentDriver = new DebuggerTreeDriver(this);
+            this.currentDriver = new DebuggerTreeDriver();
             this.contentContainer.appendChild(this.currentDriver.rootElement);
         } else {
             console.error(`Unknown debugger page: ${pageName}`);
