@@ -175,6 +175,14 @@ export class Debugger {
             }
         });
     }
+
+    /// Called by the outside world when changes to component states are made,
+    /// giving the debugger a chance to update its display.
+    public onComponentStateChange(deltaStates: {
+        [key: string]: { [key: string]: any };
+    }) {
+        console.log('TODO: Handle state updates');
+    }
 }
 
 /// Load the debugger, display it, and expose it to the global scope

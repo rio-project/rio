@@ -204,11 +204,20 @@ export async function processMessageReturnResponse(
 
     switch (message.method) {
         case 'updateComponentStates':
-            // New components received
+            // The component states have changed, and new components may have been
+            // introduced.
             updateComponentStates(
                 message.params.deltaStates,
                 message.params.rootComponentId
             );
+
+            // Notify the debugger, if any
+            if (globalThis.rioDebugger !== undefined) {
+                globalThis.rioDebugger.onComponentStateChange(
+                    message.params.deltaStates
+                );
+            }
+
             response = null;
             break;
 

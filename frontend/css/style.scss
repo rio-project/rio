@@ -2263,10 +2263,14 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     div {
         font-weight: bold;
         color: var(--rio-local-text-color);
+
+        transition: color 1s ease-in-out;
     }
 
     &:hover div {
         color: var(--rio-global-secondary-fg);
+
+        transition: color 0.1s ease-in-out;
     }
 }
 
@@ -2507,7 +2511,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-component-tree-item-header:hover::after {
-    opacity: 0.2;
+    opacity: 0.4;
 }
 
 .rio-debugger-component-tree-item-header-weakly-selected::after {
@@ -2515,6 +2519,10 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-component-tree-item-header-strongly-selected::after {
+    opacity: 0.6;
+}
+
+.rio-debugger-component-tree-item-header-strongly-selected:hover::after {
     opacity: 0.8;
 }
 

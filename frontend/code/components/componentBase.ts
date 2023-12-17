@@ -295,12 +295,22 @@ export abstract class ComponentBase {
         // Set the state. This also updates the component
         this._setStateDontNotifyBackend(deltaState);
 
+        // Remove the leading `rio-id-` from the element's ID
+        let componentIdString = this.elementId.substring('rio-id-'.length);
+        let componentIdInt = parseInt(componentIdString);
+
         // Notify the backend
         callRemoteMethodDiscardResponse('componentStateUpdate', {
-            // Remove the leading `rio-id-` from the element's ID
-            componentId: parseInt(this.elementId.substring('rio-id-'.length)),
+            componentId: componentIdInt,
             deltaState: deltaState,
         });
+
+        // Notify the debugger, if any
+        if (globalThis.rioDebugger !== undefined) {
+            globalThis.rioDebugger.onComponentStateChange({
+                componentIdString: deltaState,
+            });
+        }
     }
 
     addDragHandler(
