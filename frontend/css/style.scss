@@ -140,49 +140,6 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     // TODO
 }
 
-.rio-switcheroo-debugger {
-    // Color scheme for anything debugger related. Similar to the neutral
-    // palette.
-
-    // Rio locals
-    --rio-local-plain-bg: var(--rio-global-debugger-bg);
-    --rio-local-plain-bg-variant: var(--rio-global-debugger-bg-variant);
-    --rio-local-plain-bg-active: var(--rio-global-debugger-bg-active);
-
-    --rio-local-accent-bg: var(--rio-global-secondary-bg);
-    --rio-local-accent-fg: var(--rio-global-secondary-fg);
-
-    // Text Styles
-    --rio-local-heading1-color: var(--rio-global-heading1-color);
-    --rio-local-heading1-background: var(--rio-global-heading1-background);
-    --rio-local-heading1-background-clip: var(
-        --rio-global-heading1-background-clip
-    );
-    --rio-local-heading1-fill-color: var(--rio-global-heading1-fill-color);
-
-    --rio-local-heading2-color: var(--rio-global-heading2-color);
-    --rio-local-heading2-background: var(--rio-global-heading2-background);
-    --rio-local-heading2-background-clip: var(
-        --rio-global-heading2-background-clip
-    );
-    --rio-local-heading2-fill-color: var(--rio-global-heading2-fill-color);
-
-    --rio-local-heading3-color: var(--rio-global-heading3-color);
-    --rio-local-heading3-background: var(--rio-global-heading3-background);
-    --rio-local-heading3-background-clip: var(
-        --rio-global-heading3-background-clip
-    );
-    --rio-local-heading3-fill-color: var(--rio-global-heading3-fill-color);
-
-    --rio-local-text-color: var(--rio-global-debugger-fg);
-    --rio-local-text-background: 'none';
-    --rio-local-text-background-clip: 'border-box';
-    --rio-local-text-fill-color: 'transparent';
-
-    // Material Design Web
-    // TODO
-}
-
 .rio-switcheroo-primary {
     // surface := primary
     //
@@ -2260,7 +2217,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     flex-direction: row;
 
     // Separate it from the rest of the page
-    border-left: 1px solid var(--rio-local-text-color);
+    border-left: 0.25rem solid var(--rio-global-primary-bg);
 }
 
 .rio-debugger-navigation {
@@ -2278,7 +2235,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     min-width: unset;
     max-width: unset;
 
-    background: var(--rio-global-debugger-bg-stripe);
+    background: var(--rio-local-plain-bg);
 }
 
 .rio-debugger-navigation > *:first-child {
@@ -2395,20 +2352,38 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     min-width: unset;
     max-width: unset;
 
+    position: relative;
     height: 100vh;
+    z-index: 1;
+
+    background: var(--rio-local-plain-bg);
+}
+
+.rio-debugger-content::after {
+    content: '';
+    position: absolute;
+    display: block;
+    z-index: -1;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
 
     background-image: linear-gradient(
         -45deg,
-        var(--rio-global-debugger-bg) 25%,
-        var(--rio-global-debugger-bg-stripe) 25%,
-        var(--rio-global-debugger-bg-stripe) 50%,
-        var(--rio-global-debugger-bg) 50%,
-        var(--rio-global-debugger-bg) 75%,
-        var(--rio-global-debugger-bg-stripe) 75%,
-        var(--rio-global-debugger-bg-stripe)
+        var(--rio-local-plain-bg) 25%,
+        var(--rio-global-secondary-bg) 25%,
+        var(--rio-global-secondary-bg) 50%,
+        var(--rio-local-plain-bg) 50%,
+        var(--rio-local-plain-bg) 75%,
+        var(--rio-global-secondary-bg) 75%,
+        var(--rio-global-secondary-bg)
     );
     background-size: 3rem 3rem;
-    animation: barber-pole 7s linear infinite;
+    animation: barber-pole 10s linear infinite;
+
+    opacity: 0.04;
 }
 
 .rio-debugger-tree-view {
@@ -2558,9 +2533,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     //
     // If you change this, make sure to also update the code which placed the
     // highlighter in the first place. It needs to be offset by the border width
-    // and padding to make sure that the highlighter is placed correctly.
+    // to make sure that the highlighter is placed correctly.
     border: 0.4rem solid var(--rio-global-secondary-bg);
-    padding: 0rem;
 
     border-radius: 1rem;
     box-shadow: 0 0 0 9999rem rgba(0, 0, 0, 0.6);

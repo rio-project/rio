@@ -277,8 +277,7 @@ export class DebuggerTreeDriver {
             //
             // Take into account the CSS' border width and padding
             const cssBorder = 0.4;
-            const cssPadding = 0.0;
-            const offset = -(cssBorder + cssPadding) * pixelsPerEm;
+            const offset = -cssBorder * pixelsPerEm;
 
             let highlighter = document.createElement('div');
             highlighter.classList.add('rio-debugger-component-highlighter');

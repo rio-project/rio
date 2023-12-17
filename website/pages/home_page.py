@@ -99,4 +99,5 @@ class HomePage(rio.Component):
             comps.HoverCard(1),
             # TODO: Point to how to get started
             # ...
+            key="foo-foo",
         )

@@ -119,6 +119,7 @@ def get_attribute_serializers(
             "_state_properties_",
             "_weak_builder_",
             "_state_bindings_initialized_",
+            "_rio_builtin_",
             "align_x",
             "align_y",
             "grow_x",

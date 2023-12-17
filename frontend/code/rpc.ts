@@ -3,6 +3,7 @@ import {
     getInstanceByComponentId,
     updateComponentStates,
 } from './componentManagement';
+import { HtmlComponent } from './components/html';
 import { initializeDebugger } from './debugger';
 import {
     requestFileUpload,
@@ -32,9 +33,9 @@ export type JsonRpcResponse = {
 };
 
 export function setConnectionLostPopupVisible(visible: boolean): void {
-    let connectionLostPopup = document.getElementById(
-        'rio-connection-lost-popup'
-    );
+    let connectionLostPopup = document.querySelector(
+        '.rio-connection-lost-popup'
+    ) as HTMLElement;
 
     if (connectionLostPopup === null) {
         return;
