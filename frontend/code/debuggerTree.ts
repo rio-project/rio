@@ -20,15 +20,6 @@ export class DebuggerTreeDriver {
     private componentDetailsElement: HTMLElement;
     private docsLinkElement: HTMLElement;
 
-    // The component currently selected in the tree
-    //
-    // Components change, appear and disappear. The component referenced here
-    // may not actually exist. So instead of using this directly, use
-    // `getSelectedComponent()`, which will select something sensible if the
-    // previously selected component no longer exists.
-    private _selectedComponentElementId: str =
-        '<placeholder-id-will-be-replaced-on-first-acccess>';
-
     constructor() {
         // Set up the HTML
         this.rootElement = document.createElement('div');
@@ -115,14 +106,21 @@ export class DebuggerTreeDriver {
         );
     }
 
-    /// Returns the currently selected component. This should be preferred over
-    /// using the `_selectedComponent` member directly, as this function will
-    /// impute a sensible component if the selected component no longer exists.
+    /// Returns the currently selected component. This will impute a sensible
+    /// default if the selected component no longer exists.
     getSelectedComponent(): ComponentBase {
-        // Does the previously selected component still exist?
-        let element = document.getElementById(this._selectedComponentElementId);
-        let selectedComponent: ComponentBase | null = null;
+        // Get the previously selected component id from session storage
+        let selectedElementId = sessionStorage.getItem(
+            'rio-debugger-tree-selected-element-id'
+        );
 
+        // Does the previously selected component still exist?
+        let element: HTMLElement | null = null;
+        if (selectedElementId !== null) {
+            element = document.getElementById(selectedElementId);
+        }
+
+        let selectedComponent: ComponentBase | null = null;
         if (element !== null) {
             selectedComponent = tryGetInstanceByElement(element);
         }
@@ -133,8 +131,16 @@ export class DebuggerTreeDriver {
 
         // Default to the root
         let result = this.getDisplayedRootComponent();
-        this._selectedComponentElementId = result.elementId;
+        this.setSelectedComponent(result);
         return result;
+    }
+
+    /// Stores the currently selected component in session storage
+    setSelectedComponent(component: ComponentBase) {
+        sessionStorage.setItem(
+            'rio-debugger-tree-selected-element-id',
+            component.elementId
+        );
     }
 
     /// Many of the spawned components are internal to Rio and shouldn't be
@@ -214,13 +220,19 @@ export class DebuggerTreeDriver {
         // Build a fresh one
         this.buildNode(this.treeElement, rootComponent, 0);
 
-        // Don't start off with a fully collapsed tree
-        if (!this.getNodeExpanded(rootComponent)) {
-            // this.setNodeExpanded(rootComponent, true);
-        }
+        // Attempting to immediately access the just spawned items fails,
+        // apparently because the browser needs to get control first. Any
+        // further actions will happen with a delay.
 
-        // Highlight the selected component
-        // this.highlightTreeItemAndParents(this.selectedComponent);
+        setTimeout(() => {
+            // Don't start off with a fully collapsed tree
+            if (!this.getNodeExpanded(rootComponent)) {
+                this.setNodeExpanded(rootComponent, true);
+            }
+
+            // Highlight the selected component
+            this.highlightSelectedComponent();
+        }, 0);
     }
 
     buildNode(
@@ -286,13 +298,13 @@ export class DebuggerTreeDriver {
             event.stopPropagation();
 
             // Select the component
-            this._selectedComponentElementId = instance.elementId;
+            this.setSelectedComponent(instance);
 
             // Update the selected component details
             this.buildDetails();
 
             // Highlight the tree item
-            this.highlightTreeItemAndParents(instance);
+            this.highlightSelectedComponent();
 
             // Expand / collapse the node's children
             let expanded = this.getNodeExpanded(instance);
@@ -380,7 +392,7 @@ export class DebuggerTreeDriver {
         }
     }
 
-    highlightTreeItemAndParents(instance: ComponentBase) {
+    highlightSelectedComponent() {
         // Unhighlight all previously highlighted items
         for (let element of Array.from(
             document.querySelectorAll(
@@ -393,18 +405,15 @@ export class DebuggerTreeDriver {
             );
         }
 
+        // Get the selected component
+        let selectedInstance = this.getSelectedComponent();
+
         // Find all tree items
         let treeItems: HTMLElement[] = [];
 
         let cur: HTMLElement | null = document.getElementById(
-            `rio-debugger-component-tree-item-${instance.elementId}`
+            `rio-debugger-component-tree-item-${selectedInstance.elementId}`
         ) as HTMLElement;
-
-        console.log(
-            `rio-debugger-component-tree-item-${instance.elementId}`,
-            cur,
-            cur.classList.contains('rio-debugger-component-tree-item')
-        );
 
         while (
             cur !== null &&
@@ -576,5 +585,45 @@ export class DebuggerTreeDriver {
         } else {
             this.docsLinkElement.style.display = 'none';
         }
+    }
+
+    public afterComponentStateChange(deltaStates: {
+        [key: string]: { [key: string]: any };
+    }) {
+        // Some components have had their state changed. This may affect the
+        // tree, as their children may have changed.
+        //
+        // Rebuild the tree
+        this.buildTree();
+
+        // The widget tree has been modified. Browsers struggle to retrieve
+        // the new elements immediately, so wait a bit.
+        setTimeout(() => {
+            // Flash all changed components
+            for (let componentId in deltaStates) {
+                // Get the element. Not everything will show up, since some
+                // components aren't displayed in the tree (internals).
+                let element = document.getElementById(
+                    `rio-debugger-component-tree-item-rio-id-${componentId}`
+                );
+
+                if (element === null) {
+                    continue;
+                }
+
+                let elementHeader = element.firstElementChild as HTMLElement;
+
+                // Flash the font to indicate a change
+                elementHeader.classList.add(
+                    'rio-debugger-component-tree-flash'
+                );
+
+                setTimeout(() => {
+                    elementHeader.classList.remove(
+                        'rio-debugger-component-tree-flash'
+                    );
+                }, 5000);
+            }
+        }, 0);
     }
 }

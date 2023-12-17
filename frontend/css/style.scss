@@ -1915,13 +1915,14 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     flex-direction: column;
     align-items: end;
     justify-content: end;
-
     cursor: pointer;
 
     padding: 0.7rem 1.5rem;
 
     overflow: hidden;
     border-radius: var(--rio-global-corner-radius-large);
+
+    font-weight: bold;
 
     @include ripple.surface;
     @include ripple.radius-bounded;
@@ -2309,6 +2310,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     align-items: center;
     justify-content: center;
 
+    font-weight: bold;
+
     height: 6rem;
     padding: 0 0.3rem;
     margin: 0 0.3rem;
@@ -2403,6 +2406,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-debugger-header {
     margin-bottom: 1rem;
+
+    background: var(--rio-local-plain-bg-variant);
 }
 
 .rio-debugger-tree-component-tree {
@@ -2460,6 +2465,24 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
+}
+
+// Add this CSS to your stylesheet
+
+@keyframes flash-text {
+    0% {
+        color: initial;
+    }
+    20% {
+        color: var(--rio-global-warning-bg);
+    }
+    100% {
+        color: initial;
+    }
+}
+
+.rio-debugger-component-tree-flash {
+    animation: flash-text 3s linear;
 }
 
 .rio-debugger-component-tree-item-header {
