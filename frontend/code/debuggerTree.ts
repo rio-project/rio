@@ -10,6 +10,9 @@ import { textStyleToCss } from './cssUtils';
 import { applyIcon } from './designApplication';
 import { ComponentId } from './models';
 
+// The element id of the most recently selected item in the tree
+var selectedElementId: string | null = null;
+
 export class DebuggerTreeDriver {
     public rootElement: HTMLElement;
 
@@ -109,11 +112,6 @@ export class DebuggerTreeDriver {
     /// Returns the currently selected component. This will impute a sensible
     /// default if the selected component no longer exists.
     getSelectedComponent(): ComponentBase {
-        // Get the previously selected component id from session storage
-        let selectedElementId = sessionStorage.getItem(
-            'rio-debugger-tree-selected-element-id'
-        );
-
         // Does the previously selected component still exist?
         let element: HTMLElement | null = null;
         if (selectedElementId !== null) {
@@ -135,12 +133,9 @@ export class DebuggerTreeDriver {
         return result;
     }
 
-    /// Stores the currently selected component in session storage
+    /// Stores the currently selected component, without updating any UI
     setSelectedComponent(component: ComponentBase) {
-        sessionStorage.setItem(
-            'rio-debugger-tree-selected-element-id',
-            component.elementId
-        );
+        selectedElementId = component.elementId;
     }
 
     /// Many of the spawned components are internal to Rio and shouldn't be
