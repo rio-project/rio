@@ -286,7 +286,9 @@ export class DropdownComponent extends ComponentBase {
         document.removeEventListener('keydown', this.keyDownHandler, true);
     }
 
-    onDestruction(): void {
+    onDestruction(element: HTMLElement): void {
+        super.onDestruction(element);
+
         this.popupElement.remove();
     }
 
