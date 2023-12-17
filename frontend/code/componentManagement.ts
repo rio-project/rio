@@ -117,6 +117,13 @@ export function getInstanceByComponentId(id: ComponentId): ComponentBase {
     return instance;
 }
 
+export function tryGetInstanceByElement(
+    element: HTMLElement
+): ComponentBase | null {
+    let instance = elementsToInstances.get(element);
+    return instance === undefined ? null : instance;
+}
+
 export function getParentComponentElementIncludingInjected(
     element: HTMLElement
 ): HTMLElement | null {

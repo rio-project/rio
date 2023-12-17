@@ -1,10 +1,14 @@
 import { pixelsPerEm } from './app';
-import { getInstanceByComponentId } from './componentManagement';
+import {
+    getInstanceByComponentId,
+    tryGetInstanceByElement,
+} from './componentManagement';
 import { ComponentBase } from './components/componentBase';
 import { FundamentalRootComponent } from './components/fundamental_root_component';
 import { PlaceholderComponent } from './components/placeholder';
 import { textStyleToCss } from './cssUtils';
 import { applyIcon } from './designApplication';
+import { ComponentId } from './models';
 
 export class DebuggerTreeDriver {
     public rootElement: HTMLElement;
@@ -17,12 +21,15 @@ export class DebuggerTreeDriver {
     private docsLinkElement: HTMLElement;
 
     // The component currently selected in the tree
-    private selectedComponent: ComponentBase;
+    //
+    // Components change, appear and disappear. The component referenced here
+    // may not actually exist. So instead of using this directly, use
+    // `getSelectedComponent()`, which will select something sensible if the
+    // previously selected component no longer exists.
+    private _selectedComponentElementId: str =
+        '<placeholder-id-will-be-replaced-on-first-acccess>';
 
     constructor() {
-        // Make sure a component is selected
-        this.selectedComponent = this.getDisplayedRootComponent();
-
         // Set up the HTML
         this.rootElement = document.createElement('div');
         this.rootElement.classList.add('rio-debugger-tree-view');
@@ -108,6 +115,28 @@ export class DebuggerTreeDriver {
         );
     }
 
+    /// Returns the currently selected component. This should be preferred over
+    /// using the `_selectedComponent` member directly, as this function will
+    /// impute a sensible component if the selected component no longer exists.
+    getSelectedComponent(): ComponentBase {
+        // Does the previously selected component still exist?
+        let element = document.getElementById(this._selectedComponentElementId);
+        let selectedComponent: ComponentBase | null = null;
+
+        if (element !== null) {
+            selectedComponent = tryGetInstanceByElement(element);
+        }
+
+        if (selectedComponent !== null) {
+            return selectedComponent;
+        }
+
+        // Default to the root
+        let result = this.getDisplayedRootComponent();
+        this._selectedComponentElementId = result.elementId;
+        return result;
+    }
+
     /// Many of the spawned components are internal to Rio and shouldn't be
     /// displayed to the user. This function makes that determination.
     shouldDisplayComponent(comp: ComponentBase): boolean {
@@ -184,6 +213,14 @@ export class DebuggerTreeDriver {
 
         // Build a fresh one
         this.buildNode(this.treeElement, rootComponent, 0);
+
+        // Don't start off with a fully collapsed tree
+        if (!this.getNodeExpanded(rootComponent)) {
+            // this.setNodeExpanded(rootComponent, true);
+        }
+
+        // Highlight the selected component
+        // this.highlightTreeItemAndParents(this.selectedComponent);
     }
 
     buildNode(
@@ -208,12 +245,15 @@ export class DebuggerTreeDriver {
         let childElement = document.createElement('div');
         childElement.classList.add('rio-debugger-component-tree-item-children');
         childElement.style.marginLeft = '0.7rem';
-        childElement.style.display = 'none';
         element.appendChild(childElement);
 
         for (let childInfo of children) {
             this.buildNode(childElement, childInfo, level + 1);
         }
+
+        // Expand the node, or not
+        let expanded = this.getNodeExpanded(instance);
+        childElement.style.display = expanded ? 'flex' : 'none';
 
         // Add icons to give additional information
         let icons: string[] = [];
@@ -245,18 +285,18 @@ export class DebuggerTreeDriver {
         header.addEventListener('click', (event) => {
             event.stopPropagation();
 
-            // Toggle the children when the element is clicked
-            childElement.style.display =
-                childElement.style.display === 'none' ? 'flex' : 'none';
-
             // Select the component
-            this.selectedComponent = instance;
+            this._selectedComponentElementId = instance.elementId;
 
-            // Update the details
+            // Update the selected component details
             this.buildDetails();
 
             // Highlight the tree item
             this.highlightTreeItemAndParents(instance);
+
+            // Expand / collapse the node's children
+            let expanded = this.getNodeExpanded(instance);
+            this.setNodeExpanded(instance, !expanded);
 
             // Scroll to the element
             let componentElement = instance.element();
@@ -300,6 +340,49 @@ export class DebuggerTreeDriver {
 
             event.stopPropagation();
         });
+    }
+
+    getNodeExpanded(instance: ComponentBase): boolean {
+        // This is monkey-patched directly in the instance to preserve it across
+        // debugger rebuilds.
+
+        // @ts-ignore
+        return instance._rio_debugger_expanded_ === true;
+    }
+
+    setNodeExpanded(
+        instance: ComponentBase,
+        expanded: boolean,
+        allowRecursion: boolean = true
+    ) {
+        // Monkey-patch the new value in the instance
+        // @ts-ignore
+        instance._rio_debugger_expanded_ = expanded;
+
+        // Get the node element for this instance
+        let element = document.getElementById(
+            `rio-debugger-component-tree-item-${instance.elementId}`
+        );
+
+        // Expand / collapse its children.
+        //
+        // Only do so if there are children, as the additional empty spacing
+        // looks dumb otherwise.
+        let children = this.getDisplayableChildren(instance);
+
+        if (element !== null) {
+            let childrenElement = element.lastChild as HTMLElement;
+            childrenElement.style.display =
+                expanded && children.length > 0 ? 'flex' : 'none';
+        }
+
+        // If expanding, and the node only has a single child, expand that child
+        // as well
+        if (allowRecursion && expanded) {
+            if (children.length === 1) {
+                this.setNodeExpanded(children[0], true);
+            }
+        }
     }
 
     highlightTreeItemAndParents(instance: ComponentBase) {
@@ -351,23 +434,19 @@ export class DebuggerTreeDriver {
 
     buildDetails() {
         // A component must be selected
-        if (this.selectedComponent === null) {
-            throw new Error(
-                'There must be a selected component in order to build details'
-            );
-        }
+        let selectedComponent = this.getSelectedComponent();
 
         // Update the heading
         this.componentNameElement.textContent =
-            this.selectedComponent.state._python_type_;
+            selectedComponent.state._python_type_;
 
         // Update the key
-        if (this.selectedComponent.state._key_ === null) {
+        if (selectedComponent.state._key_ === null) {
             this.componentKeyContainerElement.style.display = 'none';
         } else {
             this.componentKeyContainerElement.style.removeProperty('display');
             this.componentKeyTextElement.textContent =
-                this.selectedComponent.state._key_;
+                selectedComponent.state._key_;
         }
 
         // Fill in the details
@@ -425,7 +504,7 @@ export class DebuggerTreeDriver {
 
         // Margin
         rowIndex++;
-        let margins = this.selectedComponent.state._margin_;
+        let margins = selectedComponent.state._margin_;
         let singleX = margins[0] === margins[2];
         let singleY = margins[1] === margins[3];
 
@@ -460,8 +539,8 @@ export class DebuggerTreeDriver {
 
         // Size
         rowIndex++;
-        let size = this.selectedComponent.state._size_;
-        let grow = this.selectedComponent.state._grow_;
+        let size = selectedComponent.state._size_;
+        let grow = selectedComponent.state._grow_;
 
         let width = grow[0]
             ? 'grow'
@@ -483,14 +562,14 @@ export class DebuggerTreeDriver {
         // Align
         rowIndex++;
         let align_x =
-            this.selectedComponent.state._align_[0] === null
+            selectedComponent.state._align_[0] === null
                 ? 'None'
-                : this.selectedComponent.state._align_[0].toString();
+                : selectedComponent.state._align_[0].toString();
 
         let align_y =
-            this.selectedComponent.state._align_[1] === null
+            selectedComponent.state._align_[1] === null
                 ? 'None'
-                : this.selectedComponent.state._align_[1].toString();
+                : selectedComponent.state._align_[1].toString();
 
         makeCell(1, 1, 'align_x', labelStyle);
         makeCell(2, 1, align_x, valueStyle);
@@ -502,7 +581,7 @@ export class DebuggerTreeDriver {
         // TODO: Determine whether this is a Rio component or not
         let isRioComponent = Math.random() < 0.5;
         if (isRioComponent) {
-            let docUrl = `https://rio.dev/documentation/${this.selectedComponent.state._python_type_.toLowerCase()}`;
+            let docUrl = `https://rio.dev/documentation/${selectedComponent.state._python_type_.toLowerCase()}`;
 
             this.docsLinkElement.style.removeProperty('display');
             this.docsLinkElement.setAttribute('href', docUrl);
