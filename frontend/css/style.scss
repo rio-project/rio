@@ -2536,14 +2536,38 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     pointer-events: none;
     position: fixed;
     z-index: $z-index-debugger-highlighter;
+}
 
-    // The border width is also referenced in JavaScript!
-    //
-    // If you change this, make sure to also update the code which placed the
-    // highlighter in the first place. It needs to be offset by the border width
-    // to make sure that the highlighter is placed correctly.
-    border: 0.4rem solid var(--rio-global-secondary-bg);
+@keyframes pulse {
+    0% {
+        left: -0.3rem;
+        top: -0.3rem;
+        right: -0.3rem;
+        bottom: -0.3rem;
+    }
+    50% {
+        left: -0.7rem;
+        top: -0.7rem;
+        right: -0.7rem;
+        bottom: -0.7rem;
+    }
+    100% {
+        left: -0.3rem;
+        top: -0.3rem;
+        right: -0.3rem;
+        bottom: -0.3rem;
+    }
+}
+
+.rio-debugger-component-highlighter::after {
+    content: '';
+    position: absolute;
+    display: block;
 
     border-radius: 1rem;
     box-shadow: 0 0 0 9999rem rgba(0, 0, 0, 0.6);
+
+    border: 0.4rem solid var(--rio-global-secondary-bg);
+
+    animation: pulse 1.4s infinite;
 }

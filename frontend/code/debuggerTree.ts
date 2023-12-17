@@ -314,17 +314,12 @@ export class DebuggerTreeDriver {
             let rect = componentElement.getBoundingClientRect();
 
             // Highlight the component
-            //
-            // Take into account the CSS' border width and padding
-            const cssBorder = 0.4;
-            const offset = -cssBorder * pixelsPerEm;
-
             let highlighter = document.createElement('div');
             highlighter.classList.add('rio-debugger-component-highlighter');
-            highlighter.style.top = `${rect.top + offset}px`;
-            highlighter.style.left = `${rect.left + offset}px`;
-            highlighter.style.width = `${rect.width + offset}px`;
-            highlighter.style.height = `${rect.height + offset}px`;
+            highlighter.style.top = `${rect.top}px`;
+            highlighter.style.left = `${rect.left}px`;
+            highlighter.style.width = `${rect.width}px`;
+            highlighter.style.height = `${rect.height}px`;
             document.body.appendChild(highlighter);
 
             event.stopPropagation();
@@ -486,21 +481,36 @@ export class DebuggerTreeDriver {
 
         const labelStyle = 'opacity: 0.5; text-align: right';
         const valueStyle = 'font-weight: bold';
-        const iconStyle =
-            'width: 1.2rem; height: 1.2rem; opacity: 0.5; margin-left: auto';
 
-        // Key
-        // let keyIconElement = makeCell(1, 1, 'ki', iconStyle);
-        // makeCell(
-        //     2,
-        //     1,
-        //     this.selectedComponent.state._key_ === null
-        //         ? 'None'
-        //         : this.selectedComponent.state._key_,
-        //     valueStyle
-        // );
+        // TODO: Get more details, including those specific to this component
+        // type
+        // - spacing for Rows / Columns
+        // - text style for Text
+        // - ...
+        // - Arbitrary state (repr it right in Python)
+        // - Which file/line number the component was created at
 
-        // applyIcon(keyIconElement, 'key', 'currentColor');
+        // Size
+        rowIndex++;
+        let size = selectedComponent.state._size_;
+        let grow = selectedComponent.state._grow_;
+
+        let width = grow[0]
+            ? 'grow'
+            : size[0] === null
+              ? 'natural'
+              : size[0].toString();
+        let height = grow[1]
+            ? 'grow'
+            : size[1] === null
+              ? 'natural'
+              : size[1].toString();
+
+        makeCell(1, 1, 'width', labelStyle);
+        makeCell(2, 1, width, valueStyle);
+
+        makeCell(3, 1, 'height', labelStyle);
+        makeCell(4, 1, height, valueStyle);
 
         // Margin
         rowIndex++;
@@ -536,28 +546,6 @@ export class DebuggerTreeDriver {
                 makeCell(4, 1, margins[3].toString(), valueStyle);
             }
         }
-
-        // Size
-        rowIndex++;
-        let size = selectedComponent.state._size_;
-        let grow = selectedComponent.state._grow_;
-
-        let width = grow[0]
-            ? 'grow'
-            : size[0] === null
-              ? 'natural'
-              : size[0].toString();
-        let height = grow[1]
-            ? 'grow'
-            : size[1] === null
-              ? 'natural'
-              : size[1].toString();
-
-        makeCell(1, 1, 'width', labelStyle);
-        makeCell(2, 1, width, valueStyle);
-
-        makeCell(3, 1, 'height', labelStyle);
-        makeCell(4, 1, height, valueStyle);
 
         // Align
         rowIndex++;
