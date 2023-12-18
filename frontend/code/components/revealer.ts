@@ -88,6 +88,13 @@ export class RevealerComponent extends ComponentBase {
                 is_open: this.state.is_open,
             });
 
+            // Update the CSS
+            if (this.state.is_open) {
+                element.classList.add('rio-revealer-open');
+            } else {
+                element.classList.remove('rio-revealer-open');
+            }
+
             // Update the UI
             this.startAnimationIfNotRunning();
         };
@@ -116,9 +123,6 @@ export class RevealerComponent extends ComponentBase {
             // If this is the first state update, initialize the open fraction
             if (this.openFractionBeforeEase === -1) {
                 this.openFractionBeforeEase = deltaState.is_open ? 1 : 0;
-                // this.arrowElement.style.transform = `rotate(${
-                //     this.state.is_open ? 0 : 90
-                // }deg)`;
             }
             // Otherwise animate
             else {
@@ -167,18 +171,6 @@ export class RevealerComponent extends ComponentBase {
             0,
             Math.min(1, this.openFractionBeforeEase)
         );
-
-        // // Rotate the arrow
-        // let t = easeInOut(this.openFractionBeforeEase);
-        // let oneMinusT = 1 - t;
-        // let angle = oneMinusT * 90;
-        // this.arrowElement.style.transform = `rotate(${angle}deg)`;
-
-        // // Move the content
-        // this.contentInnerElement.style.transform = `translateY(${
-        //     -oneMinusT * 30
-        // }%)`;
-        // this.contentInnerElement.style.opacity = t.toString();
 
         // Re-layout
         this.makeLayoutDirty();
