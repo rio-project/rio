@@ -2218,7 +2218,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     flex-direction: row;
 
     // Separate it from the rest of the page
-    border-left: 0.25rem solid var(--rio-global-primary-bg);
+    border-left: 0.3rem solid var(--rio-global-primary-bg);
 }
 
 .rio-debugger-navigation {
@@ -2228,6 +2228,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     align-items: stretch;
     justify-content: space-between;
     gap: 1rem;
+    z-index: 1;
 
     // There's an overzealous rule which tries to scale up the root component,
     // but also matches the debugger
@@ -2249,7 +2250,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     flex-direction: column;
     align-items: center;
     gap: 0.3rem;
-    z-index: 1;
+    z-index: 2;
 
     padding: 3rem 0 1rem 0;
 
@@ -2360,10 +2361,28 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     max-width: unset;
 
     position: relative;
+    width: 0; // Overridden by JS. This is just the initial value
     height: 100vh;
     z-index: 1;
 
     background: var(--rio-local-plain-bg);
+
+    transition: width 0.3s ease-in-out;
+}
+
+.rio-debugger-content > * {
+    transition:
+        transform 0.2s ease-in-out 0.12s,
+        opacity 0.2s ease-in-out 0.12s;
+}
+
+.rio-debugger-content-page-hidden {
+    transform: translateX(5rem);
+    opacity: 0;
+
+    transition:
+        transform 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
 }
 
 .rio-debugger-content::after {
