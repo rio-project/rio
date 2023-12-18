@@ -491,6 +491,10 @@ html {
 }
 
 body {
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+
     margin: 0;
     padding: 0;
 
@@ -498,10 +502,10 @@ body {
 
     min-width: 100%;
     min-height: 100%;
+}
 
-    // Do *NOT* use inline-grid here, for some godforsaken reason it causes
-    // vertical overflow in the <html> element
-    display: grid;
+body > :first-child {
+    flex-grow: 1;
 }
 
 body > * > * {
@@ -2207,11 +2211,9 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger {
-    position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
-    margin-left: 1rem;
     z-index: $z-index-debugger;
 
     display: flex;
