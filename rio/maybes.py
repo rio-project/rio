@@ -15,8 +15,8 @@ from typing import *  # type: ignore
 import introspection
 
 if TYPE_CHECKING:
-    import pandas
-    import polars
+    import pandas  # type: ignore
+    import polars  # type: ignore
 
 _IS_INITIALIZED = False
 
@@ -73,12 +73,12 @@ def initialize(force: bool = False) -> None:
         STR_TYPES += numpy_strings
 
     if "pandas" in sys.modules:
-        import pandas
+        import pandas  # type: ignore
 
         PANDAS_DATAFRAME_TYPES = (pandas.DataFrame,)
 
     if "polars" in sys.modules:
-        import polars
+        import polars  # type: ignore
 
         POLARS_DATAFRAME_TYPES = (polars.DataFrame,)
 

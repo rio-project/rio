@@ -8,6 +8,10 @@ BASE_URL = "https://rio.dev/api"
 
 
 class ApiException(Exception):
+    """
+    Raised when an API request fails.
+    """
+
     def __init__(
         self,
         message: str,
@@ -25,6 +29,10 @@ class ApiException(Exception):
 
 
 class RioApi:
+    """
+    A wrapper around Rio's web API.
+    """
+
     def __init__(
         self,
         access_token: Optional[str] = None,

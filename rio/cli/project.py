@@ -1,10 +1,8 @@
 import logging
 import re
-from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import gitignore_parser
 import revel
 import tomlkit
 import tomlkit.exceptions

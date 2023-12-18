@@ -4,6 +4,6 @@ import showcase
 
 if __name__ == "__main__":
     uvicorn.run(
-        showcase.app,
+        showcase.fastapi_app,
         port=8001,
     )
