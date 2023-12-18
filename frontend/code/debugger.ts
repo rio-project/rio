@@ -56,9 +56,9 @@ export class Debugger {
         // Initialize the buttons, in reverse order
 
         // TODO
-        this.makeNavButton('AI', 'chat-bubble:fill', 'aiChat');
-        this.makeNavButton('Docs', 'library-books:fill', 'docs');
-        this.makeNavButton('Stats', 'monitor-heart:fill', 'admin');
+        // this.makeNavButton('AI', 'chat-bubble:fill', 'aiChat');
+        // this.makeNavButton('Docs', 'library-books:fill', 'docs');
+        // this.makeNavButton('Stats', 'monitor-heart:fill', 'admin');
         this.makeNavButton('Tree', 'view-quilt:fill', 'componentTree');
     }
 
