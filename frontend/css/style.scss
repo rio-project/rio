@@ -1064,16 +1064,18 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    justify-content: stretch;
 }
 
 .rio-revealer-header {
     pointer-events: auto;
     cursor: pointer;
-    padding: 0.8rem;
-    width: calc(100% - 1.6rem); // Subtract padding
-    text-align: left;
+
     display: flex;
-    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.5rem;
+
     color: var(--rio-local-text-color);
 }
 
@@ -1081,33 +1083,47 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     flex-grow: 1;
 }
 
-.rio-revealer-header > .rio-revealer-arrow {
+.rio-revealer-arrow {
     width: 1.3rem;
     height: 1.3rem;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
 
     fill: var(--rio-local-text-color);
     opacity: 0.7;
 
     transform: rotate(90deg);
+
     transition: transform 0.25s ease-in-out;
 }
 
-.expanded .rio-revealer-header > .rio-revealer-arrow {
+.rio-revealer-open .rio-revealer-arrow {
     transform: rotate(0deg);
 }
 
 .rio-revealer-content-outer {
+    flex-grow: 1;
+    position: relative; // Needed for the overflow: hidden, not layouting
     overflow: hidden;
-    transition: max-height 0.15s ease-in-out;
 }
 
 .rio-revealer-content-inner {
-    padding: 0.8rem;
+    position: absolute;
+    bottom: 0;
+
+    opacity: 0;
+    transform: translateY(-50%);
+
     transition:
-        opacity 0.25s ease-in-out,
-        transform 0.25s ease;
+        opacity 0.45s ease-in-out,
+        transform 0.35s ease;
+}
+
+.rio-revealer-open .rio-revealer-content-inner {
+    opacity: 1;
+    transform: translateY(0%);
+}
+
+.rio-revealer-content-inner > * {
+    position: relative !important;
 }
 
 // Icon

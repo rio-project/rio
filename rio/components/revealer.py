@@ -19,14 +19,14 @@ T = TypeVar("T")
 
 @dataclass
 class RevealerChangeEvent:
-    is_expanded: bool
+    is_open: bool
 
 
 class Revealer(component_base.FundamentalComponent):
     header: Optional[str]
     content: component_base.Component
     _: KW_ONLY
-    is_expanded: bool = False
+    is_open: bool = False
     on_change: rio.EventHandler[RevealerChangeEvent] = None
 
     def _validate_delta_state_from_frontend(self, delta_state: JsonDoc) -> None:
@@ -43,14 +43,14 @@ class Revealer(component_base.FundamentalComponent):
     async def _call_event_handlers_for_delta_state(self, delta_state: JsonDoc) -> None:
         # Trigger on_change event
         try:
-            is_expanded = delta_state["is_expanded"]
+            new_value = delta_state["is_open"]
         except KeyError:
             pass
         else:
-            assert isinstance(is_expanded, bool), is_expanded
+            assert isinstance(new_value, bool), new_value
             await self.call_event_handler(
                 self.on_change,
-                RevealerChangeEvent(is_expanded),
+                RevealerChangeEvent(new_value),
             )
 
 
