@@ -520,27 +520,11 @@ body > * > * > * {
     position: absolute;
 }
 
-// Row
-.rio-row {
-    pointer-events: none;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-}
-
-.rio-row > * {
+// Row & Column
+.rio-linear-child-container > * {
     position: relative !important;
 }
 
-// Column
-.rio-column {
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-// Undefined Space Highlight
 @keyframes barber-pole {
     from {
         background-position: 0 0;
@@ -566,6 +550,30 @@ body > * > * > * {
     );
     background-size: 3rem 3rem;
     animation: barber-pole 1s linear infinite;
+}
+
+.rio-row {
+    pointer-events: none;
+    display: flex;
+    align-items: stretch;
+
+    .rio-linear-child-container {
+        display: flex;
+        align-items: stretch;
+    }
+}
+
+.rio-column {
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .rio-linear-child-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 // Grid
