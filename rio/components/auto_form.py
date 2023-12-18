@@ -3,12 +3,10 @@ from __future__ import annotations
 import dataclasses
 import enum
 from dataclasses import KW_ONLY, dataclass, is_dataclass
-from functools import partial
 from typing import *  # type: ignore
 
 import rio
 
-from .. import inspection
 from . import banner, component_base, number_input, switch, text
 
 __all__ = ["AutoForm"]

@@ -2139,7 +2139,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     align-items: stretch;
     gap: 1.5rem;
 
-    background-color: var(--rio-global-neutral-bg);
     border-radius: var(--rio-global-corner-radius-medium);
 
     box-shadow: 0 0.4rem 1rem var(--rio-global-shadow-color);
@@ -2173,7 +2172,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     white-space: pre-wrap;
     overflow-wrap: break-word;
     padding: 0.5rem 1rem;
-    background-color: var(--rio-global-neutral-bg-variant);
+    background-color: var(--rio-local-plain-bg-variant);
     border-radius: var(--rio-global-corner-radius-small);
 }
 
@@ -2588,18 +2587,21 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
         top: -0.3rem;
         right: -0.3rem;
         bottom: -0.3rem;
+        border-width: 0.5rem;
     }
     50% {
         left: -0.7rem;
         top: -0.7rem;
         right: -0.7rem;
         bottom: -0.7rem;
+        border-width: 0.4rem;
     }
     100% {
         left: -0.3rem;
         top: -0.3rem;
         right: -0.3rem;
         bottom: -0.3rem;
+        border-width: 0.5rem;
     }
 }
 
@@ -2611,7 +2613,42 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     border-radius: 1rem;
     box-shadow: 0 0 0 9999rem rgba(0, 0, 0, 0.6);
 
-    border: 0.4rem solid var(--rio-global-secondary-bg);
+    border-style: solid;
+    border-color: var(--rio-global-secondary-bg);
 
     animation: pulse 1.4s infinite;
+}
+
+.rio-debugger-background {
+    z-index: -1;
+    position: relative;
+
+    background: var(--rio-local-plain-bg);
+}
+
+.rio-debugger-background::after {
+    content: '';
+    position: absolute;
+    display: block;
+    z-index: -1;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+
+    background-image: linear-gradient(
+        -45deg,
+        var(--rio-local-plain-bg) 25%,
+        var(--rio-global-secondary-bg) 25%,
+        var(--rio-global-secondary-bg) 50%,
+        var(--rio-local-plain-bg) 50%,
+        var(--rio-local-plain-bg) 75%,
+        var(--rio-global-secondary-bg) 75%,
+        var(--rio-global-secondary-bg)
+    );
+    background-size: 3rem 3rem;
+    animation: barber-pole 10s linear infinite;
+
+    opacity: 0.04;
 }

@@ -1,6 +1,7 @@
-import tomllib
 from pathlib import Path
 from typing import *  # type: ignore
+
+import tomlkit
 
 
 class TomlConfig:
@@ -19,3 +20,5 @@ class TomlConfig:
         Load the current contents of the file and convert them to a dictionary.
         If the file cannot be read, return the default.
         """
+
+        raise NotImplementedError("TODO")

@@ -84,8 +84,8 @@ class ColumnExample(InteractiveExample):
     def build_controls(self) -> Dict[str, rio.Component]:
         return {
             "Spacing": rio.Slider(
-                min=0,
-                max=3,
+                minimum=0,
+                maximum=3,
                 value=ColumnExample.spacing,
             ),
         }
@@ -106,8 +106,8 @@ class RowExample(InteractiveExample):
     def build_controls(self) -> Dict[str, rio.Component]:
         return {
             "Spacing": rio.Slider(
-                min=0,
-                max=3,
+                minimum=0,
+                maximum=3,
                 value=RowExample.spacing,
             ),
         }
@@ -152,7 +152,7 @@ class ButtonExample(InteractiveExample):
         )
 
         def add_column(
-            shape: Literal["pill", "rounded", "rectangle", "circle"],
+            shape: Literal["pill", "rounded", "rectangle"],
             col_ii: int,
         ) -> None:
             grid.add_child(

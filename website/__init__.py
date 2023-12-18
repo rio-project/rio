@@ -14,39 +14,12 @@ PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
 
 
-def make_slideshow_placeholder(variant: int) -> rio.Component:
-    colors = [
-        rio.Color.RED,
-        rio.Color.GREEN,
-        rio.Color.BLUE,
-        rio.Color.YELLOW,
-        rio.Color.PURPLE,
-        rio.Color.MAGENTA,
-    ]
-
-    return rio.Rectangle(
-        child=rio.Text(
-            f"Slideshow Page {variant}",
-        ),
-        style=rio.BoxStyle(
-            fill=colors[variant % len(colors)],
-        ),
-        width="grow",
-        height="grow",
-    )
-
-
 class AppRoot(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
             # Navigation Bar
             rio.Overlay(
-                comps.NavigationBar(
-                    height=4,
-                    width="grow",
-                    margin_top=1.0,
-                    align_y=0,
-                ),
+                comps.NavigationBar(height=4, width="grow", margin_top=1.0, align_y=0),
             ),
             # Spacer for the navigation bar
             rio.Spacer(height=5.1),

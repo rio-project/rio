@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import collections.abc
-from typing import *
+from typing import *  # type: ignore
 
 if TYPE_CHECKING:
-    import pandas
-    import polars
+    import pandas  # type: ignore
+    import polars  # type: ignore
 
 from uniserde import JsonDoc  # type: ignore
 
