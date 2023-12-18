@@ -11,10 +11,10 @@ class HistoryItem(rio.Component):
     details: str
     icon: str
 
-    is_expanded: bool = False
+    is_open: bool = False
 
     def on_press(self) -> None:
-        self.is_expanded = not self.is_expanded
+        self.is_open = not self.is_open
 
     def build(self) -> rio.Component:
         return rio.Card(
@@ -45,7 +45,7 @@ class HistoryItem(rio.Component):
                             multiline=True,
                             align_x=0,
                         ),
-                        is_expanded=self.is_expanded,
+                        is_open=self.is_open,
                     ),
                     spacing=0.3,
                     width="grow",

@@ -1,131 +1,96 @@
 import { replaceOnlyChild } from '../componentManagement';
 import { applyIcon } from '../designApplication';
+import { easeInOut } from '../easeFunctions';
+import { getTextDimensions } from '../layoutHelpers';
+import { LayoutContext, updateLayout } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
-// TODO
+
+// Height of the revealer's header in rem
+const HEADER_HEIGHT = 2.6;
+const CHILD_PADDING = 0.8;
 
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';
     header?: string | null;
     content?: number | string;
-    is_expanded: boolean;
+    is_open: boolean;
 };
-
-function expandRevealer(elem: HTMLElement): void {
-    let header = elem.firstElementChild as HTMLElement;
-    let contentOuter = elem.querySelector(
-        '.rio-revealer-content-outer'
-    ) as HTMLElement;
-    let contentInner = contentOuter.firstElementChild as HTMLElement;
-
-    // Do nothing if already expanded
-    if (elem.classList.contains('expanded')) {
-        return;
-    }
-
-    // Update the CSS to trigger the expand animation
-    elem.classList.add('expanded');
-    contentInner.style.transform = `translateY(0)`;
-    contentInner.style.opacity = '1';
-
-    // The components may currently be in flux due to a pending re-layout. If that
-    // is the case, reading the `scrollHeight` would lead to an incorrect value.
-    // Wait for the resize to finish before fetching it.
-    requestAnimationFrame(() => {
-        let contentHeight = contentInner.scrollHeight;
-        let selfHeight = elem.scrollHeight;
-        let headerHeight = header.scrollHeight;
-        let targetHeight = Math.max(contentHeight, selfHeight - headerHeight);
-
-        contentOuter.style.maxHeight = `${targetHeight}px`;
-    });
-
-    // The revealer is now locked into a max size, even if the content changes.
-    // For now, just remove the max size after some time.
-    //
-    // The layout rework should fix this properly.
-    setTimeout(() => {
-        contentOuter.style.removeProperty('max-height');
-    }, 400);
-}
-
-function collapseRevealer(elem: HTMLElement): void {
-    let contentOuter = elem.querySelector(
-        '.rio-revealer-content-outer'
-    ) as HTMLElement;
-    let contentInner = contentOuter.firstElementChild as HTMLElement;
-
-    // Do nothing if already collapsed
-    if (!elem.classList.contains('expanded')) {
-        return;
-    }
-
-    // Update the CSS to trigger the collapse animation
-    let contentHeight = contentInner.scrollHeight;
-
-    elem.classList.remove('expanded');
-    contentOuter.style.maxHeight = '0';
-    contentInner.style.transform = `translateY(-${contentHeight}px)`;
-    contentInner.style.opacity = '0';
-}
 
 export class RevealerComponent extends ComponentBase {
     state: Required<RevealerState>;
 
+    // Tracks the progress of the animation. Zero means fully collapsed, one
+    // means fully expanded.
+    private animationIsRunning: boolean = false;
+    private lastAnimationTick: number;
+    private openFractionBeforeEase: number = -1; // Initialized on first state update
+
+    private headerElement: HTMLElement;
+    private labelElement: HTMLElement;
+    private arrowElement: HTMLElement;
+    private contentInnerElement: HTMLElement;
+    private contentOuterElement: HTMLElement;
+
     createElement(): HTMLElement {
-        // Create the element
+        // Create the HTML
         let element = document.createElement('div');
         element.classList.add('rio-revealer');
 
         element.innerHTML = `
-<div class="rio-revealer-header">
-    <div class="rio-revealer-label"></div>
-    <div class="rio-revealer-arrow"></div>
-</div>
-<div class="rio-revealer-content-outer rio-single-container">
-    <div class="rio-revealer-content-inner rio-single-container"></div>
-</div>
+            <div class="rio-revealer-header">
+                <div class="rio-revealer-label"></div>
+                <div class="rio-revealer-arrow"></div>
+            </div>
+            <div class="rio-revealer-content-outer">
+                <div class="rio-revealer-content-inner"></div>
+            </div>
 `;
-        let header = element.querySelector(
+
+        // Expose the elements
+        this.headerElement = element.querySelector(
             '.rio-revealer-header'
         ) as HTMLElement;
 
-        // Add an arrow icon
-        let arrowElement = header.querySelector(
+        this.labelElement = this.headerElement.querySelector(
+            '.rio-revealer-label'
+        ) as HTMLElement;
+
+        this.arrowElement = this.headerElement.querySelector(
             '.rio-revealer-arrow'
         ) as HTMLElement;
-        applyIcon(arrowElement, 'expand-more', 'var(--rio-local-text-color)');
+
+        this.contentInnerElement = element.querySelector(
+            '.rio-revealer-content-inner'
+        ) as HTMLElement;
+
+        this.contentOuterElement = element.querySelector(
+            '.rio-revealer-content-outer'
+        ) as HTMLElement;
+
+        // Initialize them
+        this.headerElement.style.height = `${HEADER_HEIGHT}rem`;
+
+        applyIcon(
+            this.arrowElement,
+            'expand-more',
+            'var(--rio-local-text-color)'
+        );
+
+        this.contentInnerElement.style.padding = `${CHILD_PADDING}rem`;
 
         // Listen for presses
-        header.onmouseup = (e) => {
-            // Notify the backend
-            let is_expanded = element.classList.contains('expanded');
+        this.headerElement.onmouseup = (e) => {
+            // Toggle the open state
+            this.state.is_open = !this.state.is_open;
 
+            // Notify the backend
             this.setStateAndNotifyBackend({
-                is_expanded: !is_expanded,
+                is_open: this.state.is_open,
             });
 
             // Update the UI
-            if (is_expanded) {
-                collapseRevealer(element);
-            } else {
-                expandRevealer(element);
-            }
+            this.startAnimationIfNotRunning();
         };
-
-        // Make sure all CSS is set up for the collapsed state
-        //
-        // TODO: This doesn't seem to be working. The first time a revealer is
-        // expanded, no animation is shown.
-        requestAnimationFrame(() => {
-            element.classList.add('expanded');
-            collapseRevealer(element);
-        });
 
         return element;
     }
@@ -133,35 +98,162 @@ export class RevealerComponent extends ComponentBase {
     updateElement(element: HTMLElement, deltaState: RevealerState): void {
         // Update the header
         if (deltaState.header === null) {
-            let header = element.querySelector(
-                '.rio-revealer-header'
-            ) as HTMLElement;
-
-            header.style.display = 'none';
+            this.headerElement.style.display = 'none';
         } else if (deltaState.header !== undefined) {
-            let header = element.querySelector(
-                '.rio-revealer-header'
-            ) as HTMLElement;
-
-            let label = header.querySelector(
-                '.rio-revealer-label'
-            ) as HTMLElement;
-
-            header.style.removeProperty('display');
-            label.textContent = deltaState.header;
+            this.headerElement.style.removeProperty('display');
+            this.labelElement.textContent = deltaState.header;
         }
 
         // Update the child
-        let contentInner = element.querySelector(
-            '.rio-revealer-content-inner'
-        ) as HTMLElement;
-        replaceOnlyChild(element.id, contentInner, deltaState.content);
+        replaceOnlyChild(
+            element.id,
+            this.contentInnerElement,
+            deltaState.content
+        );
 
         // Expand / collapse
-        if (deltaState.is_expanded === true) {
-            expandRevealer(element);
-        } else if (deltaState.is_expanded === false) {
-            collapseRevealer(element);
+        if (deltaState.is_open !== undefined) {
+            // If this is the first state update, initialize the open fraction
+            if (this.openFractionBeforeEase === -1) {
+                this.openFractionBeforeEase = deltaState.is_open ? 1 : 0;
+                // this.arrowElement.style.transform = `rotate(${
+                //     this.state.is_open ? 0 : 90
+                // }deg)`;
+            }
+            // Otherwise animate
+            else {
+                this.state.is_open = deltaState.is_open;
+                this.startAnimationIfNotRunning();
+            }
+
+            // Update the CSS
+            if (this.state.is_open) {
+                element.classList.add('rio-revealer-open');
+            } else {
+                element.classList.remove('rio-revealer-open');
+            }
         }
+
+        // Re-layout
+        this.makeLayoutDirty();
+    }
+
+    /// If the animation is not yet running, start it. Does nothing otherwise.
+    /// This does not modify the state in any way.
+    startAnimationIfNotRunning() {
+        // If the animation is already running, do nothing.
+        if (this.animationIsRunning) {
+            return;
+        }
+
+        // Start the animation
+        this.animationIsRunning = true;
+        this.lastAnimationTick = Date.now();
+        requestAnimationFrame(() => this.animationWorker());
+    }
+
+    animationWorker() {
+        // Update state
+        let now = Date.now();
+        let timePassed = now - this.lastAnimationTick;
+        this.lastAnimationTick = now;
+
+        let direction = this.state.is_open ? 1 : -1;
+        this.openFractionBeforeEase =
+            this.openFractionBeforeEase + (direction * timePassed) / 200;
+
+        // Clamp the open fraction
+        this.openFractionBeforeEase = Math.max(
+            0,
+            Math.min(1, this.openFractionBeforeEase)
+        );
+
+        // // Rotate the arrow
+        // let t = easeInOut(this.openFractionBeforeEase);
+        // let oneMinusT = 1 - t;
+        // let angle = oneMinusT * 90;
+        // this.arrowElement.style.transform = `rotate(${angle}deg)`;
+
+        // // Move the content
+        // this.contentInnerElement.style.transform = `translateY(${
+        //     -oneMinusT * 30
+        // }%)`;
+        // this.contentInnerElement.style.opacity = t.toString();
+
+        // Re-layout
+        this.makeLayoutDirty();
+        updateLayout();
+
+        // If the animation is not yet finished, continue it.
+        if (
+            this.openFractionBeforeEase === 0 ||
+            this.openFractionBeforeEase === 1
+        ) {
+            this.animationIsRunning = false;
+        } else {
+            requestAnimationFrame(() => this.animationWorker());
+        }
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        // Account for the content
+        this.requestedWidth =
+            ctx.inst(this.state.content).requestedWidth + 2 * CHILD_PADDING;
+
+        // If a header is present, consider that as well
+        if (this.state.header !== null) {
+            let headerWidth =
+                getTextDimensions(this.state.header, 'text')[0] + 3;
+
+            this.requestedWidth = Math.max(this.requestedWidth, headerWidth);
+        }
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        // Pass on space to the child, but only if the revealer is open. If not,
+        // avoid forcing a re-layout of the child.
+        if (this.state.is_open) {
+            ctx.inst(this.state.content).allocatedWidth =
+                this.allocatedWidth - 2 * CHILD_PADDING;
+        }
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight = 0;
+
+        // Account for the header, if present
+        if (this.state.header !== null) {
+            this.requestedHeight += HEADER_HEIGHT;
+        }
+
+        // Account for the content
+        if (this.openFractionBeforeEase > 0) {
+            let t = easeInOut(this.openFractionBeforeEase);
+            let innerHeight =
+                ctx.inst(this.state.content).requestedHeight +
+                2 * CHILD_PADDING;
+
+            this.requestedHeight += t * innerHeight;
+        }
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        // Avoid forcing a re-layout of the child if the revealer is closed.
+        if (this.openFractionBeforeEase === 0) {
+            return;
+        }
+
+        // Pass on space to the child
+        let headerHeight = this.state.header === null ? 0 : HEADER_HEIGHT;
+
+        ctx.inst(this.state.content).allocatedHeight = Math.max(
+            this.allocatedHeight - headerHeight - 2 * CHILD_PADDING,
+            ctx.inst(this.state.content).requestedHeight
+        );
+
+        // Position the child
+        let element = ctx.elem(this.state.content);
+        element.style.left = '0';
+        element.style.top = '0';
     }
 }

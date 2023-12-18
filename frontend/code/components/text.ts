@@ -70,9 +70,6 @@ export class TextComponent extends ComponentBase {
                 this.state.style
             );
         }
-        console.log(
-            `REQUESTING: ${this.requestedWidth}  ${this.inner.textContent}  ${this.state.multiline}`
-        );
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {

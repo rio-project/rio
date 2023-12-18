@@ -283,10 +283,8 @@ class Sidebar(rio.Component):
                     rio.Revealer(
                         "Revealer",
                         rio.Text("Hello World"),
-                        on_change=lambda evt: print(
-                            "Revealer Changed:", evt.is_expanded
-                        ),
-                        is_expanded=Sidebar.expanded,
+                        on_change=lambda evt: print("Revealer Changed:", evt.is_open),
+                        is_open=Sidebar.expanded,
                     ),
                     rio.ScrollTarget(
                         "scroll-target",
