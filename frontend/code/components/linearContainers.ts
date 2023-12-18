@@ -13,6 +13,7 @@ export type LinearContainerState = ComponentState & {
 class LinearContainer extends ComponentBase {
     state: Required<LinearContainerState>;
 
+    protected childContainer: HTMLElement;
     protected undef1: HTMLElement;
     protected undef2: HTMLElement;
 
@@ -23,9 +24,15 @@ class LinearContainer extends ComponentBase {
 
         this.undef1 = document.createElement('div');
         this.undef1.classList.add('rio-undefined-space');
+        element.appendChild(this.undef1);
+
+        this.childContainer = document.createElement('div');
+        this.childContainer.classList.add('rio-linear-child-container');
+        element.appendChild(this.childContainer);
 
         this.undef2 = document.createElement('div');
         this.undef2.classList.add('rio-undefined-space');
+        element.appendChild(this.undef2);
 
         return element;
     }
@@ -35,13 +42,11 @@ class LinearContainer extends ComponentBase {
         deltaState: LinearContainerState
     ): void {
         // Children
-        this.undef1.remove();
-        this.undef2.remove();
-        replaceChildren(element.id, element, deltaState.children);
+        replaceChildren(element.id, this.childContainer, deltaState.children);
 
         // Spacing
         if (deltaState.spacing !== undefined) {
-            element.style.gap = `${deltaState.spacing}rem`;
+            this.childContainer.style.gap = `${deltaState.spacing}rem`;
         }
 
         // Re-layout
@@ -109,10 +114,11 @@ export class RowComponent extends LinearContainer {
             let element = this.element();
 
             if (element.children.length === 0) {
-                element.appendChild(this.undef1);
+                this.undef1.style.flexGrow = '1';
+                this.undef2.style.flexGrow = '0';
             } else {
-                element.insertBefore(this.undef1, element.children[0]);
-                element.appendChild(this.undef2);
+                this.undef1.style.flexGrow = '1';
+                this.undef2.style.flexGrow = '1';
             }
 
             console.log(
@@ -131,9 +137,6 @@ export class RowComponent extends LinearContainer {
             let element = child.element();
             element.style.left = '0';
             element.style.top = '0';
-
-            // Grow?
-            // element.style.flexGrow = child.state['_grow_'][0] ? '1' : '0';
         }
     }
 }
