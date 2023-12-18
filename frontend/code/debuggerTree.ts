@@ -9,6 +9,7 @@ import { PlaceholderComponent } from './components/placeholder';
 import { textStyleToCss } from './cssUtils';
 import { applyIcon } from './designApplication';
 import { ComponentId } from './models';
+import { withoutTransitions } from './utils';
 
 // The element id of the most recently selected item in the tree
 var selectedElementId: string | null = null;

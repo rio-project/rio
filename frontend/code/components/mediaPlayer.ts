@@ -250,6 +250,7 @@ export class MediaPlayerComponent extends ComponentBase {
             'rio-media-player',
             'rio-zero-size-request-container'
         );
+        element.setAttribute('tabindex', '0');
 
         element.innerHTML = `
             <div>
