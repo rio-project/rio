@@ -4,8 +4,6 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 
-// TODO
-
 export type CardState = ComponentState & {
     _type_: 'Card-builtin';
     child?: ComponentId | null;
@@ -21,7 +19,8 @@ export class CardComponent extends ComponentBase {
     state: Required<CardState>;
     marginCss: string;
 
-    innerMarginAmount: number = 0;
+    innerMarginIfEnabled: number = 0;
+    effectiveInnerMargin: number = 0;
 
     createElement(): HTMLElement {
         // Create the element
@@ -44,18 +43,21 @@ export class CardComponent extends ComponentBase {
 
     updateElement(element: HTMLElement, deltaState: CardState): void {
         // Update the child
-        replaceOnlyChild(element.id, element, deltaState.child);
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
+        }
 
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {
             if (deltaState.corner_radius === null) {
-                this.innerMarginAmount = 1.5;
+                this.innerMarginIfEnabled = 1.5;
                 element.style.borderRadius = '1.5rem';
             } else if (typeof deltaState.corner_radius === 'number') {
-                this.innerMarginAmount = deltaState.corner_radius;
+                this.innerMarginIfEnabled = deltaState.corner_radius;
                 element.style.borderRadius = `${deltaState.corner_radius}rem`;
             } else {
-                this.innerMarginAmount = Math.max(
+                this.innerMarginIfEnabled = Math.max(
                     deltaState.corner_radius[0],
                     deltaState.corner_radius[1],
                     deltaState.corner_radius[2],
@@ -63,6 +65,8 @@ export class CardComponent extends ComponentBase {
                 );
                 element.style.borderRadius = `${deltaState.corner_radius[0]}rem ${deltaState.corner_radius[1]}rem ${deltaState.corner_radius[2]}rem ${deltaState.corner_radius[3]}rem`;
             }
+
+            this.makeLayoutDirty();
         }
 
         // Report presses?
@@ -86,6 +90,15 @@ export class CardComponent extends ComponentBase {
             element.classList.remove('rio-card-colorize-on-hover');
         }
 
+        // Inner margin
+        if (deltaState.inner_margin === true) {
+            this.effectiveInnerMargin = this.innerMarginIfEnabled;
+            this.makeLayoutDirty();
+        } else if (deltaState.inner_margin === false) {
+            this.effectiveInnerMargin = 0;
+            this.makeLayoutDirty();
+        }
+
         // Style
         if (deltaState.color !== undefined) {
             applyColorSet(element, deltaState.color);
@@ -99,28 +112,24 @@ export class CardComponent extends ComponentBase {
             this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
         }
 
-        if (this.state.inner_margin) {
-            this.requestedWidth += this.innerMarginAmount * 2;
-        }
+        this.requestedWidth += this.effectiveInnerMargin * 2;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         if (this.state.child !== null) {
-            ctx.inst(this.state.child).allocatedWidth = this.allocatedWidth;
+            ctx.inst(this.state.child).allocatedWidth =
+                this.allocatedWidth - this.effectiveInnerMargin * 2;
         }
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {
         if (this.state.child === null) {
             this.requestedHeight = 0;
-            return;
         } else {
             this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
         }
 
-        if (this.state.inner_margin) {
-            this.requestedHeight += this.innerMarginAmount * 2;
-        }
+        this.requestedHeight += this.effectiveInnerMargin * 2;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
@@ -129,15 +138,11 @@ export class CardComponent extends ComponentBase {
         }
 
         let child = ctx.inst(this.state.child);
-        child.allocatedHeight = this.allocatedHeight;
+        child.allocatedHeight =
+            this.allocatedHeight - this.effectiveInnerMargin * 2;
 
         let element = child.element();
-        if (this.state.inner_margin) {
-            element.style.left = `${this.innerMarginAmount}rem`;
-            element.style.top = `${this.innerMarginAmount}rem`;
-        } else {
-            element.style.left = '0';
-            element.style.top = '0';
-        }
+        element.style.left = `${this.effectiveInnerMargin}rem`;
+        element.style.top = `${this.effectiveInnerMargin}rem`;
     }
 }
