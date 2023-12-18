@@ -24,10 +24,10 @@ _IS_INITIALIZED = False
 T = TypeVar("T")
 
 
-FLOAT_TYPES = (float, int)
-INT_TYPES = (int,)
-BOOL_TYPES = (bool,)
-STR_TYPES = (str,)
+FLOAT_TYPES = ()
+INT_TYPES = ()
+BOOL_TYPES = ()
+STR_TYPES = ()
 
 PANDAS_DATAFRAME_TYPES: Tuple[Type[pandas.DataFrame], ...] = ()
 POLARS_DATAFRAME_TYPES: Tuple[Type[polars.DataFrame], ...] = ()
@@ -36,7 +36,7 @@ POLARS_DATAFRAME_TYPES: Tuple[Type[polars.DataFrame], ...] = ()
 TYPE_NORMALIZERS: Mapping[Type[T], Callable[[T], T]] = {}  # type: ignore
 
 
-def initialize() -> None:
+def initialize(force: bool = False) -> None:
     """
     If called for the first time, initialize all constants in the module. This
     is not automatically done on module load, to make sure any needed modules
@@ -48,10 +48,15 @@ def initialize() -> None:
     global PANDAS_DATAFRAME_TYPES, POLARS_DATAFRAME_TYPES
 
     # Already initialized?
-    if _IS_INITIALIZED:
+    if _IS_INITIALIZED and not force:
         return
 
     _IS_INITIALIZED = True
+
+    FLOAT_TYPES = (float, int)
+    INT_TYPES = (int,)
+    BOOL_TYPES = (bool,)
+    STR_TYPES = (str,)
 
     # Is numpy available and loaded?
     if "numpy" in sys.modules:

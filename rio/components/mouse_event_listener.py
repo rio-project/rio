@@ -18,6 +18,7 @@ __all__ = [
     "MouseMoveEvent",
     "MouseEnterEvent",
     "MouseLeaveEvent",
+    "MouseDragEvent",
 ]
 
 

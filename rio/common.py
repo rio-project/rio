@@ -203,7 +203,4 @@ def ensure_valid_port(host: str, port: Optional[int]) -> int:
     if port is None:
         return choose_free_port(host)
 
-    # if _port_is_in_use(host, port):
-    #     raise ValueError(f"The port {host}:{port} is already in use")
-
     return port
