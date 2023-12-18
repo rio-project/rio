@@ -1,5 +1,6 @@
 import { pixelsPerEm } from '../app';
 import { replaceOnlyChildAndResetCssProperties } from '../componentManagement';
+import { commitCss } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type DrawerState = ComponentState & {
@@ -148,14 +149,14 @@ export class DrawerComponent extends ComponentBase {
         // Remove the class and flush the style changes
         let element = this.element();
         element.classList.remove('rio-drawer-no-transition');
-        element.offsetHeight;
+        commitCss(element);
     }
 
     _disableTransition() {
         // Add the class and flush the style changes
         let element = this.element();
         element.classList.add('rio-drawer-no-transition');
-        element.offsetHeight;
+        commitCss(element);
     }
 
     openDrawer() {

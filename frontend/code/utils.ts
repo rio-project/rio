@@ -25,3 +25,28 @@ function getScrollBarWidth(): number {
 }
 
 export const SCROLL_BAR_SIZE = getScrollBarWidth();
+
+export function commitCss(element: HTMLElement): void {
+    element.offsetHeight;
+}
+
+export function disableTransitions(element: HTMLElement) {
+    element.style.transition = 'none';
+    element.offsetHeight;
+}
+
+export function enableTransitions(element: HTMLElement) {
+    element.style.removeProperty('transition');
+    element.offsetHeight;
+}
+
+export function withoutTransitions<T>(
+    element: HTMLElement,
+    func: () => void
+): void {
+    disableTransitions(element);
+
+    func();
+
+    enableTransitions(element);
+}

@@ -3,6 +3,12 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { ColorSet } from '../models';
 import { applyColorSet } from '../designApplication';
+import {
+    commitCss,
+    disableTransitions,
+    enableTransitions,
+    withoutTransitions,
+} from '../utils';
 
 export type SwitcherBarState = ComponentState & {
     _type_: 'SwitcherBar-builtin';
@@ -132,24 +138,20 @@ export class SwitcherBarComponent extends ComponentBase {
             selectedChild.appendChild(this.markerElement);
             let newPos = this.markerElement.getBoundingClientRect();
 
-            // Disable transitions
-            this.markerElement.style.transition = 'none';
-            element.offsetHeight;
-
             // Move it to the same location it was before reparenting
-            this.markerElement.style.left = `${prevPos.left - newPos.left}px`;
-            this.markerElement.style.top = `${prevPos.top - newPos.top}px`;
-            this.markerElement.style.right = `${
-                newPos.right - prevPos.right
-            }px`;
-            this.markerElement.style.bottom = `${
-                newPos.bottom - prevPos.bottom
-            }px`;
-            element.offsetHeight;
-
-            // Enable transitions again
-            this.markerElement.style.transition = '';
-            element.offsetHeight;
+            withoutTransitions(this.markerElement, () => {
+                this.markerElement.style.left = `${
+                    prevPos.left - newPos.left
+                }px`;
+                this.markerElement.style.top = `${prevPos.top - newPos.top}px`;
+                this.markerElement.style.right = `${
+                    newPos.right - prevPos.right
+                }px`;
+                this.markerElement.style.bottom = `${
+                    newPos.bottom - prevPos.bottom
+                }px`;
+                commitCss(this.markerElement); // Not entirely sure why this is needed
+            });
 
             // Move it to the correct location
             this.markerElement.style.left = '';

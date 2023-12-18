@@ -1,3 +1,4 @@
+import { visitCommaListElements } from 'typescript';
 import { pixelsPerEm } from './app';
 import {
     getInstanceByComponentId,
@@ -11,6 +12,7 @@ import {
     closeSession,
     setTitle,
 } from './rpcFunctions';
+import { commitCss } from './utils';
 
 let websocket: WebSocket | null = null;
 let pingPongHandlerId: number;
@@ -43,10 +45,7 @@ export function setConnectionLostPopupVisible(visible: boolean): void {
 
     if (visible) {
         connectionLostPopup.style.display = 'block';
-
-        // Flush the style change
-        connectionLostPopup.offsetHeight;
-
+        commitCss(connectionLostPopup); // TODO: Is this actually needed here?
         connectionLostPopup.classList.add('rio-connection-lost-popup-visible');
     } else {
         connectionLostPopup.classList.remove(
