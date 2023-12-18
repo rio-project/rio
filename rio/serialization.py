@@ -35,7 +35,13 @@ def serialize_json(data: Jsonable) -> str:
     """
     Like `json.dumps`, but can also serialize numpy types.
     """
-    return json.dumps(data, default=_serialize_special_types)
+    try:
+        return json.dumps(data, default=_serialize_special_types)
+    except TypeError:
+        # Re-initialize the maybes, someone probably imported numpy/pandas after
+        # the app was started
+        maybes.initialize(force=True)
+        return json.dumps(data, default=_serialize_special_types)
 
 
 def serialize_and_host_component(component: rio.Component) -> JsonDoc:

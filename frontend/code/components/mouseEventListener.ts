@@ -3,7 +3,6 @@ import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
 import { DragHandler } from '../eventHandling';
 import { ComponentId } from '../models';
-import { getInstanceByElement } from '../componentManagement';
 
 function eventMouseButtonToString(event: MouseEvent): object {
     return {
@@ -19,6 +18,8 @@ function eventMousePositionToString(event: MouseEvent): object {
 }
 
 function findComponentUnderMouse(event: MouseEvent): ComponentId {
+    // The coordinates for `elementFromPoint` are relative to the viewport. This
+    // matches `event.clientX` and `event.clientY`.
     let element = document.elementFromPoint(
         event.clientX,
         event.clientY

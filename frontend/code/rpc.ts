@@ -1,11 +1,8 @@
-import { visitCommaListElements } from 'typescript';
 import { pixelsPerEm } from './app';
 import {
     getInstanceByComponentId,
     updateComponentStates,
 } from './componentManagement';
-import { HtmlComponent } from './components/html';
-import { initializeDebugger } from './debugger';
 import {
     requestFileUpload,
     registerFont,
@@ -135,7 +132,7 @@ async function onMessage(event: any) {
 
     // If this is a request, send the response
     if (message.id !== undefined && response !== null) {
-        await sendMessageOverWebsocket(response);
+        sendMessageOverWebsocket(response);
     }
 }
 
@@ -144,25 +141,32 @@ function onError(event: Event) {
 }
 
 function onClose(connectionAttempt: number, event: Event) {
-    // Wait a bit before trying to reconnect (again)
-    if (connectionAttempt < 10) {
-        let delay = 2 * connectionAttempt;
-
-        console.log(
-            `Websocket connection closed. Reconnecting in ${delay} seconds`
-        );
-        setTimeout(createWebsocket, delay * 1000, connectionAttempt + 1);
-    } else {
-        console.warn(
-            `Websocket connection closed. Giving up trying to reconnect.`
-        );
-    }
-
     // Stop sending pings
     clearInterval(pingPongHandlerId);
 
     // Show the user that the connection was lost
     setConnectionLostPopupVisible(true);
+
+    // Wait a bit before trying to reconnect (again)
+    if (!globalThis.RIO_DEBUG_MODE && connectionAttempt >= 10) {
+        console.warn(
+            `Websocket connection closed. Giving up trying to reconnect.`
+        );
+        return;
+    }
+
+    let delay: number;
+    if (globalThis.RIO_DEBUG_MODE) {
+        delay = 0.5;
+    } else {
+        delay = 2 ** connectionAttempt - 1; // 1 3 7 15 31 63 ...
+        delay = Math.min(delay, 300); // Never wait longer than 5min
+    }
+
+    console.log(
+        `Websocket connection closed. Reconnecting in ${delay} seconds`
+    );
+    setTimeout(createWebsocket, delay * 1000, connectionAttempt + 1);
 }
 
 export function sendMessageOverWebsocket(message: object) {
