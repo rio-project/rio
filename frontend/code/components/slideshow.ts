@@ -1,6 +1,7 @@
 import { replaceChildren } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
+import { SingleContainer } from './singleContainer';
 
 // TODO
 
@@ -13,7 +14,7 @@ export type SlideshowState = ComponentState & {
     corner_radius?: [number, number, number, number];
 };
 
-export class SlideshowComponent extends ComponentBase {
+export class SlideshowComponent extends SingleContainer {
     state: Required<SlideshowState>;
 
     private childContainer: HTMLElement;
