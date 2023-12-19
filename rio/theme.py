@@ -122,6 +122,7 @@ class Theme:
         corner_radius_small: float = 0.6,
         corner_radius_medium: float = 1.6,
         corner_radius_large: float = 2.6,
+        color_headings: bool | Literal["auto"] = "auto",
         light: bool = True,
     ) -> Self:
         # Impute defaults
@@ -211,16 +212,32 @@ class Theme:
         warning_palette = Palette._from_color(warning_color, light)
         danger_palette = Palette._from_color(danger_color, light)
 
+        # Colorful headings can be a problem when the primary color is similar
+        # to the background/neutral color. If the `color_headings` argument is
+        # set to `auto`, disable coloring if the colors are close.
+        if color_headings == "auto":
+            # delta_r = abs(primary_color.red - background_palette.background.red)
+            # delta_g = abs(primary_color.green - background_palette.background.green)
+            # delta_b = abs(primary_color.blue - background_palette.background.blue)
+            # delta = max(delta_r, delta_g, delta_b)
+            background_brightness = neutral_palette.background.perceived_brightness
+            primary_brightness = primary_palette.background.perceived_brightness
+            delta = abs(background_brightness - primary_brightness)
+
+            color_headings = delta > 0.25
+
         # Text styles
+        text_color = rio.Color.from_grey(0.1 if light else 0.9)
+
         heading1_style = rio.TextStyle(
             font_size=3.0,
-            fill=primary_color,
+            fill=primary_color if color_headings else text_color,
         )
         heading2_style = heading1_style.replace(font_size=1.8)
         heading3_style = heading1_style.replace(font_size=1.2)
         text_style = heading1_style.replace(
             font_size=1,
-            fill=rio.Color.from_grey(0.1 if light else 0.9),
+            fill=text_color,
         )
 
         return cls(
@@ -291,3 +308,31 @@ class Theme:
             "background": color.rgba,
             "foreground": self.text_color_for(color).rgba,
         }
+
+    @property
+    def primary_color(self) -> rio.Color:
+        return self.primary_palette.background
+
+    @property
+    def secondary_color(self) -> rio.Color:
+        return self.secondary_palette.background
+
+    @property
+    def background_color(self) -> rio.Color:
+        return self.background_palette.background
+
+    @property
+    def neutral_color(self) -> rio.Color:
+        return self.neutral_palette.background
+
+    @property
+    def success_color(self) -> rio.Color:
+        return self.success_palette.background
+
+    @property
+    def warning_color(self) -> rio.Color:
+        return self.warning_palette.background
+
+    @property
+    def danger_color(self) -> rio.Color:
+        return self.danger_palette.background
