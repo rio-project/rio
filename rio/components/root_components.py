@@ -26,6 +26,7 @@ class HighLevelRootComponent(Component):
 class FundamentalRootComponent(FundamentalComponent):
     child: Component
     connection_lost_component: Component
+    debugger: Optional[Component] = None
 
 
 FundamentalRootComponent._unique_id = "FundamentalRootComponent-builtin"

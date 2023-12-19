@@ -247,5 +247,5 @@ export function initializeDebugger() {
     }
 
     // Create one
-    globalThis.rioDebugger = new Debugger();
+    // globalThis.rioDebugger = new Debugger();
 }

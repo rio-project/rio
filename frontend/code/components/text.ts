@@ -73,7 +73,8 @@ export class TextComponent extends ComponentBase {
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {
-        // Wrong, if the text is hidden
-        this.requestedHeight = this.inner.scrollHeight / pixelsPerEm;
+        if (this.state.multiline) {
+            console.error('TODO: Layout multiline text height');
+        }
     }
 }

@@ -43,6 +43,7 @@ import { TextInputComponent } from './components/textInput';
 import { HeadingListItemComponent } from './components/headingListItem';
 import { initializeDebugger } from './debugger';
 import { updateLayout } from './layouting';
+import { OverlayComponent } from './components/overlay';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -51,23 +52,24 @@ const componentClasses = {
     'ClassContainer-builtin': ClassContainerComponent,
     'ColorPicker-builtin': ColorPickerComponent,
     'Column-builtin': ColumnComponent,
+    'CustomListItem-builtin': CustomListItemComponent,
     'Drawer-builtin': DrawerComponent,
     'Dropdown-builtin': DropdownComponent,
     'FlowContainer-builtin': FlowContainerComponent,
     'FundamentalRootComponent-builtin': FundamentalRootComponent,
     'Grid-builtin': GridComponent,
+    'HeadingListItem-builtin': HeadingListItemComponent,
     'Html-builtin': HtmlComponent,
     'Icon-builtin': IconComponent,
     'Image-builtin': ImageComponent,
     'KeyEventListener-builtin': KeyEventListenerComponent,
     'Link-builtin': LinkComponent,
-    'HeadingListItem-builtin': HeadingListItemComponent,
-    'CustomListItem-builtin': CustomListItemComponent,
     'ListView-builtin': ListViewComponent,
     'Margin-builtin': MarginComponent,
     'MarkdownView-builtin': MarkdownViewComponent,
     'MediaPlayer-builtin': MediaPlayerComponent,
     'MouseEventListener-builtin': MouseEventListenerComponent,
+    'Overlay-builtin': OverlayComponent,
     'Plot-builtin': PlotComponent,
     'Popup-builtin': PopupComponent,
     'ProgressBar-builtin': ProgressBarComponent,
@@ -91,6 +93,17 @@ const componentClasses = {
 globalThis.componentClasses = componentClasses;
 
 const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
+
+export function getRootInstance(): FundamentalRootComponent {
+    let element = document.body.firstElementChild as HTMLElement;
+    let instance = elementsToInstances.get(element);
+
+    if (instance === undefined) {
+        throw `Could not find root component`;
+    }
+
+    return instance as FundamentalRootComponent;
+}
 
 export function getElementByComponentId(id: ComponentId): HTMLElement {
     let element = document.getElementById(`rio-id-${id}`);

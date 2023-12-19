@@ -40,7 +40,7 @@ export function enableTransitions(element: HTMLElement) {
     element.offsetHeight;
 }
 
-export function withoutTransitions<T>(
+export function withoutTransitions(
     element: HTMLElement,
     func: () => void
 ): void {

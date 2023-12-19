@@ -42,13 +42,17 @@ export class LayoutContext {
 
         for (let child of this.directChildren(component)) {
             this.updateRequestedWidthRecursive(child);
-            child.requestedWidth = Math.max(
-                child.requestedWidth,
-                child.state._size_[0]
-            );
         }
 
         component.updateRequestedWidth(this);
+        component.requestedWidth = Math.max(
+            component.requestedWidth,
+            component.state._size_[0]
+        );
+
+        // TODO / REMOVEME For debugging
+        let element = component.element();
+        element.dataset['requestedWidth'] = `${component.requestedWidth}`;
     }
 
     private updateAllocatedWidthRecursive(component: ComponentBase) {
@@ -89,6 +93,14 @@ export class LayoutContext {
         }
 
         component.updateRequestedHeight(this);
+        component.requestedHeight = Math.max(
+            component.requestedHeight,
+            component.state._size_[1]
+        );
+
+        // TODO / REMOVEME For debugging
+        let element = component.element();
+        element.dataset['requestedHeight'] = `${component.requestedHeight}`;
     }
 
     private updateAllocatedHeightRecursive(component: ComponentBase) {
@@ -153,12 +165,9 @@ export class LayoutContext {
         // Find out how large all components would like to be
         this.updateRequestedWidthRecursive(rootInstance);
 
-        // Allocate all available space to the root component, but at least as
-        // much as it requested. If this is more than the window it will scroll.
-        rootInstance.allocatedWidth = Math.max(
-            window.innerWidth / pixelsPerEm,
-            rootInstance.requestedWidth
-        );
+        // Note: The FundamentalRootComponent is responsible for allocating the
+        // available window space. There is no need to take care of anything
+        // here.
 
         // Distribute the just received width to all children
         this.updateAllocatedWidthRecursive(rootInstance);
@@ -167,12 +176,6 @@ export class LayoutContext {
         // This is done later on, so that text can request height based on its
         // width.
         this.updateRequestedHeightRecursive(rootInstance);
-
-        // Once again, allocate all available space to the root component.
-        rootInstance.allocatedHeight = Math.max(
-            window.innerHeight / pixelsPerEm,
-            rootInstance.requestedHeight
-        );
 
         // Distribute the just received height to all children
         this.updateAllocatedHeightRecursive(rootInstance);

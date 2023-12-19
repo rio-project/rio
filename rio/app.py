@@ -269,6 +269,12 @@ class App:
         """
         Internal equivalent of `as_fastapi` that takes additional arguments.
         """
+        # Make sure all globals are initialized. This should be done as late as
+        # possible, because it depends on which modules have been imported into
+        # `sys.modules`.
+        maybes.initialize()
+
+        # Build the fastapi instance
         return app_server.AppServer(
             self,
             debug_mode=debug_mode,
@@ -327,11 +333,6 @@ class App:
         arguments.
         """
         port = common.ensure_valid_port(host, port)
-
-        # Make sure all globals are initialized. This should be done as late as
-        # possible, because it depends on which modules have been imported into
-        # `sys.modules`.
-        maybes.initialize()
 
         # Suppress stdout messages if requested
         kwargs = {}

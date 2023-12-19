@@ -22,25 +22,34 @@ export function getTextDimensions(
         text = 'l';
     }
 
+    // TODO: Instead of using the font size in the key, normalize the result for
+    // a size of 1.
+
     // Build a key for the cache
     let key;
+    let sizeNormalizationFactor: number;
     if (typeof style === 'string') {
         key = `${style}+${text}`;
+        sizeNormalizationFactor = 1;
     } else {
         key = `${style.fontName}+${style.fontWeight}+${style.italic}+${style.underlined}+${style.allCaps}+${text}`;
+        sizeNormalizationFactor = style.fontSize;
     }
 
     // Display cache statistics
-    // if (cacheHits + cacheMisses > 0) {
-    //     console.log(`Cache hit rate: ${cacheHits / (cacheHits + cacheMisses)}`);
-    // }
+    if (cacheHits + cacheMisses > 0) {
+        console.log(`Cache hit rate: ${cacheHits / (cacheHits + cacheMisses)}`);
+    }
 
     // Check the cache
     let cached = _textDimensionsCache.get(key);
 
     if (cached !== undefined) {
         cacheHits++;
-        return cached;
+        return [
+            cached[0] * sizeNormalizationFactor,
+            cached[1] * sizeNormalizationFactor,
+        ];
     }
     cacheMisses++;
 
@@ -49,7 +58,6 @@ export function getTextDimensions(
     element.textContent = text;
     Object.assign(element.style, textStyleToCss(style));
     element.style.position = 'absolute';
-
     document.body.appendChild(element);
 
     let rect = element.getBoundingClientRect();
@@ -60,6 +68,9 @@ export function getTextDimensions(
     element.remove();
 
     // Store in the cache and return
-    _textDimensionsCache.set(key, result);
+    _textDimensionsCache.set(key, [
+        result[0] / sizeNormalizationFactor,
+        result[1] / sizeNormalizationFactor,
+    ]);
     return result;
 }

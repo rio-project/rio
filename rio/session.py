@@ -40,7 +40,7 @@ from . import (
     theme,
     user_settings_module,
 )
-from .components import component_base
+from .components import component_base, root_components
 
 __all__ = ["Session"]
 
@@ -236,7 +236,7 @@ class Session(unicall.Unicall):
         }
 
         # These are injected by the app server after the session has already been created
-        self._root_component: rio.Component
+        self._root_component: "root_components.HighLevelRootComponent"
         self.external_url: Optional[str]  # None if running in a window
         self.preferred_locales: Tuple[
             babel.Locale, ...
@@ -814,9 +814,16 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             await component._initialize_on_client(self)
             self._initialized_html_components.add(type(component)._unique_id)
 
-        # Check whether the root component needs replacing
+        # Check whether the root component needs replacing. Take care to never
+        # send the high level root component. JS only cares about the
+        # fundamental one.
         if self._root_component in visited_components:
-            root_component_id = self._root_component._id
+            root_build = self._weak_component_data_by_component[self._root_component]
+            fundamental_root_component = root_build.build_result
+            assert isinstance(
+                fundamental_root_component, component_base.FundamentalComponent
+            ), fundamental_root_component
+            root_component_id = fundamental_root_component._id
         else:
             root_component_id = None
 
