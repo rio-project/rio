@@ -1,9 +1,6 @@
 import { getInstanceByElement } from './componentManagement';
 import { updateLayout } from './layouting';
-import {
-    callRemoteMethodDiscardResponse,
-    initWebsocket,
-} from './rpc';
+import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
 
 // Most of these don't have to be available in the global scope, however, since
 // these are injected by Python after the build process, there have been issues
@@ -19,8 +16,6 @@ globalThis.CHILD_ATTRIBUTE_NAMES = '{child_attribute_names}';
 export let pixelsPerEm = 16;
 
 function main() {
-    console.log('RIO DEBUG', globalThis.RIO_DEBUG_MODE);
-
     // Display a warning if running in debug mode
     if (globalThis.RIO_DEBUG_MODE) {
         console.warn(

@@ -78,13 +78,14 @@ export class RowComponent extends LinearContainer {
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         let additionalSpace = this.allocatedWidth - this.requestedWidth;
-        let spacePerGrower = additionalSpace / this.nGrowers;
+        let additionalSpacePerGrower =
+            this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 
         for (let child of ctx.directChildren(this)) {
             child.allocatedWidth = child.requestedWidth;
 
             if (child.state['_grow_'][0]) {
-                child.allocatedWidth += spacePerGrower;
+                child.allocatedWidth += additionalSpacePerGrower;
             }
         }
     }
@@ -211,7 +212,8 @@ export class ColumnComponent extends LinearContainer {
 
         // Assign the allocated height to the children
         let children = ctx.directChildren(this);
-        let additionalSpacePerGrower = additionalSpace / this.nGrowers;
+        let additionalSpacePerGrower =
+            this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 
         for (let child of children) {
             child.allocatedHeight = child.requestedHeight;
