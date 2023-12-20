@@ -4,7 +4,7 @@ import {
     tryGetInstanceByElement,
 } from './componentManagement';
 import { ComponentBase } from './components/componentBase';
-import { FundamentalRootComponent } from './components/fundamental_root_component';
+import { FundamentalRootComponent } from './components/fundamentalRootComponent';
 import { PlaceholderComponent } from './components/placeholder';
 import { textStyleToCss } from './cssUtils';
 import { applyIcon } from './designApplication';

@@ -1880,69 +1880,63 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 // SwitcherBar
-.rio-switcher-bar {
+.rios-switcher-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rio-switcher-bar-options {
     pointer-events: auto;
+    position: absolute;
     display: flex;
     align-items: stretch;
-    justify-content: space-around;
+    justify-content: space-between;
+
+    transition:
+        left 0.4s $transition-timing-overshoot,
+        top 0.4s $transition-timing-overshoot;
 }
 
-.rio-switcher-bar-option-outer {
-    position: relative;
-}
-
-.rio-switcher-bar-option-inner {
+.rio-switcher-bar-option {
     display: flex;
     flex-direction: column;
-    align-items: end;
+    align-items: center;
     justify-content: end;
     cursor: pointer;
-
-    padding: 0.7rem 1.5rem;
 
     overflow: hidden;
     border-radius: var(--rio-global-corner-radius-large);
 
-    font-weight: bold;
+    color: var(--rio-local-text-color);
 
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
 }
 
-.rio-switcher-bar-option-inner > svg {
-    width: 2rem;
-    height: 2rem;
-
+.rio-switcher-bar-option > div {
     margin-left: auto;
     margin-right: auto;
-
-    margin-bottom: 0.5rem;
-}
-
-.rio-switcher-bar-option-inner > div {
-    margin-left: auto;
-    margin-right: auto;
+    white-space: nowrap;
 }
 
 .rio-switcher-bar-marker {
     pointer-events: none;
     background: var(--rio-local-plain-bg);
-    opacity: 0.3;
+    overflow: hidden;
 
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
 
     border-radius: var(--rio-global-corner-radius-large);
 
     transition:
         left 0.4s $transition-timing-overshoot,
         top 0.4s $transition-timing-overshoot,
-        right 0.4s $transition-timing-overshoot,
-        bottom 0.4s $transition-timing-overshoot;
+        width 0.4s $transition-timing-overshoot,
+        height 0.4s $transition-timing-overshoot;
 }
 
 // Table
@@ -2481,7 +2475,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
         var(--rio-global-secondary-bg)
     );
     background-size: 3rem 3rem;
-    animation: barber-pole 10s linear infinite;
+    animation: barber-pole 8s linear infinite;
 
     opacity: 0.04;
 }

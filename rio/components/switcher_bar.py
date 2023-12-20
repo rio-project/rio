@@ -39,7 +39,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
         values: List[T],
         *,
         names: Optional[List[str]] = None,
-        icons: Optional[List[Optional[str]]] = None,
+        icons: Optional[Sequence[Optional[str]]] = None,
         color: rio.ColorSet = "keep",
         orientation: Literal["horizontal", "vertical"] = "horizontal",
         spacing: float = 1.0,

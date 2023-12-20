@@ -38,7 +38,7 @@ export function getTextDimensions(
 
     // Display cache statistics
     if (cacheHits + cacheMisses > 0) {
-        console.log(`Cache hit rate: ${cacheHits / (cacheHits + cacheMisses)}`);
+        // console.log(`Cache hit rate: ${cacheHits / (cacheHits + cacheMisses)}`);
     }
 
     // Check the cache
