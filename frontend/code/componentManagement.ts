@@ -1,28 +1,31 @@
-import { ComponentBase, ComponentState } from './components/componentBase';
-import { ComponentId } from './models';
-
 import { AlignComponent } from './components/align';
 import { ButtonComponent } from './components/button';
 import { CardComponent } from './components/card';
 import { ClassContainerComponent } from './components/classContainer';
 import { ColorPickerComponent } from './components/colorPicker';
 import { ColumnComponent, RowComponent } from './components/linearContainers';
+import { ComponentBase, ComponentState } from './components/componentBase';
+import { ComponentId } from './models';
+import { ComponentTreeComponent } from './components/componentTree';
+import { CustomListItemComponent } from './components/customListItem';
 import { DrawerComponent } from './components/drawer';
 import { DropdownComponent } from './components/dropdown';
 import { FlowComponent as FlowContainerComponent } from './components/flowContainer';
 import { FundamentalRootComponent } from './components/fundamental_root_component';
 import { GridComponent } from './components/grid';
+import { HeadingListItemComponent } from './components/headingListItem';
 import { HtmlComponent } from './components/html';
 import { IconComponent } from './components/icon';
 import { ImageComponent } from './components/image';
+import { initializeDebugger } from './debugger';
 import { KeyEventListenerComponent } from './components/keyEventListener';
 import { LinkComponent } from './components/link';
-import { CustomListItemComponent } from './components/customListItem';
 import { ListViewComponent } from './components/listView';
 import { MarginComponent } from './components/margin';
 import { MarkdownViewComponent } from './components/markdownView';
 import { MediaPlayerComponent } from './components/mediaPlayer';
 import { MouseEventListenerComponent } from './components/mouseEventListener';
+import { OverlayComponent } from './components/overlay';
 import { PlaceholderComponent } from './components/placeholder';
 import { PlotComponent } from './components/plot';
 import { PopupComponent } from './components/popup';
@@ -40,10 +43,7 @@ import { SwitcherBarComponent } from './components/switcher_bar';
 import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
-import { HeadingListItemComponent } from './components/headingListItem';
-import { initializeDebugger } from './debugger';
 import { updateLayout } from './layouting';
-import { OverlayComponent } from './components/overlay';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -52,6 +52,7 @@ const componentClasses = {
     'ClassContainer-builtin': ClassContainerComponent,
     'ColorPicker-builtin': ColorPickerComponent,
     'Column-builtin': ColumnComponent,
+    'ComponentTree-builtin': ComponentTreeComponent,
     'CustomListItem-builtin': CustomListItemComponent,
     'Drawer-builtin': DrawerComponent,
     'Dropdown-builtin': DropdownComponent,

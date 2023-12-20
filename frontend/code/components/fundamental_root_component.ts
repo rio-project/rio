@@ -42,8 +42,8 @@ export class FundamentalRootComponent extends ComponentBase {
         replaceChildren(element.id, element, children);
 
         // Initialize CSS
-        let connectionLostPopup = element.lastElementChild as HTMLElement;
-        connectionLostPopup.classList.add('rio-connection-lost-popup');
+        let connectionLostPopupElement = element.children[1] as HTMLElement;
+        connectionLostPopupElement.classList.add('rio-connection-lost-popup');
 
         // Hide the connection lost popup by default
         setConnectionLostPopupVisible(false);

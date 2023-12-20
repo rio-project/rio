@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import *  # type: ignore
 
+import rio
+import rio.debug
+
 from .component_base import Component, FundamentalComponent
 
 
@@ -17,16 +20,26 @@ class HighLevelRootComponent(Component):
     build_connection_lost_message_function: Callable[[], Component]
 
     def build(self) -> Component:
+        # Spawn a debugger if running in debug mode
+        if self.session._app_server.debug_mode:
+            # Avoid a circular import
+            import rio.debug.client_side_debugger
+
+            debugger = rio.debug.client_side_debugger.ClientSideDebugger()
+        else:
+            debugger = None
+
         return FundamentalRootComponent(
             self.build_function(),
             self.build_connection_lost_message_function(),
+            debugger=debugger,
         )
 
 
 class FundamentalRootComponent(FundamentalComponent):
     child: Component
     connection_lost_component: Component
-    debugger: Optional[Component] = None
+    debugger: Optional[Component]
 
 
 FundamentalRootComponent._unique_id = "FundamentalRootComponent-builtin"
