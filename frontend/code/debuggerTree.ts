@@ -310,8 +310,8 @@ export class DebuggerTreeDriver {
             let componentElement = instance.element();
             componentElement.scrollIntoView({
                 behavior: 'smooth',
-                block: 'center',
-                inline: 'center',
+                block: 'nearest',
+                inline: 'nearest',
             });
         });
 

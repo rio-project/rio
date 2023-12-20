@@ -22,6 +22,7 @@ class ClientSideDebugger(rio.Component):
                 rio.SwitcherBar(
                     ["foo", "bar", "baz"],
                     orientation="vertical",
+                    color="primary",
                 ),
                 rio.Spacer(),
                 rio.Text("Rio"),

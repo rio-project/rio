@@ -2176,40 +2176,9 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     color: var(--rio-global-warning-bg);
 }
 
+// Debugger
 .rio-debugger {
-    top: 0;
-    right: 0;
-    bottom: 0;
     z-index: $z-index-debugger;
-
-    display: flex;
-    flex-direction: row;
-
-    // Separate it from the rest of the page
-    border-left: 0.3rem solid var(--rio-global-primary-bg);
-}
-
-.rio-debugger-navigation {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: space-between;
-    gap: 1rem;
-    z-index: 1;
-
-    // There's an overzealous rule which tries to scale up the root component,
-    // but also matches the debugger
-    //
-    // FIXME: Should no longer be needed after the layout rework
-    min-width: unset;
-    max-width: unset;
-
-    background: var(--rio-local-plain-bg);
-}
-
-.rio-debugger-navigation > *:first-child {
-    margin-top: 1rem;
 }
 
 .rio-debugger-navigation-rio-logo {
@@ -2266,118 +2235,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-debugger-navigation-rio-logo:hover::before {
     opacity: 1;
     transition: opacity 0.1s ease-out;
-}
-
-.rio-debugger-navigation-button {
-    pointer-events: auto;
-    cursor: pointer;
-    position: relative;
-    z-index: 1;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    font-weight: bold;
-
-    height: 6rem;
-    padding: 0 0.3rem;
-    margin: 0 0.3rem;
-    border-radius: $infinite-corner-radius;
-
-    * > svg {
-        width: 1.7rem;
-        height: 1.7rem;
-    }
-
-    // MDC Ripple
-    overflow: hidden;
-
-    @include ripple.surface;
-    @include ripple.radius-bounded;
-    @include ripple.states;
-
-    // Selection / animation
-    color: var(--rio-local-text-color);
-
-    transition: background-color 0.1s ease-in-out;
-}
-
-.rio-debugger-navigation-marker {
-    pointer-events: none;
-    position: absolute;
-    left: 0.3rem;
-    right: 0.3rem;
-
-    background: var(--rio-global-primary-bg);
-    border-radius: $infinite-corner-radius;
-
-    opacity: 0.3;
-    transition:
-        top 0.4s $transition-timing-overshoot,
-        height 0.4s $transition-timing-overshoot,
-        opacity 0.1s ease-in-out;
-}
-
-.rio-debugger-content {
-    // There's an overzealous rule which tries to scale up the root component,
-    // but also matches the debugger
-    //
-    // FIXME: Should no longer be needed after the layout rework
-    min-width: unset;
-    max-width: unset;
-
-    position: relative;
-    width: 0; // Overridden by JS. This is just the initial value
-    height: 100vh;
-    z-index: 1;
-
-    background: var(--rio-local-plain-bg);
-
-    transition: width 0.3s ease-in-out;
-}
-
-.rio-debugger-content > * {
-    transition:
-        transform 0.2s ease-in-out 0.12s,
-        opacity 0.2s ease-in-out 0.12s;
-}
-
-.rio-debugger-content-page-hidden {
-    transform: translateX(5rem);
-    opacity: 0;
-
-    transition:
-        transform 0.2s ease-in-out,
-        opacity 0.2s ease-in-out;
-}
-
-.rio-debugger-content::after {
-    content: '';
-    position: absolute;
-    display: block;
-    z-index: -1;
-
-    left: 0;
-    top: 0;
-    bottom: 0;
-    right: 0;
-
-    background-image: linear-gradient(
-        -45deg,
-        var(--rio-local-plain-bg) 25%,
-        var(--rio-global-secondary-bg) 25%,
-        var(--rio-global-secondary-bg) 50%,
-        var(--rio-local-plain-bg) 50%,
-        var(--rio-local-plain-bg) 75%,
-        var(--rio-global-secondary-bg) 75%,
-        var(--rio-global-secondary-bg)
-    );
-    background-size: 3rem 3rem;
-    animation: barber-pole 10s linear infinite;
-
-    opacity: 0.04;
 }
 
 .rio-debugger-tree-view {
