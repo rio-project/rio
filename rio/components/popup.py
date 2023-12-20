@@ -66,6 +66,11 @@ class Popup(component_base.FundamentalComponent):
     on_open_or_close: rio.EventHandler[PopupOpenOrCloseEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
+        if not set(delta_state) <= {"is_open"}:
+            raise AssertionError(
+                f"Frontend tried to change `{type(self).__name__}` state: {delta_state}"
+            )
+
         # Trigger on_open_or_close event
         try:
             new_value = delta_state["is_open"]
@@ -78,8 +83,7 @@ class Popup(component_base.FundamentalComponent):
                 PopupOpenOrCloseEvent(new_value),
             )
 
-        # Chain up
-        await super()._on_state_update(delta_state)
+        self._apply_delta_state_from_frontend(delta_state)
 
 
 Popup._unique_id = "Popup-builtin"

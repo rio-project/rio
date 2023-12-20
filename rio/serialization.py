@@ -26,7 +26,9 @@ def _serialize_special_types(obj: object) -> Jsonable:
     try:
         func = maybes.TYPE_NORMALIZERS[type(obj)]
     except KeyError:
-        raise TypeError(f"Can't serialize {obj!r} as JSON") from None
+        raise TypeError(
+            f"Can't serialize {obj!r} of type {type(obj)} as JSON"
+        ) from None
 
     return func(obj)  # type: ignore
 

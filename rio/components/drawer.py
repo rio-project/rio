@@ -65,20 +65,30 @@ class Drawer(component_base.FundamentalComponent):
     is_user_openable: bool = True
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
+        if not set(delta_state) <= {"is_open"}:
+            raise AssertionError(
+                f"Frontend tried to change `{type(self).__name__}` state: {delta_state}"
+            )
+
         # Trigger on_open_or_close event
         try:
             new_value = delta_state["is_open"]
         except KeyError:
             pass
         else:
-            assert isinstance(new_value, bool), new_value
+            assert isinstance(new_value, bool), (new_value, type(new_value))
+
+            if not self.is_user_openable:
+                raise AssertionError(
+                    "Frontend tried to change value of `Drawer.is_open` even though `is_user_openable` is `False`"
+                )
+
             await self.call_event_handler(
                 self.on_open_or_close,
                 DrawerOpenOrCloseEvent(new_value),
             )
 
-        # Chain up
-        await super()._on_state_update(delta_state)
+        self._apply_delta_state_from_frontend(delta_state)
 
 
 Drawer._unique_id = "Drawer-builtin"

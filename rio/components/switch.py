@@ -42,6 +42,11 @@ class Switch(component_base.FundamentalComponent):
     on_change: rio.EventHandler[SwitchChangeEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
+        if not set(delta_state) <= {"is_on"}:
+            raise AssertionError(
+                f"Frontend tried to change `{type(self).__name__}` state: {delta_state}"
+            )
+
         # Trigger on_change event
         try:
             new_value = delta_state["is_on"]
@@ -49,13 +54,18 @@ class Switch(component_base.FundamentalComponent):
             pass
         else:
             assert isinstance(new_value, bool), new_value
+
+            if not self.is_sensitive:
+                raise AssertionError(
+                    f"Frontend tried to set `Switch.is_on` even though `is_sensitive` is `False`"
+                )
+
             await self.call_event_handler(
                 self.on_change,
                 SwitchChangeEvent(new_value),
             )
 
-        # Chain up
-        await super()._on_state_update(delta_state)
+        self._apply_delta_state_from_frontend(delta_state)
 
 
 Switch._unique_id = "Switch-builtin"
