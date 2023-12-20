@@ -1,8 +1,6 @@
-import rio
+from pathlib import Path
 
-# LABEL_STYLE = rio.TextStyle(
-#     font_weight="bold",
-# )
+import rio
 
 
 class ComponentDetails(rio.Component):
@@ -14,7 +12,13 @@ class ComponentDetails(rio.Component):
         result = rio.Grid(row_spacing=0.5, column_spacing=0.5)
         row_index = 0
 
-        def add_cell(text: str, column_index: int, is_label: bool) -> None:
+        def add_cell(
+            text: str,
+            column_index: int,
+            is_label: bool,
+            *,
+            width: int = 1,
+        ) -> None:
             result.add_child(
                 rio.Text(
                     text,
@@ -23,6 +27,7 @@ class ComponentDetails(rio.Component):
                 ),
                 row_index,
                 column_index,
+                width=width,
             )
 
         # Key, if any. These are displayed right in the title
@@ -56,7 +61,22 @@ class ComponentDetails(rio.Component):
         )
         row_index += 1
 
-        # TODO: Which file/line was this component instantiated from?
+        # Which file/line was this component instantiated from?
+        if target._creator_stackframe_ is not None:
+            file, line = target._creator_stackframe_
+            file = file.relative_to(Path.cwd())
+
+            result.add_child(
+                rio.Text(
+                    f"{file} line {line}",
+                    style="dim",
+                    align_x=0,
+                ),
+                row_index,
+                0,
+                width=4,
+            )
+            row_index += 1
 
         # Custom properties
         #
@@ -78,8 +98,13 @@ class ComponentDetails(rio.Component):
             ):
                 continue
 
+            value = repr(getattr(target, prop))
+
+            if len(value) > 20:
+                value = value[:17] + "…"
+
             add_cell(prop, 0, True)
-            add_cell(repr(getattr(target, prop)), 1, False)
+            add_cell(value, 1, False, width=3)
             row_index += 1
 
         # Size
@@ -96,46 +121,46 @@ class ComponentDetails(rio.Component):
 
         if single_x_margin and single_y_margin:
             add_cell("margin", 0, True)
-            add_cell(repr(target.margin_left), 1, False)
+            add_cell(str(target.margin_left), 1, False)
             row_index += 1
 
         else:
             if single_x_margin:
                 add_cell("margin_x", 0, True)
-                add_cell(repr(target.margin_left), 1, False)
+                add_cell(str(target.margin_left), 1, False)
 
             else:
                 add_cell("margin_left", 0, True)
-                add_cell(repr(target.margin_left), 1, False)
+                add_cell(str(target.margin_left), 1, False)
 
                 add_cell("margin_right", 2, True)
-                add_cell(repr(target.margin_right), 3, False)
+                add_cell(str(target.margin_right), 3, False)
 
             row_index += 1
 
             if single_y_margin:
                 add_cell("margin_y", 0, True)
-                add_cell(repr(target.margin_top), 1, False)
+                add_cell(str(target.margin_top), 1, False)
 
             else:
                 add_cell("margin_top", 0, True)
-                add_cell(repr(target.margin_top), 1, False)
+                add_cell(str(target.margin_top), 1, False)
 
                 add_cell("margin_bottom", 2, True)
-                add_cell(repr(target.margin_bottom), 3, False)
+                add_cell(str(target.margin_bottom), 3, False)
 
             row_index += 1
 
         # # Alignment
         add_cell("align_x", 0, True)
-        add_cell(repr(target.align_x), 1, False)
+        add_cell(str(target.align_x), 1, False)
 
         add_cell("align_y", 2, True)
-        add_cell(repr(target.align_y), 3, False)
+        add_cell(str(target.align_y), 3, False)
         row_index += 1
 
         # Link to docs
-        if type(target)._rio_internal_:
+        if type(target)._rio_builtin_:
             docs_url = f"https://rio.dev/docs/{type(target).__name__.lower()}"
             link_color = self.session.theme.secondary_color
 

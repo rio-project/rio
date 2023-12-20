@@ -136,6 +136,7 @@ def get_attribute_serializers(
         if attr_name in {
             "_",
             "_build_generation_",
+            "_creator_stackframe_",
             "_explicitly_set_properties_",
             "_id",
             "_init_signature_",

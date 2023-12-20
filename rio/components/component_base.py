@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import asyncio
+import copy
 import dataclasses
 import inspect
 import json
@@ -10,6 +11,7 @@ import weakref
 from abc import abstractmethod
 from collections import defaultdict
 from dataclasses import KW_ONLY, dataclass
+from pathlib import Path
 from typing import *  # type: ignore
 
 import introspection
@@ -438,6 +440,11 @@ class Component(metaclass=ComponentMeta):
     # component is a high-level component defined in Rio.
     _rio_internal_: bool = dataclasses.field(default=False, init=False, repr=False)
 
+    # The stackframe which has created this component. Used by the debugger. Only initialized if in debugging mode.
+    _creator_stackframe_: Optional[Tuple[Path, int]] = dataclasses.field(
+        default=None, init=False, repr=False
+    )
+
     @classmethod
     def _preprocess_dataclass_fields(cls):
         # When a field has a default value (*not* default factory!), the
@@ -545,6 +552,16 @@ class Component(metaclass=ComponentMeta):
             self._rio_internal_ = True
         else:
             self._rio_internal_ = creator._rio_builtin_
+
+        # If debugging, keep track of who created this component
+        #
+        # TODO: Only do this if debugging
+        caller = inspect.stack()[3]
+
+        if caller is None:
+            self._creator_stackframe_ = None
+        else:
+            self._creator_stackframe_ = (Path(caller.filename), caller.lineno)
 
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)
@@ -739,6 +756,7 @@ class Component(metaclass=ComponentMeta):
             if attr_name in (
                 "_",
                 "_build_generation_",
+                "_creator_stackframe_",
                 "_explicitly_set_properties_",
                 "_id",
                 "_init_signature_",

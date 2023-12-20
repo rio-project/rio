@@ -2185,14 +2185,14 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-navigation-rio-logo {
-    position: relative;
+    pointer-events: auto;
+
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: end;
     gap: 0.3rem;
     z-index: 2;
-
-    padding: 3rem 0 1rem 0;
 
     text-decoration: none;
 
@@ -2203,6 +2203,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     }
 
     div {
+        margin-bottom: 1rem;
+
         font-weight: bold;
         color: var(--rio-local-text-color);
 
@@ -2211,7 +2213,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     &:hover div {
         color: var(--rio-global-secondary-fg);
-
         transition: color 0.1s ease-in-out;
     }
 }
