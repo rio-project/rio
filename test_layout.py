@@ -31,12 +31,10 @@ def make_slideshow_placeholder(variant: int) -> rio.Component:
 class RootComponent(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
-            rio.Overlay(
-                website.comps.NavigationBar(
-                    align_y=0,
-                ),
+            rio.Row(
+                rio.Text("Foo"),
+                rio.Text("Bar"),
             ),
-            *[rio.Text("1") for _ in range(20)],
         )
 
         return rio.Row(
