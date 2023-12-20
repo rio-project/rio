@@ -1065,29 +1065,43 @@ class FundamentalComponent(Component):
         if message_source:
             await sess._evaluate_javascript(message_source)
 
-    async def _on_state_update(self, delta_state: JsonDoc) -> None:
-        """
-        This function is called when the frontend sends a state update to this
-        component.
-        """
-        # Update all state properties to reflect the new state
-        for attr_name, attr_value in delta_state.items():
-            assert isinstance(attr_value, (bool, int, float, str)), attr_value
-            assert hasattr(type(self), attr_name), attr_name
-            assert isinstance(getattr(type(self), attr_name), StateProperty), attr_name
-
-            setattr(self, attr_name, attr_value)
-
-        # Trigger a refresh
-        assert self._session_ is not None
-        await self._session_._refresh()
-
     async def _on_message(self, message: Jsonable, /) -> None:
         """
         This function is called when the frontend sends a message to this component
         via `sendMessage`.
         """
-        pass
+        raise AssertionError(
+            f"Frontend sent an unexpected message to a `{type(self).__name__}`"
+        )
+
+    async def _on_state_update(self, delta_state: Any) -> None:
+        """
+        This function is called when the frontend sends a state update to this
+        component.
+        """
+        raise AssertionError(
+            f"Frontend tried to change the state of a `{type(self).__name__}`"
+        )
+
+    def _apply_delta_state_from_frontend(self, delta_state: JsonDoc) -> None:
+        """
+        Convenience function that can be used in `_on_state_update`. Changes the
+        component's state without marking it as dirty.
+        """
+        # Since the new state is coming from JS, we know two things:
+        # 1. There's no need to send the state back to JS
+        # 2. There's no need to re-build this component, since it's a
+        #    FundamentalComponent
+        # That means we should avoid marking this component as dirty.
+        was_already_dirty = self in self.session._dirty_components
+
+        # Update all state properties to reflect the new state
+        for attr_name, attr_value in delta_state.items():
+            assert isinstance(attr_value, (bool, int, float, str)), attr_value
+            setattr(self, attr_name, attr_value)
+
+        if not was_already_dirty:
+            self.session._dirty_components.discard(self)
 
 
 class KeyboardFocusableFundamentalComponent(FundamentalComponent):

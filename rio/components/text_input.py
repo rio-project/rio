@@ -73,6 +73,11 @@ class TextInput(component_base.KeyboardFocusableFundamentalComponent):
     on_confirm: rio.EventHandler[TextInputConfirmEvent] = None
 
     async def _on_state_update(self, delta_state: JsonDoc) -> None:
+        if not set(delta_state) <= {"text"}:
+            raise AssertionError(
+                f"Frontend tried to change `{type(self).__name__}` state: {delta_state}"
+            )
+
         # Trigger on_change event
         try:
             new_value = delta_state["text"]
@@ -80,13 +85,18 @@ class TextInput(component_base.KeyboardFocusableFundamentalComponent):
             pass
         else:
             assert isinstance(new_value, str), new_value
+
+            if not self.is_sensitive:
+                raise AssertionError(
+                    f"Frontend tried to set `TextInput.text` even though `is_sensitive` is `False`"
+                )
+
             await self.call_event_handler(
                 self.on_change,
                 TextInputChangeEvent(new_value),
             )
 
-        # Chain up
-        await super()._on_state_update(delta_state)
+        self._apply_delta_state_from_frontend(delta_state)
 
     async def _on_message(self, msg: Any) -> None:
         # Listen for messages indicating the user has confirmed their input

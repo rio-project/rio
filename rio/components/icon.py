@@ -149,5 +149,10 @@ class Icon(component_base.FundamentalComponent):
             "fill": fill,
         }
 
+    async def _on_state_update(self, delta_state: Any) -> None:
+        raise AssertionError(
+            f"Frontend tried to change the state of a `{type(self).__name__}`"
+        )
+
 
 Icon._unique_id = "Icon-builtin"
