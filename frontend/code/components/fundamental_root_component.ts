@@ -1,5 +1,8 @@
 import { pixelsPerEm } from '../app';
-import { replaceChildren } from '../componentManagement';
+import {
+    getElementByComponentId,
+    replaceChildren,
+} from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { setConnectionLostPopupVisible } from '../rpc';
@@ -44,6 +47,11 @@ export class FundamentalRootComponent extends ComponentBase {
         // Initialize CSS
         let connectionLostPopupElement = element.children[1] as HTMLElement;
         connectionLostPopupElement.classList.add('rio-connection-lost-popup');
+
+        if (deltaState.debugger !== null) {
+            let debuggerElement = element.children[2] as HTMLElement;
+            debuggerElement.classList.add('rio-debugger');
+        }
 
         // Hide the connection lost popup by default
         setConnectionLostPopupVisible(false);

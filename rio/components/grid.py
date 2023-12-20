@@ -112,6 +112,12 @@ class Grid(component_base.FundamentalComponent):
         width: int = 1,
         height: int = 1,
     ) -> None:
+        if width <= 0:
+            raise ValueError("Children have to take up at least one column")
+
+        if height <= 0:
+            raise ValueError("Children have to take up at least one row")
+
         self._children.append(child)
         self._child_positions.append(GridChildPosition(row, column, width, height))
 

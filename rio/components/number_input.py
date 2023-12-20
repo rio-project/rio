@@ -92,7 +92,11 @@ class NumberInput(component_base.Component):
         # Strip the number down as much as possible
         locale = self.session.preferred_locales[0]
         raw_value = raw_value.strip()
-        raw_value = raw_value.replace(locale.number_symbols["group"], "")
+
+        try:
+            raw_value = raw_value.replace(locale.number_symbols["group"], "")
+        except KeyError:
+            pass
 
         # Try to parse the value
         if raw_value:
@@ -172,7 +176,8 @@ class NumberInput(component_base.Component):
             int_str = int_str[:-3]
 
         groups.append(int_str)
-        int_str = locale.number_symbols["group"].join(reversed(groups))
+        group_separator = locale.number_symbols.get("group", "")
+        int_str = group_separator.join(reversed(groups))
 
         # Join the strings
         if self.decimals == 0:

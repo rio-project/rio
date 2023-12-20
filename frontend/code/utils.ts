@@ -50,3 +50,13 @@ export function withoutTransitions(
 
     enableTransitions(element);
 }
+
+export function range(start: number, end: number): number[] {
+    let result: number[] = [];
+
+    for (let ii = start; ii < end; ii++) {
+        result.push(ii);
+    }
+
+    return result;
+}

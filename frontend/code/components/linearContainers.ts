@@ -41,7 +41,20 @@ class LinearContainer extends ComponentBase {
         deltaState: LinearContainerState
     ): void {
         // Children
-        replaceChildren(element.id, this.childContainer, deltaState.children);
+        if (deltaState.children !== undefined) {
+            replaceChildren(
+                element.id,
+                this.childContainer,
+                deltaState.children
+            );
+
+            // Clear everybody's position
+            for (let child of this.childContainer.children) {
+                let element = child as HTMLElement;
+                element.style.left = '0';
+                element.style.top = '0';
+            }
+        }
 
         // Spacing
         if (deltaState.spacing !== undefined) {
@@ -132,11 +145,6 @@ export class RowComponent extends LinearContainer {
         // Assign the allocated height to the children
         for (let child of ctx.directChildren(this)) {
             child.allocatedHeight = this.allocatedHeight;
-
-            // Use this opportunity to clear their position
-            let element = child.element();
-            element.style.left = '0';
-            element.style.top = '0';
         }
     }
 }
@@ -221,11 +229,6 @@ export class ColumnComponent extends LinearContainer {
             if (child.state['_grow_'][1]) {
                 child.allocatedHeight += additionalSpacePerGrower;
             }
-
-            // Use this opportunity to clear their position
-            let element = child.element();
-            element.style.left = '0';
-            element.style.top = '0';
         }
     }
 }
