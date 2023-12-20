@@ -20,7 +20,27 @@ class ClientSideDebugger(rio.Component):
             # Navigation
             rio.Column(
                 rio.SwitcherBar(
-                    ["foo", "bar", "baz"],
+                    names=[
+                        "Project",
+                        "Tree",
+                        "Docs",
+                        "AI",
+                        "Deploy",
+                    ],
+                    icons=[
+                        "home",
+                        "view-quilt",
+                        "library-books",
+                        "chat-bubble",
+                        "rocket-launch",
+                    ],
+                    values=[
+                        "project",
+                        "tree",
+                        "docs",
+                        "ai-chat",
+                        "deploy",
+                    ],
                     orientation="vertical",
                     color="primary",
                 ),

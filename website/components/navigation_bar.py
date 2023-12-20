@@ -67,6 +67,7 @@ class NavigationBar(rio.Component):
                     ],
                     selected_value=active_url_fragment,
                     color="primary",
+                    spacing=1,
                     on_change=self._on_navigation_button_press,
                     margin_right=4.0,
                     align_y=0.5,
