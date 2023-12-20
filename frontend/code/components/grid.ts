@@ -8,8 +8,6 @@ import { ComponentId } from '../models';
 import { range } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 
-// TODO
-
 type GridChildPosition = {
     row: number;
     column: number;

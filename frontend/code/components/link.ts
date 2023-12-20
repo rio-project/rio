@@ -1,16 +1,17 @@
 import { replaceOnlyChild } from '../componentManagement';
-import { SingleContainer } from './singleContainer';
-import { ComponentState } from './componentBase';
+import { getTextDimensions } from '../layoutHelpers';
+import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
+import { ComponentBase, ComponentState } from './componentBase';
 
-// TODO
 export type LinkState = ComponentState & {
     child_text?: string | null;
-    child_component?: number | string | null;
+    child_component?: ComponentId | null;
     targetUrl: string;
     isPage: boolean;
 };
 
-export class LinkComponent extends SingleContainer {
+export class LinkComponent extends ComponentBase {
     state: Required<LinkState>;
 
     childAttributeName(): string {
@@ -66,6 +67,9 @@ export class LinkComponent extends SingleContainer {
 
             // Update the CSS classes
             element.classList.add('rio-text-link');
+
+            // Update the layout
+            this.makeLayoutDirty();
         }
 
         // Child Component?
@@ -75,11 +79,53 @@ export class LinkComponent extends SingleContainer {
         ) {
             replaceOnlyChild(element.id, element, deltaState.child_component);
             element.classList.remove('rio-text-link');
+            this.makeLayoutDirty();
         }
 
         // Target URL?
         if (deltaState.targetUrl !== undefined) {
             element.href = deltaState.targetUrl;
+        }
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        if (this.state.child_component === null) {
+            [this.requestedWidth, this.requestedHeight] = getTextDimensions(
+                this.state.child_text!,
+                'text'
+            );
+        } else {
+            this.requestedWidth = ctx.inst(
+                this.state.child_component
+            ).requestedWidth;
+        }
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        if (this.state.child_component !== null) {
+            ctx.inst(this.state.child_component).allocatedWidth =
+                this.allocatedWidth;
+        }
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        if (this.state.child_component === null) {
+            // Already set in updateRequestedWidth
+        } else {
+            this.requestedHeight = ctx.inst(
+                this.state.child_component
+            ).requestedHeight;
+        }
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        if (this.state.child_component !== null) {
+            ctx.inst(this.state.child_component).allocatedHeight =
+                this.allocatedHeight;
+
+            let element = ctx.elem(this.state.child_component);
+            element.style.left = '0';
+            element.style.top = '0';
         }
     }
 }
