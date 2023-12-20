@@ -488,6 +488,15 @@ body {
     font-family: Roboto, sans-serif;
 }
 
+// Wraps the user's root component
+.rio-user-root-scroller {
+    overflow: auto;
+}
+
+.rio-user-root-scroller > * {
+    position: relative !important;
+}
+
 // All components
 .rio-component {
     position: absolute;
