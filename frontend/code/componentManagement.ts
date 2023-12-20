@@ -8,6 +8,7 @@ import { ComponentBase, ComponentState } from './components/componentBase';
 import { ComponentId } from './models';
 import { ComponentTreeComponent } from './components/componentTree';
 import { CustomListItemComponent } from './components/customListItem';
+import { DebuggerConnectorComponent } from './components/debuggerConnector';
 import { DrawerComponent } from './components/drawer';
 import { DropdownComponent } from './components/dropdown';
 import { FlowComponent as FlowContainerComponent } from './components/flowContainer';
@@ -54,6 +55,7 @@ const componentClasses = {
     'Column-builtin': ColumnComponent,
     'ComponentTree-builtin': ComponentTreeComponent,
     'CustomListItem-builtin': CustomListItemComponent,
+    'DebuggerConnector-builtin': DebuggerConnectorComponent,
     'Drawer-builtin': DrawerComponent,
     'Dropdown-builtin': DropdownComponent,
     'FlowContainer-builtin': FlowContainerComponent,

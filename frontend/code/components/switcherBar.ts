@@ -248,11 +248,6 @@ export class SwitcherBarComponent extends ComponentBase {
 
             // Margin
             this.requestedWidth += ITEM_MARGIN * 2;
-
-            // Icons, if any
-            if (this.hasAtLeastOneIcon) {
-                this.requestedWidth += ICON_HEIGHT * this.nameWidths.length;
-            }
         }
     }
 
