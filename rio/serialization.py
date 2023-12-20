@@ -22,6 +22,13 @@ T = TypeVar("T")
 Serializer = Callable[["session.Session", T], Jsonable]
 
 
+def _float_or_zero(obj: object) -> float:
+    try:
+        return float(obj)  # type: ignore
+    except ValueError:
+        return 0
+
+
 def _serialize_special_types(obj: object) -> Jsonable:
     try:
         func = maybes.TYPE_NORMALIZERS[type(obj)]
@@ -60,6 +67,11 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
         "_rio_internal_": False,  # TODO
     }
 
+    # Accessing state properties is pretty slow, so we'll store these in local
+    # variables
+    width = component.width
+    height = component.height
+
     # Add layout properties, in a more succinct way than sending them
     # separately
     result["_margin_"] = (
@@ -68,17 +80,21 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
         component.margin_right,
         component.margin_bottom,
     )
-    result["_size_"] = (
-        None if isinstance(component.width, maybes.STR_TYPES) else component.width,
-        None if isinstance(component.height, maybes.STR_TYPES) else component.height,
-    )
+    # The width/height can be floats or strings, but they could also be numpy
+    # floats or numpy strings. We could check `isinstance(width,
+    # maybes.STR_TYPES)`, but that would give incorrect output if numpy was
+    # imported after the app was launched. I think the easiest solution is to
+    # simply try converting it to a float, and if that fails, default to 0.
+    # (Although that has the side effect of treating strings like `"1.5"` as
+    # numbers.)
+    result["_size_"] = (_float_or_zero(width), _float_or_zero(height))
     result["_align_"] = (
         component.align_x,
         component.align_y,
     )
     result["_grow_"] = (
-        component.width == "grow",
-        component.height == "grow",
+        width == "grow",
+        height == "grow",
     )
 
     # If it's a fundamental component, serialize its state because JS needs it.
