@@ -1801,9 +1801,12 @@ document.body.removeChild(a)
         if component is None:
             return
 
-        # Update the component's state
         assert isinstance(component, component_base.FundamentalComponent), component
-        await component._on_state_update(delta_state)
+
+        # Update the component's state
+        component._validate_delta_state_from_frontend(delta_state)
+        component._apply_delta_state_from_frontend(delta_state)
+        await component._call_event_handlers_for_delta_state(delta_state)
 
     @unicall.local(name="componentMessage")
     async def _component_message(

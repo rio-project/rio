@@ -1074,19 +1074,23 @@ class FundamentalComponent(Component):
             f"Frontend sent an unexpected message to a `{type(self).__name__}`"
         )
 
-    async def _on_state_update(self, delta_state: Any) -> None:
+    def _validate_delta_state_from_frontend(self, delta_state: JsonDoc) -> None:
         """
-        This function is called when the frontend sends a state update to this
-        component.
+        This function is called to check whether the delta state received from
+        the frontend is valid. If the frontend tries to change the state in a
+        way that isn't allowed, this function should throw an error.
         """
         raise AssertionError(
             f"Frontend tried to change the state of a `{type(self).__name__}`"
         )
 
+    async def _call_event_handlers_for_delta_state(self, delta_state: JsonDoc) -> None:
+        pass
+
     def _apply_delta_state_from_frontend(self, delta_state: JsonDoc) -> None:
         """
-        Convenience function that can be used in `_on_state_update`. Changes the
-        component's state without marking it as dirty.
+        Applies the delta state received from the frontend without marking the
+        component as dirty.
         """
         # Since the new state is coming from JS, we know two things:
         # 1. There's no need to send the state back to JS
