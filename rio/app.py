@@ -158,7 +158,7 @@ class App:
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
         ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
-        assets_dir: Union[str, os.PathLike, None] = None,
+        assets_dir: Union[str, os.PathLike] = "assets",
         theme: Union[rio.Theme, Tuple[rio.Theme, rio.Theme], None] = None,
         build_connection_lost_message: Callable[
             [], rio.Component
@@ -239,6 +239,12 @@ class App:
         if theme is None:
             theme = rio.Theme.pair_from_color()
 
+        # The `main_file` isn't detected correctly if the app is launched via
+        # `rio run`. We'll store the user input so that `rio run` can fix the
+        # assets dir.
+        self._assets_dir = assets_dir
+        self.assets_dir = main_file.parent / assets_dir
+
         self.name = name
         self._build = _validate_build_function(build)
         self._icon = None if icon is None else assets.Asset.from_image(icon)
@@ -247,9 +253,6 @@ class App:
         self._on_session_start = on_session_start
         self._on_session_end = on_session_end
         self._default_attachments = tuple(default_attachments)
-        self.assets_dir = main_file.parent / (
-            "assets" if assets_dir is None else assets_dir
-        )
         self._theme = theme
         self._build_connection_lost_message = build_connection_lost_message
 
@@ -552,12 +555,11 @@ class App:
 
 def _get_main_file() -> Path:
     try:
-        return Path(__main__.__file__)
+        main_file = Path(__main__.__file__)
     except AttributeError:
-        pass
+        main_file = Path(sys.argv[0])
 
     # Find out if we're being executed by uvicorn
-    main_file = Path(sys.argv[0])
     if (
         main_file.name != "__main__.py"
         or main_file.parent != Path(uvicorn.__file__).parent
