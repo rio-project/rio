@@ -421,6 +421,13 @@ class RunningApp:
             error(message)
             return message
 
+        # Explicitly set the asset directory because it can't reliably be
+        # auto-detected
+        module_path = self.proj.module_path
+        if module_path.is_file():
+            module_path = module_path.parent
+        app.assets_dir = module_path / app._assets_dir
+
         return app
 
     async def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
