@@ -210,8 +210,6 @@ export class SwitcherBarComponent extends ComponentBase {
 
         // Spacing
         if (deltaState.spacing !== undefined) {
-            this.backgroundOptionsElement.style.gap = `${deltaState.spacing}rem`;
-            this.markerOptionsElement.style.gap = `${deltaState.spacing}rem`;
             this.makeLayoutDirty();
         }
 
@@ -230,7 +228,7 @@ export class SwitcherBarComponent extends ComponentBase {
             // Spacing + margin
             this.requestedWidth =
                 this.state.spacing * (this.nameWidths.length - 1) +
-                ITEM_MARGIN * this.nameWidths.length;
+                ITEM_MARGIN * (this.nameWidths.length * 2);
 
             // Individual items
             for (let i = 0; i < this.nameWidths.length; i++) {
@@ -273,7 +271,7 @@ export class SwitcherBarComponent extends ComponentBase {
             // Spacing + margin
             this.requestedHeight =
                 this.state.spacing * (this.nameHeights.length - 1) +
-                ITEM_MARGIN * this.nameHeights.length;
+                ITEM_MARGIN * (this.nameHeights.length * 2);
 
             // Individual items
             for (let i = 0; i < this.nameHeights.length; i++) {
@@ -288,6 +286,20 @@ export class SwitcherBarComponent extends ComponentBase {
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
+        // Update layouts
+        this.backgroundOptionsElement.style.height = `${this.allocatedHeight}rem`;
+        this.markerOptionsElement.style.height = `${this.allocatedHeight}rem`;
+
+        if (this.state.orientation == 'horizontal') {
+            let additionalHeight = this.allocatedHeight - this.requestedHeight;
+            this.innerElement.style.left = '0';
+            this.innerElement.style.top = `${additionalHeight / 2}rem`;
+        } else {
+            let additionalWidth = this.allocatedWidth - this.requestedWidth;
+            this.innerElement.style.left = `${additionalWidth / 2}rem`;
+            this.innerElement.style.top = '0';
+        }
+
         // Reposition the marker
         this._updateMarker();
     }

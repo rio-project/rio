@@ -1880,11 +1880,13 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 // SwitcherBar
-.rios-switcher-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.rio-switcher-bar > * {
+    position: absolute;
 }
+
+// .rio-switcher-bar-marker > .rio-switcher-bar-options {
+//     pointer-events: none;
+// }
 
 .rio-switcher-bar-options {
     pointer-events: auto;
