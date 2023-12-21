@@ -225,7 +225,6 @@ export class SwitcherBarComponent extends ComponentBase {
 
     updateRequestedWidth(ctx: LayoutContext): void {
         if (this.state.orientation == 'horizontal') {
-            // Spacing + margin
             this.requestedWidth =
                 this.state.spacing * (this.nameWidths.length - 1) +
                 ITEM_MARGIN * (this.nameWidths.length * 2);
