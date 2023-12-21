@@ -1,3 +1,4 @@
+import functools
 import logging
 import re
 from pathlib import Path
@@ -9,7 +10,6 @@ import tomlkit.exceptions
 import tomlkit.items
 import uniserde
 from revel import *  # type: ignore
-from revel import fatal
 
 from . import rioignore
 
@@ -81,7 +81,7 @@ class RioProject:
             if default_value is DEFAULT_KEYERROR:
                 raise KeyError(key_name)
 
-            section: Dict[str, Any] = {}
+            section = {}
 
         # Try to get the key
         try:
@@ -136,7 +136,7 @@ class RioProject:
     def project_directory(self) -> Path:
         return self._file_path.parent
 
-    @property
+    @functools.cached_property
     def module_path(self) -> Path:
         folder = self.project_directory
 
@@ -176,7 +176,7 @@ class RioProject:
     def app_variable(self) -> str:
         return self.get_key("app", "app_variable", str, "app")
 
-    @property
+    @functools.cached_property
     def deploy_name(self) -> str:
         # Is a name already stored in the `rio.toml`?
         try:

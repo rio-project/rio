@@ -113,6 +113,7 @@ async def create_mockapp(
     app = rio.App(build=build, name=app_name)
     app_server = AppServer(
         app,
+        debug_mode=False,
         running_in_window=running_in_window,
         on_session_start=None,
         on_session_end=None,

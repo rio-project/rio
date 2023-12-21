@@ -115,8 +115,10 @@ async def test_binding_assignment_on_sibling():
             )
 
     async with create_mockapp(Root) as app:
-        root_component = app.get_root_component()
-        text1, text2 = app.get_build_output(root_component, rio.Column).children
+        root_component = app.get_component(Root)
+        text1, text2 = cast(
+            list[rio.Text], app.get_build_output(root_component, rio.Column).children
+        )
 
         assert not app.dirty_components
 
@@ -146,7 +148,7 @@ async def test_binding_assignment_on_grandchild():
 
 async def test_binding_assignment_on_middle():
     async with create_mockapp(Grandparent) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(Grandparent)
         parent: Parent = app.get_build_output(root_component)
         text_component: rio.Text = app.get_build_output(parent)
 
@@ -162,7 +164,7 @@ async def test_binding_assignment_on_middle():
 
 async def test_binding_assignment_on_child_after_reconciliation():
     async with create_mockapp(Parent) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(Parent)
         text_component: rio.Text = app.get_build_output(root_component)
 
         assert not app.dirty_components
@@ -179,7 +181,7 @@ async def test_binding_assignment_on_child_after_reconciliation():
 
 async def test_binding_assignment_on_parent_after_reconciliation():
     async with create_mockapp(Parent) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(Parent)
         text_component: rio.Text = app.get_build_output(root_component)
 
         assert not app.dirty_components
@@ -205,7 +207,7 @@ async def test_binding_assignment_on_sibling_after_reconciliation():
             )
 
     async with create_mockapp(Root) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(Root)
         text1, text2 = app.get_build_output(root_component).children
 
         assert not app.dirty_components
@@ -223,7 +225,7 @@ async def test_binding_assignment_on_sibling_after_reconciliation():
 
 async def test_binding_assignment_on_grandchild_after_reconciliation():
     async with create_mockapp(Grandparent) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(Grandparent)
         parent: Parent = app.get_build_output(root_component)
         text_component: rio.Text = app.get_build_output(parent)
 
@@ -242,7 +244,7 @@ async def test_binding_assignment_on_grandchild_after_reconciliation():
 
 async def test_binding_assignment_on_middle_after_reconciliation():
     async with create_mockapp(Grandparent) as app:
-        root_component = app.get_root_component()
+        root_component = app.get_component(Grandparent)
         parent: Parent = app.get_build_output(root_component)
         text_component: rio.Text = app.get_build_output(parent)
 

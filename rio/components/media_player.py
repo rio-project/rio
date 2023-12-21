@@ -124,11 +124,19 @@ class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
             "reportPlaybackEnd": self.on_playback_end is not None,
         }
 
+    def _validate_delta_state_from_frontend(self, delta_state: JsonDoc) -> None:
+        if not set(delta_state) <= {"muted", "volume"}:
+            raise AssertionError(
+                f"Frontend tried to change `{type(self).__name__}` state: {delta_state}"
+            )
+
     async def _on_message(self, message: JsonDoc) -> None:
         if message["type"] == "playbackEnd":
             await self.call_event_handler(self.on_playback_end)
         elif message["type"] == "error":
             await self.call_event_handler(self.on_error)
+        else:
+            await super()._on_message(message)
 
 
 MediaPlayer._unique_id = "MediaPlayer-builtin"

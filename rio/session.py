@@ -19,7 +19,6 @@ from typing import *  # type: ignore
 
 import aiofiles
 import babel
-import introspection
 import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc
@@ -818,6 +817,8 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
         # send the high level root component. JS only cares about the
         # fundamental one.
         if self._root_component in visited_components:
+            del delta_states[self._root_component._id]
+
             root_build = self._weak_component_data_by_component[self._root_component]
             fundamental_root_component = root_build.build_result
             assert isinstance(
