@@ -144,13 +144,6 @@ export class RevealerComponent extends ComponentBase {
             let headerStyle =
                 deltaState.header_style ?? this.state.header_style;
 
-            console.log(
-                'HEADER',
-                deltaState.header_style,
-                this.state.header_style,
-                headerStyle
-            );
-
             if (header !== null) {
                 this.headerHeight = getTextDimensions(header, headerStyle)[1];
                 this.headerHeight += 1.6; // Padding

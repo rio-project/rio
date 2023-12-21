@@ -189,6 +189,7 @@ export class MarkdownViewComponent extends ComponentBase {
             let defaultLanguage =
                 deltaState.default_language || this.state.default_language;
 
+            element.innerHTML = '';
             let contentDiv = document.createElement('div');
             element.appendChild(contentDiv);
 
