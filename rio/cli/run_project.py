@@ -160,6 +160,16 @@ class RunningApp:
 
         return f"http://{local_ip}:{self._port}"
 
+    def _start_task(self, task: Awaitable, *, name: str | None = None) -> asyncio.Task:
+        coro = self._run_task(task, name)
+        return asyncio.create_task(coro, name=name)
+
+    async def _run_task(self, task: Awaitable, name: str | None) -> None:
+        try:
+            await task
+        except KeyboardInterrupt:
+            print(f"Task {name} {task} got KeyboardInterrupt")
+
     def _run_in_mainloop(
         self,
         callback: Callable[[], None],
@@ -188,10 +198,16 @@ class RunningApp:
             task.cancel()
 
     def run(self) -> None:
+        # Before we do anything else, ensure that the `rio.toml` contains all
+        # the required information. This will load and cache all the information
+        # we need, or crash with `revel.fatal()`. Either way, it ensures that
+        # `revel.fatal()` won't be called *while* we're trying to process the
+        # `rio.toml`.
+        self._cache_data_from_rio_toml()
+
         # The webview needs to be shown from the main thread. So, if running
         # inside of a window run the arbiter in a separate thread. Otherwise
         # just run it from this one.
-
         if self.run_in_window:
             # Make sure the webview module is available
             if webview is None:
@@ -205,6 +221,9 @@ class RunningApp:
             self._show_webview()
         else:
             self.arbiter_sync()
+
+    def _cache_data_from_rio_toml(self) -> None:
+        _ = self.proj.app_main_module
 
     async def _worker_webview(self) -> None:
         """

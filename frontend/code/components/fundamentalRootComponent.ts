@@ -37,6 +37,16 @@ export class FundamentalRootComponent extends ComponentBase {
         element: HTMLElement,
         deltaState: FundamentalRootComponentState
     ): void {
+        // Unlike what you'd expect, this function can actually be called more
+        // than once. This is because of injected layout components; if the
+        // user's root component changes, then its parent - this component right
+        // here - is also updated. We don't actually need to do anything in that
+        // case, so if we know that this function has already been executed
+        // once, we'll abort.
+        if (element.firstChild !== null) {
+            return;
+        }
+
         // Update the children
         let children = [deltaState.child, deltaState.connection_lost_component];
 
@@ -44,7 +54,6 @@ export class FundamentalRootComponent extends ComponentBase {
             children.push(deltaState.debugger);
         }
 
-        console.log('Updating FundamentalRootComp', deltaState);
         replaceChildren(element.id, element, children);
 
         // Initialize CSS

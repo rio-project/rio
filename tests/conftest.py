@@ -31,6 +31,7 @@ def enable_component_instantiation():
     app = rio.App(build=_fake_build_function)
     app_server = AppServer(
         app_=app,
+        debug_mode=False,
         running_in_window=False,
         on_session_start=None,
         on_session_end=None,
@@ -40,6 +41,7 @@ def enable_component_instantiation():
     )
     session = rio.Session(
         app_server,
+        "<a fake session token>",
         rio.URL("https://unit.test"),
         rio.URL("https://unit.test"),
     )

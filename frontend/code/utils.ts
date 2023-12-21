@@ -51,6 +51,12 @@ export function withoutTransitions(
     enableTransitions(element);
 }
 
+export async function sleep(durationInSeconds: number): Promise<void> {
+    await new Promise((resolve, reject) =>
+        setTimeout(resolve, durationInSeconds * 1000)
+    );
+}
+
 export function range(start: number, end: number): number[] {
     let result: number[] = [];
 

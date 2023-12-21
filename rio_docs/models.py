@@ -34,7 +34,7 @@ class FunctionDocs(uniserde.Serde):
     raises: List[Tuple[str, str]]  # type, description
 
     @classmethod
-    def parse(cls, func: Callable) -> "Self":
+    def parse(cls, func: Callable) -> "FunctionDocs":
         return parsers.parse_function(func)
 
 
@@ -57,5 +57,5 @@ class ClassDocs(uniserde.Serde):
     long_description: Optional[str]
 
     @classmethod
-    def parse(cls, typ: Type) -> "Self":
+    def parse(cls, typ: Type) -> "ClassDocs":
         return parsers.parse_class(typ)

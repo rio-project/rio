@@ -52,7 +52,7 @@ class AutoForm(component_base.Component):
     def _build_input_field(
         self,
         field_name: str,
-        field_type: Type,
+        field_type: type,
     ) -> rio.Component:
         # Get sensible type information
         origin = get_origin(field_type)
@@ -97,6 +97,7 @@ class AutoForm(component_base.Component):
             if field_type is Literal:
                 mapping = {str(a): a for a in field_args}
             else:
+                field_type = cast(Type[enum.Enum], field_type)
                 mapping = {prettify_name(f.name): f.value for f in field_type}
 
             return rio.Dropdown(

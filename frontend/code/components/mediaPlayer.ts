@@ -2,6 +2,7 @@ import { fillToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
 import { LayoutContext } from '../layouting';
 import { Fill } from '../models';
+import { sleep } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
@@ -46,7 +47,7 @@ async function hasAudio(element: HTMLMediaElement): Promise<boolean> {
         // Just because nothing has been decoded yet doesn't mean there's no
         // audio. Wait a little while and then check again.
         for (let i = 10; i > 0; i--) {
-            await new Promise((r) => setTimeout(r, 50));
+            await sleep(50);
             // @ts-ignore
             if (element.webkitAudioDecodedByteCount > 0) {
                 return true;
@@ -706,7 +707,13 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     private _onKeyPress(event: KeyboardEvent): void {
-        if (!this.state.controls) {
+        if (
+            !this.state.controls ||
+            event.altKey ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey
+        ) {
             return;
         }
 
