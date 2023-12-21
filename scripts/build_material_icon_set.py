@@ -1,13 +1,13 @@
 """
 This file reads all materials icons/symbols from their github repository and
-packs them into a zip file that can be used by rio as icon set.
+packs them into a `.tar.xz` archive that can be used by rio as icon set.
 
 The repository is expected to be available locally already - this script does
 not clone it.
 """
 import re
+import tarfile
 import tempfile
-import zipfile
 from pathlib import Path
 from typing import *  # type: ignore
 from xml.etree import ElementTree as ET
@@ -37,7 +37,7 @@ INPUT_DIR = (
 INPUT_NAME_PATTERN = r"(.+).svg"
 
 # Configure: The output file will be written into this directory as
-# <SET_NAME>.zip
+# <SET_NAME>.tar.xz
 OUTPUT_DIR = rio.common.RIO_ASSETS_DIR / "compressed-icon-sets"
 
 # For debugging: Stop after processing this many icons. Set to `None` for no
@@ -151,19 +151,16 @@ def main() -> None:
                         )
                     )
 
-        # Zip the temporary directory
-        print_chapter("Zipping files")
-        zip_path = OUTPUT_DIR / f"{SET_NAME}.zip"
+        # Compress the temporary directory
+        print_chapter("Compressing files")
+        archive_path = OUTPUT_DIR / f"{SET_NAME}.tar.xz"
 
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for file_path in tmp_dir.glob("**/*"):
-                if file_path.is_file():
-                    arcname = file_path.relative_to(tmp_dir)
-                    zipf.write(file_path, arcname=arcname)
+        with tarfile.open(archive_path, "w:xz") as out_file:
+            out_file.add(tmp_dir, arcname="")
 
     print_chapter(None)
     print(
-        f"[bold]Done![/] You can find the result at [bold]{OUTPUT_DIR.resolve()}/{SET_NAME}.zip[/]"
+        f"[bold]Done![/] You can find the result at [bold]{OUTPUT_DIR.resolve()}/{SET_NAME}.tar.xz[/]"
     )
 
 
