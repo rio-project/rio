@@ -19,20 +19,7 @@ export class SliderComponent extends ComponentBase {
     createElement(): HTMLElement {
         // Create the element
         let element = document.createElement('div');
-        element.classList.add('rio-slider', 'mdc-slider');
-
         return element;
-    }
-
-    private createMdcSlider(element: HTMLElement): void {
-        // Initialize the material design component
-        this.mdcSlider = new MDCSlider(element);
-
-        // Subscribe to changes
-        this.mdcSlider.listen(
-            'MDCSlider:change',
-            this.onSliderChange.bind(this)
-        );
     }
 
     private onSliderChange(event: Event): void {
@@ -61,7 +48,7 @@ export class SliderComponent extends ComponentBase {
             // component's width, that makes the slider exceed its boundaries.
             // Thus, contain it in a sub-div.
             element.innerHTML = `
-            <div>
+            <div class="mdc-slider" style="pointer-events: auto">
                 <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}" step="${step}">
                 <div class="mdc-slider__track">
                     <div class="mdc-slider__track--inactive"></div>
@@ -75,7 +62,16 @@ export class SliderComponent extends ComponentBase {
             </div>
             `;
 
-            this.createMdcSlider(element);
+            // Initialize the material design component
+            this.mdcSlider = new MDCSlider(
+                element.firstElementChild as HTMLElement
+            );
+
+            // Subscribe to changes
+            this.mdcSlider.listen(
+                'MDCSlider:change',
+                this.onSliderChange.bind(this)
+            );
         }
 
         if (deltaState.value !== undefined) {

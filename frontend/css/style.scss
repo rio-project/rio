@@ -1537,11 +1537,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     cursor: pointer;
 }
 
-// Slider
-.rio-slider {
-    pointer-events: auto;
-}
-
 // ScrollContainer
 .rio-scroll-container {
     // Needs pointer events so that the scrollbar can be interacted with

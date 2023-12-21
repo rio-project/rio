@@ -245,7 +245,7 @@ Use the `rio.Icon` component like this:
             rio.Slider(
                 minimum=0.5,
                 maximum=3,
-                # value=IconsPage.selected_size,
+                value=IconsPage.selected_size,
             )
         )
 
