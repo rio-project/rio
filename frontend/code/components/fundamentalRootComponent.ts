@@ -44,6 +44,7 @@ export class FundamentalRootComponent extends ComponentBase {
             children.push(deltaState.debugger);
         }
 
+        console.log('Updating FundamentalRootComp', deltaState);
         replaceChildren(element.id, element, children);
 
         // Initialize CSS
@@ -71,8 +72,11 @@ export class FundamentalRootComponent extends ComponentBase {
     }
 
     updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = this.allocatedWidth =
-            window.innerWidth / pixelsPerEm;
+        // Don't use `window.innerWidth`. It appears to be rounded to the
+        // nearest integer, so it's inaccurate.
+        let rect = document.documentElement.getBoundingClientRect();
+        this.requestedWidth = this.allocatedWidth = rect.width / pixelsPerEm;
+        this.requestedHeight = this.allocatedHeight = rect.height / pixelsPerEm;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
@@ -102,8 +106,7 @@ export class FundamentalRootComponent extends ComponentBase {
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = this.allocatedHeight =
-            window.innerHeight / pixelsPerEm;
+        // Already done in updateRequestedWidth
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
