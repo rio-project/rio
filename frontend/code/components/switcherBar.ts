@@ -128,8 +128,8 @@ export class SwitcherBarComponent extends ComponentBase {
 
             // Detect clicks
             optionElement.addEventListener('click', () => {
-                // this.state.selectedName = name;
-                // this._updateMarker();
+                this.state.selectedName = name;
+                this._updateMarker();
                 this.sendMessageToBackend({
                     name: name,
                 });
