@@ -3,7 +3,7 @@ import { ComponentState } from './componentBase';
 import { replaceOnlyChild } from '../componentManagement';
 
 export type PlaceholderState = ComponentState & {
-    _type_: 'Placeholder';
+    _type_: 'Placeholder'; // Not 'Placeholder-builtin'!
     _child_?: number | string;
 };
 

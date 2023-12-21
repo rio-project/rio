@@ -56,7 +56,7 @@ def on_page_change(handler: Callable[[C], R]) -> Callable[[C], R]:
 
 def on_mount(handler: Callable[[C], R]) -> Callable[[C], R]:
     """
-    Triggered when the component is added to the widget tree.
+    Triggered when the component is added to the component tree.
 
     This may be triggered multiple times if the component is removed and then
     re-added.
@@ -67,7 +67,7 @@ def on_mount(handler: Callable[[C], R]) -> Callable[[C], R]:
 
 def on_unmount(handler: Callable[[C], R]) -> Callable[[C], R]:
     """
-    Triggered when the component is removed from the widget tree.
+    Triggered when the component is removed from the component tree.
 
     This may be triggered multiple times if the component is removed and then
     re-added.

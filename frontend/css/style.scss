@@ -2243,23 +2243,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transition: opacity 0.1s ease-out;
 }
 
-.rio-debugger-tree-view {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: stretch;
-    gap: 0.5rem;
-
-    min-width: 20rem;
-    padding: 1rem;
-}
-
-.rio-debugger-header {
-    margin-bottom: 1rem;
-
-    background: var(--rio-local-plain-bg-variant);
-}
-
 .rio-debugger-tree-component-tree {
     flex-grow: 1;
     position: relative;
@@ -2274,50 +2257,11 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     overflow-y: auto;
 }
 
-.rio-debugger-tree-component-details {
-    display: grid;
-    grid-template-columns: auto auto auto auto;
-    row-gap: 0.5rem;
-    column-gap: 0.5rem;
-}
-
-.rio-debugger-tree-component-details-heading {
-    display: flex;
-    align-items: end;
-    justify-content: stretch;
-}
-
-.rio-debugger-tree-component-details-key-container {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.rio-debugger-tree-component-details-key-container > *:first-child {
-    width: 1.2rem;
-    height: 1.2rem;
-}
-
-.rio-debugger-tree-component-docs-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-
-    color: var(--rio-local-accent-bg);
-
-    div {
-        width: 1.2rem;
-        height: 1.2rem;
-    }
-}
-
 .rio-debugger-component-tree-item {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
 }
-
-// Add this CSS to your stylesheet
 
 @keyframes flash-text {
     0% {

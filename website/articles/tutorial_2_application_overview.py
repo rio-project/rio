@@ -75,7 +75,7 @@ any other Python class, and inherits from `rio.Component`. This is the base
 class for all Rio components.
 
 It then lists all attributes buttons have, as well as their data types. This is
-important, because all Rio widgets are automatically `dataclass`es. This means,
+important, because all Rio components are automatically `dataclass`es. This means,
 that Components will automatically have an `__init__` method, so you don't
 have to write one yourself.
 

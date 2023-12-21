@@ -6,7 +6,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
 export type MediaPlayerState = ComponentState & {
-    _type_: 'mediaPlayer';
+    _type_: 'MediaPlayer-builtin';
     loop?: boolean;
     autoplay?: boolean;
     controls?: boolean;

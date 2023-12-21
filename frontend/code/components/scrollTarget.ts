@@ -11,9 +11,10 @@ export type ScrollTargetState = ComponentState & {
 export class ScrollTargetComponent extends ComponentBase {
     state: Required<ScrollTargetState>;
 
-    constructor(elementId: string, state: ComponentState) {
+    constructor(elementId: string, state: Required<ComponentState>) {
         super(elementId, state);
 
+        // @ts-ignore
         this._minSizeComponentImpl[0] = 'fit-content';
     }
 

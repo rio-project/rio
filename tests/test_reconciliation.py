@@ -240,7 +240,7 @@ async def test_key_matching_inside_keyed_component():
 
 
 async def test_same_key_on_different_component_type():
-    class WidgetWithText(rio.Component):
+    class ComponentWithText(rio.Component):
         text: str
 
         def build(self) -> rio.Component:
@@ -253,7 +253,7 @@ async def test_same_key_on_different_component_type():
             if not self.toggle:
                 return rio.Text("Hello", key="foo")
             else:
-                return WidgetWithText("World", key="foo")
+                return ComponentWithText("World", key="foo")
 
     async with create_mockapp(Toggler) as app:
         root_component = app.get_component(Toggler)

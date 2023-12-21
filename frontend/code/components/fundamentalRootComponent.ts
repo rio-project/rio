@@ -9,7 +9,7 @@ import { setConnectionLostPopupVisible } from '../rpc';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type FundamentalRootComponentState = ComponentState & {
-    _type_: 'FundamentalRootComponent';
+    _type_: 'FundamentalRootComponent-builtin';
     child: ComponentId;
     debugger: ComponentId | null;
     connection_lost_component: ComponentId;

@@ -7,6 +7,7 @@ const FILL_MODE_TO_OBJECT_FIT = {
 } as const;
 
 export type ImageState = ComponentState & {
+    _type_: 'Image-builtin';
     fill_mode?: keyof typeof FILL_MODE_TO_OBJECT_FIT;
     imageUrl?: string;
     reportError?: boolean;

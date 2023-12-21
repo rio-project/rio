@@ -4,6 +4,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 // TODO
 export type ListViewState = ComponentState & {
+    _type_: 'ListView-builtin';
     children?: (number | string)[];
 };
 

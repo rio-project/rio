@@ -40,7 +40,7 @@ function findComponentUnderMouse(event: MouseEvent): ComponentId {
 }
 
 export type MouseEventListenerState = ComponentState & {
-    _type_: 'mouseEventListener';
+    _type_: 'MouseEventListener-builtin';
     child?: number | string;
     reportMouseDown: boolean;
     reportMouseUp: boolean;

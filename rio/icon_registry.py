@@ -94,6 +94,32 @@ class IconRegistry:
 
         return f"{set}/{name}:{section}"
 
+    def _ensure_icon_set_is_extracted(self, icon_set: str) -> None:
+        """
+        Given the name of an icon set, extract the icon set's zip file to the
+        cache directory. The target director must not exist yet. Raises a
+        `KeyError` if no icon set with the given name has been registered.
+        """
+        # If the target directory already exists there is nothing to do
+        target_dir = self.cache_dir / icon_set
+
+        if target_dir.exists():
+            return
+
+        # Get the path to the icon set's zip file. If there is no icon set with
+        # the given name, this will raise a `KeyError`. That's fine.
+        archive_path = self.icon_set_archives[icon_set]
+
+        # Extract the set
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        logging.debug(
+            f"Extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`"
+        )
+
+        with zipfile.ZipFile(archive_path, "r") as zip_file:
+            zip_file.extractall(target_dir)
+
     def _get_icon_svg_path(
         self,
         icon_name: str,
@@ -112,33 +138,8 @@ class IconRegistry:
         else:
             svg_path = icon_set_dir / variant / f"{icon_name}.svg"
 
-        # Check if the file has already been extracted
-        if svg_path.exists():
-            return svg_path
-
-        # If the set's directory already exists there is nothing to do - this is
-        # simply an invalid icon name
-        if icon_set_dir.exists():
-            return svg_path
-
-        # If there is no icon set matching the name there is also nothing to do,
-        # as this is an invalid / unregistered icon set
-        try:
-            archive_path = self.icon_set_archives[icon_set]
-        except KeyError:
-            return svg_path
-
-        # The cache directory doesn't exist. Extract the icon set's zip file to
-        # create it
-        target_dir = self.cache_dir / icon_set
-        target_dir.mkdir(parents=True, exist_ok=True)
-
-        logging.debug(
-            f"Extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`"
-        )
-
-        with zipfile.ZipFile(archive_path, "r") as zip_file:
-            zip_file.extractall(target_dir)
+        # Extract the icon set if necessary
+        self._ensure_icon_set_is_extracted(icon_set)
 
         return svg_path
 
@@ -185,3 +186,76 @@ class IconRegistry:
 
         # Done
         return svg_string
+
+    def _get_variant_directories(
+        self, icon_set: str
+    ) -> Iterable[Tuple[Optional[str], Path]]:
+        """
+        Given the name of an icon set, list the names of all variants in that
+        set along with the directory they are stored in.
+        """
+
+        # Make sure the icon set is extracted
+        self._ensure_icon_set_is_extracted(icon_set)
+
+        # Iterate over all files in the icon set directory. Directories
+        # correspond to variants. If icons are found in the root directory, they
+        # are part of the default variant.
+        icon_set_dir = self.cache_dir / icon_set
+        has_default_variant = False
+
+        for path in icon_set_dir.iterdir():
+            if path.is_dir():
+                yield (path.name, path)
+            else:
+                has_default_variant = True
+
+        if has_default_variant:
+            yield (None, icon_set_dir)
+
+    def all_icon_sets(self) -> Iterable[str]:
+        """
+        Return the names of all icon set names known to rio.
+        """
+        return self.icon_set_archives.keys()
+
+    def all_variants_in_set(self, icon_set: str) -> Iterable[Optional[str]]:
+        """
+        Given the name of an icon set, list the names of all variants in that
+        set.
+        """
+        for name, _ in self._get_variant_directories(icon_set):
+            yield name
+
+    def all_icons_in_set(
+        self,
+        icon_set: str,
+        *,
+        variant: Optional[str] = None,
+    ) -> Iterable[Tuple[str, Optional[str]]]:
+        """
+        Given the name of an icon set, list all icon names and variants in that
+        set. If `variant` is given, only return icons with that variant.
+        Otherwise, icons of all variants are returned.
+
+        Raises a `KeyError` if there is not icon set or variant with the given
+        name.
+        """
+        # Find all available variants. This will also extract the icon set if
+        # necessary.
+        variants = dict(self._get_variant_directories(icon_set))
+
+        # Apply the variant filter. Any `KeyError` is propagated.
+        if variant is not None:
+            variants = {variant: variants[variant]}
+
+        # Iterate over all variants
+        for variant_name, path in variants.items():
+            for icon_path in path.iterdir():
+                # Only care for SVG files
+                if icon_path.is_dir() or icon_path.suffix != ".svg":
+                    continue
+
+                # Yield
+                icon_name = icon_path.stem
+                yield icon_name, variant_name

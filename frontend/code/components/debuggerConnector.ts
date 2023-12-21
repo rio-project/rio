@@ -1,7 +1,9 @@
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
-export type DebuggerConnectorState = ComponentState & {};
+export type DebuggerConnectorState = ComponentState & {
+    _type_: 'DebuggerConnector-builtin';
+};
 
 export class DebuggerConnectorComponent extends ComponentBase {
     state: Required<DebuggerConnectorState>;

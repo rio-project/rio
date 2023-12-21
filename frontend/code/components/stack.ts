@@ -5,7 +5,7 @@ import { SingleContainer } from './singleContainer';
 // TODO: set child z-indices, if necessary!?
 
 export type StackState = ComponentState & {
-    _type_: 'stack';
+    _type_: 'Stack-builtin';
     children?: number[];
 };
 

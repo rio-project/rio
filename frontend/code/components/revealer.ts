@@ -1,18 +1,20 @@
 import { replaceOnlyChild } from '../componentManagement';
+import { textStyleToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
 import { easeInOut } from '../easeFunctions';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext, updateLayout } from '../layouting';
+import { TextStyle } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 // Height of the revealer's header in rem
-const HEADER_HEIGHT = 2.6;
 const CHILD_PADDING = 0.8;
 
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';
     header?: string | null;
     content?: number | string;
+    header_style?: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle;
     is_open: boolean;
 };
 
@@ -30,6 +32,8 @@ export class RevealerComponent extends ComponentBase {
     private arrowElement: HTMLElement;
     private contentInnerElement: HTMLElement;
     private contentOuterElement: HTMLElement;
+
+    private headerHeight: number;
 
     createElement(): HTMLElement {
         // Create the HTML
@@ -68,12 +72,11 @@ export class RevealerComponent extends ComponentBase {
         ) as HTMLElement;
 
         // Initialize them
-        this.headerElement.style.height = `${HEADER_HEIGHT}rem`;
-
         applyIcon(
             this.arrowElement,
             'expand-more',
-            'var(--rio-local-text-color)'
+            // 'var(--rio-local-text-color)'
+            'currentColor'
         );
 
         this.contentInnerElement.style.padding = `${CHILD_PADDING}rem`;
@@ -117,6 +120,42 @@ export class RevealerComponent extends ComponentBase {
             this.contentInnerElement,
             deltaState.content
         );
+
+        // Update the text style
+        if (deltaState.header_style !== undefined) {
+            Object.assign(
+                this.labelElement.style,
+                textStyleToCss(deltaState.header_style)
+            );
+
+            this.arrowElement.style.color = this.labelElement.style.color;
+        }
+
+        // Precompute the headers' height
+        if (
+            deltaState.header !== undefined ||
+            deltaState.header_style !== undefined
+        ) {
+            let header =
+                deltaState.header === undefined
+                    ? this.state.header
+                    : deltaState.header;
+
+            let headerStyle =
+                deltaState.header_style ?? this.state.header_style;
+
+            console.log(
+                'HEADER',
+                deltaState.header_style,
+                this.state.header_style,
+                headerStyle
+            );
+
+            if (header !== null) {
+                this.headerHeight = getTextDimensions(header, headerStyle)[1];
+                this.headerHeight += 1.6; // Padding
+            }
+        }
 
         // Expand / collapse
         if (deltaState.is_open !== undefined) {
@@ -215,7 +254,7 @@ export class RevealerComponent extends ComponentBase {
 
         // Account for the header, if present
         if (this.state.header !== null) {
-            this.requestedHeight += HEADER_HEIGHT;
+            this.requestedHeight += this.headerHeight;
         }
 
         // Account for the content
@@ -236,7 +275,7 @@ export class RevealerComponent extends ComponentBase {
         }
 
         // Pass on space to the child
-        let headerHeight = this.state.header === null ? 0 : HEADER_HEIGHT;
+        let headerHeight = this.state.header === null ? 0 : this.headerHeight;
 
         ctx.inst(this.state.content).allocatedHeight = Math.max(
             this.allocatedHeight - headerHeight - 2 * CHILD_PADDING,

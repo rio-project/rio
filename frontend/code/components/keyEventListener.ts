@@ -685,7 +685,7 @@ function encodeEvent(event: KeyboardEvent): EncodedEvent {
 }
 
 export type KeyEventListenerState = ComponentState & {
-    _type_: 'keyEventListener';
+    _type_: 'KeyEventListener-builtin';
     child?: number | string;
     reportKeyDown?: boolean;
     reportKeyUp?: boolean;

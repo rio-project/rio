@@ -18,6 +18,7 @@ class TreePage(rio.Component):
             component_tree.ComponentTree(
                 width=22,
                 height="grow",
+                margin=margin,
             ),
             component_details.ComponentDetails(
                 margin=margin,

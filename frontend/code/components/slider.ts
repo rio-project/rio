@@ -4,6 +4,7 @@ import { MDCSlider } from '@material/slider';
 // TODO
 
 export type SliderState = ComponentState & {
+    _type_: 'Slider-builtin';
     minimum?: number;
     maximum?: number;
     value?: number;
@@ -57,16 +58,21 @@ export class SliderComponent extends ComponentBase {
             step = step == 0 ? 0.0001 : step;
             let value = deltaState.value ?? this.state.value;
 
+            // the MDC slider contains margin. If Rio explicitly sets the
+            // component's width, that makes the slider exceed its boundaries.
+            // Thus, contain it in a sub-div.
             element.innerHTML = `
-            <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}" step="${step}">
-            <div class="mdc-slider__track">
-                <div class="mdc-slider__track--inactive"></div>
-                <div class="mdc-slider__track--active">
-                    <div class="mdc-slider__track--active_fill"></div>
+            <div>
+                <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}" step="${step}">
+                <div class="mdc-slider__track">
+                    <div class="mdc-slider__track--inactive"></div>
+                    <div class="mdc-slider__track--active">
+                        <div class="mdc-slider__track--active_fill"></div>
+                    </div>
                 </div>
-            </div>
-            <div class="mdc-slider__thumb">
-                <div class="mdc-slider__thumb-knob"></div>
+                <div class="mdc-slider__thumb">
+                    <div class="mdc-slider__thumb-knob"></div>
+                </div>
             </div>
             `;
 
@@ -102,10 +108,10 @@ export class SliderComponent extends ComponentBase {
     }
 
     updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 10;
+        this.requestedWidth = 6;
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 5;
+        this.requestedHeight = 4;
     }
 }

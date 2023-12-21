@@ -15,7 +15,7 @@ class Overlay(component_base.FundamentalComponent):
     """
     Displays its child above all other components.
 
-    The overlay component takes a single child widget, and displays it above all
+    The overlay component takes a single child component, and displays it above all
     other components on the page. The child will not scroll with the rest of the
     page and is exempt from layouting.
 

@@ -22,7 +22,7 @@ type GridChild = {
 } & GridChildPosition;
 
 export type GridState = ComponentState & {
-    _type_: 'Grid';
+    _type_: 'Grid-builtin';
     _children?: ComponentId[];
     _child_positions?: GridChildPosition[];
     row_spacing?: number;

@@ -7,6 +7,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 type TableValue = number | string;
 
 export type TableState = ComponentState & {
+    _type_: 'Table-builtin';
     data?: { string: TableValue[] };
     show_row_numbers?: boolean;
 };
