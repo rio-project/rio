@@ -2,7 +2,14 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import debugger_connector, deploy_page, docs_page, project_page, tree_page
+from . import (
+    debugger_connector,
+    deploy_page,
+    docs_page,
+    icons_page,
+    project_page,
+    tree_page,
+)
 
 
 class ClientSideDebugger(rio.Component):
@@ -26,6 +33,10 @@ class ClientSideDebugger(rio.Component):
         # Tree
         if self.selected_page == "tree":
             return tree_page.TreePage()
+
+        # Icons
+        if self.selected_page == "icons":
+            return icons_page.IconsPage()
 
         # Docs
         if self.selected_page == "docs":
@@ -52,6 +63,7 @@ class ClientSideDebugger(rio.Component):
             rio.components.class_container.ClassContainer(
                 self.get_selected_page(),
                 classes=["rio-switcheroo-neutral", "rio-debugger-background"],
+                width=22,
             ),
             # Navigation
             rio.Column(
@@ -59,6 +71,7 @@ class ClientSideDebugger(rio.Component):
                     names=[
                         "Project",
                         "Tree",
+                        "Icons",
                         "Docs",
                         "AI",
                         "Deploy",
@@ -66,6 +79,7 @@ class ClientSideDebugger(rio.Component):
                     icons=[
                         "home",
                         "view-quilt",
+                        "emoji-people",
                         "library-books",
                         "chat-bubble",
                         "rocket-launch",
@@ -73,12 +87,14 @@ class ClientSideDebugger(rio.Component):
                     values=[
                         "project",
                         "tree",
+                        "icons",
                         "docs",
                         "ai-chat",
                         "deploy",
                     ],
                     orientation="vertical",
                     spacing=2,
+                    width=15,
                     color="primary",
                     selected_value=ClientSideDebugger.selected_page,
                 ),

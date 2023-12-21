@@ -116,8 +116,8 @@ def generate_root_init(
     dependencies: Iterable[rio.snippets.Snippet],
     main_page_snippet_name: str,
 ) -> None:
-    # The root widget depends on the type of project
-    root_widget_name = (
+    # The root component depends on the type of project
+    root_component_name = (
         "rio.PageView"  # TODO: Add other components, once they're supported
     )
 
@@ -171,7 +171,7 @@ theme = rio.Theme.from_color(
 # Create the Rio app
 app = rio.App(
     name={nicename!r},
-    build={root_widget_name},
+    build={root_component_name},
     pages=[{page_string}
     ],
     theme=theme,

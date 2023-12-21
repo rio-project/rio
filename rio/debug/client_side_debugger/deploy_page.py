@@ -24,7 +24,7 @@ class DeployPage(rio.Component):
                 rio.Text("Stay tuned for updates."),
                 spacing=1,
                 height="grow",
-                align_y=0.5,
+                align_y=0.3,
                 margin=1,
             ),
         )

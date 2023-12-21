@@ -5,6 +5,7 @@ import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from '../colorConversion';
 // TODO
 
 export type ColorPickerState = ComponentState & {
+    _type_: 'ColorPicker-builtin';
     color?: Color;
     pick_opacity?: boolean;
 };

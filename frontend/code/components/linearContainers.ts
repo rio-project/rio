@@ -4,7 +4,7 @@ import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type LinearContainerState = ComponentState & {
-    _type_: 'row' | 'column';
+    _type_: 'Row-builtin' | 'Column-builtin';
     children?: (number | string)[];
     spacing?: number;
 };

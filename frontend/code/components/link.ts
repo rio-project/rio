@@ -5,6 +5,7 @@ import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type LinkState = ComponentState & {
+    _type_: 'Link-builtin';
     child_text?: string | null;
     child_component?: ComponentId | null;
     targetUrl: string;

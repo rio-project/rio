@@ -5,9 +5,8 @@ import { LayoutContext } from '../layouting';
 import { pixelsPerEm } from '../app';
 import { getTextDimensions } from '../layoutHelpers';
 
-// TODO
-
 export type TextState = ComponentState & {
+    _type_: 'Text-builtin';
     text?: string;
     multiline?: boolean;
     selectable?: boolean;
@@ -74,7 +73,11 @@ export class TextComponent extends ComponentBase {
 
     updateRequestedHeight(ctx: LayoutContext): void {
         if (this.state.multiline) {
-            console.error('TODO: Layout multiline text height');
+            this.requestedHeight = getTextDimensions(
+                this.state.text,
+                this.state.style,
+                this.allocatedWidth
+            )[1];
         }
     }
 }

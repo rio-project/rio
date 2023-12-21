@@ -1,8 +1,10 @@
 import { fillToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
 
+let Plotly;
+
 type PlotState = ComponentState & {
-    _type_: 'plot';
+    _type_: 'Plot-builtin';
     plotJson: string;
     boxStyle: object;
 };

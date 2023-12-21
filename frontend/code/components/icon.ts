@@ -4,6 +4,7 @@ import { applyFillToSVG } from '../designApplication';
 import { pixelsPerEm } from '../app';
 
 export type IconState = ComponentState & {
+    _type_: 'Icon-builtin';
     svgSource: string;
     fill: Fill | ColorSet | 'dim';
 };

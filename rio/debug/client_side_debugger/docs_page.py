@@ -14,7 +14,7 @@ class DocsPage(rio.Component):
             ),
             rio.Column(
                 rio.Text(
-                    "New here? Our tutorial can help you get started.",
+                    "New here? The Rio tutorial can help you get started.",
                     multiline=True,
                 ),
                 rio.Button(

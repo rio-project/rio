@@ -4,7 +4,7 @@ import { LayoutContext } from '../layouting';
 // TODO
 
 export type TextInputState = ComponentState & {
-    _type_: 'textInput';
+    _type_: 'TextInput-builtin';
     text?: string;
     label?: string;
     prefix_text?: string;

@@ -18,7 +18,6 @@ import { HeadingListItemComponent } from './components/headingListItem';
 import { HtmlComponent } from './components/html';
 import { IconComponent } from './components/icon';
 import { ImageComponent } from './components/image';
-import { initializeDebugger } from './debugger';
 import { KeyEventListenerComponent } from './components/keyEventListener';
 import { LinkComponent } from './components/link';
 import { ListViewComponent } from './components/listView';
@@ -487,7 +486,7 @@ export function updateComponentStates(
         // TODO: This should absolutely not be done here. It's just a convenient
         // spot for development.
         if (globalThis.RIO_DEBUG_MODE && globalThis.rioDebugger === undefined) {
-            initializeDebugger();
+            // initializeDebugger();
         }
     }
 
@@ -521,8 +520,8 @@ function restoreKeyboardFocus(
     // which they were just removed. We'll go up the tree until we find a parent
     // that can accept the keyboard focus.
     //
-    // Keep in mind that we have to traverse the widget tree all the way up to
-    // the root. Because even if a widget still has a parent, the parent itself
+    // Keep in mind that we have to traverse the component tree all the way up to
+    // the root. Because even if a component still has a parent, the parent itself
     // might be about to die.
     let rootComponent = document.body.firstElementChild!.firstElementChild!;
     let current: HTMLElement = focusedElement;
@@ -533,7 +532,7 @@ function restoreKeyboardFocus(
         if (current.parentElement === latentComponents) {
             winner = null;
         }
-        // If we don't currently know of a focusable (and live) widget, check if
+        // If we don't currently know of a focusable (and live) component, check if
         // this one fits the bill
         else if (winner === null) {
             let instance = elementsToInstances.get(current)!;

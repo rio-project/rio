@@ -7,6 +7,9 @@ import { micromark } from 'micromark';
 //
 // https://github.com/highlightjs/highlight.js#importing-the-library
 import hljs from 'highlight.js/lib/common';
+import { LayoutContext } from '../layouting';
+import { HtmlComponent } from './html';
+import { pixelsPerEm } from '../app';
 
 export type MarkdownViewState = ComponentState & {
     _type_: 'MarkdownView-builtin';
@@ -16,7 +19,7 @@ export type MarkdownViewState = ComponentState & {
 
 // Remove an equal amount of trim from each line, taking care to ignore
 // empty lines.
-function blockTrim(value: string) {
+function dedent(value: string) {
     if (!value) {
         return '';
     }
@@ -167,6 +170,12 @@ function convertMarkdown(
 export class MarkdownViewComponent extends ComponentBase {
     state: Required<MarkdownViewState>;
 
+    // Since laying out markdown is time intensive, this component does its best
+    // not to re-layout unless needed. This is done by setting the height
+    // request lazily, and only if the width has changed. This value here is the
+    // component's allocated width when the height request was last set.
+    private heightRequestAssumesWidth: number;
+
     createElement(): HTMLElement {
         const element = document.createElement('div');
         element.classList.add('rio-markdown-view');
@@ -175,10 +184,50 @@ export class MarkdownViewComponent extends ComponentBase {
 
     updateElement(element: HTMLElement, deltaState: MarkdownViewState): void {
         if (deltaState.text !== undefined) {
+            // Create a new div to hold the markdown content. This is so the
+            // layouting code can move it around as needed.
             let defaultLanguage =
                 deltaState.default_language || this.state.default_language;
 
-            convertMarkdown(deltaState.text, element, defaultLanguage);
+            let contentDiv = document.createElement('div');
+            element.appendChild(contentDiv);
+
+            convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
+
+            // Any previously calculated height request is no longer valid
+            this.heightRequestAssumesWidth = -1;
         }
     }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth = 0;
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {}
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        // Is the previous height request still value?
+        if (this.heightRequestAssumesWidth === this.allocatedWidth) {
+            return;
+        }
+
+        // No, re-layout
+        //
+        // Reading the width is incorrect if the component isn't visible, e.g.
+        // because a parent is hidden. To avoid that, move the content element
+        // to a safe place.
+        let element = this.element();
+        let contentDiv = element.firstElementChild as HTMLElement;
+
+        document.body.appendChild(contentDiv);
+        contentDiv.style.width = `${this.allocatedWidth}rem`;
+
+        let rect = contentDiv.getBoundingClientRect();
+        this.requestedHeight = rect.height / pixelsPerEm;
+
+        // Move the content element back
+        element.appendChild(contentDiv);
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {}
 }

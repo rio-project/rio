@@ -3,7 +3,7 @@ import { ColorSet } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type ProgressCircleState = ComponentState & {
-    _type_: 'progressCircle';
+    _type_: 'ProgressCircle-builtin';
     color: ColorSet;
     progress?: number | null;
 };

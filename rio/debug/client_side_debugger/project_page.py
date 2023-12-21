@@ -44,7 +44,7 @@ class ProjectPage(rio.Component):
                 align_x=0,
             ),
             rio.Text(
-                "When launching your project, Rio needs to know the name of your python module and in which variable you've stored your app. You can configure those here",
+                "To launch your project, Rio needs to know the name of your python module and in which variable you've stored your app. You can configure those here",
                 multiline=True,
             ),
             rio.TextInput(
@@ -64,7 +64,6 @@ class ProjectPage(rio.Component):
                     "Website": "website",
                 },
             ),
-            width=20,
             margin=1,
             align_y=0,
         )

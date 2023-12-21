@@ -307,7 +307,7 @@ class Session(unicall.Unicall):
         # references.
         self._refresh_lock = asyncio.Lock()
 
-        # All components wich are currently in the widget tree and are
+        # All components wich are currently in the component tree and are
         # subscribed to either `on_mount` or `on_unmount` events.
         self._watched_and_mounted_components: Set[rio.Component] = set()
 
@@ -759,7 +759,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             # Notes:
             # - All events are triggered only after the client has been notified
             #   of the changes. This way, if the event handlers trigger another
-            #   client message themselves, any referenced widgets will already
+            #   client message themselves, any referenced components will already
             #   exist
             for comp in list(self._watched_and_mounted_components):
                 # Still alive

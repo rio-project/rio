@@ -9,6 +9,7 @@ const switchDuration = 0.8;
 const progressBarFadeDuration = 0.2;
 
 export type SlideshowState = ComponentState & {
+    _type_: 'Slideshow-builtin';
     children?: (number | string)[];
     linger_time?: number;
     corner_radius?: [number, number, number, number];

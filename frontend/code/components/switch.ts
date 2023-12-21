@@ -3,7 +3,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
 export type SwitchState = ComponentState & {
-    _type_: 'switch';
+    _type_: 'Switch-builtin';
     is_on?: boolean;
     is_sensitive?: boolean;
 };

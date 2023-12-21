@@ -4,7 +4,7 @@ import { applyIcon } from '../designApplication';
 
 // TODO
 export type DropdownState = ComponentState & {
-    _type_: 'dropdown';
+    _type_: 'Dropdown-builtin';
     optionNames?: string[];
     label?: string;
     selectedName?: string;

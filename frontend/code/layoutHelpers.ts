@@ -11,7 +11,8 @@ let cacheMisses: number = 0;
 /// the result.
 export function getTextDimensions(
     text: string,
-    style: 'heading1' | 'heading2' | 'heading3' | 'text' | 'dim' | TextStyle
+    style: 'heading1' | 'heading2' | 'heading3' | 'text' | 'dim' | TextStyle,
+    restrictWidth: number | null = null
 ): [number, number] {
     // Make sure the text isn't just whitespace, as that results in a wrong [0,
     // 0]
@@ -34,6 +35,11 @@ export function getTextDimensions(
     } else {
         key = `${style.fontName}+${style.fontWeight}+${style.italic}+${style.underlined}+${style.allCaps}+${text}`;
         sizeNormalizationFactor = style.fontSize;
+    }
+
+    // Restrict the width?
+    if (restrictWidth !== null) {
+        key += `+${restrictWidth}`;
     }
 
     // Display cache statistics
@@ -59,6 +65,10 @@ export function getTextDimensions(
     Object.assign(element.style, textStyleToCss(style));
     element.style.position = 'absolute';
     document.body.appendChild(element);
+
+    if (restrictWidth !== null) {
+        element.style.width = `${restrictWidth}rem`;
+    }
 
     let rect = element.getBoundingClientRect();
     let result = [rect.width / pixelsPerEm, rect.height / pixelsPerEm] as [

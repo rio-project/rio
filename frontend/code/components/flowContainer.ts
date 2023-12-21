@@ -4,7 +4,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 // TODO
 export type FlowState = ComponentState & {
-    _type_: 'flow';
+    _type_: 'Flow-builtin';
     children?: (number | string)[];
     spacing?: number;
 };

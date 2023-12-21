@@ -49,7 +49,7 @@ function main() {
             newHeight: window.innerHeight / pixelsPerEm,
         });
 
-        // Re-layout, but only if a root widget already exists
+        // Re-layout, but only if a root component already exists
         let rootElement = document.body.firstElementChild;
 
         if (rootElement !== null) {
