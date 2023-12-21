@@ -526,7 +526,7 @@ function restoreKeyboardFocus(
     // Keep in mind that we have to traverse the component tree all the way up to
     // the root. Because even if a component still has a parent, the parent itself
     // might be about to die.
-    let rootComponent = document.body.firstElementChild!.firstElementChild!;
+    let rootComponent = getRootInstance().element();
     let current: HTMLElement = focusedElement;
     let winner: ComponentBase | null = null;
 
@@ -534,7 +534,9 @@ function restoreKeyboardFocus(
         // If this component is dead, no child of it can get the keyboard focus
         if (current.parentElement === latentComponents) {
             winner = null;
+            break;
         }
+
         // If we don't currently know of a focusable (and live) component, check if
         // this one fits the bill
         else if (winner === null) {

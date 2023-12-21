@@ -67,16 +67,6 @@ class Slider(component_base.FundamentalComponent):
         align_x: Optional[float] = None,
         align_y: Optional[float] = None,
     ):
-        if maximum <= minimum:
-            raise ValueError(
-                f"`maximum` must be greater than `minimum`. Got {maximum} <= {minimum}"
-            )
-
-        if step_size < 0:
-            raise ValueError(
-                f"`step_size` must be greater than or equal to 0. Got {step_size}"
-            )
-
         super().__init__(
             key=key,
             margin=margin,
@@ -92,20 +82,46 @@ class Slider(component_base.FundamentalComponent):
             align_y=align_y,
         )
 
+        self.minimum = minimum
+        self.maximum = maximum
+        self.step_size = step_size
+        self.value = value  # type: ignore  Possibly assigning None. Fixed in _on_create below
+        self.is_sensitive = is_sensitive
+        self.on_change = on_change
+
+    @rio.event.on_create
+    def _on_create(self) -> None:
+        # Don't hammer potential state bindings
+        minimum = self.minimum
+        maximum = self.maximum
+        step_size = self.step_size
+        value = self.value
+
+        initial_value = value
+
+        if maximum <= minimum:
+            raise ValueError(
+                f"`maximum` must be greater than `minimum`. Got {maximum} <= {minimum}"
+            )
+
+        if step_size < 0:
+            raise ValueError(
+                f"`step_size` must be greater than or equal to 0. Got {step_size}"
+            )
+
         if value is None:
             value = minimum + (maximum - minimum) / 2
 
         if step_size != 0:
             value = round(value / step_size) * step_size
 
-        value = max(minimum, min(value, maximum))
+        value = min(maximum, max(minimum, value))
 
-        self.minimum = minimum
-        self.maximum = maximum
-        self.step_size = step_size
-        self.value = value
-        self.is_sensitive = is_sensitive
-        self.on_change = on_change
+        # Only assign the value if it has in fact changed, as this causes a
+        # refresh. If the value is bound to the parent and the parent rebuilds
+        # this creates an infinite loop.
+        if value != initial_value:
+            self.value = value
 
     # TODO: When `minimum` or `maximum` is changed, make sure the value is still within
     # the range

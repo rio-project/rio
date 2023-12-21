@@ -12,8 +12,6 @@ export type FlowState = ComponentState & {
 export class FlowComponent extends ComponentBase {
     state: Required<FlowState>;
 
-    inner: HTMLElement;
-
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-flow');
@@ -22,11 +20,11 @@ export class FlowComponent extends ComponentBase {
 
     updateElement(element: HTMLElement, deltaState: FlowState): void {
         // Update the children
-        replaceChildren(element.id, this.inner, deltaState.children);
+        replaceChildren(element.id, element, deltaState.children);
 
         // Spacing
         if (deltaState.spacing !== undefined) {
-            this.inner.style.gap = `${deltaState.spacing}rem`;
+            element.style.gap = `${deltaState.spacing}rem`;
         }
 
         // Update the layout
