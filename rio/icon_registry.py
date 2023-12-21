@@ -1,5 +1,5 @@
 import logging
-import zipfile
+import tarfile
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -13,7 +13,7 @@ class IconRegistry:
     """
     Helper class, which keeps track of all icons known to rio.
 
-    Icons are stored in a zip file, and extracted on first use. Any icons which
+    Icons are stored in a .tar.xz archive, and extracted on first use. Any icons which
     have been accessed are kept in memory for rapid access.
     """
 
@@ -24,7 +24,7 @@ class IconRegistry:
         # names are canonical form.
         self.cached_icons: Dict[str, str] = {}
 
-        # Maps icon set names to the path of the zip file containing the icons
+        # Maps icon set names to the path of the archive file containing the icons
         self.icon_set_archives: Dict[str, Path] = {}
 
     @classmethod
@@ -40,7 +40,7 @@ class IconRegistry:
 
             # Register built-in icon sets
             _icon_registry.icon_set_archives["material"] = (
-                common.RIO_ASSETS_DIR / "compressed-icon-sets" / "material.zip"
+                common.RIO_ASSETS_DIR / "compressed-icon-sets" / "material.tar.xz"
             )
 
         # Use it
@@ -96,7 +96,7 @@ class IconRegistry:
 
     def _ensure_icon_set_is_extracted(self, icon_set: str) -> None:
         """
-        Given the name of an icon set, extract the icon set's zip file to the
+        Given the name of an icon set, extract the icon set's archive to the
         cache directory. The target director must not exist yet. Raises a
         `KeyError` if no icon set with the given name has been registered.
         """
@@ -106,19 +106,25 @@ class IconRegistry:
         if target_dir.exists():
             return
 
-        # Get the path to the icon set's zip file. If there is no icon set with
+        # Get the path to the icon set's archive. If there is no icon set with
         # the given name, this will raise a `KeyError`. That's fine.
         archive_path = self.icon_set_archives[icon_set]
 
         # Extract the set
-        target_dir.mkdir(parents=True, exist_ok=True)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         logging.debug(
             f"Extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`"
         )
 
-        with zipfile.ZipFile(archive_path, "r") as zip_file:
-            zip_file.extractall(target_dir)
+        with tarfile.open(archive_path, "r:xz") as tar_file:
+            tar_file.extractall(self.cache_dir)
+
+        # Sanity check: Make sure the target directory exists now
+        if not target_dir.exists():
+            raise RuntimeError(
+                f"After extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`, the target directory does not exist. Is the directory in the archive named correctly?"
+            )
 
     def _get_icon_svg_path(
         self,

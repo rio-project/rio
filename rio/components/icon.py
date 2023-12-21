@@ -61,7 +61,7 @@ class Icon(component_base.FundamentalComponent):
     @staticmethod
     def register_icon_set(
         set_name: str,
-        icon_set_zip_path: Path,
+        icon_set_archive_path: Path,
     ) -> None:
         """
         Add an icon set to the global registry. This allows the icons to be
@@ -70,19 +70,21 @@ class Icon(component_base.FundamentalComponent):
 
         There must not already be a set with the given name.
 
-        The icon set is a zip archive containing SVG files. The SVG files must
-        have a `viewBox` attribute, but no height or width. They will be colored
-        by the `fill` property of the `Icon` component.
+        The icon set is a `.tar.xz` compressed archive containing SVG files.
+        The SVG files must have a `viewBox` attribute, but no height or width.
+        They will be colored by the `fill` property of the `Icon` component.
 
-        Files located in the root of the archive can be accessed as
-        `set_name/icon_name`. Files located in a subdirectory can be accessed as
-        `set_name/icon_name:variant`.
+        The archive must contain exactly one directory, which must be named
+        identically to the icon set. Files located in the root of that directory
+        can be accessed as `set_name/icon_name`. Files located in a subdirectory
+        can be accessed as `set_name/icon_name:variant`.
 
         Args:
             set_name: The name of the new icon set. This will be used to access
                 the icons.
 
-            icon_set_zip_path: The path to the zip archive containing the icon
+            icon_set_archive_path: The path to the `.tar.xz` archive containing
+            the icon
                 set.
         """
         registry = Icon._get_registry()
@@ -90,7 +92,7 @@ class Icon(component_base.FundamentalComponent):
         if set_name in registry.icon_set_archives:
             raise ValueError(f"There is already an icon set named `{set_name}`")
 
-        registry.icon_set_archives[set_name] = icon_set_zip_path
+        registry.icon_set_archives[set_name] = icon_set_archive_path
 
     def __init__(
         self,
