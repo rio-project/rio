@@ -1,6 +1,11 @@
 import { ComponentBase, ComponentState } from './componentBase';
 import { SCROLL_BAR_SIZE } from '../utils';
 import { applyIcon } from '../designApplication';
+import {
+    updateInputBoxHeightRequest,
+    updateInputBoxWidthRequest,
+} from '../inputBoxTools';
+import { LayoutContext } from '../layouting';
 
 // TODO
 export type DropdownState = ComponentState & {
@@ -413,11 +418,8 @@ export class DropdownComponent extends ComponentBase {
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
-            if (deltaState.label.length > 0) {
-                element.classList.add('rio-input-box-with-label');
-            } else {
-                element.classList.remove('rio-input-box-with-label');
-            }
+            // Update the layout
+            updateInputBoxHeightRequest(this, deltaState.label, 0);
         }
 
         if (deltaState.selectedName !== undefined) {
@@ -429,5 +431,14 @@ export class DropdownComponent extends ComponentBase {
         } else if (deltaState.is_sensitive === false) {
             element.classList.add('rio-input-box-disabled');
         }
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        updateInputBoxWidthRequest(this, 0);
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        // This is set during the updateElement() call, so there is nothing to
+        // do here.
     }
 }

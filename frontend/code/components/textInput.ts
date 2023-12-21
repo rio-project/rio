@@ -1,6 +1,10 @@
 import { ComponentBase, ComponentState } from './componentBase';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
+import {
+    updateInputBoxHeightRequest,
+    updateInputBoxWidthRequest,
+} from '../inputBoxTools';
 // TODO
 
 export type TextInputState = ComponentState & {
@@ -81,16 +85,8 @@ export class TextInputComponent extends ComponentBase {
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
 
-            // Update the layout, if needed
-            //
-            // If a label is set, the height needs to increase to make room for
-            // it, when floating above the entered text.
-            let newHeight = deltaState.label.length > 0 ? 3.3 : 2.0;
-
-            if (newHeight !== this.requestedHeight) {
-                this.requestedHeight = newHeight;
-                this.makeLayoutDirty();
-            }
+            // Update the layout
+            updateInputBoxHeightRequest(this, deltaState.label, 0);
         }
 
         if (deltaState.prefix_text !== undefined) {
@@ -148,8 +144,10 @@ export class TextInputComponent extends ComponentBase {
     }
 
     updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = this.prefixTextWidth + this.suffixTextWidth + 6;
-        this.requestedWidth = Math.max(this.requestedWidth, 13);
+        updateInputBoxWidthRequest(
+            this,
+            this.prefixTextWidth + this.suffixTextWidth
+        );
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {

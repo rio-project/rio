@@ -16,7 +16,7 @@ export class FlowComponent extends ComponentBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-flow', 'rio-zero-size-request-container');
+        element.classList.add('rio-flow');
         return element;
     }
 

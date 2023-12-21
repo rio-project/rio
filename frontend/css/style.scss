@@ -1380,6 +1380,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     --rio-padding: calc(0.5rem + var(--rio-global-corner-radius-small));
 }
 
+.rio-markdown-view > * {
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
 .rio-markdown-view {
     color: var(--rio-local-text-color);
 

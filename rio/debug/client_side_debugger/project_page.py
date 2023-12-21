@@ -54,7 +54,7 @@ class ProjectPage(rio.Component):
                 label="App Variable",
             ),
             rio.Text(
-                "Rio can create both apps and websites. Apps will launch in a separate window, while websites will launch in your browser. Which type is your app?",
+                "Rio can create both apps and websites. Apps will launch in a separate window, while websites will launch in your browser. Which type is your project?",
                 multiline=True,
             ),
             rio.Dropdown(

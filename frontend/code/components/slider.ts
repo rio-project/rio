@@ -36,7 +36,6 @@ export class SliderComponent extends ComponentBase {
     }
 
     private onSliderChange(event: Event): void {
-        console.log(event);
         let value = this.mdcSlider.getValue();
 
         if (value !== this.state.value) {
