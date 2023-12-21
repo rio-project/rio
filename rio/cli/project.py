@@ -164,6 +164,10 @@ class RioProject:
 
         return result
 
+    @app_type.setter
+    def app_type(self, value: Literal["app", "website"]) -> None:
+        self.set_key("app", "app_type", value)
+
     @property
     def app_main_module(self) -> str:
         return self.get_key("app", "main_module", str, DEFAULT_FATAL)
