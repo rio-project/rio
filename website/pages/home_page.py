@@ -56,34 +56,6 @@ def make_slide(
 class HomePage(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
-            rio.Revealer(
-                header="Heading 1",
-                header_style="heading1",
-                content=rio.Text("It's just me."),
-                align_x=0,
-                width=10,
-            ),
-            rio.Revealer(
-                header="Heading 2",
-                header_style="heading2",
-                content=rio.Text("It's just me."),
-                align_x=0,
-                width=10,
-            ),
-            rio.Revealer(
-                header="Heading 3",
-                header_style="heading3",
-                content=rio.Text("It's just me."),
-                align_x=0,
-                width=10,
-            ),
-            rio.Revealer(
-                header="Text",
-                header_style="text",
-                content=rio.Text("It's just me."),
-                align_x=0,
-                width=10,
-            ),
             # Slideshow
             rio.Slideshow(
                 make_slide(

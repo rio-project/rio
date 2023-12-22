@@ -515,7 +515,7 @@ body {
     margin: 0;
     padding: 0;
 
-    font-family: var(--rio-global-font-name, Roboto, sans-serif);
+    font-family: var(--rio-global-text-font-name, Roboto, sans-serif);
 }
 
 // Wraps the user's root component
@@ -540,8 +540,12 @@ body {
     height: 100vh;
 }
 
-// Row & Column
+// Row, Column & ListView
 .rio-linear-child-container > * {
+    position: relative !important;
+}
+
+.rio-list-view > .rio-linear-child-container > div > * {
     position: relative !important;
 }
 
@@ -2045,14 +2049,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-heading-list-item {
     pointer-events: none;
-
-    padding: 1.5rem 1.5rem 0.7rem 1rem;
+    box-sizing: border-box;
 }
 
 .rio-custom-list-item {
     pointer-events: auto;
 
-    padding: 0.7rem 1.5rem;
     background-color: var(--rio-local-plain-bg-variant);
 
     transition: background-color 0.1s ease-out;

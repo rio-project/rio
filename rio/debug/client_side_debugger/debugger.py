@@ -2,14 +2,7 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import (
-    debugger_connector,
-    deploy_page,
-    docs_page,
-    icons_page,
-    project_page,
-    tree_page,
-)
+from . import deploy_page, docs_page, icons_page, project_page, tree_page
 
 
 class ClientSideDebugger(rio.Component):
@@ -99,7 +92,7 @@ class ClientSideDebugger(rio.Component):
                     selected_value=ClientSideDebugger.selected_page,
                 ),
                 rio.Spacer(),
-                debugger_connector.DebuggerConnector(),
+                rio.components.debugger_connector.DebuggerConnector(),
                 width=3.5,
             ),
         )

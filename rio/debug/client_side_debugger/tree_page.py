@@ -1,6 +1,6 @@
 import rio
 
-from . import component_details, component_tree
+from . import component_details
 
 
 class TreePage(rio.Component):
@@ -15,7 +15,7 @@ class TreePage(rio.Component):
                 align_x=0,
             ),
             # TODO: Scrolling
-            component_tree.ComponentTree(
+            rio.components.component_tree.ComponentTree(
                 width=22,
                 height="grow",
                 margin=margin,

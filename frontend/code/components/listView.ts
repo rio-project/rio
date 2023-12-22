@@ -1,20 +1,43 @@
 import { replaceChildren } from '../componentManagement';
-import { LayoutContext } from '../layouting';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ColumnComponent, LinearContainerState } from './linearContainers';
 
-// TODO
-export type ListViewState = ComponentState & {
-    _type_: 'ListView-builtin';
-    children?: (number | string)[];
-};
-
-export class ListViewComponent extends ComponentBase {
-    state: Required<ListViewState>;
+export class ListViewComponent extends ColumnComponent {
+    constructor(elementId: string, state: Required<LinearContainerState>) {
+        state.spacing = 0;
+        super(elementId, state);
+    }
 
     createElement(): HTMLElement {
-        let element = document.createElement('div');
+        let element = super.createElement();
         element.classList.add('rio-list-view');
         return element;
+    }
+
+    updateElement(
+        element: HTMLElement,
+        deltaState: LinearContainerState
+    ): void {
+        // Columns don't wrap their children in divs, but ListView does. Hence
+        // the overridden createElement.
+        replaceChildren(
+            element.id,
+            this.childContainer,
+            deltaState.children,
+            true
+        );
+
+        // Clear everybody's position
+        for (let child of this.childContainer.children) {
+            let element = child.firstElementChild as HTMLElement;
+            element.style.left = '0';
+            element.style.top = '0';
+        }
+
+        // Update the styles of the children
+        this._updateChildStyles();
+
+        // Update the layout
+        this.makeLayoutDirty();
     }
 
     _isGroupedListItem(element: HTMLElement): boolean {
@@ -25,17 +48,14 @@ export class ListViewComponent extends ComponentBase {
         );
     }
 
-    _updateChildStyles(element: HTMLElement): void {
+    _updateChildStyles(): void {
         // Round the corners of each first & last child in a a group, and add
         // separators between them.
         //
         // Make sure to work on a copy because the element will be modified by
         // the loop.
-        for (let curChildUncast of Array.from(element.children)) {
+        for (let curChildUncast of Array.from(this.childContainer.children)) {
             let curChild = curChildUncast as HTMLElement;
-
-            // Make sure the element is a single container
-            curChild.classList.add('rio-single-container');
 
             // Is this even a regular list item?
             let curIsGrouped = this._isGroupedListItem(curChild);
@@ -77,53 +97,6 @@ export class ListViewComponent extends ComponentBase {
                 separator.classList.add('rio-separator');
                 curChild.insertBefore(separator, curChild.firstElementChild);
             }
-        }
-    }
-
-    updateElement(element: HTMLElement, deltaState: ListViewState): void {
-        if (deltaState.children !== undefined) {
-            // Update the children
-            //
-            // Wrap them all in helper divs, so any CSS properties can be
-            // modified without having to worry. Destroying something important.
-            replaceChildren(element.id, element, deltaState.children, true);
-
-            // Update their CSS properties
-            this._updateChildStyles(element);
-
-            // Update the layout
-            this.makeLayoutDirty();
-        }
-    }
-
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 16;
-
-        for (let child of ctx.directChildren(this)) {
-            this.requestedWidth = Math.max(
-                this.requestedWidth,
-                child.requestedWidth
-            );
-        }
-    }
-
-    updateAllocatedWidth(ctx: LayoutContext): void {
-        for (let child of ctx.directChildren(this)) {
-            child.allocatedWidth = this.allocatedWidth;
-        }
-    }
-
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 9;
-
-        for (let child of ctx.directChildren(this)) {
-            this.requestedHeight += child.requestedHeight;
-        }
-    }
-
-    updateAllocatedHeight(ctx: LayoutContext): void {
-        for (let child of ctx.directChildren(this)) {
-            child.allocatedHeight = child.requestedHeight;
         }
     }
 }
