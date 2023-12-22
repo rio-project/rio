@@ -1,22 +1,16 @@
 import { replaceOnlyChild } from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
-// TODO
+import { ComponentId } from '../models';
+import { ComponentState } from './componentBase';
+import { SingleContainer } from './singleContainer';
 
 export type ScrollTargetState = ComponentState & {
     _type_: 'ScrollTarget-builtin';
     id?: string;
-    child?: number | string | null;
+    child?: ComponentId | null;
 };
 
-export class ScrollTargetComponent extends ComponentBase {
+export class ScrollTargetComponent extends SingleContainer {
     state: Required<ScrollTargetState>;
-
-    constructor(elementId: string, state: Required<ComponentState>) {
-        super(elementId, state);
-
-        // @ts-ignore
-        this._minSizeComponentImpl[0] = 'fit-content';
-    }
 
     createElement(): HTMLElement {
         // We need to set the element's id, but elements for components must all
@@ -40,5 +34,7 @@ export class ScrollTargetComponent extends ComponentBase {
         if (deltaState.id !== undefined) {
             anchorElement.id = deltaState.id;
         }
+
+        this.makeLayoutDirty();
     }
 }

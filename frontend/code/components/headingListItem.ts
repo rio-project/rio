@@ -1,4 +1,3 @@
-import { SingleContainer } from './singleContainer';
 import { ComponentBase, ComponentState } from './componentBase';
 import { textStyleToCss } from '../cssUtils';
 import { getTextDimensions } from '../layoutHelpers';

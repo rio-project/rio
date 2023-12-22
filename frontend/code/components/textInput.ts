@@ -5,7 +5,6 @@ import {
     updateInputBoxHeightRequest,
     updateInputBoxWidthRequest,
 } from '../inputBoxTools';
-// TODO
 
 export type TextInputState = ComponentState & {
     _type_: 'TextInput-builtin';

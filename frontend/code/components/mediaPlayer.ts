@@ -4,7 +4,6 @@ import { LayoutContext } from '../layouting';
 import { Fill } from '../models';
 import { sleep } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
-// TODO
 
 export type MediaPlayerState = ComponentState & {
     _type_: 'MediaPlayer-builtin';
@@ -809,6 +808,6 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 9;
+        this.requestedHeight = 5;
     }
 }

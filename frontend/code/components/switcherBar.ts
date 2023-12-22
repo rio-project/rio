@@ -6,6 +6,8 @@ import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { textStyleToCss } from '../cssUtils';
 
+// TODO
+
 const ITEM_MARGIN: number = 0.5;
 const SVG_HEIGHT: number = 1.8;
 const ICON_MARGIN: number = 0.5;
