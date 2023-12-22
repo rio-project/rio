@@ -56,6 +56,7 @@ def make_slide(
 class HomePage(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
+            rio.Dropdown(["foo", "bar", "baz"]),
             # Slideshow
             rio.Slideshow(
                 make_slide(

@@ -135,7 +135,6 @@ class IconsPage(rio.Component):
         default_factory=lambda: (None, "fill")
     )
     selected_variant: Optional[str] = None
-    selected_size: float = 1.5
     selected_fill: str = "keep"
 
     def _on_search_text_change(self, _: rio.TextInputChangeEvent) -> None:
@@ -180,12 +179,10 @@ class IconsPage(rio.Component):
         children = []
 
         # Which parameters should be passed?
-        params_dict = {}
-
-        size = str(round(self.selected_size, 1))
-        if size != "1.2":
-            params_dict["width"] = size
-            params_dict["height"] = size
+        params_dict = {
+            "width": "1.5",
+            "height": "1.5",
+        }
 
         if self.selected_fill != "keep":
             params_dict["fill"] = repr(self.selected_fill)
@@ -239,15 +236,6 @@ Use the `rio.Icon` component like this:
                 )
 
             children.append(rio.Row(*variant_buttons, width="grow"))
-
-        # Size slider
-        children.append(
-            rio.Slider(
-                minimum=0.5,
-                maximum=3,
-                value=IconsPage.selected_size,
-            )
-        )
 
         # Fill
         children.append(
