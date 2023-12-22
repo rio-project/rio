@@ -52,7 +52,7 @@ def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
             try:
                 _, _, variants = result_dict[key]
             except KeyError:
-                variants = set()
+                variants = {variant_name}
                 result_dict[key] = (icon_set, icon_name, variants)
             else:
                 variants.add(variant_name)
@@ -79,12 +79,20 @@ class IconsPage(rio.Component):
         default_factory=list
     )
 
-    selected_icon: Optional[str] = "material/archive"
+    selected_icon: Optional[str] = None
     selected_icon_available_variants: Tuple[Optional[str], ...] = dataclasses.field(
-        default_factory=lambda: (None, "fill")
+        default_factory=tuple
     )
     selected_variant: Optional[str] = None
-    selected_fill: str = "keep"
+    selected_fill: Literal[
+        "primary",
+        "secondary",
+        "success",
+        "warning",
+        "danger",
+        "keep",
+        "dim",
+    ] = "keep"
 
     def _on_search_text_change(self, _: rio.TextInputChangeEvent) -> None:
         # No search -> no matches
@@ -120,64 +128,8 @@ class IconsPage(rio.Component):
         assert self.selected_icon is not None
         children = []
 
-        # Which parameters should be passed?
-        params_dict = {
-            "width": "1.5",
-            "height": "1.5",
-        }
-
-        if self.selected_fill != "keep":
-            params_dict["fill"] = repr(self.selected_fill)
-
-        # Prepare the source code
-        selected_icon_full_name = self.selected_icon + (
-            "" if self.selected_variant is None else ":" + self.selected_variant
-        )
-
-        params_list = [repr(selected_icon_full_name)] + [
-            f"{key}={value}" for key, value in params_dict.items()
-        ]
-
-        params_str = ",\n    ".join(params_list)
-        python_source = f"rio.Icon(\n    {params_str},\n)"
-
-        # Code sample
-        children.append(rio.Text("Code Sample", style="heading3", align_x=0))
-        children.append(
-            rio.MarkdownView(
-                f"""
-Use the `rio.Icon` component like this:
-
-```python
-{python_source}
-```
-"""
-            )
-        )
-
-        # Alow for easy configuration
+        # Heading
         children.append(rio.Text("Configure", style="heading3", align_x=0))
-
-        # If there is variations of this icon allow the user to select one
-        if len(self.selected_icon_available_variants) > 1:
-            variant_buttons = []
-
-            for variant in self.selected_icon_available_variants:
-                full_name = (
-                    f"{self.selected_icon}:{variant}" if variant else self.selected_icon
-                )
-
-                # variant_buttons.append(
-                #     rio.IconButton(
-                #         full_name,
-                #         label="default" if variant is None else variant,
-                #         width="grow",
-                #         is_selected=variant == self.selected_variant,
-                #         on_press=functools.partial(self._on_select_variant, variant),
-                #     )
-                # )
-
-            children.append(rio.Row(*variant_buttons, width="grow"))
 
         # Fill
         children.append(
@@ -196,8 +148,79 @@ Use the `rio.Icon` component like this:
             )
         )
 
+        # If there is variations of this icon allow the user to select one
+        # if len(self.selected_icon_available_variants) > 1:
+        if True:
+            variant_buttons = []
+
+            for variant in self.selected_icon_available_variants:
+                full_name = (
+                    f"{self.selected_icon}:{variant}" if variant else self.selected_icon
+                )
+
+                variant_buttons.append(
+                    rio.Container(
+                        rio.IconButton(
+                            full_name,
+                            style="minor"
+                            if variant == self.selected_variant
+                            else "plain",
+                            on_press=functools.partial(
+                                self._on_select_variant, variant
+                            ),
+                        ),
+                        width="grow",
+                        align_y=0.5,
+                    )
+                )
+
+            children.append(rio.Row(*variant_buttons, width="grow"))
+
+        # Which parameters should be passed?
+        params_dict = {
+            "width": "2.5",
+            "height": "2.5",
+        }
+
+        if self.selected_fill != "keep":
+            params_dict["fill"] = repr(self.selected_fill)
+
+        # Prepare the source code
+        selected_icon_full_name = self.selected_icon + (
+            "" if self.selected_variant is None else ":" + self.selected_variant
+        )
+
+        params_list = [repr(selected_icon_full_name)] + [
+            f"{key}={value}" for key, value in params_dict.items()
+        ]
+
+        params_str = ",\n    ".join(params_list)
+        python_source = f"rio.Icon(\n    {params_str},\n)"
+
+        # Code sample
+        children.append(
+            rio.Text(
+                "Example Code",
+                style="heading3",
+                align_x=0,
+                margin_top=1,
+            )
+        )
+
+        children.append(
+            rio.MarkdownView(
+                f"""
+Use the `rio.Icon` component like this:
+
+```python
+{python_source}
+```
+"""
+            )
+        )
+
         # Combine everything
-        return rio.Column(*children, spacing=0.5)
+        return rio.Column(*children, spacing=0.8)
 
     def build(self) -> rio.Component:
         # Search field
@@ -219,27 +242,24 @@ Use the `rio.Icon` component like this:
                 )
             )
         elif self.matches:
-            results_grid = rio.Grid(
-                row_spacing=0.5,
-                column_spacing=0.5,
-            )
-            children.append(results_grid)
+            results = []
 
-            for ii, (icon_set, icon_name, icon_variants) in enumerate(
-                self.matches[:30]
-            ):
-                results_grid.add_child(
+            for icon_set, icon_name, icon_variants in self.matches[:50]:
+                is_selected = self.selected_icon == f"{icon_set}/{icon_name}"
+
+                results.append(
                     rio.IconButton(
                         icon_name,
-                        style="plain",
-                        color="secondary",
+                        style="minor" if is_selected else "plain",
                         on_press=functools.partial(
                             self._on_select_icon, icon_set, icon_name, icon_variants
                         ),
+                        key=f"{icon_set}/{icon_name}",
                     ),
-                    row=ii // ITEMS_PER_ROW,
-                    column=ii % ITEMS_PER_ROW,
                 )
+
+            children.append(rio.FlowContainer(*results, height="grow"))
+
         else:
             children.append(
                 rio.Container(

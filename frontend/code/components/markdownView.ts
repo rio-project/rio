@@ -9,7 +9,7 @@ import { micromark } from 'micromark';
 import hljs from 'highlight.js/lib/common';
 import { LayoutContext } from '../layouting';
 import { pixelsPerEm } from '../app';
-import { getElementHeight } from '../layoutHelpers';
+import { getElementHeight, getElementWidth } from '../layoutHelpers';
 
 export type MarkdownViewState = ComponentState & {
     _type_: 'MarkdownView-builtin';
@@ -197,15 +197,16 @@ export class MarkdownViewComponent extends ComponentBase {
 
             convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
 
+            // Update the width request
+            this.requestedWidth = getElementWidth(contentDiv);
+
             // Any previously calculated height request is no longer valid
             this.heightRequestAssumesWidth = -1;
             this.makeLayoutDirty();
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 0;
-    }
+    updateRequestedWidth(ctx: LayoutContext): void {}
 
     updateAllocatedWidth(ctx: LayoutContext): void {}
 

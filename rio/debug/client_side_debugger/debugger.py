@@ -87,7 +87,6 @@ class ClientSideDebugger(rio.Component):
                     ],
                     orientation="vertical",
                     spacing=2,
-                    width=15,
                     color="primary",
                     selected_value=ClientSideDebugger.selected_page,
                 ),
