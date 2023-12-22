@@ -1,7 +1,8 @@
 import rio
 import rio.cli
 
-from . import component_details, component_tree
+from ...components import component_tree
+from . import component_details
 
 
 class ProjectPage(rio.Component):

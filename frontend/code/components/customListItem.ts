@@ -1,8 +1,10 @@
-import { SingleContainer } from './singleContainer';
 import { MDCRipple } from '@material/ripple';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
+import { replaceOnlyChild } from '../componentManagement';
+import { LayoutContext } from '../layouting';
 
-// TODO
+const PADDING_X: number = 1.5;
+const PADDING_Y: number = 0.7;
 
 export type CustomListItemState = ComponentState & {
     _type_: 'CustomListItem-builtin';
@@ -10,7 +12,7 @@ export type CustomListItemState = ComponentState & {
     pressable?: boolean;
 };
 
-export class CustomListItemComponent extends SingleContainer {
+export class CustomListItemComponent extends ComponentBase {
     state: Required<CustomListItemState>;
 
     // If this item has a ripple effect, this is the ripple instance. `null`
@@ -24,6 +26,12 @@ export class CustomListItemComponent extends SingleContainer {
     }
 
     updateElement(element: HTMLElement, deltaState: CustomListItemState): void {
+        // Update the child
+        if (deltaState.child !== undefined) {
+            replaceOnlyChild(element.id, element, deltaState.child);
+            this.makeLayoutDirty();
+        }
+
         // Style the surface depending on whether it is pressable.
         if (deltaState.pressable === true) {
             if (this.mdcRipple === null) {
@@ -51,25 +59,43 @@ export class CustomListItemComponent extends SingleContainer {
                 element.onclick = null;
             }
         }
-
-        // The ripple effect stores the coordinates of its rectangle. Since rio
-        // likes to resize and move around components, the rectangle must be
-        // updated appropriately.
-        //
-        // Really, this should be done when the component is resized or moved,
-        // but there is no hook for that. Update seems to work fine.
-        if (this.mdcRipple !== null) {
-            requestAnimationFrame(() => {
-                if (this.mdcRipple !== null) {
-                    this.mdcRipple.layout();
-                }
-            });
-        }
     }
 
     private _on_press(): void {
         this.sendMessageToBackend({
             type: 'press',
         });
+    }
+
+    updateRequestedWidth(ctx: LayoutContext): void {
+        this.requestedWidth =
+            ctx.inst(this.state.child).requestedWidth + PADDING_X * 2;
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        ctx.inst(this.state.child).allocatedWidth =
+            this.allocatedWidth - PADDING_X * 2;
+    }
+
+    updateRequestedHeight(ctx: LayoutContext): void {
+        this.requestedHeight =
+            ctx.inst(this.state.child).requestedHeight + PADDING_Y * 2;
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        let child = ctx.inst(this.state.child);
+        child.allocatedHeight = this.allocatedHeight - PADDING_Y * 2;
+
+        // Position the child
+        let element = child.element();
+        element.style.left = `${PADDING_X}rem`;
+        element.style.top = `${PADDING_Y}rem`;
+
+        // The ripple effect stores the coordinates of its rectangle. Since rio
+        // likes to resize and move around components, the rectangle must be
+        // updated appropriately.
+        if (this.mdcRipple !== null) {
+            this.mdcRipple.layout();
+        }
     }
 }

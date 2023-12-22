@@ -1,6 +1,7 @@
 import rio
 
-from . import component_details, component_tree
+from ...components import component_tree
+from . import component_details
 
 
 class DocsPage(rio.Component):
