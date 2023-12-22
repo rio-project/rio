@@ -84,3 +84,52 @@ export function getTextDimensions(
     ]);
     return result;
 }
+
+/// Get the width and height an element takes up on the screen, in rems.
+///
+/// This works even if the element is not visible, e.g. because a parent is
+/// hidden.
+export function getElementDimensions(element: HTMLElement): [number, number] {
+    // Make sure the element is visible
+    let originalDisplay = element.style.display;
+    element.style.display = 'fixed';
+
+    // Get its dimensions
+    let result = [
+        element.scrollWidth / pixelsPerEm,
+        element.scrollHeight / pixelsPerEm,
+    ] as [number, number];
+
+    // Restore the original display mode
+    element.style.display = originalDisplay;
+
+    return result;
+}
+
+export function getElementWidth(element: HTMLElement): number {
+    // Make sure the element is visible
+    let originalDisplay = element.style.display;
+    element.style.display = 'fixed';
+
+    // Get its dimensions
+    let result = element.scrollWidth / pixelsPerEm;
+
+    // Restore the original display mode
+    element.style.display = originalDisplay;
+
+    return result;
+}
+
+export function getElementHeight(element: HTMLElement): number {
+    // Make sure the element is visible
+    let originalDisplay = element.style.display;
+    element.style.display = 'fixed';
+
+    // Get its dimensions
+    let result = element.scrollHeight / pixelsPerEm;
+
+    // Restore the original display mode
+    element.style.display = originalDisplay;
+
+    return result;
+}

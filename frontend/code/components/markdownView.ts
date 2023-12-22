@@ -8,8 +8,8 @@ import { micromark } from 'micromark';
 // https://github.com/highlightjs/highlight.js#importing-the-library
 import hljs from 'highlight.js/lib/common';
 import { LayoutContext } from '../layouting';
-import { HtmlComponent } from './html';
 import { pixelsPerEm } from '../app';
+import { getElementHeight } from '../layoutHelpers';
 
 export type MarkdownViewState = ComponentState & {
     _type_: 'MarkdownView-builtin';
@@ -191,6 +191,8 @@ export class MarkdownViewComponent extends ComponentBase {
 
             element.innerHTML = '';
             let contentDiv = document.createElement('div');
+            contentDiv.style.display = 'flex'; // Prevent collapsing margins
+            contentDiv.style.flexDirection = 'column'; // Prevent collapsing margins
             element.appendChild(contentDiv);
 
             convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
@@ -213,21 +215,10 @@ export class MarkdownViewComponent extends ComponentBase {
         }
 
         // No, re-layout
-        //
-        // Reading the width is incorrect if the component isn't visible, e.g.
-        // because a parent is hidden. To avoid that, move the content element
-        // to a safe place.
         let element = this.element();
         let contentDiv = element.firstElementChild as HTMLElement;
-
-        document.body.appendChild(contentDiv);
-        contentDiv.style.width = `${this.allocatedWidth}rem`;
-
-        let rect = contentDiv.getBoundingClientRect();
-        this.requestedHeight = rect.height / pixelsPerEm;
-
-        // Move the content element back
-        element.appendChild(contentDiv);
+        this.requestedHeight = getElementHeight(contentDiv);
+        this.heightRequestAssumesWidth = this.allocatedWidth;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {}
