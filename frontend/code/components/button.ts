@@ -116,7 +116,7 @@ export class ButtonComponent extends SingleContainer {
             //
             // The exception to this is the plain style, which obviously isn't
             // trying to stand out.
-            if (colorSet === 'keep' && style !== 'plain') {
+            if (colorSet === 'keep') {
                 colorSet = 'accent-to-plain';
             }
 

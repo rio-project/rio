@@ -4,9 +4,10 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 // TODO
 export type FlowState = ComponentState & {
-    _type_: 'Flow-builtin';
+    _type_: 'FlowContainer-builtin';
     children?: (number | string)[];
-    spacing?: number;
+    spacing_x?: number;
+    spacing_y?: number;
 };
 
 export class FlowComponent extends ComponentBase {
@@ -22,11 +23,6 @@ export class FlowComponent extends ComponentBase {
         // Update the children
         replaceChildren(element.id, element, deltaState.children);
 
-        // Spacing
-        if (deltaState.spacing !== undefined) {
-            element.style.gap = `${deltaState.spacing}rem`;
-        }
-
         // Update the layout
         this.makeLayoutDirty();
     }
@@ -39,46 +35,54 @@ export class FlowComponent extends ComponentBase {
                 this.requestedWidth,
                 child.requestedWidth
             );
+        }
+    }
 
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        for (let child of ctx.directChildren(this)) {
             child.allocatedWidth = child.requestedWidth;
         }
     }
 
-    updateAllocatedWidth(ctx: LayoutContext): void {}
-
     updateRequestedHeight(ctx: LayoutContext): void {
+        // Allow the code below to assume there's at least one child
+        let children = ctx.directChildren(this);
+
+        if (children.length === 0) {
+            this.requestedHeight = 0;
+            return;
+        }
+
         // The height can only be known after a full layout of the children,
         // since multiple may share the same row.
         //
         // Layouting however, requires knowledge about the height of each row.
         // So before actually assigning positions, just assign everything into
         // abstract lines;
-        let lines: ComponentBase[][] = [];
-        let lineHeights: number[] = [];
+        let rows: ComponentBase[][] = [];
+        let rowHeights: number[] = [];
 
         let posX = 0;
-        let lineHeight = 0;
+        let rowHeight = 0;
+        let row: ComponentBase[] = [];
 
-        for (let child of ctx.directChildren(this)) {
+        for (let child of children) {
             // If the child is too wide, move on to the next row
-            let line;
             if (posX + child.requestedWidth > this.allocatedWidth) {
                 posX = 0;
 
-                lineHeights.push(lineHeight);
-                lineHeight = 0;
+                rowHeights.push(rowHeight);
+                rowHeight = 0;
 
-                line = [];
-                lines.push(line);
-            } else if (lines.length > 0) {
-                line = lines[lines.length - 1];
-            } else {
-                line = [];
-                lines.push(line);
+                rows.push(row);
+                row = [];
             }
 
-            // Assign the child to the line
-            line.push(child);
+            // Assign the child to the row
+            row.push(child);
+
+            // Update the row height
+            rowHeight = Math.max(rowHeight, child.requestedHeight);
 
             // Lay out the component horizontally
             let elem = child.element();
@@ -86,35 +90,33 @@ export class FlowComponent extends ComponentBase {
 
             // Account for the spacing
             posX += child.requestedWidth;
-            posX += this.state.spacing;
+            posX += this.state.spacing_x;
         }
 
-        // Push the last line height
-        if (lines.length > 0) {
-            lineHeights.push(lineHeight);
-        }
+        // Push the pending values
+        rowHeights.push(rowHeight);
+        rows.push(row);
 
         // Assign the children's heights and vertical positions
         let posY = 0;
-        for (let ii = 0; ii < lines.length; ii++) {
-            let line = lines[ii];
-            let lineHeight = lineHeights[ii];
+        for (let ii = 0; ii < rows.length; ii++) {
+            let row = rows[ii];
+            let rowHeight = rowHeights[ii];
 
-            for (let child of line) {
+            for (let child of row) {
                 let elem = child.element();
                 elem.style.top = `${posY}rem`;
 
-                child.allocatedHeight = lineHeight;
+                child.allocatedHeight = rowHeight;
             }
 
             // Account for the spacing
-            posY += lineHeight;
-            posY += this.state.spacing;
+            posY += rowHeight;
+            posY += this.state.spacing_y;
         }
 
         // Now set the requested height. Take care to ignore the last spacing
-        this.requestedHeight =
-            posY - lines.length === 0 ? 0 : this.state.spacing;
+        this.requestedHeight = posY - this.state.spacing_y;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {}

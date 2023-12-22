@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 import rio
 import rio.icon_registry
 
-ITEMS_PER_ROW = 4
+ITEMS_PER_ROW = 5
 
 # Replace all sequences non-alphanumeric characters with a single dot
 NORMALIZATION_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
@@ -18,12 +18,6 @@ NORMALIZATION_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 # The entires are (icon_set, icon_name, {variant_name}) tuples. The variant name
 # is a set of all variants that exist for this icon.
 ALL_AVAILABLE_ICONS: Optional[List[Tuple[str, str, Tuple[Optional[str], ...]]]] = None
-
-
-ICON_BUTTON_BOX_STYLE = rio.BoxStyle(
-    fill=rio.Color.TRANSPARENT,
-    corner_radius=9999,
-)
 
 
 def normalize_for_search(text: str) -> str:
@@ -64,63 +58,18 @@ def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
                 variants.add(variant_name)
 
     # Drop the dict
-    as_list = list(result_dict.values())
+    as_list: List[Any] = list(result_dict.values())
 
     # Sort the result
     as_list.sort(key=lambda x: x[1])
 
-    for _, _, variants in as_list:
-        variants = sorted(variants, key=lambda x: "" if x is None else x)
+    for ii, (icon_set, icon_name, variants) in enumerate(as_list):
+        variants = tuple(sorted(variants, key=lambda x: "" if x is None else x))
+        as_list[ii] = (icon_set, icon_name, variants)
 
     # Cache and return
     ALL_AVAILABLE_ICONS = as_list  # type: ignore
     return ALL_AVAILABLE_ICONS  # type: ignore
-
-
-class IconButton(rio.Component):
-    icon: str
-    label: str
-    _: KW_ONLY
-    is_selected: bool = False
-    on_press: rio.EventHandler[[]] = None
-
-    async def _on_press(self, _: rio.MouseUpEvent) -> None:
-        await self.call_event_handler(self.on_press)
-
-    def build(self) -> rio.Component:
-        if self.is_selected:
-            text_style = self.session.theme.text_style.replace(
-                fill=self.session.theme.secondary_color
-            )
-        else:
-            text_style = "text"
-
-        return rio.MouseEventListener(
-            rio.Rectangle(
-                child=rio.Column(
-                    rio.Icon(
-                        self.icon,
-                        width=2,
-                        height=2,
-                        fill="secondary" if self.is_selected else "keep",
-                    ),
-                    rio.Text(
-                        self.label,
-                        style=text_style,
-                    ),
-                    spacing=0.3,
-                    align_x=0.5,
-                    align_y=0.5,
-                ),
-                style=ICON_BUTTON_BOX_STYLE,
-                ripple=True,
-                width=5,
-                height=5,
-                align_x=0.5,
-                align_y=0.5,
-            ),
-            on_mouse_up=self._on_press,
-        )
 
 
 class IconsPage(rio.Component):
@@ -154,14 +103,6 @@ class IconsPage(rio.Component):
 
             self.matches.append((icon_set, icon_name, variants))
 
-        self.matches.extend(
-            (
-                ("material", "castle", (None, "fill")),
-                ("material", "archive", (None, "fill")),
-                ("material", "error", (None, "fill")),
-            )
-        )
-
     def _on_select_icon(
         self,
         icon_set: str,
@@ -169,6 +110,7 @@ class IconsPage(rio.Component):
         available_variants: Tuple[Optional[str], ...],
     ) -> None:
         self.selected_icon = icon_set + "/" + icon_name
+        self.selected_variant = available_variants[0]
         self.selected_icon_available_variants = available_variants
 
     def _on_select_variant(self, variant: Optional[str]) -> None:
@@ -217,7 +159,7 @@ Use the `rio.Icon` component like this:
         children.append(rio.Text("Configure", style="heading3", align_x=0))
 
         # If there is variations of this icon allow the user to select one
-        if self.selected_icon_available_variants:
+        if len(self.selected_icon_available_variants) > 1:
             variant_buttons = []
 
             for variant in self.selected_icon_available_variants:
@@ -225,15 +167,15 @@ Use the `rio.Icon` component like this:
                     f"{self.selected_icon}:{variant}" if variant else self.selected_icon
                 )
 
-                variant_buttons.append(
-                    IconButton(
-                        full_name,
-                        label="default" if variant is None else variant,
-                        width="grow",
-                        is_selected=variant == self.selected_variant,
-                        on_press=functools.partial(self._on_select_variant, variant),
-                    )
-                )
+                # variant_buttons.append(
+                #     rio.IconButton(
+                #         full_name,
+                #         label="default" if variant is None else variant,
+                #         width="grow",
+                #         is_selected=variant == self.selected_variant,
+                #         on_press=functools.partial(self._on_select_variant, variant),
+                #     )
+                # )
 
             children.append(rio.Row(*variant_buttons, width="grow"))
 
@@ -277,25 +219,27 @@ Use the `rio.Icon` component like this:
                 )
             )
         elif self.matches:
-            results = []
+            results_grid = rio.Grid(
+                row_spacing=0.5,
+                column_spacing=0.5,
+            )
+            children.append(results_grid)
 
             for ii, (icon_set, icon_name, icon_variants) in enumerate(
                 self.matches[:30]
             ):
-                results.append(
-                    rio.Text(icon_name),
-                    # IconButton(
-                    #     icon_name,
-                    #     label=icon_name.split("/")[-1],
-                    #     # width="grow",
-                    #     is_selected=icon_name == self.selected_icon,
-                    #     on_press=functools.partial(
-                    #         self._on_select_icon, icon_set, icon_name, icon_variants
-                    #     ),
-                    # )
+                results_grid.add_child(
+                    rio.IconButton(
+                        icon_name,
+                        style="plain",
+                        color="secondary",
+                        on_press=functools.partial(
+                            self._on_select_icon, icon_set, icon_name, icon_variants
+                        ),
+                    ),
+                    row=ii // ITEMS_PER_ROW,
+                    column=ii % ITEMS_PER_ROW,
                 )
-
-            children.append(rio.FlowContainer(*results))
         else:
             children.append(
                 rio.Container(

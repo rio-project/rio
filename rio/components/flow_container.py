@@ -14,11 +14,13 @@ class FlowContainer(component_base.FundamentalComponent):
     children: List[component_base.Component]
     _: KW_ONLY
     spacing_x: float
+    spacing_y: float
 
     def __init__(
         self,
         *children: rio.Component,
         spacing_x: float = 0.0,
+        spacing_y: float = 0.0,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -53,6 +55,7 @@ class FlowContainer(component_base.FundamentalComponent):
 
         self.children = list(children)
         self.spacing_x = spacing_x
+        self.spacing_y = spacing_y
 
 
 FlowContainer._unique_id = "FlowContainer-builtin"
