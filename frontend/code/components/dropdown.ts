@@ -380,6 +380,13 @@ export class DropdownComponent extends ComponentBase {
                 'error',
                 'var(--rio-local-text-color)'
             );
+
+            // The icon is loaded asynchronously, so make sure to give the
+            // element some space
+            this.popupElement.style.height = '7rem';
+        } else {
+            // Resize the popup to fit the new content
+            this.popupElement.style.height = `${this.optionsElement.scrollHeight}px`;
         }
 
         // Because the popup isn't a child element of the dropdown, manually
@@ -387,15 +394,15 @@ export class DropdownComponent extends ComponentBase {
         // scrollbar.
         element.style.minWidth =
             this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
-
-        // Resize the popup to fit the new content
-        this.popupElement.style.height = `${this.optionsElement.scrollHeight}px`;
     }
 
     updateElement(element: HTMLElement, deltaState: DropdownState): void {
         if (deltaState.optionNames !== undefined) {
             this.state.optionNames = deltaState.optionNames;
-            this._updateOptionEntries();
+
+            if (this.isOpen) {
+                this._updateOptionEntries();
+            }
         }
 
         if (deltaState.label !== undefined) {

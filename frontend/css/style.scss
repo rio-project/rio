@@ -849,9 +849,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-dropdown-popup {
     position: absolute;
-    display: flex;
-    align-items: stretch;
     z-index: $z-index-popup;
+    height: 0;
     max-height: 100vh;
 
     overflow: hidden;
@@ -886,8 +885,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-dropdown-options {
-    flex-grow: 1;
-
     position: relative;
     display: flex;
     flex-direction: column;
@@ -905,8 +902,8 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     width: 4rem;
     height: 4rem;
-    padding: rem;
-    margin: auto;
+
+    margin: 1.5rem auto;
 
     opacity: 0.2;
 }
@@ -930,10 +927,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-dropdown-option-highlighted::after {
     opacity: 0.2;
 }
-
-// .rio-dropdown-options > * + * {
-//     border-top: 1px solid var(--rio-global-background-fg);
-// }
 
 // Progress Circle
 .rio-progress-circle {
