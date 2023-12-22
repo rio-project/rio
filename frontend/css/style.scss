@@ -29,10 +29,10 @@ html[data-theme='dark'] {
 
 // Z-indices for components which are expected to show up on top
 $z-index-overlay: 10000;
-$z-index-popup: 10001;
-$z-index-error-popup: 10002;
-$z-index-debugger-highlighter: 10003;
-$z-index-debugger: 10004;
+$z-index-error-popup: 10001;
+$z-index-debugger-highlighter: 10002;
+$z-index-debugger: 10003;
+$z-index-popup: 10004;
 
 // "Infinite" corner radius, for creating pill shapes
 $infinite-corner-radius: 99999px;
@@ -848,12 +848,13 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-dropdown-popup {
-    // x, y, width, height, and overflow are set by JavaScript
-
-    position: fixed;
+    position: absolute;
     display: flex;
     align-items: stretch;
     z-index: $z-index-popup;
+    max-height: 100vh;
+
+    overflow: hidden;
 
     background-color: var(--rio-global-background-bg);
     color: var(--rio-global-text-color);
@@ -861,6 +862,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
         var(--rio-global-corner-radius-small);
 
     box-shadow: 0 0 0.8rem var(--rio-global-shadow-color);
+
+    transition: height 0.2s ease-in-out;
+}
+
+.rio-dropdown-popup-above {
+    border-radius: var(--rio-global-corner-radius-small) !important;
 }
 
 .rio-dropdown.rio-input-box > .rio-dropdown-arrow {

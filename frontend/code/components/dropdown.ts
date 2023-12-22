@@ -6,6 +6,8 @@ import {
     updateInputBoxWidthRequest,
 } from '../inputBoxTools';
 import { LayoutContext } from '../layouting';
+import { getRootInstance } from '../componentManagement';
+import { pixelsPerEm } from '../app';
 
 // TODO
 export type DropdownState = ComponentState & {
@@ -192,104 +194,85 @@ export class DropdownComponent extends ComponentBase {
     private showPopup(element: HTMLElement): void {
         this.isOpen = true;
 
-        // Reset the filter
-        this.inputElement.value = '';
-        this._updateOptionEntries();
-
         // In order to guarantee that the popup is on top of all components, it
         // must be added to the `body`. `z-index` alone isn't enough because it
         // only affects the "local stacking context".
         document.body.appendChild(this.popupElement);
 
-        let clientRect = element.getBoundingClientRect();
-        let popupHeight = this.popupElement.scrollHeight;
-        let windowHeight = window.innerHeight;
+        // Reset the filter
+        //
+        // Make sure to do this after the popup has been added to the DOM, so
+        // that the scrollHeight is correct.
+        this.inputElement.value = '';
+        this._updateOptionEntries();
 
+        // Position & Animate
+        let dropdownRect = element.getBoundingClientRect();
+        let popupHeight = this.popupElement.scrollHeight;
+        let windowHeight = window.innerHeight - 1; // innerHeight is rounded
+
+        this.popupElement.style.removeProperty('top');
+        this.popupElement.style.removeProperty('bottom');
+
+        const MARGIN_IF_ENTIRELY_ABOVE = 0.5 * pixelsPerEm;
+
+        // Popup is larger than the window. Give it all the space that's
+        // available.
         if (popupHeight >= windowHeight) {
-            // Popup is larger than the window. Give it all the space that's
-            // available.
-            this.animatePopupDownwards(0, windowHeight);
-        } else if (clientRect.bottom + popupHeight <= windowHeight) {
-            // Popup fits below the dropdown
-            this.animatePopupDownwards(clientRect.bottom, popupHeight);
-        } else if (clientRect.top - popupHeight >= 0) {
-            // Popup fits above the dropdown
-            this.popupElement.style.top = clientRect.top - popupHeight + 'px';
-            this.popupElement.style.maxHeight = popupHeight + 'px';
-            this.animatePopupUpwards(clientRect.top - popupHeight, popupHeight);
-        } else {
-            // Popup doesn't fit above or below the dropdown. Center it as much
-            // as possible
-            let top = clientRect.top + clientRect.height / 2 - popupHeight / 2;
+            this.popupElement.style.top = '0';
+            this.popupElement.classList.add('rio-dropdown-popup-above');
+        }
+        // Popup fits below the dropdown
+        else if (dropdownRect.bottom + popupHeight <= windowHeight) {
+            this.popupElement.style.top = `${dropdownRect.bottom}px`;
+            this.popupElement.classList.remove('rio-dropdown-popup-above');
+        }
+        // Popup fits above the dropdown
+        else if (dropdownRect.top - popupHeight >= MARGIN_IF_ENTIRELY_ABOVE) {
+            this.popupElement.style.bottom = `${
+                windowHeight - dropdownRect.top + MARGIN_IF_ENTIRELY_ABOVE
+            }px`;
+            this.popupElement.classList.add('rio-dropdown-popup-above');
+        }
+        // Popup doesn't fit above or below the dropdown. Center it as much
+        // as possible
+        else {
+            let top =
+                dropdownRect.top + dropdownRect.height / 2 - popupHeight / 2;
             if (top < 0) {
                 top = 0;
             } else if (top + popupHeight > windowHeight) {
                 top = windowHeight - popupHeight;
             }
 
-            this.animatePopupDownwards(top, popupHeight);
+            this.popupElement.style.top = `${top}px`;
+            this.popupElement.classList.add('rio-dropdown-popup-above');
         }
 
-        this.popupElement.style.left = clientRect.left + 'px';
-        this.popupElement.style.width = clientRect.width + 'px';
+        this.popupElement.style.left = dropdownRect.left + 'px';
+        this.popupElement.style.width = dropdownRect.width + 'px';
 
         document.addEventListener('click', this.outsideClickHandler, true);
         document.addEventListener('keydown', this.keyDownHandler, true);
     }
 
-    private animatePopupDownwards(top: number, height: number): void {
-        let keyframes = [
-            {
-                top: top + 'px',
-                height: '0px',
-            },
-            {
-                top: top + 'px',
-                height: height + 'px',
-            },
-        ];
-        this.animatePopup(keyframes);
-    }
-
-    private animatePopupUpwards(top: number, height: number): void {
-        let keyframes = [
-            {
-                top: top + height + 'px',
-                height: '0px',
-            },
-            {
-                top: top + 'px',
-                height: height + 'px',
-            },
-        ];
-        this.animatePopup(keyframes);
-    }
-
-    private animatePopup(keyframes: Keyframe[]): void {
-        this.popupElement.style.top = keyframes[0].top as string;
-        this.popupElement.style.height = keyframes[0].height as string;
-        this.popupElement.style.overflowY = 'hidden';
-
-        let animation = this.popupElement.animate(keyframes, {
-            duration: 140,
-            easing: 'ease-in-out',
-            fill: 'both',
-        });
-
-        animation.onfinish = () => {
-            this.popupElement.style.overflowY = 'auto';
-        };
-    }
-
     private hidePopup(): void {
         this.isOpen = false;
-        this.popupElement.remove();
-        this.popupElement.style.removeProperty('width');
         this.inputElement.value = this.state.selectedName;
 
         // Unregister any event handlers
         document.removeEventListener('click', this.outsideClickHandler, true);
         document.removeEventListener('keydown', this.keyDownHandler, true);
+
+        // Animate the disappearance
+        this.popupElement.style.height = '0';
+
+        // Remove the element once the animation is done
+        setTimeout(() => {
+            if (!this.isOpen) {
+                this.popupElement.remove();
+            }
+        }, 300);
     }
 
     onDestruction(element: HTMLElement): void {
@@ -404,6 +387,9 @@ export class DropdownComponent extends ComponentBase {
         // scrollbar.
         element.style.minWidth =
             this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
+
+        // Resize the popup to fit the new content
+        this.popupElement.style.height = `${this.optionsElement.scrollHeight}px`;
     }
 
     updateElement(element: HTMLElement, deltaState: DropdownState): void {

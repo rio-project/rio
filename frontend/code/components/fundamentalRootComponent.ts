@@ -25,7 +25,7 @@ export class FundamentalRootComponent extends ComponentBase {
     public overlayWidth: number = 0;
     public overlayHeight: number = 0;
 
-    private userRootWrapper: HTMLElement;
+    public rootScrollerElement: HTMLElement;
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -57,12 +57,12 @@ export class FundamentalRootComponent extends ComponentBase {
         replaceChildren(element.id, element, children);
 
         // Initialize CSS
-        this.userRootWrapper = document.createElement('div');
-        this.userRootWrapper.appendChild(
+        this.rootScrollerElement = document.createElement('div');
+        this.rootScrollerElement.appendChild(
             element.firstElementChild as HTMLElement
         );
-        this.userRootWrapper.classList.add('rio-user-root-scroller');
-        element.insertBefore(this.userRootWrapper, element.firstChild);
+        this.rootScrollerElement.classList.add('rio-user-root-scroller');
+        element.insertBefore(this.rootScrollerElement, element.firstChild);
 
         let connectionLostPopupElement = element.children[1] as HTMLElement;
         connectionLostPopupElement.classList.add('rio-connection-lost-popup');
@@ -134,8 +134,8 @@ export class FundamentalRootComponent extends ComponentBase {
         }
 
         // Size the user root wrapper
-        this.userRootWrapper.style.width = `${this.overlayWidth}rem`;
-        this.userRootWrapper.style.height = `${this.overlayHeight}rem`;
+        this.rootScrollerElement.style.width = `${this.overlayWidth}rem`;
+        this.rootScrollerElement.style.height = `${this.overlayHeight}rem`;
 
         // The connection lost popup is an overlay
         let connectionLostPopup = ctx.inst(
