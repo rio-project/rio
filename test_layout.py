@@ -29,6 +29,10 @@ class RootComponent(rio.Component):
 
 app = rio.App(
     build=RootComponent,
+    theme=rio.Theme.from_color(
+        primary_color=rio.Color.ORANGE,
+        light=True,
+    ),
 )
 
 
