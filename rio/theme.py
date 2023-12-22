@@ -219,8 +219,6 @@ class Theme:
             brightess1 = primary_palette.background.perceived_brightness
             brightess2 = background_palette.background.perceived_brightness
 
-            print(brightess1, brightess2)
-
             color_headings = abs(brightess1 - brightess2) > 0.3
 
         # Text styles
