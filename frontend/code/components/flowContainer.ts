@@ -2,7 +2,6 @@ import { replaceChildren } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
-// TODO
 export type FlowState = ComponentState & {
     _type_: 'FlowContainer-builtin';
     children?: (number | string)[];

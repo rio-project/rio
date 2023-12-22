@@ -6,10 +6,8 @@ import {
     updateInputBoxWidthRequest,
 } from '../inputBoxTools';
 import { LayoutContext } from '../layouting';
-import { getRootInstance } from '../componentManagement';
 import { pixelsPerEm } from '../app';
 
-// TODO
 export type DropdownState = ComponentState & {
     _type_: 'Dropdown-builtin';
     optionNames?: string[];

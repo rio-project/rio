@@ -1,8 +1,5 @@
 import { pixelsPerEm } from '../app';
-import {
-    getElementByComponentId,
-    replaceChildren,
-} from '../componentManagement';
+import { replaceChildren } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { setConnectionLostPopupVisible } from '../rpc';

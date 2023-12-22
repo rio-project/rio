@@ -2,8 +2,6 @@ import { replaceChildren } from '../componentManagement';
 import { ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
 
-// TODO: set child z-indices, if necessary!?
-
 export type StackState = ComponentState & {
     _type_: 'Stack-builtin';
     children?: number[];
