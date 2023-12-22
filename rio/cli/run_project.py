@@ -65,7 +65,7 @@ def make_traceback_html(
 
     return f"""
 <div>
-    <div class="rio-traceback rio-debugger-background">
+    <div class="rio-traceback rio-debugger-background rio-switcheroo-neutral">
         <div class="rio-traceback-header">
             {error_icon_svg}
             <div>Couldn't load the app</div>
@@ -86,6 +86,22 @@ def make_traceback_html(
     </div>
 </div>
 """
+
+
+def make_traceback_app(
+    err: Union[str, BaseException], project_directory: Path
+) -> rio.App:
+    """
+    Creates an app that displays the given error message.
+    """
+    html = make_traceback_html(err=err, project_directory=project_directory)
+
+    def build() -> rio.Component:
+        return rio.Html(html)
+
+    return rio.App(
+        build=build,
+    )
 
 
 class RunningApp:
@@ -160,7 +176,7 @@ class RunningApp:
 
         return f"http://{local_ip}:{self._port}"
 
-    def _start_task(self, task: Awaitable, *, name: str | None = None) -> asyncio.Task:
+    def _create_task(self, task: Awaitable, *, name: str | None = None) -> asyncio.Task:
         coro = self._run_task(task, name)
         return asyncio.create_task(coro, name=name)
 
@@ -308,7 +324,7 @@ class RunningApp:
 
         # Start watching for file changes
         if self.debug_mode:
-            self._watch_files_task = asyncio.create_task(self._worker_watch_files())
+            self._watch_files_task = self._create_task(self._worker_watch_files())
 
         # Take a snapshot of the current state of the python interpreter
         state_before_app = snapshot.Snapshot()
@@ -469,18 +485,17 @@ window.setConnectionLostPopupVisible(true);
 """,
         )
 
-    async def _start_or_restart_app(
-        self,
-    ) -> bool:
+    async def _start_or_restart_app(self) -> None:
         """
         Starts the app, or restarts it if it is already running. Returns only
         once the app is ready or failed to start.
 
-        Returns `True` if the app was started successfully, `False` if it
-        failed.
+        If the user's code can't be imported, a dummy app displaying the error
+        message will be created.
         """
         # Load the app
         app = self._load_app()
+        app_loading_succeeded = isinstance(app, rio.App)
 
         if isinstance(app, (str, BaseException)):
             print()
@@ -489,58 +504,58 @@ window.setConnectionLostPopupVisible(true);
             if self._uvicorn_server is not None:
                 await self._spawn_traceback_popups(app)
 
-            return False
-
-        # Not running yet - start it
-        if self._uvicorn_task is None:
-            on_ready_event = asyncio.Event()
-            self._uvicorn_task = asyncio.create_task(
-                self._worker_uvicorn(
-                    app,
-                    on_ready_or_failed=on_ready_event.set,
-                )
-            )
-            await on_ready_event.wait()
-
-            # The app was just successfully started. Inform the user
-            if self.debug_mode:
-                warning("Rio is running in DEBUG mode.")
-                warning(
-                    "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
-                )
-                warning("Run with `--release` to disable debug mode.")
-
-            if not self.run_in_window:
-                print()
-                print(f"[green]Your app is running at {self._url}[/]")
-
-                if self.public:
-                    warning(
-                        f"Running in [bold]public[/] mode. All devices on your network can access the app."
-                    )
-                    warning(f"Only run in public mode if you trust your network!")
-                else:
-                    print(
-                        f"[dim]Running in [bold]local[/] mode. Only this device can access the app.[/]"
-                    )
-
-            else:
-                success("Ready")
-
-            print()
-
-            # Either open the webview, or a browser
-            if self.run_in_window:
-                self._webview_task = asyncio.create_task(self._worker_webview())
-            else:
-                webbrowser.open(self._url)
-
-            return True
+            app = make_traceback_app(app, self.proj.project_directory)
 
         # Already running - restart it
-        await self._restart_app(app)
-        success("Ready")
-        return True
+        if self._uvicorn_task is not None:
+            await self._restart_app(app)
+
+            if app_loading_succeeded:
+                success("Ready")
+
+            return
+
+        # Not running yet - start it
+        on_ready_event = asyncio.Event()
+        self._uvicorn_task = self._create_task(
+            self._worker_uvicorn(
+                app,
+                on_ready_or_failed=on_ready_event.set,
+            )
+        )
+        await on_ready_event.wait()
+
+        # The app was just successfully started. Inform the user
+        if self.debug_mode:
+            warning("Rio is running in DEBUG mode.")
+            warning(
+                "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
+            )
+            warning("Run with `--release` to disable debug mode.")
+
+        if self.run_in_window:
+            success("Ready")
+            self._webview_task = self._create_task(self._worker_webview())
+        else:
+            print()
+            if app_loading_succeeded:
+                success(f"Your app is running at {self._url}")
+            else:
+                print(f"Rio is running at {self._url}")
+
+            if self.public:
+                warning(
+                    f"Running in [bold]public[/] mode. All devices on your network can access the app."
+                )
+                warning(f"Only run in public mode if you trust your network!")
+            else:
+                print(
+                    f"[dim]Running in [/]local[dim] mode. Only this device can access the app.[/]"
+                )
+
+            webbrowser.open(self._url)
+
+        print()
 
     async def _worker_uvicorn(
         self,
@@ -639,7 +654,7 @@ window.setConnectionLostPopupVisible(true);
             await self._evaluate_javascript("window.location.reload()")
 
             # Close it
-            asyncio.create_task(
+            self._create_task(
                 sess._close(close_remote_session=False),
                 name=f'Close session "{sess._session_token}"',
             )
@@ -658,7 +673,7 @@ window.setConnectionLostPopupVisible(true);
             async def callback() -> None:
                 await sess._evaluate_javascript(javascript_source)
 
-            asyncio.create_task(
+            self._create_task(
                 callback(),
                 name=f"Eval JS in session {sess._session_token}",
             )

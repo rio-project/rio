@@ -94,6 +94,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
     --mdc-theme-on-primary: var(--rio-global-secondary-fg);
     // --mdc-theme-on-secondary: var(--rio-global-secondary-fg);
     --mdc-theme-on-surface: var(--rio-global-background-fg);
+
+    // Regular HTML
+    color: var(--rio-global-text-color);
 }
 
 .rio-switcheroo-neutral {
@@ -138,6 +141,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-text-color);
 }
 
 .rio-switcheroo-primary {
@@ -176,6 +182,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-primary-fg);
 }
 
 .rio-switcheroo-secondary {
@@ -214,6 +223,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-secondary-fg);
 }
 
 .rio-switcheroo-success {
@@ -252,6 +264,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-success-fg);
 }
 
 .rio-switcheroo-warning {
@@ -290,6 +305,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-warning-fg);
 }
 
 .rio-switcheroo-danger {
@@ -328,6 +346,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-danger-fg);
 }
 
 .rio-switcheroo-disabled {
@@ -364,6 +385,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-global-disabled-fg);
 }
 
 .rio-switcheroo-custom {
@@ -398,6 +422,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-local-custom-fg);
 }
 
 .rio-switcheroo-accent-to-plain {
@@ -418,6 +445,9 @@ $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
     // Material Design Web
     // TODO
+
+    // Regular HTML
+    color: var(--rio-local-accent-fg);
 }
 
 // "Placeholder element"/"content loading" animation
@@ -485,7 +515,7 @@ body {
     margin: 0;
     padding: 0;
 
-    font-family: Roboto, sans-serif;
+    font-family: var(--rio-global-font-name, Roboto, sans-serif);
 }
 
 // Wraps the user's root component
@@ -589,7 +619,10 @@ body {
     pointer-events: auto;
     border-style: solid;
 
-    transition-timing-function: ease; // The transition time is set via JS
+    // The transition time is set via JS
+    transition-property: background, stroke-color, stroke-width, border-radius,
+        shadow-color, shadow-radius, shadow-offset;
+    transition-timing-function: ease;
 
     overflow: hidden;
 
@@ -2426,5 +2459,5 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     background-size: 3rem 3rem;
     animation: barber-pole 8s linear infinite;
 
-    opacity: 0.04;
+    opacity: 0.03;
 }
