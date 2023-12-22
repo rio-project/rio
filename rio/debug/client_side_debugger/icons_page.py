@@ -247,7 +247,7 @@ Use the `rio.Icon` component like this:
                     "success",
                     "warning",
                     "danger",
-                    "default",
+                    "keep",
                     "dim",
                 ],
                 selected_value=IconsPage.selected_fill,
@@ -283,16 +283,16 @@ Use the `rio.Icon` component like this:
                 self.matches[:30]
             ):
                 results.append(
-                    # rio.Text(icon_name),
-                    IconButton(
-                        icon_name,
-                        label=icon_name.split("/")[-1],
-                        # width="grow",
-                        is_selected=icon_name == self.selected_icon,
-                        on_press=functools.partial(
-                            self._on_select_icon, icon_set, icon_name, icon_variants
-                        ),
-                    )
+                    rio.Text(icon_name),
+                    # IconButton(
+                    #     icon_name,
+                    #     label=icon_name.split("/")[-1],
+                    #     # width="grow",
+                    #     is_selected=icon_name == self.selected_icon,
+                    #     on_press=functools.partial(
+                    #         self._on_select_icon, icon_set, icon_name, icon_variants
+                    #     ),
+                    # )
                 )
 
             children.append(rio.FlowContainer(*results))

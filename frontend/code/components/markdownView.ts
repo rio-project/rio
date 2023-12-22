@@ -199,6 +199,7 @@ export class MarkdownViewComponent extends ComponentBase {
 
             // Any previously calculated height request is no longer valid
             this.heightRequestAssumesWidth = -1;
+            this.makeLayoutDirty();
         }
     }
 
