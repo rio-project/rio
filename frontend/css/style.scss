@@ -1098,7 +1098,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0.5rem;
 
     color: var(--rio-local-text-color);
 }
@@ -1108,11 +1107,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-revealer-arrow {
-    width: 1.3rem;
-    height: 1.3rem;
-
-    fill: var(--rio-local-text-color);
-    opacity: 0.7;
+    opacity: 0.5;
 
     transform: rotate(90deg);
 

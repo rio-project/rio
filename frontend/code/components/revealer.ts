@@ -7,8 +7,7 @@ import { LayoutContext, updateLayout } from '../layouting';
 import { TextStyle } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
-// Height of the revealer's header in rem
-const CHILD_PADDING = 0.8;
+let HEADER_PADDING: number = 0.8;
 
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';
@@ -33,7 +32,9 @@ export class RevealerComponent extends ComponentBase {
     private contentInnerElement: HTMLElement;
     private contentOuterElement: HTMLElement;
 
-    private headerHeight: number;
+    private headerScale: number;
+    private labelWidth: number;
+    private labelHeight: number;
 
     createElement(): HTMLElement {
         // Create the HTML
@@ -79,8 +80,6 @@ export class RevealerComponent extends ComponentBase {
             'currentColor'
         );
 
-        this.contentInnerElement.style.padding = `${CHILD_PADDING}rem`;
-
         // Listen for presses
         this.headerElement.onmouseup = (e) => {
             // Toggle the open state
@@ -123,31 +122,35 @@ export class RevealerComponent extends ComponentBase {
 
         // Update the text style
         if (deltaState.header_style !== undefined) {
+            // The text is handled by a helper function
             Object.assign(
                 this.labelElement.style,
                 textStyleToCss(deltaState.header_style)
             );
 
-            this.arrowElement.style.color = this.labelElement.style.color;
-        }
-
-        // Precompute the headers' height
-        if (
-            deltaState.header !== undefined ||
-            deltaState.header_style !== undefined
-        ) {
-            let header =
-                deltaState.header === undefined
-                    ? this.state.header
-                    : deltaState.header;
-
-            let headerStyle =
-                deltaState.header_style ?? this.state.header_style;
-
-            if (header !== null) {
-                this.headerHeight = getTextDimensions(header, headerStyle)[1];
-                this.headerHeight += 1.6; // Padding
+            // The text style defines the overall scale of the header
+            if (deltaState.header_style === 'heading1') {
+                this.headerScale = 2;
+            } else if (deltaState.header_style === 'heading2') {
+                this.headerScale = 1.5;
+            } else if (deltaState.header_style === 'heading3') {
+                this.headerScale = 1.2;
+            } else if (deltaState.header_style === 'text') {
+                this.headerScale = 1;
+            } else {
+                this.headerScale = deltaState.header_style.fontSize;
             }
+
+            // Adapt the header's padding
+            this.headerElement.style.padding = `${
+                HEADER_PADDING * this.headerScale
+            }rem`;
+
+            // Make the arrow match
+            let arrowSize = this.headerScale * 1.0;
+            this.arrowElement.style.width = `${arrowSize}rem`;
+            this.arrowElement.style.height = `${arrowSize}rem`;
+            this.arrowElement.style.color = this.labelElement.style.color;
         }
 
         // Expand / collapse
@@ -167,6 +170,23 @@ export class RevealerComponent extends ComponentBase {
                 element.classList.add('rio-revealer-open');
             } else {
                 element.classList.remove('rio-revealer-open');
+            }
+        }
+
+        // Cache the header text's dimensions
+        if (
+            deltaState.header !== undefined ||
+            deltaState.header_style !== undefined
+        ) {
+            let headerText = deltaState.header ?? this.state.header;
+
+            if (headerText !== null) {
+                let headerStyle =
+                    deltaState.header_style ?? this.state.header_style;
+                [this.labelWidth, this.labelHeight] = getTextDimensions(
+                    headerText,
+                    headerStyle
+                );
             }
         }
 
@@ -221,14 +241,12 @@ export class RevealerComponent extends ComponentBase {
 
     updateRequestedWidth(ctx: LayoutContext): void {
         // Account for the content
-        this.requestedWidth =
-            ctx.inst(this.state.content).requestedWidth + 2 * CHILD_PADDING;
+        this.requestedWidth = ctx.inst(this.state.content).requestedWidth;
 
         // If a header is present, consider that as well
         if (this.state.header !== null) {
             let headerWidth =
-                getTextDimensions(this.state.header, 'text')[0] + 3;
-
+                this.labelWidth + 4 + 2 * HEADER_PADDING * this.headerScale;
             this.requestedWidth = Math.max(this.requestedWidth, headerWidth);
         }
     }
@@ -237,8 +255,7 @@ export class RevealerComponent extends ComponentBase {
         // Pass on space to the child, but only if the revealer is open. If not,
         // avoid forcing a re-layout of the child.
         if (this.state.is_open) {
-            ctx.inst(this.state.content).allocatedWidth =
-                this.allocatedWidth - 2 * CHILD_PADDING;
+            ctx.inst(this.state.content).allocatedWidth = this.allocatedWidth;
         }
     }
 
@@ -247,16 +264,14 @@ export class RevealerComponent extends ComponentBase {
 
         // Account for the header, if present
         if (this.state.header !== null) {
-            this.requestedHeight += this.headerHeight;
+            this.requestedHeight +=
+                this.labelHeight + 2 * HEADER_PADDING * this.headerScale;
         }
 
         // Account for the content
         if (this.openFractionBeforeEase > 0) {
             let t = easeInOut(this.openFractionBeforeEase);
-            let innerHeight =
-                ctx.inst(this.state.content).requestedHeight +
-                2 * CHILD_PADDING;
-
+            let innerHeight = ctx.inst(this.state.content).requestedHeight;
             this.requestedHeight += t * innerHeight;
         }
     }
@@ -268,10 +283,13 @@ export class RevealerComponent extends ComponentBase {
         }
 
         // Pass on space to the child
-        let headerHeight = this.state.header === null ? 0 : this.headerHeight;
+        let headerHeight =
+            this.state.header === null
+                ? 0
+                : this.labelHeight + 2 * HEADER_PADDING * this.headerScale;
 
         ctx.inst(this.state.content).allocatedHeight = Math.max(
-            this.allocatedHeight - headerHeight - 2 * CHILD_PADDING,
+            this.allocatedHeight - headerHeight,
             ctx.inst(this.state.content).requestedHeight
         );
 
