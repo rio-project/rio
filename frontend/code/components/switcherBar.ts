@@ -5,8 +5,9 @@ import { applyColorSet } from '../designApplication';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { textStyleToCss } from '../cssUtils';
+import { pixelsPerEm } from '../app';
 
-// TODO
+const ACCELERATION: number = 250; // rem/s^2
 
 const ITEM_MARGIN: number = 0.5;
 const SVG_HEIGHT: number = 1.8;
@@ -42,6 +43,7 @@ export class SwitcherBarComponent extends ComponentBase {
     private markerElement: HTMLElement;
     private backgroundOptionsElement: HTMLElement;
     private markerOptionsElement: HTMLElement;
+    private isInitialized: boolean = false;
 
     // The requested width of each entry's name
     private nameWidths: number[];
@@ -51,6 +53,17 @@ export class SwitcherBarComponent extends ComponentBase {
 
     // True if at least one of the entries has an icon
     private hasAtLeastOneIcon: boolean;
+
+    // Marker animation state
+    private markerCurLeft: number = 0;
+    private markerCurTop: number = 0;
+    private markerCurWidth: number = 0;
+    private markerCurHeight: number = 0;
+
+    private markerCurVelocity: number = 0;
+
+    private animationIsRunning: boolean = false;
+    private lastAnimationTickAt: number = 0;
 
     createElement(): HTMLElement {
         // Create the elements
@@ -66,17 +79,18 @@ export class SwitcherBarComponent extends ComponentBase {
         return elementOuter;
     }
 
-    _updateMarker(): void {
-        // Where should the marker be at?
-        let selectedIndex = this.state.names.indexOf(this.state.selectedName!);
-        let selectedElement = this.backgroundOptionsElement.children[
-            selectedIndex
-        ] as HTMLElement;
-
-        let left = selectedElement.offsetLeft;
-        let top = selectedElement.offsetTop;
-        let width = selectedElement.offsetWidth;
-        let height = selectedElement.offsetHeight;
+    /// Instantly move the marker to the given location
+    _instantlyMoveMarkerTo(
+        left: number,
+        top: number,
+        width: number,
+        height: number
+    ): void {
+        // Update the stored values
+        this.markerCurLeft = left;
+        this.markerCurTop = top;
+        this.markerCurWidth = width;
+        this.markerCurHeight = height;
 
         // Move the marker
         this.markerElement.style.left = `${left}px`;
@@ -87,6 +101,120 @@ export class SwitcherBarComponent extends ComponentBase {
         // Move the inner options in the opposite direction so they stay put
         this.markerOptionsElement.style.left = `-${left}px`;
         this.markerOptionsElement.style.top = `-${top}px`;
+    }
+
+    /// Fetch the target position of the marker
+    _getMarkerTarget(): [number, number, number, number] {
+        let selectedIndex = this.state.names.indexOf(this.state.selectedName!);
+        let selectedElement = this.backgroundOptionsElement.children[
+            selectedIndex
+        ] as HTMLElement;
+
+        return [
+            selectedElement.offsetLeft,
+            selectedElement.offsetTop,
+            selectedElement.offsetWidth,
+            selectedElement.offsetHeight,
+        ];
+    }
+
+    /// Instantly move the marker to the currently selected item
+    _updateMarkerInstantlyIfAnimationIsntRunning(): void {
+        if (this.animationIsRunning) {
+            return;
+        }
+
+        let target = this._getMarkerTarget();
+        this._instantlyMoveMarkerTo(target[0], target[1], target[2], target[3]);
+    }
+
+    _animationWorker(): void {
+        console.log('\n\n\nITER');
+        // How much time has passed
+        let now = Date.now();
+        let deltaTime = (now - this.lastAnimationTickAt) / 1000;
+        this.lastAnimationTickAt = now;
+
+        // Calculate the distance to the target
+        let target = this._getMarkerTarget();
+
+        let curPos: number, targetPos: number;
+        if (this.state.orientation == 'horizontal') {
+            curPos = this.markerCurLeft;
+            targetPos = target[0];
+        } else {
+            curPos = this.markerCurTop;
+            targetPos = target[1];
+        }
+
+        let signedRemainingDistance = targetPos - curPos;
+        console.log('target', target);
+        console.log('curPos', curPos);
+        console.log('targetPos', targetPos);
+        console.log('signedRemainingDistance', signedRemainingDistance);
+
+        // Which direction to accelerate towards?
+        let acceleration = ACCELERATION * pixelsPerEm;
+        let accelerationFactor; // + means towards the target
+        let brakingDistance =
+            Math.pow(this.markerCurVelocity, 2) / (2 * acceleration);
+
+        // Case: Moving away from the target
+        if (
+            Math.sign(signedRemainingDistance) !=
+            Math.sign(this.markerCurVelocity)
+        ) {
+            accelerationFactor = 3;
+        }
+        // Case: Don't run over the target quite so hard
+        else if (Math.abs(signedRemainingDistance) < brakingDistance) {
+            accelerationFactor = -1;
+        }
+        // Case: Accelerate towards the target
+        else {
+            accelerationFactor = 1;
+        }
+        console.log('accelerationFactor', accelerationFactor);
+
+        let currentAcceleration =
+            acceleration *
+            accelerationFactor *
+            Math.sign(signedRemainingDistance);
+
+        // Update the velocity
+        this.markerCurVelocity += currentAcceleration * deltaTime;
+        let deltaDistance = this.markerCurVelocity * deltaTime;
+        console.log('deltaDistance', deltaDistance);
+
+        // Arrived?
+        let t;
+        if (Math.abs(deltaDistance) > Math.abs(signedRemainingDistance)) {
+            t = 1;
+            this.animationIsRunning = false;
+        } else {
+            t = deltaDistance / signedRemainingDistance;
+            requestAnimationFrame(this._animationWorker.bind(this));
+        }
+        console.log('t', t);
+
+        // Update the marker
+        this._instantlyMoveMarkerTo(
+            this.markerCurLeft + t * (target[0] - this.markerCurLeft),
+            this.markerCurTop + t * (target[1] - this.markerCurTop),
+            this.markerCurWidth + t * (target[2] - this.markerCurWidth),
+            this.markerCurHeight + t * (target[3] - this.markerCurHeight)
+        );
+    }
+
+    startAnimationIfNotRunning(): void {
+        if (this.animationIsRunning) {
+            return;
+        }
+
+        this.lastAnimationTickAt = Date.now();
+        this.animationIsRunning = true;
+        this.markerCurVelocity = 0;
+        requestAnimationFrame(this._animationWorker.bind(this));
     }
 
     _buildContent(deltaState: SwitcherBarState): HTMLElement {
@@ -131,7 +259,7 @@ export class SwitcherBarComponent extends ComponentBase {
             // Detect clicks
             optionElement.addEventListener('click', () => {
                 this.state.selectedName = name;
-                this._updateMarker();
+                this.startAnimationIfNotRunning();
                 this.sendMessageToBackend({
                     name: name,
                 });
@@ -185,6 +313,7 @@ export class SwitcherBarComponent extends ComponentBase {
             this.markerElement.appendChild(this.markerOptionsElement);
 
             // Re-layout
+            this._updateMarkerInstantlyIfAnimationIsntRunning();
             this.makeLayoutDirty();
         }
 
@@ -207,21 +336,33 @@ export class SwitcherBarComponent extends ComponentBase {
             this.markerOptionsElement.style.flexDirection = flexDirection;
 
             // Re-layout
+            this._updateMarkerInstantlyIfAnimationIsntRunning();
             this.makeLayoutDirty();
         }
 
         // Spacing
         if (deltaState.spacing !== undefined) {
+            this._updateMarkerInstantlyIfAnimationIsntRunning();
             this.makeLayoutDirty();
         }
 
         // Does any of the changes affect the marker's placement?
+        if (deltaState.selectedName !== undefined) {
+            // Don't trigger an animation if this is the first time the
+            // component is being updated
+            if (this.isInitialized) {
+                this.startAnimationIfNotRunning();
+            } else {
+                this._updateMarkerInstantlyIfAnimationIsntRunning();
+                this.isInitialized = true;
+            }
+        }
+
         if (
-            deltaState.selectedName !== undefined ||
             deltaState.names !== undefined ||
             deltaState.icon_svg_sources !== undefined
         ) {
-            this._updateMarker();
+            this._updateMarkerInstantlyIfAnimationIsntRunning();
         }
     }
 
@@ -302,6 +443,6 @@ export class SwitcherBarComponent extends ComponentBase {
         }
 
         // Reposition the marker
-        this._updateMarker();
+        this._updateMarkerInstantlyIfAnimationIsntRunning();
     }
 }

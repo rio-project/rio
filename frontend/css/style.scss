@@ -1918,20 +1918,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     position: absolute;
 }
 
-// .rio-switcher-bar-marker > .rio-switcher-bar-options {
-//     pointer-events: none;
-// }
-
 .rio-switcher-bar-options {
     pointer-events: auto;
     position: absolute;
     display: flex;
     align-items: stretch;
     justify-content: space-between;
-
-    transition:
-        left 0.4s $transition-timing-overshoot,
-        top 0.4s $transition-timing-overshoot;
 }
 
 .rio-switcher-bar-option {
@@ -1967,12 +1959,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     top: 0;
 
     border-radius: var(--rio-global-corner-radius-large);
-
-    transition:
-        left 0.4s $transition-timing-overshoot,
-        top 0.4s $transition-timing-overshoot,
-        width 0.4s $transition-timing-overshoot,
-        height 0.4s $transition-timing-overshoot;
 }
 
 // Table

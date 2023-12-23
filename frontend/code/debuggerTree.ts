@@ -575,7 +575,7 @@ export class DebuggerTreeDriver {
         let isRioComponent = selectedComponent.state._type_ !== 'Placeholder';
 
         if (isRioComponent) {
-            let docUrl = `https://rio.dev/documentation/${selectedComponent.state._python_type_.toLowerCase()}`;
+            let docUrl = `https://rio.dev/documentation/component/${selectedComponent.state._python_type_.toLowerCase()}`;
 
             this.docsLinkElement.style.removeProperty('display');
             this.docsLinkElement.setAttribute('href', docUrl);
