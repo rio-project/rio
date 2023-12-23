@@ -1,11 +1,12 @@
 import asyncio
 import html
-import importlib.util
+import importlib
 import json
 import socket
 import sys
 import threading
 import time
+import types
 import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,7 +22,7 @@ import rio.icon_registry
 import rio.snippets
 
 from .. import common
-from . import nice_traceback, project, snapshot
+from . import nice_traceback, project
 
 try:
     import webview  # type: ignore
@@ -171,16 +172,16 @@ class RunningApp:
     def _create_worker(
         self, worker: Awaitable, *, name: str | None = None
     ) -> asyncio.Task:
-        coro = self._run_worker(worker, name)
+        coro = self._run_worker(worker)
         task = asyncio.create_task(coro, name=name)
         self._workers.append(task)
         return task
 
-    async def _run_worker(self, worker: Awaitable, name: str | None) -> None:
+    async def _run_worker(self, worker: Awaitable) -> None:
         try:
             await worker
         except KeyboardInterrupt:
-            print(f"Worker {name} {worker} got KeyboardInterrupt")
+            self.stop(keyboard_interrupt=True)
 
     def _run_in_mainloop(
         self,
@@ -329,9 +330,6 @@ class RunningApp:
             if self.debug_mode:
                 self._create_worker(self._worker_watch_files())
 
-            # Take a snapshot of the current state of the python interpreter
-            state_before_app = snapshot.Snapshot()
-
             # Monotonic timestamp of when the last command was given to restart the
             # app. Any further events which would trigger a reload up to this time
             # can be safely ignored.
@@ -357,28 +355,24 @@ class RunningApp:
                     print()
                     print(f"[bold]{rel_path}[/] has changed -> Reloading")
 
-                    # Restore the python interpreter to the state it was before the
-                    # app was started
-                    state_before_app.restore()
-
                     # Restart the app
                     await self._start_or_restart_app()
 
                 # ???
                 else:
                     raise NotImplementedError(f'Unknown event "{event}"')
-        except asyncio.CancelledError:
-            pass
         except KeyboardInterrupt:
             self.stop(keyboard_interrupt=True)
-
-        # When the arbiter exits, the asyncio event loop shuts down. We don't
-        # want that to happen until all our workers have shut down.
-        for worker in self._workers:
-            try:
-                await worker
-            except asyncio.CancelledError:
-                pass
+        except asyncio.CancelledError:
+            pass
+        finally:
+            # When the arbiter exits, the asyncio event loop shuts down. We don't
+            # want that to happen until all our workers have shut down.
+            for worker in self._workers:
+                try:
+                    await worker
+                except asyncio.CancelledError:
+                    pass
 
     def _file_triggers_reload(self, path: Path) -> bool:
         if path.suffix == ".py":
@@ -407,42 +401,27 @@ class RunningApp:
                     )
                 )
 
-    def _import_app_module(self) -> Any:
+    def _import_app_module(self) -> types.ModuleType:
         """
         Python's importing is bizarre. This function tries to hide all of that
         and imports the module, as specified by the user. This can raise a
         variety of exceptions, since the module's code is evaluated.
         """
-        # Path to the module
-        module_path = self.proj.module_path
+        # Purge the module from the module cache
+        app_main_module = self.proj.app_main_module
+        root_module, _, _ = app_main_module.partition(".")
 
-        # Path to the module, as thought of by a drunk python
-        if module_path.is_dir():
-            import_path = module_path / "__init__.py"
-        else:
-            import_path = module_path.with_name(module_path.name + ".py")
+        for module_name in list(sys.modules):
+            if module_name.partition(".")[0] == root_module:
+                del sys.modules[module_name]
 
-            if not import_path.exists() or not import_path.is_file():
-                raise FileNotFoundError(
-                    f"Cannot find any module named `{module_path}` in the project directory `{self.proj.project_directory}`"
-                )
+        # Now (re-)import the app module
+        sys.path.append(str(self.proj.module_path.parent))
 
-        # Import the module
-        spec = importlib.util.spec_from_file_location(
-            self.proj.app_main_module, import_path
-        )
-        assert spec is not None, "When does this happen?"
-
-        module = importlib.util.module_from_spec(spec)
-
-        # Register the module
-        sys.modules[self.proj.app_main_module] = module
-
-        # Run it
-        assert spec.loader is not None, "When does this happen?"
-        spec.loader.exec_module(module)
-
-        return module
+        try:
+            return importlib.import_module(app_main_module)
+        finally:
+            del sys.path[-1]
 
     def _load_app(self) -> Union[rio.App, BaseException, str]:
         # Import the app module
@@ -482,7 +461,7 @@ class RunningApp:
 
         return app
 
-    async def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
+    def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
         """
         Displays a popup with the traceback in the rio UI.
         """
@@ -491,7 +470,7 @@ class RunningApp:
             project_directory=self.proj.project_directory,
         )
 
-        await self._evaluate_javascript(
+        self._evaluate_javascript(
             f"""
 // Override the popup with the traceback message
 let popup = document.querySelector(".rio-connection-lost-popup");
@@ -519,7 +498,7 @@ window.setConnectionLostPopupVisible(true);
             error("Couldn't load the app. Fix the issue above and try again.")
 
             if self._uvicorn_server is not None:
-                await self._spawn_traceback_popups(app)
+                self._spawn_traceback_popups(app)
 
             app = make_traceback_app(app, self.proj.project_directory)
 
@@ -668,15 +647,15 @@ window.setConnectionLostPopupVisible(true);
             #
             # TODO: Should there be some waiting period here, so that the
             # session has time to save settings first and shut down in general?
-            await self._evaluate_javascript("window.location.reload()")
+            await sess._evaluate_javascript("window.location.reload()")
 
             # Close it
-            self._create_worker(
+            asyncio.create_task(
                 sess._close(close_remote_session=False),
                 name=f'Close session "{sess._session_token}"',
             )
 
-    async def _evaluate_javascript(self, javascript_source: str) -> None:
+    def _evaluate_javascript(self, javascript_source: str) -> None:
         """
         Runs the given javascript source in all connected sessions. Does not
         wait for or return the result.
@@ -685,12 +664,11 @@ window.setConnectionLostPopupVisible(true);
             self._app_server is not None
         ), "Can't run javascript without the app running"
 
+        async def evaljs_as_coroutine(sess: rio.Session) -> None:
+            await sess._evaluate_javascript(javascript_source)
+
         for sess in self._app_server._active_session_tokens.values():
-
-            async def callback() -> None:
-                await sess._evaluate_javascript(javascript_source)
-
-            self._create_worker(
-                callback(),
+            asyncio.create_task(
+                evaljs_as_coroutine(sess),
                 name=f"Eval JS in session {sess._session_token}",
             )
