@@ -1914,8 +1914,17 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 // SwitcherBar
-.rio-switcher-bar > * {
-    position: absolute;
+.rio-switcher-bar {
+    display: flex;
+    align-items: center;
+}
+
+.rio-switcher-bar > div {
+    position: relative;
+}
+
+.rio-switcher-bar > div > .rio-switcher-bar-options {
+    position: relative !important;
 }
 
 .rio-switcher-bar-options {

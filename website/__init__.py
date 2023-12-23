@@ -124,7 +124,8 @@ all_pages = [
 
 app = rio.App(
     name="Rio",
-    build=AppRoot,
+    # build=AppRoot,
+    build=lambda: rio.Text("foooooO!"),
     icon=rio.common.RIO_LOGO_ASSET_PATH,
     pages=all_pages,
     theme=theme.THEME,

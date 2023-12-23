@@ -15,10 +15,6 @@ class ClientSideDebugger(rio.Component):
     ] | None = None
 
     def get_selected_page(self) -> rio.Component:
-        # No page
-        if self.selected_page == None:
-            return rio.Spacer(width=0, height=0)
-
         # Project
         if self.selected_page == "project":
             return project_page.ProjectPage()
@@ -53,7 +49,9 @@ class ClientSideDebugger(rio.Component):
                 style=rio.BoxStyle(fill=self.session.theme.primary_palette.background),
             ),
             # Currently active page
-            rio.components.class_container.ClassContainer(
+            rio.Spacer(width=0)
+            if self.selected_page is None
+            else rio.components.class_container.ClassContainer(
                 self.get_selected_page(),
                 classes=["rio-switcheroo-neutral", "rio-debugger-background"],
                 width=22,
@@ -85,10 +83,12 @@ class ClientSideDebugger(rio.Component):
                         "ai-chat",
                         "deploy",
                     ],
+                    allow_none=True,
                     orientation="vertical",
                     spacing=2,
                     color="primary",
                     selected_value=ClientSideDebugger.selected_page,
+                    margin_x=0.3,
                 ),
                 rio.Spacer(),
                 rio.components.debugger_connector.DebuggerConnector(),
