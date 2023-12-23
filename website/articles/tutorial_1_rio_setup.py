@@ -65,7 +65,7 @@ as `python`. If that isn't the case on your system, make sure to replace
 Rio is available on PyPI, so you can simply install it using `pip`:
 
 ```bash
-python -m pip install rio[window]
+python -m pip install rio-ui[window]
 ```
 
 This will install rio, along with the optional `window` extra. This extra allows
