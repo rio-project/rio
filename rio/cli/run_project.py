@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import revel
 import uvicorn
 import watchfiles
 from revel import error, fatal, print, success, warning

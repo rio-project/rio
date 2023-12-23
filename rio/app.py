@@ -327,9 +327,11 @@ class App:
         host: str,
         port: int,
         quiet: bool,
+        running_in_window: bool,
         debug_mode: bool = False,
-        validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        internal_on_app_start: Optional[Callable[[], None]],
+        validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
+        internal_on_app_start: Optional[Callable[[], None]] = None,
+        internal_on_server_created: Optional[Callable[[uvicorn.Server], None]] = None,
     ) -> None:
         """
         Internal equivalent of `run_as_web_server` that takes additional
@@ -352,18 +354,27 @@ class App:
         # Create the FastAPI server
         fastapi_app = self._as_fastapi(
             debug_mode=debug_mode,
-            running_in_window=False,
+            running_in_window=running_in_window,
             validator_factory=validator_factory,
             internal_on_app_start=internal_on_app_start,
         )
 
-        # Serve
-        uvicorn.run(
-            app=fastapi_app,
+        # Suppress stdout messages if requested
+        log_level = "error" if quiet else "info"
+
+        config = uvicorn.Config(
+            fastapi_app,
             host=host,
             port=port,
-            **kwargs,
+            log_level=log_level,
+            timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
         )
+        server = uvicorn.Server(config)
+
+        if internal_on_server_created is not None:
+            internal_on_server_created(server)
+
+        server.run()
 
     def run_as_web_server(
         self,
@@ -403,8 +414,7 @@ class App:
             host=host,
             port=port,
             quiet=quiet,
-            validator_factory=None,
-            internal_on_app_start=None,
+            running_in_window=False,
         )
 
     def run_in_browser(
@@ -450,7 +460,7 @@ class App:
             host=host,
             port=port,
             quiet=quiet,
-            validator_factory=None,
+            running_in_window=False,
             internal_on_app_start=on_startup,
         )
 
@@ -492,7 +502,7 @@ class App:
         if webview is None:
             raise Exception(
                 "The `window` extra is required to use `App.run_in_window`."
-                " Run `pip install rio[window]` to install it."
+                " Run `pip install rio-ui[window]` to install it."
             )
 
         # Unfortunately, WebView must run in the main thread, which makes this
@@ -504,39 +514,31 @@ class App:
         url = f"http://{host}:{port}"
 
         # This lock is released once the server is running
-        lock = threading.Lock()
-        lock.acquire()
+        app_ready_event = threading.Event()
 
-        server: Optional[uvicorn.Server] = None
+        server: uvicorn.Server | None = None
+
+        def on_server_created(serv: uvicorn.Server) -> None:
+            nonlocal server
+            server = serv
 
         # Start the server, and release the lock once it's running
         def run_web_server():
-            fastapi_app = self._as_fastapi(
-                debug_mode=debug_mode,
-                running_in_window=True,
-                validator_factory=None,
-                internal_on_app_start=lock.release,
-            )
-
-            # Suppress stdout messages if requested
-            log_level = "error" if quiet else "info"
-
-            nonlocal server
-            config = uvicorn.Config(
-                fastapi_app,
+            self._run_as_web_server(
                 host=host,
                 port=port,
-                log_level=log_level,
-                timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
+                quiet=quiet,
+                debug_mode=debug_mode,
+                running_in_window=True,
+                internal_on_app_start=app_ready_event.set,
+                internal_on_server_created=on_server_created,
             )
-            server = uvicorn.Server(config)
-            server.run()
 
         server_thread = threading.Thread(target=run_web_server)
         server_thread.start()
 
         # Wait for the server to start
-        lock.acquire()
+        app_ready_event.wait()
 
         # Start the webview
         try:
