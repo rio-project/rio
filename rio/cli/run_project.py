@@ -134,15 +134,6 @@ class RunningApp:
         # If the app is currently running, this is the task for it
         self._uvicorn_task: Optional[asyncio.Task] = None
 
-        # If watching for file changes, this is the task for it
-        self._watch_files_task: Optional[asyncio.Task] = None
-
-        # If a webview is being displayed, this is the task for it
-        self._webview_task: Optional[asyncio.Task] = None
-
-        # If the arbiter is running, this is the task for it
-        self._arbiter_task: Optional[asyncio.Task] = None
-
         # Released when the app is loaded for the first time, and thus the
         # window should be displayed
         self._show_webview_event = threading.Event()
@@ -155,6 +146,8 @@ class RunningApp:
 
         # If a webview is being displayed, this is the window
         self._webview_window: Optional["webview.Window"] = None  # type: ignore
+
+        self._workers: list[asyncio.Task] = []
 
     @property
     def _host(self) -> str:
@@ -175,15 +168,19 @@ class RunningApp:
 
         return f"http://{local_ip}:{self._port}"
 
-    def _create_task(self, task: Awaitable, *, name: str | None = None) -> asyncio.Task:
-        coro = self._run_task(task, name)
-        return asyncio.create_task(coro, name=name)
+    def _create_worker(
+        self, worker: Awaitable, *, name: str | None = None
+    ) -> asyncio.Task:
+        coro = self._run_worker(worker, name)
+        task = asyncio.create_task(coro, name=name)
+        self._workers.append(task)
+        return task
 
-    async def _run_task(self, task: Awaitable, name: str | None) -> None:
+    async def _run_worker(self, worker: Awaitable, name: str | None) -> None:
         try:
-            await task
+            await worker
         except KeyboardInterrupt:
-            print(f"Task {name} {task} got KeyboardInterrupt")
+            print(f"Worker {name} {worker} got KeyboardInterrupt")
 
     def _run_in_mainloop(
         self,
@@ -202,13 +199,21 @@ class RunningApp:
         # Run the function in the mainloop
         self._mainloop.call_soon_threadsafe(callback)
 
-    def stop(self) -> None:
+    def stop(self, *, keyboard_interrupt: bool) -> None:
         """
         Stops the app.
         """
-        print("Shutting down")
+
+        if keyboard_interrupt:
+            print()
+            print("[yellow]Interrupted[/]")
+        else:
+            print("Shutting down")
 
         # Stop any running tasks
+        self._run_in_mainloop(self._cancel_all_tasks)
+
+    def _cancel_all_tasks(self) -> None:
         for task in asyncio.all_tasks():
             task.cancel()
 
@@ -228,7 +233,7 @@ class RunningApp:
             if webview is None:
                 fatal(
                     "The `window` extra is required to run apps inside of a window."
-                    " Run `pip install rio[[window]` to install it."
+                    " Run `pip install rio-ui[[window]` to install it."
                 )
 
             # Do the thing
@@ -285,10 +290,12 @@ class RunningApp:
             else "Rio",  # TODO: Get the app's name, if possible
             f"http://{self._host}:{self._port}",
         )
-        webview.start()
-
-        # Shut everything down
-        self._run_in_mainloop(self.stop)
+        try:
+            webview.start()
+        except KeyboardInterrupt:
+            self.stop(keyboard_interrupt=True)
+        else:
+            self.stop(keyboard_interrupt=False)
 
     def arbiter_sync(self) -> None:
         # Print some initial messages
@@ -311,56 +318,67 @@ class RunningApp:
                 sys.exit(1)
 
         # Run
-        try:
-            asyncio.run(self._arbiter_async())
-        except KeyboardInterrupt:
-            print()
-            print("[yellow]Interrupted[/]")
+        asyncio.run(self._arbiter_async())
 
     async def _arbiter_async(self) -> None:
-        # Expose the mainloop, so other threads can interact with asyncio land
-        self._mainloop = asyncio.get_running_loop()
+        try:
+            # Expose the mainloop, so other threads can interact with asyncio land
+            self._mainloop = asyncio.get_running_loop()
 
-        # Start watching for file changes
-        if self.debug_mode:
-            self._watch_files_task = self._create_task(self._worker_watch_files())
+            # Start watching for file changes
+            if self.debug_mode:
+                self._create_worker(self._worker_watch_files())
 
-        # Take a snapshot of the current state of the python interpreter
-        state_before_app = snapshot.Snapshot()
+            # Take a snapshot of the current state of the python interpreter
+            state_before_app = snapshot.Snapshot()
 
-        # Monotonic timestamp of when the last command was given to restart the
-        # app. Any further events which would trigger a reload up to this time
-        # can be safely ignored.
-        last_reload_started_at = time.monotonic_ns()
+            # Monotonic timestamp of when the last command was given to restart the
+            # app. Any further events which would trigger a reload up to this time
+            # can be safely ignored.
+            last_reload_started_at = time.monotonic_ns()
 
-        # Start the app for the first time
-        await self._start_or_restart_app()
+            # Start the app for the first time
+            await self._start_or_restart_app()
 
-        # Listen for events and react to them
-        while True:
-            event = await self._event_queue.get()
+            # Listen for events and react to them
+            while True:
+                event = await self._event_queue.get()
 
-            # A file has changed
-            if isinstance(event, FileChanged):
-                # Ignore events that happened before the last reload started
-                if event.timestamp < last_reload_started_at:
-                    continue
+                # A file has changed
+                if isinstance(event, FileChanged):
+                    # Ignore events that happened before the last reload started
+                    if event.timestamp < last_reload_started_at:
+                        continue
 
-                # Display to the user that a reload is happening
-                rel_path = event.path_to_file.relative_to(self.proj.project_directory)
-                print()
-                print(f"[bold]{rel_path}[/] has changed -> Reloading")
+                    # Display to the user that a reload is happening
+                    rel_path = event.path_to_file.relative_to(
+                        self.proj.project_directory
+                    )
+                    print()
+                    print(f"[bold]{rel_path}[/] has changed -> Reloading")
 
-                # Restore the python interpreter to the state it was before the
-                # app was started
-                state_before_app.restore()
+                    # Restore the python interpreter to the state it was before the
+                    # app was started
+                    state_before_app.restore()
 
-                # Restart the app
-                await self._start_or_restart_app()
+                    # Restart the app
+                    await self._start_or_restart_app()
 
-            # ???
-            else:
-                raise NotImplementedError(f'Unknown event "{event}"')
+                # ???
+                else:
+                    raise NotImplementedError(f'Unknown event "{event}"')
+        except asyncio.CancelledError:
+            pass
+        except KeyboardInterrupt:
+            self.stop(keyboard_interrupt=True)
+
+        # When the arbiter exits, the asyncio event loop shuts down. We don't
+        # want that to happen until all our workers have shut down.
+        for worker in self._workers:
+            try:
+                await worker
+            except asyncio.CancelledError:
+                pass
 
     def _file_triggers_reload(self, path: Path) -> bool:
         if path.suffix == ".py":
@@ -516,7 +534,7 @@ window.setConnectionLostPopupVisible(true);
 
         # Not running yet - start it
         on_ready_event = asyncio.Event()
-        self._uvicorn_task = self._create_task(
+        self._uvicorn_task = self._create_worker(
             self._worker_uvicorn(
                 app,
                 on_ready_or_failed=on_ready_event.set,
@@ -534,7 +552,7 @@ window.setConnectionLostPopupVisible(true);
 
         if self.run_in_window:
             success("Ready")
-            self._webview_task = self._create_task(self._worker_webview())
+            self._create_worker(self._worker_webview())
         else:
             print()
             if app_loading_succeeded:
@@ -653,7 +671,7 @@ window.setConnectionLostPopupVisible(true);
             await self._evaluate_javascript("window.location.reload()")
 
             # Close it
-            self._create_task(
+            self._create_worker(
                 sess._close(close_remote_session=False),
                 name=f'Close session "{sess._session_token}"',
             )
@@ -672,7 +690,7 @@ window.setConnectionLostPopupVisible(true);
             async def callback() -> None:
                 await sess._evaluate_javascript(javascript_source)
 
-            self._create_task(
+            self._create_worker(
                 callback(),
                 name=f"Eval JS in session {sess._session_token}",
             )
