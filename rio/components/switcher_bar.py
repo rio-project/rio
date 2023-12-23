@@ -21,7 +21,7 @@ T = TypeVar("T")
 
 @dataclass
 class SwitcherBarChangeEvent(Generic[T]):
-    value: T
+    value: Optional[T]
 
 
 class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
@@ -31,7 +31,8 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
     color: rio.ColorSet
     orientation: Literal["horizontal", "vertical"]
     spacing: float
-    selected_value: T
+    selected_value: Optional[T]
+    allow_none: bool
     on_change: rio.EventHandler[SwitcherBarChangeEvent[T]]
 
     def __init__(
@@ -43,6 +44,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
         color: rio.ColorSet = "keep",
         orientation: Literal["horizontal", "vertical"] = "horizontal",
         spacing: float = 1.0,
+        allow_none: bool = False,
         selected_value: Optional[T] = None,
         on_change: rio.EventHandler[SwitcherBarChangeEvent[T]] = None,
         key: Optional[str] = None,
@@ -80,6 +82,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
         self.color = color
         self.orientation = orientation
         self.spacing = spacing
+        self.allow_none = allow_none
         self.on_change = on_change
 
         # Names default to the string representation of the values
@@ -104,18 +107,20 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
                 None if icon is None else registry.get_icon_svg(icon) for icon in icons
             ]
 
-        # This is an unsafe assignment, because the value could be `None`. This
-        # will be fixed in `on_create`, once the state bindings have been
-        # initialized.
-        self.selected_value = selected_value  # type: ignore
+        self.selected_value = selected_value
 
     @rio.event.on_create
     def _on_create(self) -> None:
-        # Make sure a value is selected
-        if self.selected_value is None:
+        # Make sure a value is selected, if needed
+        if self.selected_value is None and not self.allow_none:
             self.selected_value = self.values[0]
 
-    def _fetch_selected_name(self) -> str:
+    def _fetch_selected_name(self) -> Optional[str]:
+        # None is fine
+        if self.selected_value is None:
+            assert self.allow_none
+            return None
+
         # The frontend works with names, not values. Get the corresponding name.
 
         # Avoid hammering a potential state binding
@@ -145,14 +150,25 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
 
         # The frontend works with names, not values. Get the corresponding
         # value.
-        for name, value in zip(self.names, self.values):
-            if name == msg["name"]:
-                self.selected_value = value
-                break
-        else:
+        selected_name = msg["name"]
+
+        if selected_name is None:
             # Invalid names may be sent due to lag between the frontend and
             # backend. Ignore them.
-            return
+            if not self.allow_none:
+                return
+
+            self.selected_value = None
+
+        else:
+            for name, value in zip(self.names, self.values):
+                if name == selected_name:
+                    self.selected_value = value
+                    break
+            else:
+                # Invalid names may be sent due to lag between the frontend and
+                # backend. Ignore them.
+                return
 
         # Trigger the event
         await self.call_event_handler(

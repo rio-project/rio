@@ -19,7 +19,7 @@ function main() {
     // Display a warning if running in debug mode
     if (globalThis.RIO_DEBUG_MODE) {
         console.warn(
-            'Rio is running in DEBUG mode.\nDebug mode includes helpful tools for development, but is slower and disables security checks. Never use it in production!'
+            'Rio is running in DEBUG mode.\nDebug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!'
         );
     }
 

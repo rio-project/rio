@@ -9,6 +9,8 @@ import { pixelsPerEm } from '../app';
 
 const ACCELERATION: number = 250; // rem/s^2
 
+const MARKER_FADE_DURATION: number = 0.2; // s
+
 const ITEM_MARGIN: number = 0.5;
 const SVG_HEIGHT: number = 1.8;
 const ICON_MARGIN: number = 0.5;
@@ -33,7 +35,8 @@ export type SwitcherBarState = ComponentState & {
     color?: ColorSet;
     orientation?: 'horizontal' | 'vertical';
     spacing?: number;
-    selectedName?: string;
+    allow_none: boolean;
+    selectedName?: string | null;
 };
 
 export class SwitcherBarComponent extends ComponentBase {
@@ -43,7 +46,6 @@ export class SwitcherBarComponent extends ComponentBase {
     private markerElement: HTMLElement;
     private backgroundOptionsElement: HTMLElement;
     private markerOptionsElement: HTMLElement;
-    private isInitialized: boolean = false;
 
     // The requested width of each entry's name
     private nameWidths: number[];
@@ -55,15 +57,21 @@ export class SwitcherBarComponent extends ComponentBase {
     private hasAtLeastOneIcon: boolean;
 
     // Marker animation state
-    private markerCurLeft: number = 0;
-    private markerCurTop: number = 0;
-    private markerCurWidth: number = 0;
-    private markerCurHeight: number = 0;
+    private markerCurLeft: number;
+    private markerCurTop: number;
+    private markerCurWidth: number;
+    private markerCurHeight: number;
 
-    private markerCurVelocity: number = 0;
+    private markerCurVelocity: number;
 
     private animationIsRunning: boolean = false;
-    private lastAnimationTickAt: number = 0;
+    private lastMoveAnimationTickAt: number = 0;
+
+    // Marker fade animation state
+    //
+    // 0 if the marker is entirely invisible, 1 if it's entirely visible
+    private markerVisibility: number = 0;
+    private lastFadeAnimationTickAt: number = 0;
 
     createElement(): HTMLElement {
         // Create the elements
@@ -86,11 +94,19 @@ export class SwitcherBarComponent extends ComponentBase {
         width: number,
         height: number
     ): void {
+        console.debug(
+            `Instantly moving marker to ${left}, ${top}, ${width}, ${height}`
+        );
+
         // Update the stored values
         this.markerCurLeft = left;
         this.markerCurTop = top;
         this.markerCurWidth = width;
         this.markerCurHeight = height;
+
+        // Account for the marker's resize animation
+        left = left * this.markerVisibility;
+        height = height * this.markerVisibility;
 
         // Move the marker
         this.markerElement.style.left = `${left}px`;
@@ -105,6 +121,15 @@ export class SwitcherBarComponent extends ComponentBase {
 
     /// Fetch the target position of the marker
     _getMarkerTarget(): [number, number, number, number] {
+        console.debug(`Getting marker target`);
+
+        if (this.state.selectedName === null) {
+            console.error(
+                `Can't get marker target because no value is selected`
+            );
+            throw 'die';
+        }
+
         let selectedIndex = this.state.names.indexOf(this.state.selectedName!);
         let selectedElement = this.backgroundOptionsElement.children[
             selectedIndex
@@ -119,21 +144,41 @@ export class SwitcherBarComponent extends ComponentBase {
     }
 
     /// Instantly move the marker to the currently selected item
-    _updateMarkerInstantlyIfAnimationIsntRunning(): void {
+    _moveMarkerInstantlyIfAnimationIsntRunning(): void {
+        // Already transitioning?
         if (this.animationIsRunning) {
             return;
         }
 
+        // Nowhere to move to
+        if (this.state.selectedName === null) {
+            return;
+        }
+
+        // Move it
         let target = this._getMarkerTarget();
         this._instantlyMoveMarkerTo(target[0], target[1], target[2], target[3]);
     }
 
     _animationWorker(): void {
-        console.log('\n\n\nITER');
+        if (isNaN(this.markerCurLeft)) {
+            console.warn(
+                `Refusing to animate because markerCurLeft is undefined`
+            );
+            return;
+        }
+
+        if (isNaN(this.markerCurTop)) {
+            console.warn(
+                `Refusing to animate because markerCurTop is undefined`
+            );
+            return;
+        }
+
         // How much time has passed
         let now = Date.now();
-        let deltaTime = (now - this.lastAnimationTickAt) / 1000;
-        this.lastAnimationTickAt = now;
+        let deltaTime = (now - this.lastMoveAnimationTickAt) / 1000;
+        this.lastMoveAnimationTickAt = now;
 
         // Calculate the distance to the target
         let target = this._getMarkerTarget();
@@ -206,15 +251,100 @@ export class SwitcherBarComponent extends ComponentBase {
         );
     }
 
-    startAnimationIfNotRunning(): void {
+    /// High level function to update the marker. It will update the state as
+    /// well as animate the marker as appropriate.
+    moveMarkerToValue(newValue: string | null): void {
+        // If this value is already selected, do nothing
+        if (newValue === this.state.selectedName) {
+            console.debug(
+                `Not moving marker because it's already at ${newValue}`
+            );
+            return;
+        }
+
+        console.debug(`Moving marker to`, newValue);
+        this.state.selectedName = newValue;
+
+        // No value selected? Fade out
+        if (newValue === null) {
+            this.startFadeAnimationIfNotRunning();
+            return;
+        }
+
+        // If the marker is currently invisible, teleport it
+        if (this.markerVisibility === 0) {
+            let target = this._getMarkerTarget();
+            this._instantlyMoveMarkerTo(
+                target[0],
+                target[1],
+                target[2],
+                target[3]
+            );
+        }
+        // Otherwise animate it smoothly
+        else {
+            this.startMoveAnimationIfNotRunning();
+        }
+
+        // The marker must be visible. Fade in
+        if (this.markerVisibility !== 1) {
+            this.startFadeAnimationIfNotRunning();
+        }
+    }
+
+    startMoveAnimationIfNotRunning(): void {
         if (this.animationIsRunning) {
             return;
         }
 
-        this.lastAnimationTickAt = Date.now();
+        console.debug(`Starting move animation`);
+
+        this.lastMoveAnimationTickAt = Date.now();
         this.animationIsRunning = true;
         this.markerCurVelocity = 0;
         requestAnimationFrame(this._animationWorker.bind(this));
+    }
+
+    fadeWorker(): void {
+        // Fade in or out?
+        let target = this.state.selectedName === null ? 0 : 1;
+
+        // How much time has passed
+        let now = Date.now();
+        let deltaTime = (now - this.lastFadeAnimationTickAt) / 1000;
+        this.lastFadeAnimationTickAt = now;
+
+        // Update the marker
+        this.markerVisibility +=
+            target * deltaTime * (1 / MARKER_FADE_DURATION);
+        this.markerVisibility = Math.min(Math.max(this.markerVisibility, 0), 1);
+
+        this._instantlyMoveMarkerTo(
+            this.markerCurLeft,
+            this.markerCurTop,
+            this.markerCurWidth,
+            this.markerCurHeight
+        );
+
+        // Done?
+        if (this.markerVisibility !== target) {
+            requestAnimationFrame(this.fadeWorker.bind(this));
+        }
+    }
+
+    startFadeAnimationIfNotRunning(): void {
+        // Already running?
+        let target = this.state.selectedName === null ? 0 : 1;
+
+        if (this.markerVisibility == target) {
+            return;
+        }
+
+        console.debug(`Starting fade animation`);
+
+        // Start it
+        this.lastFadeAnimationTickAt = Date.now();
+        requestAnimationFrame(this.fadeWorker.bind(this));
     }
 
     _buildContent(deltaState: SwitcherBarState): HTMLElement {
@@ -258,10 +388,34 @@ export class SwitcherBarComponent extends ComponentBase {
 
             // Detect clicks
             optionElement.addEventListener('click', () => {
-                this.state.selectedName = name;
-                this.startAnimationIfNotRunning();
+                let newSelection;
+
+                console.debug(
+                    `Click: current value is ${this.state.selectedName}`
+                );
+
+                // If this item was already selected, the new value may be `None`
+                if (this.state.selectedName === name) {
+                    if (this.state.allow_none) {
+                        newSelection = null;
+                    } else {
+                        console.debug(
+                            `Click: not changing value because it's already selected`
+                        );
+                        return;
+                    }
+                } else {
+                    newSelection = name;
+                }
+
+                console.debug(`Click: setting value to ${newSelection}`);
+
+                // Update the marker & update the state
+                this.moveMarkerToValue(newSelection);
+
+                // Notify the backend
                 this.sendMessageToBackend({
-                    name: name,
+                    name: newSelection,
                 });
             });
         }
@@ -306,14 +460,16 @@ export class SwitcherBarComponent extends ComponentBase {
             this.innerElement.appendChild(this.markerElement);
 
             // Marker content
-            this.markerOptionsElement = this.backgroundOptionsElement.cloneNode(
-                true
-            ) as HTMLElement;
+            // this.markerOptionsElement = this.backgroundOptionsElement.cloneNode(
+            //     true
+            // ) as HTMLElement;
+            this.markerOptionsElement = this._buildContent(deltaState);
             this.markerElement.innerHTML = '';
             this.markerElement.appendChild(this.markerOptionsElement);
 
             // Re-layout
-            this._updateMarkerInstantlyIfAnimationIsntRunning();
+            this._moveMarkerInstantlyIfAnimationIsntRunning();
+            this.updateContentLayout();
             this.makeLayoutDirty();
         }
 
@@ -332,38 +488,55 @@ export class SwitcherBarComponent extends ComponentBase {
             let flexDirection =
                 deltaState.orientation == 'vertical' ? 'column' : 'row';
 
+            element.style.flexDirection = flexDirection;
             this.backgroundOptionsElement.style.flexDirection = flexDirection;
             this.markerOptionsElement.style.flexDirection = flexDirection;
 
             // Re-layout
-            this._updateMarkerInstantlyIfAnimationIsntRunning();
+            this._moveMarkerInstantlyIfAnimationIsntRunning();
             this.makeLayoutDirty();
         }
 
         // Spacing
         if (deltaState.spacing !== undefined) {
-            this._updateMarkerInstantlyIfAnimationIsntRunning();
+            this._moveMarkerInstantlyIfAnimationIsntRunning();
             this.makeLayoutDirty();
         }
 
         // Does any of the changes affect the marker's placement?
         if (deltaState.selectedName !== undefined) {
-            // Don't trigger an animation if this is the first time the
-            // component is being updated
-            if (this.isInitialized) {
-                this.startAnimationIfNotRunning();
-            } else {
-                this._updateMarkerInstantlyIfAnimationIsntRunning();
-                this.isInitialized = true;
-            }
+            this.moveMarkerToValue(deltaState.selectedName);
         }
 
         if (
             deltaState.names !== undefined ||
             deltaState.icon_svg_sources !== undefined
         ) {
-            this._updateMarkerInstantlyIfAnimationIsntRunning();
+            this._moveMarkerInstantlyIfAnimationIsntRunning();
         }
+    }
+
+    /// Updates the layout of contained HTML elements:
+    /// - Make sure the two elements containing the SwitcherBar's content take up
+    ///   the entire major axis.
+    /// - Center the inner element on the minor axis.
+    updateContentLayout() {
+        // Account for the orientation
+        let width, height;
+        if (this.state.orientation == 'horizontal') {
+            width = `${this.allocatedWidth}rem`;
+            height = '';
+        } else {
+            width = '';
+            height = `${this.allocatedHeight}rem`;
+        }
+
+        // Assign the values
+        this.backgroundOptionsElement.style.width = width;
+        this.backgroundOptionsElement.style.height = height;
+
+        this.markerOptionsElement.style.width = width;
+        this.markerOptionsElement.style.height = height;
     }
 
     updateRequestedWidth(ctx: LayoutContext): void {
@@ -429,20 +602,9 @@ export class SwitcherBarComponent extends ComponentBase {
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Update layouts
-        this.backgroundOptionsElement.style.height = `${this.allocatedHeight}rem`;
-        this.markerOptionsElement.style.height = `${this.allocatedHeight}rem`;
-
-        if (this.state.orientation == 'horizontal') {
-            let additionalHeight = this.allocatedHeight - this.requestedHeight;
-            this.innerElement.style.left = '0';
-            this.innerElement.style.top = `${additionalHeight / 2}rem`;
-        } else {
-            let additionalWidth = this.allocatedWidth - this.requestedWidth;
-            this.innerElement.style.left = `${additionalWidth / 2}rem`;
-            this.innerElement.style.top = '0';
-        }
+        this.updateContentLayout();
 
         // Reposition the marker
-        this._updateMarkerInstantlyIfAnimationIsntRunning();
+        this._moveMarkerInstantlyIfAnimationIsntRunning();
     }
 }

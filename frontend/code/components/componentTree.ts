@@ -111,11 +111,8 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Return the root component, but take care to discard any rio internal
     /// components.
     getDisplayedRootComponent(): ComponentBase {
-        // Get the rootmost component, but skip Rio's internal one
         let actualRoot = getRootInstance();
         let userRoot = getInstanceByComponentId(actualRoot.state.child);
-
-        console.log(`The root component seems to be`, userRoot);
         return userRoot;
     }
 
