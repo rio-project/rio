@@ -611,9 +611,8 @@ body {
     pointer-events: auto;
 
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: stretch;
 
     color: var(--rio-local-text-color);
 }

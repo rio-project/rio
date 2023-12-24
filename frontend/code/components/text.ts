@@ -10,6 +10,7 @@ export type TextState = ComponentState & {
     multiline?: boolean;
     selectable?: boolean;
     style?: 'heading1' | 'heading2' | 'heading3' | 'text' | 'dim' | TextStyle;
+    text_align: number | 'justify';
 };
 
 export class TextComponent extends ComponentBase {
@@ -52,6 +53,17 @@ export class TextComponent extends ComponentBase {
         // Text style
         if (deltaState.style !== undefined) {
             Object.assign(this.inner.style, textStyleToCss(deltaState.style));
+        }
+
+        // Text alignment
+        if (deltaState.text_align === 0) {
+            this.inner.style.textAlign = 'left';
+        } else if (deltaState.text_align === 0.5) {
+            this.inner.style.textAlign = 'center';
+        } else if (deltaState.text_align === 1) {
+            this.inner.style.textAlign = 'right';
+        } else if (deltaState.text_align === 'justify') {
+            this.inner.style.textAlign = 'justify';
         }
 
         this.makeLayoutDirty();
