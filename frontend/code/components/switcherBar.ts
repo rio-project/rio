@@ -99,10 +99,6 @@ export class SwitcherBarComponent extends ComponentBase {
         width: number,
         height: number
     ): void {
-        console.debug(
-            `Instantly moving marker to ${left}, ${top}, ${width}, ${height}`
-        );
-
         // Update the stored values
         this.markerCurLeft = left;
         this.markerCurTop = top;
@@ -130,15 +126,6 @@ export class SwitcherBarComponent extends ComponentBase {
 
     /// Fetch the target position of the marker
     _getMarkerTarget(): [number, number, number, number] {
-        console.debug(`Getting marker target`);
-
-        if (this.state.selectedName === null) {
-            console.error(
-                `Can't get marker target because no value is selected`
-            );
-            throw 'die';
-        }
-
         let selectedIndex = this.state.names.indexOf(this.state.selectedName!);
         let selectedElement = this.backgroundOptionsElement.children[
             selectedIndex
@@ -170,20 +157,6 @@ export class SwitcherBarComponent extends ComponentBase {
     }
 
     _animationWorker(): void {
-        if (isNaN(this.markerCurLeft)) {
-            console.warn(
-                `Refusing to animate because markerCurLeft is undefined`
-            );
-            return;
-        }
-
-        if (isNaN(this.markerCurTop)) {
-            console.warn(
-                `Refusing to animate because markerCurTop is undefined`
-            );
-            return;
-        }
-
         // How much time has passed
         let now = Date.now();
         let deltaTime = (now - this.lastMoveAnimationTickAt) / 1000;
@@ -202,10 +175,6 @@ export class SwitcherBarComponent extends ComponentBase {
         }
 
         let signedRemainingDistance = targetPos - curPos;
-        console.log('target', target);
-        console.log('curPos', curPos);
-        console.log('targetPos', targetPos);
-        console.log('signedRemainingDistance', signedRemainingDistance);
 
         // Which direction to accelerate towards?
         let acceleration = ACCELERATION * pixelsPerEm;
@@ -228,7 +197,6 @@ export class SwitcherBarComponent extends ComponentBase {
         else {
             accelerationFactor = 1;
         }
-        console.log('accelerationFactor', accelerationFactor);
 
         let currentAcceleration =
             acceleration *
@@ -238,7 +206,6 @@ export class SwitcherBarComponent extends ComponentBase {
         // Update the velocity
         this.markerCurVelocity += currentAcceleration * deltaTime;
         let deltaDistance = this.markerCurVelocity * deltaTime;
-        console.log('deltaDistance', deltaDistance);
 
         // Arrived?
         let t;
@@ -249,7 +216,6 @@ export class SwitcherBarComponent extends ComponentBase {
             t = deltaDistance / signedRemainingDistance;
             requestAnimationFrame(this._animationWorker.bind(this));
         }
-        console.log('t', t);
 
         // Update the marker
         this._instantlyMoveMarkerTo(
@@ -265,13 +231,9 @@ export class SwitcherBarComponent extends ComponentBase {
     moveMarkerToValue(newValue: string | null): void {
         // If this value is already selected, do nothing
         if (newValue === this.state.selectedName) {
-            console.debug(
-                `Not moving marker because it's already at ${newValue}`
-            );
             return;
         }
 
-        console.debug(`Moving marker to`, newValue);
         this.state.selectedName = newValue;
 
         // No value selected? Fade out
@@ -305,8 +267,6 @@ export class SwitcherBarComponent extends ComponentBase {
         if (this.animationIsRunning) {
             return;
         }
-
-        console.debug(`Starting move animation`);
 
         this.lastMoveAnimationTickAt = Date.now();
         this.animationIsRunning = true;
@@ -348,15 +308,8 @@ export class SwitcherBarComponent extends ComponentBase {
         let target = this.state.selectedName === null ? 0 : 1;
 
         if (this.markerVisibility == target) {
-            console.debug(
-                `Refusing fade animation from ${target} to ${target}`
-            );
             return;
         }
-
-        console.debug(
-            `Starting fade animation from ${this.markerVisibility} to ${target}`
-        );
 
         // Start it
         this.lastFadeAnimationTickAt = Date.now();
@@ -406,25 +359,16 @@ export class SwitcherBarComponent extends ComponentBase {
             optionElement.addEventListener('click', () => {
                 let newSelection;
 
-                console.debug(
-                    `Click: current value is ${this.state.selectedName}`
-                );
-
                 // If this item was already selected, the new value may be `None`
                 if (this.state.selectedName === name) {
                     if (this.state.allow_none) {
                         newSelection = null;
                     } else {
-                        console.debug(
-                            `Click: not changing value because it's already selected`
-                        );
                         return;
                     }
                 } else {
                     newSelection = name;
                 }
-
-                console.debug(`Click: setting value to ${newSelection}`);
 
                 // Update the marker & update the state
                 this.moveMarkerToValue(newSelection);
