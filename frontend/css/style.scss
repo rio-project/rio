@@ -612,9 +612,12 @@ body {
 
     display: flex;
     align-items: center;
-    justify-content: stretch;
 
     color: var(--rio-local-text-color);
+}
+
+.rio-text > div {
+    flex-grow: 1;
 }
 
 // Rectangle
