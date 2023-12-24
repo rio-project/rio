@@ -2,6 +2,7 @@ import asyncio
 import html
 import importlib
 import json
+import signal
 import socket
 import sys
 import threading
@@ -135,6 +136,10 @@ class RunningApp:
         # If the app is currently running, this is the task for it
         self._uvicorn_task: Optional[asyncio.Task] = None
 
+        # If the webview is running, this is the task responsible for shutting
+        # it down
+        self._webview_task: Optional[asyncio.Task] = None
+
         # Released when the app is loaded for the first time, and thus the
         # window should be displayed
         self._show_webview_event = threading.Event()
@@ -195,6 +200,9 @@ class RunningApp:
         # Run the function in the mainloop
         self._mainloop.call_soon_threadsafe(callback)
 
+    def _on_sigint(self, signal_id, stack_frame) -> None:
+        self.stop(keyboard_interrupt=True)
+
     def stop(self, *, keyboard_interrupt: bool) -> None:
         """
         Stops the app.
@@ -220,6 +228,11 @@ class RunningApp:
         # `revel.fatal()` won't be called *while* we're trying to process the
         # `rio.toml`.
         self._cache_data_from_rio_toml()
+
+        # Handle keyboard interrupts. KeyboardInterrupt exceptions are very
+        # annoying to handle in async code, so instead we'll use a signal
+        # handler.
+        signal.signal(signal.SIGINT, self._on_sigint)
 
         # The webview needs to be shown from the main thread. So, if running
         # inside of a window run the arbiter in a separate thread. Otherwise
@@ -286,11 +299,16 @@ class RunningApp:
             else "Rio",  # TODO: Get the app's name, if possible
             f"http://{self._host}:{self._port}",
         )
-        try:
-            webview.start()
-        except KeyboardInterrupt:
-            self.stop(keyboard_interrupt=True)
-        else:
+        webview.start()
+
+        # If the webview window is closed, shut down.
+        #
+        # One problem: We don't know if the webview stopped because the user
+        # closed the window or because the webview worker was cancelled and
+        # called `window.close()`. If the user closed the webview window, then
+        # we're responsible for shutting down all the workers.
+        assert self._webview_task is not None
+        if not self._webview_task.cancelled():
             self.stop(keyboard_interrupt=False)
 
     def arbiter_sync(self) -> None:
@@ -356,13 +374,12 @@ class RunningApp:
                 # ???
                 else:
                     raise NotImplementedError(f'Unknown event "{event}"')
-        except KeyboardInterrupt:
-            self.stop(keyboard_interrupt=True)
         except asyncio.CancelledError:
             pass
         finally:
             # When the arbiter exits, the asyncio event loop shuts down. We don't
-            # want that to happen until all our workers have shut down.
+            # want that to happen until all our workers have shut down. Wait for
+            # them to finish.
             for worker in self._workers:
                 try:
                     await worker
@@ -526,7 +543,7 @@ window.setConnectionLostPopupVisible(true);
 
         if self.run_in_window:
             success("Ready")
-            self._create_worker(self._worker_webview())
+            self._webview_task = self._create_worker(self._worker_webview())
         else:
             print()
             if app_loading_succeeded:
