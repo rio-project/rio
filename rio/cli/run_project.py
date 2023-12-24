@@ -148,6 +148,8 @@ class RunningApp:
         # If a webview is being displayed, this is the window
         self._webview_window: Optional["webview.Window"] = None  # type: ignore
 
+        # A list of worker tasks that must shut down gracefully. That means the
+        # asyncio event loop mustn't stop running until these tasks are done.
         self._workers: list[asyncio.Task] = []
 
     @property
@@ -170,18 +172,11 @@ class RunningApp:
         return f"http://{local_ip}:{self._port}"
 
     def _create_worker(
-        self, worker: Awaitable, *, name: str | None = None
+        self, worker_coro: Coroutine, *, name: str | None = None
     ) -> asyncio.Task:
-        coro = self._run_worker(worker)
-        task = asyncio.create_task(coro, name=name)
+        task = asyncio.create_task(worker_coro, name=name)
         self._workers.append(task)
         return task
-
-    async def _run_worker(self, worker: Awaitable) -> None:
-        try:
-            await worker
-        except KeyboardInterrupt:
-            self.stop(keyboard_interrupt=True)
 
     def _run_in_mainloop(
         self,
@@ -599,7 +594,8 @@ window.setConnectionLostPopupVisible(true);
         def run_uvicorn() -> None:
             assert self._uvicorn_server is not None
             self._uvicorn_server.run()
-            self._run_in_mainloop(app_has_finished_event.set)
+            # Nothing to do here. If the server stops running, it's because we
+            # told it to - that means the program is already shutting down.
 
         uvicorn_thread = threading.Thread(target=run_uvicorn)
         uvicorn_thread.start()
@@ -615,11 +611,8 @@ window.setConnectionLostPopupVisible(true);
             wait_forever_event = asyncio.Event()
             await wait_forever_event.wait()
 
-        except asyncio.CancelledError:
-            self._uvicorn_server.should_exit = True
-
         finally:
-            await app_has_finished_event.wait()
+            self._uvicorn_server.should_exit = True
 
     async def _restart_app(
         self,
