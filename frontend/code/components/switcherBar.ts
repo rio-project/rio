@@ -6,10 +6,11 @@ import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { textStyleToCss } from '../cssUtils';
 import { pixelsPerEm } from '../app';
+import { easeInOut } from '../easeFunctions';
 
-const ACCELERATION: number = 250; // rem/s^2
+const ACCELERATION: number = 350; // rem/s^2
 
-const MARKER_FADE_DURATION: number = 0.2; // s
+const MARKER_FADE_DURATION: number = 0.18; // s
 
 const ITEM_MARGIN: number = 0.5;
 const SVG_HEIGHT: number = 1.8;
@@ -73,6 +74,10 @@ export class SwitcherBarComponent extends ComponentBase {
     private markerVisibility: number = 0;
     private lastFadeAnimationTickAt: number = 0;
 
+    // Allows to determine whether this is the first time the element is
+    // being updated.
+    private isInitialized: boolean = false;
+
     createElement(): HTMLElement {
         // Create the elements
         let elementOuter = document.createElement('div');
@@ -105,14 +110,18 @@ export class SwitcherBarComponent extends ComponentBase {
         this.markerCurHeight = height;
 
         // Account for the marker's resize animation
-        left = left * this.markerVisibility;
-        height = height * this.markerVisibility;
+        let fadeT = easeInOut(this.markerVisibility);
+        let scaledWidth = width * fadeT;
+        let scaledHeight = height * fadeT;
+
+        left += (width - scaledWidth) / 2;
+        top += (height - scaledHeight) / 2;
 
         // Move the marker
         this.markerElement.style.left = `${left}px`;
         this.markerElement.style.top = `${top}px`;
-        this.markerElement.style.width = `${width}px`;
-        this.markerElement.style.height = `${height}px`;
+        this.markerElement.style.width = `${scaledWidth}px`;
+        this.markerElement.style.height = `${scaledHeight}px`;
 
         // Move the inner options in the opposite direction so they stay put
         this.markerOptionsElement.style.left = `-${left}px`;
@@ -315,8 +324,10 @@ export class SwitcherBarComponent extends ComponentBase {
         this.lastFadeAnimationTickAt = now;
 
         // Update the marker
-        this.markerVisibility +=
-            target * deltaTime * (1 / MARKER_FADE_DURATION);
+        let amount =
+            (Math.sign(target - this.markerVisibility) * deltaTime) /
+            MARKER_FADE_DURATION;
+        this.markerVisibility += amount;
         this.markerVisibility = Math.min(Math.max(this.markerVisibility, 0), 1);
 
         this._instantlyMoveMarkerTo(
@@ -337,10 +348,15 @@ export class SwitcherBarComponent extends ComponentBase {
         let target = this.state.selectedName === null ? 0 : 1;
 
         if (this.markerVisibility == target) {
+            console.debug(
+                `Refusing fade animation from ${target} to ${target}`
+            );
             return;
         }
 
-        console.debug(`Starting fade animation`);
+        console.debug(
+            `Starting fade animation from ${this.markerVisibility} to ${target}`
+        );
 
         // Start it
         this.lastFadeAnimationTickAt = Date.now();
@@ -505,6 +521,11 @@ export class SwitcherBarComponent extends ComponentBase {
 
         // Does any of the changes affect the marker's placement?
         if (deltaState.selectedName !== undefined) {
+            if (!this.isInitialized) {
+                this.markerVisibility =
+                    deltaState.selectedName === null ? 0 : 1;
+            }
+
             this.moveMarkerToValue(deltaState.selectedName);
         }
 
@@ -514,6 +535,9 @@ export class SwitcherBarComponent extends ComponentBase {
         ) {
             this._moveMarkerInstantlyIfAnimationIsntRunning();
         }
+
+        // Any future updates are not the first
+        this.isInitialized = true;
     }
 
     /// Updates the layout of contained HTML elements:
