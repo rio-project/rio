@@ -29,10 +29,10 @@ html[data-theme='dark'] {
 
 // Z-indices for components which are expected to show up on top
 $z-index-overlay: 10000;
-$z-index-error-popup: 10001;
 $z-index-debugger-highlighter: 10002;
 $z-index-debugger: 10003;
 $z-index-popup: 10004;
+$z-index-error-popup: 10001;
 
 // "Infinite" corner radius, for creating pill shapes
 $infinite-corner-radius: 99999px;
