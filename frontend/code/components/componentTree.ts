@@ -55,9 +55,20 @@ export class ComponentTreeComponent extends ComponentBase {
         return result;
     }
 
-    /// Stores the currently selected component, without updating any UI
+    /// Stores the currently selected component, without updating any UI. Also
+    /// notifies the backend.
     setSelectedComponent(component: ComponentBase) {
         selectedElementId = component.elementId;
+
+        let selectedComponentId = parseInt(
+            selectedElementId.substring('rio-id-'.length)
+        );
+
+        console.log(`DEBUG: Selected component ${selectedComponentId}`);
+
+        this.sendMessageToBackend({
+            selectedComponentId: selectedComponentId,
+        });
     }
 
     /// Many of the spawned components are internal to Rio and shouldn't be

@@ -1,12 +1,59 @@
 from pathlib import Path
+from typing import *  # type: ignore
 
 import rio
 
 
 class ComponentDetails(rio.Component):
+    component_id: int
+
+    def _get_component_details(self, target: rio.Component) -> Dict[str, Any]:
+        """
+        Given a component, return a set of keys/values of all the details which
+        should be displayed to the user.
+        """
+        # Some components have a custom function which determines what to
+        # display
+        #
+        # TODO: I don't believe any of these actually exist just yet
+        try:
+            return target._get_debug_details()  # type: ignore
+        except AttributeError:
+            pass
+
+        # Otherwise fall back to using the state properties
+        result = {}
+
+        for prop in target._state_properties_:
+            # Explicitly excluded properties
+            if prop in (
+                "align_x",
+                "align_y",
+                "height",
+                "key",
+                "margin_bottom",
+                "margin_left",
+                "margin_right",
+                "margin_top",
+                "margin_x",
+                "margin_y",
+                "margin",
+                "width",
+            ):
+                continue
+
+            # Properties starting with an underscore are private
+            if prop.startswith("_"):
+                continue
+
+            # Keep it
+            result[prop] = getattr(target, prop)
+
+        return result
+
     def build(self) -> rio.Component:
         # Get the target component. For now just use a placeholder
-        target = self.session._weak_components_by_id[1]
+        target = self.session._weak_components_by_id[self.component_id]
 
         # Create a grid with all the details
         result = rio.Grid(row_spacing=0.5, column_spacing=0.5)
@@ -81,30 +128,15 @@ class ComponentDetails(rio.Component):
         # Custom properties
         #
         # Make sure to skip any which already have custom tailored cells
-        for prop in target._state_properties_:
-            if prop in (
-                "align_x",
-                "align_y",
-                "height",
-                "key",
-                "margin_bottom",
-                "margin_left",
-                "margin_right",
-                "margin_top",
-                "margin_y",
-                "margin",
-                "marign_x",
-                "width",
-            ):
-                continue
+        for prop_name, prop_value in self._get_component_details(target).items():
+            value_limit = 30
+            prop_str = repr(prop_value)
 
-            value = repr(getattr(target, prop))
+            if len(prop_str) > value_limit:
+                prop_str = prop_str[: value_limit - 1] + "…"
 
-            if len(value) > 20:
-                value = value[:17] + "…"
-
-            add_cell(prop, 0, True)
-            add_cell(value, 1, False, width=3)
+            add_cell(prop_name, 0, True)
+            add_cell(prop_str, 1, False, width=3)
             row_index += 1
 
         # Size
