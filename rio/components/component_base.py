@@ -73,10 +73,11 @@ async def call_component_handler_once(
 async def _periodic_event_worker(
     weak_component: weakref.ReferenceType[Component],
     handler: Callable,
+    period: float,
 ) -> None:
     while True:
         # Wait for the next tick
-        await asyncio.sleep(handler._rio_event_periodic_interval_)  # type: ignore
+        await asyncio.sleep(period)
 
         # Call the handler
         await call_component_handler_once(weak_component, handler)
@@ -429,8 +430,8 @@ class Component(metaclass=ComponentMeta):
     # The assigned value is needed so that the `Component` class itself has a
     # valid value. All subclasses override this value in `__init_subclass__`.
     _rio_event_handlers_: ClassVar[
-        defaultdict[event.EventTag, Tuple[Callable[..., Any], ...]]
-    ] = defaultdict(tuple)
+        defaultdict[event.EventTag, List[Tuple[Callable, Any]]]
+    ] = defaultdict(list)
 
     # Whether this component class is built into Rio, rather than user defined,
     # or from a library.
@@ -532,13 +533,14 @@ class Component(metaclass=ComponentMeta):
 
             # Page changes are handled by the session. Register the handler
             if event_tag == event.EventTag.ON_PAGE_CHANGE:
-                session._page_change_callbacks[self] = event_handlers
+                callbacks = tuple(handler for handler, unused in event_handlers)
+                session._page_change_callbacks[self] = callbacks
 
             # The `periodic` event needs a task to work in
             elif event_tag == event.EventTag.PERIODIC:
-                for event_handler in event_handlers:
+                for callback, period in event_handlers:
                     session.create_task(
-                        _periodic_event_worker(weakref.ref(self), event_handler),
+                        _periodic_event_worker(weakref.ref(self), callback, period),
                         name=f"`rio.event.periodic` event worker for {self}",
                     )
 
@@ -683,45 +685,19 @@ class Component(metaclass=ComponentMeta):
 
         cls._initialize_state_properties(all_parent_state_properties)
 
-        # Keep track of all event handlers. By gathering them here, the
-        # component constructor doesn't have to re-scan the entire class for
-        # each instantiation.
-        event_handlers: defaultdict[
-            event.EventTag, List[Callable[..., Any]]
-        ] = defaultdict(list)
-
-        # Inherit event handlers from base classes
+        # Inherit event handlers from parents
         for base in cls.__bases__:
             if not issubclass(base, Component):
                 continue
 
             for event_tag, handlers in base._rio_event_handlers_.items():
-                event_handlers[event_tag].extend(handlers)
-
-        # Add any event handlers added in this class
-        for method in vars(cls).values():
-            try:
-                tag = method._rio_event_tag_
-            except AttributeError:
-                continue
-
-            event_handlers[tag].append(method)
-
-        # Convert the lists to tuples
-        cls._rio_event_handlers_ = defaultdict(
-            tuple,
-            {
-                event_tag: tuple(handlers)
-                for event_tag, handlers in event_handlers.items()
-            },
-        )
+                cls._rio_event_handlers_[event_tag].extend(handlers)
 
         # If the component is subscribed to `on_mount` or `on_unmount`, update
         # the boolean for that
-        if (
-            event.EventTag.ON_MOUNT in cls._rio_event_handlers_
-            or event.EventTag.ON_UNMOUNT in cls._rio_event_handlers_
-        ):
+        mount_event_handlers = cls._rio_event_handlers_[event.EventTag.ON_MOUNT]
+        unmount_event_handlers = cls._rio_event_handlers_[event.EventTag.ON_UNMOUNT]
+        if mount_event_handlers or unmount_event_handlers:
             cls._watch_tree_mount_and_unmount_ = True
 
         # Is this class built into Rio?
