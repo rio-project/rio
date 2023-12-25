@@ -12,7 +12,7 @@ class ClientSideDebugger(rio.Component):
         "docs",
         "ai-chat",
         "deploy",
-    ] | None = None
+    ] | None = "ai-chat"
 
     def get_selected_page(self) -> rio.Component:
         # Project

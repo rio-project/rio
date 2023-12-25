@@ -4,7 +4,7 @@
 
 import { ComponentBase } from './components/componentBase';
 
-export function updateInputBoxWidthRequest(
+export function updateInputBoxNaturalWidth(
     component: ComponentBase,
     additionalSpace: number
 ) {
@@ -12,15 +12,15 @@ export function updateInputBoxWidthRequest(
     let newWidth = Math.max(13, additionalSpace);
 
     // Dirty?
-    if (newWidth !== component.requestedWidth) {
-        component.requestedWidth = newWidth;
+    if (newWidth !== component.naturalWidth) {
+        component.naturalWidth = newWidth;
         component.makeLayoutDirty();
     }
 }
 
-/// Update the component's requested height property, and make the layout dirty
+/// Update the component's natural height property, and make the layout dirty
 /// if needed.
-export function updateInputBoxHeightRequest(
+export function updateInputBoxNaturalHeight(
     component: ComponentBase,
     label: string | null,
     additionalSpace: number
@@ -31,8 +31,8 @@ export function updateInputBoxHeightRequest(
     newHeight += additionalSpace;
 
     // Dirty?
-    if (newHeight !== component.requestedHeight) {
-        component.requestedHeight = newHeight;
+    if (newHeight !== component.naturalHeight) {
+        component.naturalHeight = newHeight;
         component.makeLayoutDirty();
     }
 }

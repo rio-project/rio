@@ -65,12 +65,13 @@ export class SwitcherBarComponent extends ComponentBase {
 
     private markerCurVelocity: number;
 
-    private animationIsRunning: boolean = false;
+    private moveAnimationIsRunning: boolean = false;
     private lastMoveAnimationTickAt: number = 0;
 
     // Marker fade animation state
     //
     // 0 if the marker is entirely invisible, 1 if it's entirely visible
+    private fadeAnimationIsRunning: boolean = false;
     private markerVisibility: number = 0;
     private lastFadeAnimationTickAt: number = 0;
 
@@ -142,7 +143,7 @@ export class SwitcherBarComponent extends ComponentBase {
     /// Instantly move the marker to the currently selected item
     _moveMarkerInstantlyIfAnimationIsntRunning(): void {
         // Already transitioning?
-        if (this.animationIsRunning) {
+        if (this.moveAnimationIsRunning) {
             return;
         }
 
@@ -156,7 +157,16 @@ export class SwitcherBarComponent extends ComponentBase {
         this._instantlyMoveMarkerTo(target[0], target[1], target[2], target[3]);
     }
 
-    _animationWorker(): void {
+    _moveAnimationWorker(): void {
+        this.moveAnimationIsRunning = false;
+        return;
+
+        // The value may have switched to `null` since the animation has started
+        if (this.state.selectedName === null) {
+            this.moveAnimationIsRunning = false;
+            return;
+        }
+
         // How much time has passed
         let now = Date.now();
         let deltaTime = (now - this.lastMoveAnimationTickAt) / 1000;
@@ -211,10 +221,10 @@ export class SwitcherBarComponent extends ComponentBase {
         let t;
         if (Math.abs(deltaDistance) > Math.abs(signedRemainingDistance)) {
             t = 1;
-            this.animationIsRunning = false;
+            this.moveAnimationIsRunning = false;
         } else {
             t = deltaDistance / signedRemainingDistance;
-            requestAnimationFrame(this._animationWorker.bind(this));
+            requestAnimationFrame(this._moveAnimationWorker.bind(this));
         }
 
         // Update the marker
@@ -226,18 +236,11 @@ export class SwitcherBarComponent extends ComponentBase {
         );
     }
 
-    /// High level function to update the marker. It will update the state as
-    /// well as animate the marker as appropriate.
-    moveMarkerToValue(newValue: string | null): void {
-        // If this value is already selected, do nothing
-        if (newValue === this.state.selectedName) {
-            return;
-        }
-
-        this.state.selectedName = newValue;
-
+    /// High level function to update the marker. It will animate the marker as
+    /// appropriate.
+    makeMarkerMatchState(): void {
         // No value selected? Fade out
-        if (newValue === null) {
+        if (this.state.selectedName === null) {
             this.startFadeAnimationIfNotRunning();
             return;
         }
@@ -264,17 +267,17 @@ export class SwitcherBarComponent extends ComponentBase {
     }
 
     startMoveAnimationIfNotRunning(): void {
-        if (this.animationIsRunning) {
+        if (this.moveAnimationIsRunning) {
             return;
         }
 
         this.lastMoveAnimationTickAt = Date.now();
-        this.animationIsRunning = true;
+        this.moveAnimationIsRunning = true;
         this.markerCurVelocity = 0;
-        requestAnimationFrame(this._animationWorker.bind(this));
+        requestAnimationFrame(this._moveAnimationWorker.bind(this));
     }
 
-    fadeWorker(): void {
+    fadeAnimationWorker(): void {
         // Fade in or out?
         let target = this.state.selectedName === null ? 0 : 1;
 
@@ -297,23 +300,26 @@ export class SwitcherBarComponent extends ComponentBase {
             this.markerCurHeight
         );
 
+        console.debug(`FADE: ${this.markerVisibility}`);
+
         // Done?
-        if (this.markerVisibility !== target) {
-            requestAnimationFrame(this.fadeWorker.bind(this));
+        if (this.markerVisibility === target) {
+            this.fadeAnimationIsRunning = false;
+        } else {
+            requestAnimationFrame(this.fadeAnimationWorker.bind(this));
         }
     }
 
     startFadeAnimationIfNotRunning(): void {
         // Already running?
-        let target = this.state.selectedName === null ? 0 : 1;
-
-        if (this.markerVisibility == target) {
+        if (this.fadeAnimationIsRunning) {
             return;
         }
 
         // Start it
+        this.fadeAnimationIsRunning = true;
         this.lastFadeAnimationTickAt = Date.now();
-        requestAnimationFrame(this.fadeWorker.bind(this));
+        requestAnimationFrame(this.fadeAnimationWorker.bind(this));
     }
 
     _buildContent(deltaState: SwitcherBarState): HTMLElement {
@@ -357,25 +363,23 @@ export class SwitcherBarComponent extends ComponentBase {
 
             // Detect clicks
             optionElement.addEventListener('click', () => {
-                let newSelection;
-
                 // If this item was already selected, the new value may be `None`
                 if (this.state.selectedName === name) {
                     if (this.state.allow_none) {
-                        newSelection = null;
+                        this.state.selectedName = null;
                     } else {
                         return;
                     }
                 } else {
-                    newSelection = name;
+                    this.state.selectedName = name;
                 }
 
-                // Update the marker & update the state
-                this.moveMarkerToValue(newSelection);
+                // Update the marker
+                this.makeMarkerMatchState();
 
                 // Notify the backend
                 this.sendMessageToBackend({
-                    name: newSelection,
+                    name: this.state.selectedName,
                 });
             });
         }
@@ -384,6 +388,9 @@ export class SwitcherBarComponent extends ComponentBase {
     }
 
     updateElement(element: HTMLElement, deltaState: SwitcherBarState): void {
+        let markerPositionNeedsUpdate = false;
+        let needsReLayout = false;
+
         // If the names have changed, update their sizes
         if (deltaState.names !== undefined) {
             this.nameWidths = [];
@@ -420,17 +427,13 @@ export class SwitcherBarComponent extends ComponentBase {
             this.innerElement.appendChild(this.markerElement);
 
             // Marker content
-            // this.markerOptionsElement = this.backgroundOptionsElement.cloneNode(
-            //     true
-            // ) as HTMLElement;
             this.markerOptionsElement = this._buildContent(deltaState);
             this.markerElement.innerHTML = '';
             this.markerElement.appendChild(this.markerOptionsElement);
 
-            // Re-layout
-            this._moveMarkerInstantlyIfAnimationIsntRunning();
-            this.updateContentLayout();
-            this.makeLayoutDirty();
+            // Request some updates
+            markerPositionNeedsUpdate = true;
+            needsReLayout = true;
         }
 
         // Color
@@ -452,36 +455,53 @@ export class SwitcherBarComponent extends ComponentBase {
             this.backgroundOptionsElement.style.flexDirection = flexDirection;
             this.markerOptionsElement.style.flexDirection = flexDirection;
 
-            // Re-layout
-            this._moveMarkerInstantlyIfAnimationIsntRunning();
-            this.makeLayoutDirty();
+            // Request some updates
+            markerPositionNeedsUpdate = true;
+            needsReLayout = true;
         }
 
         // Spacing
         if (deltaState.spacing !== undefined) {
-            this._moveMarkerInstantlyIfAnimationIsntRunning();
-            this.makeLayoutDirty();
+            markerPositionNeedsUpdate = true;
+            needsReLayout = true;
         }
 
-        // Does any of the changes affect the marker's placement?
+        // If the selection has changed make sure to move the marker
         if (deltaState.selectedName !== undefined) {
-            if (!this.isInitialized) {
+            if (this.isInitialized) {
+                this.state.selectedName = deltaState.selectedName;
+                this.makeMarkerMatchState();
+            } else {
+                markerPositionNeedsUpdate = true;
                 this.markerVisibility =
                     deltaState.selectedName === null ? 0 : 1;
             }
-
-            this.moveMarkerToValue(deltaState.selectedName);
-        }
-
-        if (
-            deltaState.names !== undefined ||
-            deltaState.icon_svg_sources !== undefined
-        ) {
-            this._moveMarkerInstantlyIfAnimationIsntRunning();
         }
 
         // Any future updates are not the first
         this.isInitialized = true;
+
+        console.debug('POST UPDATE', markerPositionNeedsUpdate, needsReLayout);
+
+        // Perform any requested updates
+        setTimeout(() => {
+            Object.assign(this.state, deltaState);
+
+            console.debug(
+                'Updating to ',
+                markerPositionNeedsUpdate,
+                needsReLayout,
+                this.state
+            );
+
+            if (markerPositionNeedsUpdate) {
+                this._moveMarkerInstantlyIfAnimationIsntRunning();
+            }
+
+            if (needsReLayout) {
+                this.makeLayoutDirty();
+            }
+        }, 0);
     }
 
     /// Updates the layout of contained HTML elements:
@@ -507,63 +527,63 @@ export class SwitcherBarComponent extends ComponentBase {
         this.markerOptionsElement.style.height = height;
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         if (this.state.orientation == 'horizontal') {
-            this.requestedWidth =
+            this.naturalWidth =
                 this.state.spacing * (this.nameWidths.length - 1) +
                 ITEM_MARGIN * (this.nameWidths.length * 2);
 
             // Individual items
             for (let i = 0; i < this.nameWidths.length; i++) {
-                this.requestedWidth += this.nameWidths[i];
+                this.naturalWidth += this.nameWidths[i];
             }
         } else {
             // Individual items
-            this.requestedWidth = 0;
+            this.naturalWidth = 0;
             for (let i = 0; i < this.nameWidths.length; i++) {
-                this.requestedWidth = Math.max(
-                    this.requestedWidth,
+                this.naturalWidth = Math.max(
+                    this.naturalWidth,
                     this.nameWidths[i]
                 );
             }
 
             // Margin
-            this.requestedWidth += ITEM_MARGIN * 2;
+            this.naturalWidth += ITEM_MARGIN * 2;
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         if (this.state.orientation == 'horizontal') {
             // Individual items
-            this.requestedHeight = 0;
+            this.naturalHeight = 0;
             for (let i = 0; i < this.nameHeights.length; i++) {
-                this.requestedHeight = Math.max(
-                    this.requestedHeight,
+                this.naturalHeight = Math.max(
+                    this.naturalHeight,
                     this.nameHeights[i]
                 );
             }
 
             // Margin
-            this.requestedHeight += ITEM_MARGIN * 2;
+            this.naturalHeight += ITEM_MARGIN * 2;
 
             // Icons, if any
             if (this.hasAtLeastOneIcon) {
-                this.requestedHeight += ICON_HEIGHT;
+                this.naturalHeight += ICON_HEIGHT;
             }
         } else {
             // Spacing + margin
-            this.requestedHeight =
+            this.naturalHeight =
                 this.state.spacing * (this.nameHeights.length - 1) +
                 ITEM_MARGIN * (this.nameHeights.length * 2);
 
             // Individual items
             for (let i = 0; i < this.nameHeights.length; i++) {
-                this.requestedHeight += this.nameHeights[i];
+                this.naturalHeight += this.nameHeights[i];
             }
 
             // Icons, if any
             if (this.hasAtLeastOneIcon) {
-                this.requestedHeight += ICON_HEIGHT * this.nameHeights.length;
+                this.naturalHeight += ICON_HEIGHT * this.nameHeights.length;
             }
         }
     }

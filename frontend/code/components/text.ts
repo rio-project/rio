@@ -69,22 +69,22 @@ export class TextComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         if (this.state.multiline) {
             // TODO: Consider the min content width? It likely wouldn't have
             // much of an effect but slow everything down.
-            this.requestedWidth = 0;
+            this.naturalWidth = 0;
         } else {
-            [this.requestedWidth, this.requestedHeight] = getTextDimensions(
+            [this.naturalWidth, this.naturalHeight] = getTextDimensions(
                 this.state.text,
                 this.state.style
             );
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         if (this.state.multiline) {
-            this.requestedHeight = getTextDimensions(
+            this.naturalHeight = getTextDimensions(
                 this.state.text,
                 this.state.style,
                 this.allocatedWidth

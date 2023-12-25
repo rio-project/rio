@@ -54,11 +54,11 @@ export class ProgressBarComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 3;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 3;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 1;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 1;
     }
 }

@@ -68,11 +68,11 @@ export class SwitchComponent extends ComponentBase {
         // reacts to user input even if not sensitive.
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 10;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 10;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 5;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 5;
     }
 }

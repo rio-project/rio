@@ -101,11 +101,11 @@ export class SliderComponent extends ComponentBase {
         });
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 6;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 6;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 4;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 4;
     }
 }

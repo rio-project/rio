@@ -239,15 +239,15 @@ export class RevealerComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         // Account for the content
-        this.requestedWidth = ctx.inst(this.state.content).requestedWidth;
+        this.naturalWidth = ctx.inst(this.state.content).requestedWidth;
 
         // If a header is present, consider that as well
         if (this.state.header !== null) {
             let headerWidth =
                 this.labelWidth + 4 + 2 * HEADER_PADDING * this.headerScale;
-            this.requestedWidth = Math.max(this.requestedWidth, headerWidth);
+            this.naturalWidth = Math.max(this.naturalWidth, headerWidth);
         }
     }
 
@@ -259,12 +259,12 @@ export class RevealerComponent extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 0;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 0;
 
         // Account for the header, if present
         if (this.state.header !== null) {
-            this.requestedHeight +=
+            this.naturalHeight +=
                 this.labelHeight + 2 * HEADER_PADDING * this.headerScale;
         }
 
@@ -272,7 +272,7 @@ export class RevealerComponent extends ComponentBase {
         if (this.openFractionBeforeEase > 0) {
             let t = easeInOut(this.openFractionBeforeEase);
             let innerHeight = ctx.inst(this.state.content).requestedHeight;
-            this.requestedHeight += t * innerHeight;
+            this.naturalHeight += t * innerHeight;
         }
     }
 

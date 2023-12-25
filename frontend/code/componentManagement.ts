@@ -44,6 +44,7 @@ import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
 import { updateLayout } from './layouting';
+import { SwitcherComponent } from './components/switcher';
 
 const componentClasses = {
     'Align-builtin': AlignComponent,
@@ -85,6 +86,7 @@ const componentClasses = {
     'Slideshow-builtin': SlideshowComponent,
     'Stack-builtin': StackComponent,
     'Switch-builtin': SwitchComponent,
+    'Switcher-builtin': SwitcherComponent,
     'SwitcherBar-builtin': SwitcherBarComponent,
     'Table-builtin': TableComponent,
     'Text-builtin': TextComponent,
@@ -128,6 +130,9 @@ export function getInstanceByComponentId(id: ComponentId): ComponentBase {
 
     return instance;
 }
+
+globalThis.getInstanceByComponentId = getInstanceByComponentId; // For debugging
+
 export function getInstanceByElement(element: HTMLElement): ComponentBase {
     let instance = elementsToInstances.get(element);
 
@@ -137,6 +142,8 @@ export function getInstanceByElement(element: HTMLElement): ComponentBase {
 
     return instance;
 }
+
+globalThis.getInstanceByElement = getInstanceByElement; // For debugging
 
 export function tryGetInstanceByElement(
     element: HTMLElement
@@ -455,8 +462,7 @@ export function updateComponentStates(
         let instance = elementsToInstances.get(element!) as ComponentBase;
         instance.updateElement(element, deltaState);
 
-        // If the component's requested width or height has changed, request a
-        // re-layout.
+        // If the component's width or height has changed, request a re-layout.
         let width_changed =
             Math.abs(deltaState._size_![0] - instance.state._size_[0]) > 1e-6;
         let height_changed =

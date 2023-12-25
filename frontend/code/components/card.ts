@@ -6,7 +6,7 @@ import { LayoutContext } from '../layouting';
 
 export type CardState = ComponentState & {
     _type_: 'Card-builtin';
-    child?: ComponentId | null;
+    child?: ComponentId;
     corner_radius?: number | [number, number, number, number] | null;
     reportPress?: boolean;
     elevate_on_hover?: boolean;
@@ -105,14 +105,14 @@ export class CardComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         if (this.state.child === null) {
-            this.requestedWidth = 0;
+            this.naturalWidth = 0;
         } else {
-            this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
+            this.naturalWidth = ctx.inst(this.state.child).requestedWidth;
         }
 
-        this.requestedWidth += this.effectiveInnerMargin * 2;
+        this.naturalWidth += this.effectiveInnerMargin * 2;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
@@ -122,14 +122,14 @@ export class CardComponent extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         if (this.state.child === null) {
-            this.requestedHeight = 0;
+            this.naturalHeight = 0;
         } else {
-            this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
+            this.naturalHeight = ctx.inst(this.state.child).requestedHeight;
         }
 
-        this.requestedHeight += this.effectiveInnerMargin * 2;
+        this.naturalHeight += this.effectiveInnerMargin * 2;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {

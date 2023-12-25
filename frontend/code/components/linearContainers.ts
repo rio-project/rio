@@ -73,24 +73,24 @@ export class RowComponent extends LinearContainer {
         return element;
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 0;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 0;
         this.nGrowers = 0;
         let children = ctx.directChildren(this);
 
         // Add up all children's requested widths
         for (let child of children) {
-            this.requestedWidth += child.requestedWidth;
+            this.naturalWidth += child.requestedWidth;
             this.nGrowers += child.state['_grow_'][0] as any as number;
         }
 
         // Account for spacing
-        this.requestedWidth +=
+        this.naturalWidth +=
             Math.max(children.length - 1, 0) * this.state.spacing;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        let additionalSpace = this.allocatedWidth - this.requestedWidth;
+        let additionalSpace = this.allocatedWidth - this.naturalWidth;
         let additionalSpacePerGrower =
             this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 
@@ -103,12 +103,12 @@ export class RowComponent extends LinearContainer {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 0;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 0;
 
         for (let child of ctx.directChildren(this)) {
-            this.requestedHeight = Math.max(
-                this.requestedHeight,
+            this.naturalHeight = Math.max(
+                this.naturalHeight,
                 child.requestedHeight
             );
         }
@@ -116,7 +116,7 @@ export class RowComponent extends LinearContainer {
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Is all allocated space used? Highlight any undefined space
-        let additionalSpace = this.allocatedWidth - this.requestedWidth;
+        let additionalSpace = this.allocatedWidth - this.naturalWidth;
 
         if (this.nGrowers > 0 || Math.abs(additionalSpace) < 1e-6) {
             this.undef1.style.flexGrow = '0';
@@ -156,12 +156,12 @@ export class ColumnComponent extends LinearContainer {
         return element;
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 0;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 0;
 
         for (let child of ctx.directChildren(this)) {
-            this.requestedWidth = Math.max(
-                this.requestedWidth,
+            this.naturalWidth = Math.max(
+                this.naturalWidth,
                 child.requestedWidth
             );
         }
@@ -174,25 +174,25 @@ export class ColumnComponent extends LinearContainer {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 0;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 0;
         this.nGrowers = 0;
         let children = ctx.directChildren(this);
 
         // Add up all children's requested heights
         for (let child of children) {
-            this.requestedHeight += child.requestedHeight;
+            this.naturalHeight += child.requestedHeight;
             this.nGrowers += child.state['_grow_'][1] as any as number;
         }
 
         // Account for spacing
-        this.requestedHeight +=
+        this.naturalHeight +=
             Math.max(children.length - 1, 0) * this.state.spacing;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Is all allocated space used? Highlight any undefined space
-        let additionalSpace = this.allocatedHeight - this.requestedHeight;
+        let additionalSpace = this.allocatedHeight - this.naturalHeight;
 
         if (this.nGrowers > 0 || Math.abs(additionalSpace) < 1e-6) {
             this.undef1.style.flexGrow = '0';

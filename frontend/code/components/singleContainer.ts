@@ -2,12 +2,12 @@ import { LayoutContext } from '../layouting';
 import { ComponentBase } from './componentBase';
 
 export abstract class SingleContainer extends ComponentBase {
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 0;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 0;
 
         for (let child of ctx.directChildren(this)) {
-            this.requestedWidth = Math.max(
-                this.requestedWidth,
+            this.naturalWidth = Math.max(
+                this.naturalWidth,
                 child.requestedWidth
             );
         }
@@ -19,12 +19,12 @@ export abstract class SingleContainer extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 0;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 0;
 
         for (let child of ctx.directChildren(this)) {
-            this.requestedHeight = Math.max(
-                this.requestedHeight,
+            this.naturalHeight = Math.max(
+                this.naturalHeight,
                 child.requestedHeight
             );
         }

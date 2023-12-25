@@ -2,8 +2,8 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { SCROLL_BAR_SIZE } from '../utils';
 import { applyIcon } from '../designApplication';
 import {
-    updateInputBoxHeightRequest,
-    updateInputBoxWidthRequest,
+    updateInputBoxNaturalHeight,
+    updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
 import { LayoutContext } from '../layouting';
 import { pixelsPerEm } from '../app';
@@ -410,7 +410,7 @@ export class DropdownComponent extends ComponentBase {
             labelElement.textContent = deltaState.label;
 
             // Update the layout
-            updateInputBoxHeightRequest(this, deltaState.label, 0);
+            updateInputBoxNaturalHeight(this, deltaState.label, 0);
         }
 
         if (deltaState.selectedName !== undefined) {
@@ -424,11 +424,11 @@ export class DropdownComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        updateInputBoxWidthRequest(this, 0);
+    updateNaturalWidth(ctx: LayoutContext): void {
+        updateInputBoxNaturalWidth(this, 0);
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         // This is set during the updateElement() call, so there is nothing to
         // do here.
     }

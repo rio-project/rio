@@ -43,6 +43,9 @@ export abstract class ComponentBase {
 
     isLayoutDirty: boolean;
 
+    naturalWidth: number;
+    naturalHeight: number;
+
     requestedWidth: number;
     requestedHeight: number;
 
@@ -56,12 +59,6 @@ export abstract class ComponentBase {
         this.state = state;
 
         this.isLayoutDirty = true;
-
-        this.requestedWidth = 0;
-        this.requestedHeight = 0;
-
-        this.allocatedWidth = 0;
-        this.allocatedHeight = 0;
     }
 
     /// Returns the children of this component. Slowish.
@@ -92,7 +89,6 @@ export abstract class ComponentBase {
             cur = cur.tryGetParent();
         }
     }
-
 
     /// Fetches the HTML element associated with this component. This is a slow
     /// operation and should be avoided if possible. Returns `null` if the
@@ -200,12 +196,12 @@ export abstract class ComponentBase {
         return handler;
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 0;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 0;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 0;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 0;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {}

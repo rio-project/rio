@@ -44,9 +44,9 @@ export class LayoutContext {
             this.updateRequestedWidthRecursive(child);
         }
 
-        component.updateRequestedWidth(this);
+        component.updateNaturalWidth(this);
         component.requestedWidth = Math.max(
-            component.requestedWidth,
+            component.naturalWidth,
             component.state._size_[0]
         );
 
@@ -86,15 +86,11 @@ export class LayoutContext {
 
         for (let child of this.directChildren(component)) {
             this.updateRequestedHeightRecursive(child);
-            child.requestedHeight = Math.max(
-                child.requestedHeight,
-                child.state._size_[1]
-            );
         }
 
-        component.updateRequestedHeight(this);
+        component.updateNaturalHeight(this);
         component.requestedHeight = Math.max(
-            component.requestedHeight,
+            component.naturalHeight,
             component.state._size_[1]
         );
 

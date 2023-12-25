@@ -26,8 +26,8 @@ export class AlignComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = ctx.inst(this.state.child).requestedWidth;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = ctx.inst(this.state.child).requestedWidth;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
@@ -47,8 +47,8 @@ export class AlignComponent extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = ctx.inst(this.state.child).requestedHeight;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = ctx.inst(this.state.child).requestedHeight;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {

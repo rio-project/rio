@@ -198,7 +198,7 @@ export class MarkdownViewComponent extends ComponentBase {
             convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
 
             // Update the width request
-            this.requestedWidth = getElementWidth(contentDiv);
+            this.naturalWidth = getElementWidth(contentDiv);
 
             // Any previously calculated height request is no longer valid
             this.heightRequestAssumesWidth = -1;
@@ -206,11 +206,11 @@ export class MarkdownViewComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {}
+    updateNaturalWidth(ctx: LayoutContext): void {}
 
     updateAllocatedWidth(ctx: LayoutContext): void {}
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         // Is the previous height request still value?
         if (this.heightRequestAssumesWidth === this.allocatedWidth) {
             return;
@@ -219,7 +219,7 @@ export class MarkdownViewComponent extends ComponentBase {
         // No, re-layout
         let element = this.element();
         let contentDiv = element.firstElementChild as HTMLElement;
-        this.requestedHeight = getElementHeight(contentDiv);
+        this.naturalHeight = getElementHeight(contentDiv);
         this.heightRequestAssumesWidth = this.allocatedWidth;
     }
 

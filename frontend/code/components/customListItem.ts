@@ -67,8 +67,8 @@ export class CustomListItemComponent extends ComponentBase {
         });
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth =
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth =
             ctx.inst(this.state.child).requestedWidth + PADDING_X * 2;
     }
 
@@ -77,8 +77,8 @@ export class CustomListItemComponent extends ComponentBase {
             this.allocatedWidth - PADDING_X * 2;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight =
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight =
             ctx.inst(this.state.child).requestedHeight + PADDING_Y * 2;
     }
 

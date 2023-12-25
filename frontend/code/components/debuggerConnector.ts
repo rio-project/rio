@@ -25,11 +25,11 @@ export class DebuggerConnectorComponent extends ComponentBase {
         deltaState: DebuggerConnectorState
     ): void {}
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 3;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 3;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 7;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 7;
     }
 }
