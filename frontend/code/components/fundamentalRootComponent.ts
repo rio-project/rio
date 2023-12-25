@@ -77,12 +77,12 @@ export class FundamentalRootComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         // Don't use `window.innerWidth`. It appears to be rounded to the
         // nearest integer, so it's inaccurate.
         let rect = document.documentElement.getBoundingClientRect();
-        this.requestedWidth = this.allocatedWidth = rect.width / pixelsPerEm;
-        this.requestedHeight = this.allocatedHeight = rect.height / pixelsPerEm;
+        this.naturalWidth = this.allocatedWidth = rect.width / pixelsPerEm;
+        this.naturalHeight = this.allocatedHeight = rect.height / pixelsPerEm;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
@@ -111,8 +111,8 @@ export class FundamentalRootComponent extends ComponentBase {
         );
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        // Already done in updateRequestedWidth
+    updateNaturalHeight(ctx: LayoutContext): void {
+        // Already done in updateNaturalWidth
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {

@@ -53,14 +53,14 @@ export class HeadingListItemComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = PADDING_LEFT + this.textWidth + PADDING_RIGHT;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = PADDING_LEFT + this.textWidth + PADDING_RIGHT;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {}
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = PADDING_TOP + this.textHeight + PADDING_BOTTOM;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = PADDING_TOP + this.textHeight + PADDING_BOTTOM;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {}

@@ -26,12 +26,12 @@ export class FlowComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 0;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 0;
 
         for (let child of ctx.directChildren(this)) {
-            this.requestedWidth = Math.max(
-                this.requestedWidth,
+            this.naturalWidth = Math.max(
+                this.naturalWidth,
                 child.requestedWidth
             );
         }
@@ -43,12 +43,12 @@ export class FlowComponent extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         // Allow the code below to assume there's at least one child
         let children = ctx.directChildren(this);
 
         if (children.length === 0) {
-            this.requestedHeight = 0;
+            this.naturalHeight = 0;
             return;
         }
 
@@ -114,8 +114,8 @@ export class FlowComponent extends ComponentBase {
             posY += this.state.spacing_y;
         }
 
-        // Now set the requested height. Take care to ignore the last spacing
-        this.requestedHeight = posY - this.state.spacing_y;
+        // Now set the natural height. Take care to ignore the last spacing
+        this.naturalHeight = posY - this.state.spacing_y;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {}

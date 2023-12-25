@@ -25,8 +25,8 @@ export class MarginComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth =
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth =
             ctx.inst(this.state.child).requestedWidth +
             this.state.margin_left +
             this.state.margin_right;
@@ -40,8 +40,8 @@ export class MarginComponent extends ComponentBase {
             this.state.margin_right;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight =
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight =
             ctx.inst(this.state.child).requestedHeight +
             this.state.margin_top +
             this.state.margin_bottom;

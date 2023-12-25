@@ -2,8 +2,8 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import {
-    updateInputBoxHeightRequest,
-    updateInputBoxWidthRequest,
+    updateInputBoxNaturalHeight,
+    updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
 
 export type TextInputState = ComponentState & {
@@ -85,7 +85,7 @@ export class TextInputComponent extends ComponentBase {
             labelElement.textContent = deltaState.label;
 
             // Update the layout
-            updateInputBoxHeightRequest(this, deltaState.label, 0);
+            updateInputBoxNaturalHeight(this, deltaState.label, 0);
         }
 
         if (deltaState.prefix_text !== undefined) {
@@ -142,14 +142,14 @@ export class TextInputComponent extends ComponentBase {
         this.inputElement.focus();
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        updateInputBoxWidthRequest(
+    updateNaturalWidth(ctx: LayoutContext): void {
+        updateInputBoxNaturalWidth(
             this,
             this.prefixTextWidth + this.suffixTextWidth
         );
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         // This is set during the updateElement() call, so there is nothing to
         // do here.
     }

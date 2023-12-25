@@ -178,7 +178,7 @@ export class GridComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         this.columnWidths = new Array(this.nColumns).fill(0);
 
         // Determine the width of each column
@@ -219,15 +219,16 @@ export class GridComponent extends ComponentBase {
         }
 
         // Sum over all widths
-        this.requestedWidth = this.columnWidths.reduce(
-            (a, b) => a + b + this.state.column_spacing,
-            -this.state.column_spacing
-        );
+        this.naturalWidth = this.state.column_spacing * (this.nColumns - 1);
+
+        for (let columnWidth of this.columnWidths) {
+            this.naturalWidth += columnWidth;
+        }
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         // Determine the width of each column
-        let additionalSpace = this.allocatedWidth - this.requestedWidth;
+        let additionalSpace = this.allocatedWidth - this.naturalWidth;
         let targetColumns =
             this.growingColumns.size > 0
                 ? this.growingColumns
@@ -242,7 +243,8 @@ export class GridComponent extends ComponentBase {
         // Pass on the space to the children
         for (let gridChild of this.childrenByNumberOfColumns) {
             let childInstance = ctx.inst(gridChild.id);
-            childInstance.allocatedWidth = 0;
+            childInstance.allocatedWidth =
+                this.state.column_spacing * (gridChild.width - 1);
 
             for (let column of gridChild.allColumns) {
                 childInstance.allocatedWidth += this.columnWidths[column];
@@ -250,7 +252,7 @@ export class GridComponent extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         this.rowHeights = new Array(this.nRows).fill(0);
 
         // Determine the height of each row
@@ -281,7 +283,6 @@ export class GridComponent extends ComponentBase {
 
             // Expand the rows
             let targetRows = growRows.length > 0 ? growRows : gridChild.allRows;
-
             let spacePerRow = neededSpace / targetRows.length;
 
             for (let row of targetRows) {
@@ -290,15 +291,15 @@ export class GridComponent extends ComponentBase {
         }
 
         // Sum over all heights
-        this.requestedHeight = this.rowHeights.reduce(
-            (a, b) => a + b + this.state.row_spacing,
-            -this.state.row_spacing
-        );
+        this.naturalHeight = this.state.row_spacing * (this.nRows - 1);
+        for (let rowHeight of this.rowHeights) {
+            this.naturalHeight += rowHeight;
+        }
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Determine the height of each row
-        let additionalSpace = this.allocatedHeight - this.requestedHeight;
+        let additionalSpace = this.allocatedHeight - this.naturalHeight;
         let targetRows =
             this.growingRows.size > 0
                 ? this.growingRows
@@ -332,7 +333,8 @@ export class GridComponent extends ComponentBase {
         // Pass on the space to the children
         for (let gridChild of this.childrenByNumberOfRows) {
             let childInstance = ctx.inst(gridChild.id);
-            childInstance.allocatedHeight = 0;
+            childInstance.allocatedHeight =
+                this.state.row_spacing * (gridChild.height - 1);
 
             for (let row of gridChild.allRows) {
                 childInstance.allocatedHeight += this.rowHeights[row];

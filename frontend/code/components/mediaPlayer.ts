@@ -803,11 +803,11 @@ export class MediaPlayerComponent extends ComponentBase {
         });
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = 16;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 16;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = 5;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 5;
     }
 }

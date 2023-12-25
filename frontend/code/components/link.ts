@@ -89,14 +89,14 @@ export class LinkComponent extends ComponentBase {
         }
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
+    updateNaturalWidth(ctx: LayoutContext): void {
         if (this.state.child_component === null) {
-            [this.requestedWidth, this.requestedHeight] = getTextDimensions(
+            [this.naturalWidth, this.naturalHeight] = getTextDimensions(
                 this.state.child_text!,
                 'text'
             );
         } else {
-            this.requestedWidth = ctx.inst(
+            this.naturalWidth = ctx.inst(
                 this.state.child_component
             ).requestedWidth;
         }
@@ -109,11 +109,11 @@ export class LinkComponent extends ComponentBase {
         }
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
+    updateNaturalHeight(ctx: LayoutContext): void {
         if (this.state.child_component === null) {
             // Already set in updateRequestedWidth
         } else {
-            this.requestedHeight = ctx.inst(
+            this.naturalHeight = ctx.inst(
                 this.state.child_component
             ).requestedHeight;
         }

@@ -147,16 +147,16 @@ export class PopupComponent extends ComponentBase {
         this.contentContainer.style.top = spawnPointY + 'px';
     }
 
-    updateRequestedWidth(ctx: LayoutContext): void {
-        this.requestedWidth = ctx.inst(this.state.anchor).requestedWidth;
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = ctx.inst(this.state.anchor).requestedWidth;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         ctx.inst(this.state.anchor).allocatedWidth = this.allocatedWidth;
     }
 
-    updateRequestedHeight(ctx: LayoutContext): void {
-        this.requestedHeight = ctx.inst(this.state.anchor).requestedHeight;
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = ctx.inst(this.state.anchor).requestedHeight;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
