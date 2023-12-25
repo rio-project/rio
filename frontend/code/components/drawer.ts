@@ -2,8 +2,10 @@ import { pixelsPerEm } from '../app';
 import { commitCss } from '../utils';
 import { replaceOnlyChild } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
+import { LayoutContext } from '../layouting';
 
-// TODO
+const CONTENT_MARGIN_INSIDE: number = 2;
+
 export type DrawerState = ComponentState & {
     _type_: 'Drawer-builtin';
     anchor?: number | string;
@@ -18,8 +20,10 @@ export class DrawerComponent extends ComponentBase {
     state: Required<DrawerState>;
 
     private anchorContainer: HTMLElement;
-    private contentContainer: HTMLElement;
+    private contentOuterContainer: HTMLElement;
+    private contentInnerContainer: HTMLElement;
     private shadeElement: HTMLElement;
+    private knobElement: HTMLElement;
 
     private dragStartedAt: number = 0;
     private openFractionAtDragStart: number = 0;
@@ -32,27 +36,59 @@ export class DrawerComponent extends ComponentBase {
         let element = document.createElement('div');
         element.classList.add('rio-drawer');
 
-        this.anchorContainer = document.createElement('div');
-        this.anchorContainer.classList.add('rio-drawer-anchor');
-        this.anchorContainer.classList.add('rio-single-container');
-        element.appendChild(this.anchorContainer);
+        element.innerHTML = `
+            <div class="rio-drawer-anchor">
+            </div>
+            <div class="rio-drawer-shade">
+            </div>
+            <div class="rio-drawer-content-outer">
+                <div class="rio-drawer-content-inner"></div>
+                <div class="rio-drawer-knob"></div>
+            </div>
+        `;
 
-        this.shadeElement = document.createElement('div');
-        this.shadeElement.classList.add('rio-drawer-shade');
-        element.appendChild(this.shadeElement);
+        this.anchorContainer = element.querySelector(
+            '.rio-drawer-anchor'
+        ) as HTMLElement;
 
-        this.contentContainer = document.createElement('div');
-        this.contentContainer.classList.add('rio-drawer-content');
-        this.contentContainer.classList.add('rio-single-container');
-        element.appendChild(this.contentContainer);
+        this.shadeElement = element.querySelector(
+            '.rio-drawer-shade'
+        ) as HTMLElement;
+
+        this.contentOuterContainer = element.querySelector(
+            '.rio-drawer-content-outer'
+        ) as HTMLElement;
+
+        this.contentInnerContainer = element.querySelector(
+            '.rio-drawer-content-inner'
+        ) as HTMLElement;
+
+        this.knobElement = element.querySelector(
+            '.rio-drawer-knob'
+        ) as HTMLElement;
 
         return element;
     }
 
     updateElement(element: HTMLElement, deltaState: DrawerState): void {
         // Update the children
-        replaceOnlyChild(element.id, this.anchorContainer, deltaState.anchor);
-        replaceOnlyChild(element.id, this.contentContainer, deltaState.content);
+        if (deltaState.anchor !== undefined) {
+            replaceOnlyChild(
+                element.id,
+                this.anchorContainer,
+                deltaState.anchor
+            );
+            this.makeLayoutDirty();
+        }
+
+        if (deltaState.content !== undefined) {
+            replaceOnlyChild(
+                element.id,
+                this.contentInnerContainer,
+                deltaState.content
+            );
+            this.makeLayoutDirty();
+        }
 
         // Assign the correct class for the side
         if (deltaState.side !== undefined) {
@@ -61,6 +97,8 @@ export class DrawerComponent extends ComponentBase {
             element.classList.remove('rio-drawer-top');
             element.classList.remove('rio-drawer-bottom');
             element.classList.add(`rio-drawer-${deltaState.side}`);
+
+            this.makeLayoutDirty();
         }
 
         // Open?
@@ -113,7 +151,7 @@ export class DrawerComponent extends ComponentBase {
 
         // Move the drawer far enough to hide the shadow
         let closedFraction = 1 - this.openFraction;
-        this.contentContainer.style.transform = `translate${axis}(calc(0rem ${negate} ${
+        this.contentOuterContainer.style.transform = `translate${axis}(calc(0rem ${negate} ${
             closedFraction * 100
         }% ${negate} ${closedFraction * 1}em))`;
 
@@ -196,14 +234,14 @@ export class DrawerComponent extends ComponentBase {
             thresholdMax = Math.max(
                 drawerRect.left + handleSizeIfClosed,
                 drawerRect.left +
-                    this.contentContainer.scrollWidth * this.openFraction
+                    this.contentOuterContainer.scrollWidth * this.openFraction
             );
         } else if (this.state.side === 'right') {
             relevantClickCoordinate = event.clientX;
             thresholdMin = Math.min(
                 drawerRect.right - handleSizeIfClosed,
                 drawerRect.right -
-                    this.contentContainer.scrollWidth * this.openFraction
+                    this.contentOuterContainer.scrollWidth * this.openFraction
             );
             thresholdMax = drawerRect.right;
         } else if (this.state.side === 'top') {
@@ -212,14 +250,14 @@ export class DrawerComponent extends ComponentBase {
             thresholdMax = Math.max(
                 drawerRect.top + handleSizeIfClosed,
                 drawerRect.top +
-                    this.contentContainer.scrollHeight * this.openFraction
+                    this.contentOuterContainer.scrollHeight * this.openFraction
             );
         } else if (this.state.side === 'bottom') {
             relevantClickCoordinate = event.clientY;
             thresholdMin = Math.min(
                 drawerRect.bottom - handleSizeIfClosed,
                 drawerRect.bottom -
-                    this.contentContainer.scrollHeight * this.openFraction
+                    this.contentOuterContainer.scrollHeight * this.openFraction
             );
             thresholdMax = drawerRect.bottom;
         }
@@ -261,10 +299,10 @@ export class DrawerComponent extends ComponentBase {
 
         if (this.state.side === 'left' || this.state.side === 'right') {
             relevantCoordinate = event.clientX;
-            drawerSize = this.contentContainer.scrollWidth;
+            drawerSize = this.contentOuterContainer.scrollWidth;
         } else {
             relevantCoordinate = event.clientY;
-            drawerSize = this.contentContainer.scrollHeight;
+            drawerSize = this.contentOuterContainer.scrollHeight;
         }
 
         let negate =
@@ -297,6 +335,52 @@ export class DrawerComponent extends ComponentBase {
         // Remove the event handlers
         for (let [name, handler] of this.dragEventHandlers) {
             window.removeEventListener(name, handler, true);
+        }
+    }
+
+    updateNaturalWidth(ctx: LayoutContext): void {
+        let anchorInst = ctx.inst(this.state.anchor);
+        let contentInst = ctx.inst(this.state.content);
+
+        this.naturalWidth = Math.max(
+            anchorInst.requestedWidth,
+            contentInst.requestedWidth
+        );
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        let anchorInst = ctx.inst(this.state.anchor);
+        let contentInst = ctx.inst(this.state.content);
+
+        anchorInst.allocatedWidth = this.allocatedWidth;
+
+        if (this.state.side === 'left' || this.state.side === 'right') {
+            contentInst.allocatedWidth = anchorInst.requestedWidth;
+        } else {
+            contentInst.allocatedWidth = this.allocatedWidth;
+        }
+    }
+
+    updateNaturalHeight(ctx: LayoutContext): void {
+        let anchorInst = ctx.inst(this.state.anchor);
+        let contentInst = ctx.inst(this.state.content);
+
+        this.naturalHeight = Math.max(
+            anchorInst.requestedHeight,
+            contentInst.requestedHeight
+        );
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        let anchorInst = ctx.inst(this.state.anchor);
+        let contentInst = ctx.inst(this.state.content);
+
+        anchorInst.allocatedHeight = this.allocatedHeight;
+
+        if (this.state.side === 'top' || this.state.side === 'bottom') {
+            contentInst.allocatedHeight = anchorInst.requestedHeight;
+        } else {
+            contentInst.allocatedHeight = this.allocatedHeight;
         }
     }
 }
