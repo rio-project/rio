@@ -29,8 +29,9 @@ class EventTag(enum.Enum):
 
 
 def _register_as_event_handler(function: Callable, tag: EventTag, args: Any) -> None:
-    tags_dict = vars(function).setdefault("_rio_event_tags_", {})
-    tags_dict[tag] = args
+    handlers_dict = vars(function).setdefault("_rio_event_handlers_", {})
+    handlers_list = handlers_dict.setdefault(tag, [])
+    handlers_list.append((function, args))
 
 
 def on_create(handler: Callable[[C], None]) -> Callable[[C], None]:
@@ -42,7 +43,7 @@ def on_create(handler: Callable[[C], None]) -> Callable[[C], None]:
     Accessing attributes in `__init__` doesn't work reliably, because the state
     bindings are only initialized after `__init__` has run.
     """
-    handler._rio_event_tag_ = EventTag.ON_CREATE
+    _register_as_event_handler(handler, EventTag.ON_CREATE, None)
     return handler
 
 
@@ -50,7 +51,7 @@ def on_page_change(handler: Callable[[C], R]) -> Callable[[C], R]:
     """
     Triggered whenever the session changes pages.
     """
-    handler._rio_event_tag_ = EventTag.ON_PAGE_CHANGE
+    _register_as_event_handler(handler, EventTag.ON_PAGE_CHANGE, None)
     return handler
 
 
@@ -61,7 +62,7 @@ def on_mount(handler: Callable[[C], R]) -> Callable[[C], R]:
     This may be triggered multiple times if the component is removed and then
     re-added.
     """
-    handler._rio_event_tag_ = EventTag.ON_MOUNT
+    _register_as_event_handler(handler, EventTag.ON_MOUNT, None)
     return handler
 
 
@@ -72,7 +73,7 @@ def on_unmount(handler: Callable[[C], R]) -> Callable[[C], R]:
     This may be triggered multiple times if the component is removed and then
     re-added.
     """
-    handler._rio_event_tag_ = EventTag.ON_UNMOUNT
+    _register_as_event_handler(handler, EventTag.ON_UNMOUNT, None)
     return handler
 
 
@@ -100,8 +101,7 @@ def periodic(
     def decorator(
         handler: Callable[[C], SyncOrAsyncNone]
     ) -> Callable[[C], SyncOrAsyncNone]:
-        handler._rio_event_tag_ = EventTag.PERIODIC
-        handler._rio_event_periodic_interval_ = interval
+        _register_as_event_handler(handler, EventTag.PERIODIC, interval)
         return handler
 
     return decorator
