@@ -26,12 +26,10 @@ export class PopupComponent extends ComponentBase {
 
         this.anchorContainer = document.createElement('div');
         this.anchorContainer.classList.add('rio-popup-anchor');
-        this.anchorContainer.classList.add('rio-single-container');
         element.appendChild(this.anchorContainer);
 
         this.contentContainer = document.createElement('div');
         this.contentContainer.classList.add('rio-popup-content');
-        this.contentContainer.classList.add('rio-single-container');
         element.appendChild(this.contentContainer);
 
         return element;

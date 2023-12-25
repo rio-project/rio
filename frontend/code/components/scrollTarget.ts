@@ -17,10 +17,8 @@ export class ScrollTargetComponent extends SingleContainer {
         // have ids of the form `rio-id-...`. So we must create a container
         // for our <a> element.
         let element = document.createElement('span');
-        element.classList.add('rio-single-container');
 
         let anchorElement = document.createElement('a');
-        anchorElement.classList.add('rio-single-container');
         element.appendChild(anchorElement);
 
         return element;
