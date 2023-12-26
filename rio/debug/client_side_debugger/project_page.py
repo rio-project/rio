@@ -8,8 +8,7 @@ from . import component_details
 class ProjectPage(rio.Component):
     project: rio.cli.project.RioProject | None = None
 
-    @rio.event.on_create
-    def _on_create(self) -> None:
+    def __post_init__(self) -> None:
         self.project = rio.cli.project.RioProject.try_load()
 
     async def _on_change_app_type(self, event: rio.DropdownChangeEvent) -> None:

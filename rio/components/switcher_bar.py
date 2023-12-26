@@ -109,8 +109,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
 
         self.selected_value = selected_value
 
-    @rio.event.on_create
-    def _on_create(self) -> None:
+    def __post_init__(self) -> None:
         # Make sure a value is selected, if needed
         if self.selected_value is None and not self.allow_none:
             self.selected_value = self.values[0]
