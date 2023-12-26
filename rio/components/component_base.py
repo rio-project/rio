@@ -408,6 +408,12 @@ class Component(metaclass=ComponentMeta):
         init=False, default_factory=set, repr=False
     )
 
+    # Whether the `on_populate` event has already been triggered for this
+    # component
+    _on_populate_triggered_: bool = dataclasses.field(
+        default=False, init=False, repr=False
+    )
+
     # True if the component is subscribed to either the `on_mount` or
     # `on_unmount` events.
     _watch_tree_mount_and_unmount_: ClassVar[bool] = dataclasses.field(
@@ -743,8 +749,11 @@ class Component(metaclass=ComponentMeta):
                 "margin_x",
                 "margin_y",
                 "margin",
+                "_on_populate_triggered_",
             ):
                 continue
+
+            print(f"Initializing state property for {attr_name} in {cls.__name__}")
 
             # Create the `StateProperty`
             # readonly = introspection.typing.has_annotation(annotation, Readonly
