@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 import enum
 from datetime import timedelta
 from typing import *  # type: ignore
@@ -30,9 +31,11 @@ class EventTag(enum.Enum):
 
 
 def _register_as_event_handler(function: Callable, tag: EventTag, args: Any) -> None:
-    handlers_dict = vars(function).setdefault("_rio_event_handlers_", {})
-    handlers_list = handlers_dict.setdefault(tag, [])
-    handlers_list.append((function, args))
+    all_events: Dict[EventTag, List[Any]] = vars(function).setdefault(
+        "_rio_events_", {}
+    )
+    events_like_this = all_events.setdefault(tag, [])
+    events_like_this.append(args)
 
 
 def on_create(handler: Callable[[C], None]) -> Callable[[C], None]:
