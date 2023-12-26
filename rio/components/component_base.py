@@ -247,7 +247,7 @@ class ComponentMeta(abc.ABCMeta):
         # Call `on_create` handlers
         on_create_handlers = component._rio_event_handlers_[event.EventTag.ON_CREATE]
 
-        for handler in on_create_handlers:
+        for handler, _ in on_create_handlers:
             handler(component)
 
         return component
