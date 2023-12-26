@@ -1,7 +1,6 @@
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCLinearProgress } from '@material/linear-progress';
-// TODO
 
 export type ProgressBarState = ComponentState & {
     _type_: 'ProgressBar-builtin';

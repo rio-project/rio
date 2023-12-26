@@ -24,5 +24,10 @@ class ClassContainer(component_base.FundamentalComponent):
     child: Optional[rio.Component]
     classes: List[str]
 
+    def _get_debug_details(self) -> Dict[str, Any]:
+        return {
+            "child": self.child,
+        }
+
 
 ClassContainer._unique_id = "ClassContainer-builtin"

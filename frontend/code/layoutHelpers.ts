@@ -23,9 +23,6 @@ export function getTextDimensions(
         text = 'l';
     }
 
-    // TODO: Instead of using the font size in the key, normalize the result for
-    // a size of 1.
-
     // Build a key for the cache
     let key;
     let sizeNormalizationFactor: number;

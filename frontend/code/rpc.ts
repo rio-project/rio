@@ -3,6 +3,8 @@ import {
     getInstanceByComponentId,
     updateComponentStates,
 } from './componentManagement';
+import { ComponentTreeComponent } from './components/componentTree';
+import { DebuggerConnectorComponent } from './components/debuggerConnector';
 import {
     requestFileUpload,
     registerFont,
@@ -215,8 +217,11 @@ export async function processMessageReturnResponse(
             );
 
             // Notify the debugger, if any
-            if (globalThis.rioDebugger !== undefined) {
-                globalThis.rioDebugger.afterComponentStateChange(
+            if (globalThis.RIO_DEBUGGER !== null) {
+                let debuggerTree =
+                    globalThis.RIO_DEBUGGER as DebuggerConnectorComponent;
+
+                debuggerTree.afterComponentStateChange(
                     message.params.deltaStates
                 );
             }

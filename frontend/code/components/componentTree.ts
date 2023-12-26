@@ -5,6 +5,7 @@ import {
 } from '../componentManagement';
 import { applyIcon } from '../designApplication';
 import { ComponentBase, ComponentState } from './componentBase';
+import { DebuggerConnectorComponent } from './debuggerConnector';
 
 export type ComponentTreeState = ComponentState & {
     _type_: 'ComponentTree-builtin';
@@ -15,10 +16,20 @@ var selectedElementId: string | null = null;
 export class ComponentTreeComponent extends ComponentBase {
     state: Required<ComponentTreeState>;
 
+    /// When a component should be highlighted to the user, this HTML element
+    /// does the highlighting.
+    private highlighterElement: HTMLElement;
+
     createElement(): HTMLElement {
+        // Register this component with the global debugger, so it receives
+        // updates when a component's state changes.
+        let dbg: DebuggerConnectorComponent = globalThis.RIO_DEBUGGER;
+        console.assert(dbg !== null);
+        dbg.componentTree = this;
+
         // Spawn the HTML
         let element = document.createElement('div');
-        element.classList.add('.rio-debugger-tree-component-tree');
+        element.classList.add('rio-debugger-tree-component-tree');
 
         // Populate. This needs to lookup the root component, which isn't in the
         // tree yet.
@@ -26,7 +37,23 @@ export class ComponentTreeComponent extends ComponentBase {
             this.buildTree();
         });
 
+        // Prepare the highlighter, but don't add it to the DOM yet
+        this.highlighterElement = document.createElement('div');
+        this.highlighterElement.classList.add(
+            'rio-debugger-component-highlighter'
+        );
+
         return element;
+    }
+
+    onDestruction(element: HTMLElement): void {
+        // Unregister this component from the global debugger
+        let dbg: DebuggerConnectorComponent = globalThis.RIO_DEBUGGER;
+        console.assert(dbg !== null);
+        dbg.componentTree = null;
+
+        // Remove any highlighters
+        this.highlighterElement.remove();
     }
 
     updateElement(element: HTMLElement, deltaState: ComponentState): void {}
@@ -64,8 +91,6 @@ export class ComponentTreeComponent extends ComponentBase {
             selectedElementId.substring('rio-id-'.length)
         );
 
-        console.log(`DEBUG: Selected component ${selectedComponentId}`);
-
         this.sendMessageToBackend({
             selectedComponentId: selectedComponentId,
         });
@@ -74,17 +99,6 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Many of the spawned components are internal to Rio and shouldn't be
     /// displayed to the user. This function makes that determination.
     shouldDisplayComponent(comp: ComponentBase): boolean {
-        // Root components
-        // TODO: Are these needed?
-        // if (comp.state._python_type_ === 'HighLevelRootComponent') {
-        //     return false;
-        // }
-
-        //     if (comp instanceof FundamentalRootComponent) {
-        //         return false;
-        // }
-
-        // Use the component's annotation
         return !comp.state._rio_internal_;
     }
 
@@ -241,25 +255,18 @@ export class ComponentTreeComponent extends ComponentBase {
             let rect = componentElement.getBoundingClientRect();
 
             // Highlight the component
-            let highlighter = document.createElement('div');
-            highlighter.classList.add('rio-debugger-component-highlighter');
-            highlighter.style.top = `${rect.top}px`;
-            highlighter.style.left = `${rect.left}px`;
-            highlighter.style.width = `${rect.width}px`;
-            highlighter.style.height = `${rect.height}px`;
-            document.body.appendChild(highlighter);
+            this.highlighterElement.style.top = `${rect.top}px`;
+            this.highlighterElement.style.left = `${rect.left}px`;
+            this.highlighterElement.style.width = `${rect.width}px`;
+            this.highlighterElement.style.height = `${rect.height}px`;
+            document.body.appendChild(this.highlighterElement);
 
             event.stopPropagation();
         });
 
         // Remove any highlighters when the element is unhovered
         element.addEventListener('mouseout', (event) => {
-            for (let highlighter of document.getElementsByClassName(
-                'rio-debugger-component-highlighter'
-            )) {
-                highlighter.remove();
-            }
-
+            this.highlighterElement.remove();
             event.stopPropagation();
         });
     }
