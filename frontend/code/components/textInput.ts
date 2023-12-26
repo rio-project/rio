@@ -59,8 +59,9 @@ export class TextInputComponent extends ComponentBase {
         // date value.
         this.inputElement.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
+                this.state.text = this.inputElement.value;
                 this.sendMessageToBackend({
-                    text: this.inputElement.value,
+                    text: this.state.text,
                 });
             }
         });

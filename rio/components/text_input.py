@@ -105,7 +105,8 @@ class TextInput(component_base.KeyboardFocusableFundamentalComponent):
         # current value. This ensures any event handlers actually use the up-to
         # date value.
         assert isinstance(msg, dict), msg
-        self.text = msg["text"]
+
+        self._apply_delta_state_from_frontend({"text": msg["text"]})
 
         await self.call_event_handler(
             self.on_change,

@@ -158,17 +158,21 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
             if not self.allow_none:
                 return
 
-            self.selected_value = None
+            selected_value = None
 
         else:
             for name, value in zip(self.names, self.values):
                 if name == selected_name:
-                    self.selected_value = value
+                    selected_value = value
                     break
             else:
                 # Invalid names may be sent due to lag between the frontend and
                 # backend. Ignore them.
                 return
+
+        # TEMP, for debugging the switcher bar JS code
+        # self._apply_delta_state_from_frontend({'selected_value': selected_value})
+        self.selected_value = selected_value
 
         # Trigger the event
         await self.call_event_handler(

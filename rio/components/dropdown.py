@@ -141,11 +141,13 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         # The frontend works with names, not values. Get the corresponding
         # value.
         try:
-            self.selected_value = self.options[msg["name"]]
+            selected_value = self.options[msg["name"]]
         except KeyError:
             # Invalid names may be sent due to lag between the frontend and
             # backend. Ignore them.
             return
+
+        self._apply_delta_state_from_frontend({"selected_value": selected_value})
 
         # Trigger the event
         await self.call_event_handler(
