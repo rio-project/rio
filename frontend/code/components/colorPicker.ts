@@ -1,6 +1,7 @@
 import { Color } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from '../colorConversion';
+import { LayoutContext } from '../layouting';
 
 // TODO
 
@@ -409,4 +410,16 @@ export class ColorPickerComponent extends ComponentBase {
         // Deselect the text input
         event.target.blur();
     }
+
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = 12;
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {}
+
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight = 7;
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {}
 }

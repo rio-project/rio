@@ -127,5 +127,5 @@ export function setTitle(title: string): void {
 }
 
 export function closeSession(): void {
-    window.close(); // TODO: What if the browser doesn't allow it?
+    window.close(); // TODO: What if the browser doesn't allow this?
 }

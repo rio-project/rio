@@ -1,6 +1,5 @@
 import { ComponentBase, ComponentState } from './componentBase';
 import { micromark } from 'micromark';
-// TODO
 
 // This import decides which languages are supported by `highlight.js`. See
 // their docs for details:

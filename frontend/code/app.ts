@@ -13,6 +13,10 @@ globalThis.PING_PONG_INTERVAL_SECONDS = '{ping_pong_interval}';
 globalThis.RIO_DEBUG_MODE = '{debug_mode}';
 globalThis.CHILD_ATTRIBUTE_NAMES = '{child_attribute_names}';
 
+// If a debugger is present it is exposed here so the codebase can notify it as
+// needed. This is an instance of `DebuggerConnectorComponent`.
+globalThis.RIO_DEBUGGER = null;
+
 export let pixelsPerEm = 16;
 
 function main() {

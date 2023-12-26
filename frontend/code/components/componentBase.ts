@@ -7,6 +7,8 @@ import {
 import { LayoutContext } from '../layouting';
 import { callRemoteMethodDiscardResponse } from '../rpc';
 import { EventHandler, DragHandler } from '../eventHandling';
+import { ComponentTreeComponent } from './componentTree';
+import { DebuggerConnectorComponent } from './debuggerConnector';
 
 /// Base for all component states. Updates received from the backend are
 /// partial, hence most properties may be undefined.
@@ -178,8 +180,11 @@ export abstract class ComponentBase {
         });
 
         // Notify the debugger, if any
-        if (globalThis.rioDebugger !== undefined) {
-            globalThis.rioDebugger.afterComponentStateChange({
+        if (globalThis.RIO_DEBUGGER !== null) {
+            let debuggerTree =
+                globalThis.RIO_DEBUGGER as DebuggerConnectorComponent;
+
+            debuggerTree.afterComponentStateChange({
                 componentIdString: deltaState,
             });
         }

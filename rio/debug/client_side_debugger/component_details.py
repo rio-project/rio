@@ -14,8 +14,6 @@ class ComponentDetails(rio.Component):
         """
         # Some components have a custom function which determines what to
         # display
-        #
-        # TODO: I don't believe any of these actually exist just yet
         try:
             return target._get_debug_details()  # type: ignore
         except AttributeError:
