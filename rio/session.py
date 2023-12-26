@@ -464,6 +464,54 @@ class Session(unicall.Unicall):
             print("Exception in event handler:")
             traceback.print_exc()
 
+    @overload
+    def _call_event_handler_sync(
+        self,
+        handler: common.EventHandler[[]],
+    ) -> None:
+        ...
+
+    @overload
+    def _call_event_handler_sync(
+        self,
+        handler: common.EventHandler[[T]],
+        event_data: T,
+        /,
+    ) -> None:
+        ...
+
+    def _call_event_handler_sync(
+        self,
+        handler: common.EventHandler[...],
+        *event_data: object,
+    ) -> None:
+        # Event handlers are optional
+        if handler is None:
+            return
+
+        # Try to call the event handler synchronously
+        try:
+            result = handler(*event_data)
+
+        # Display and discard exceptions
+        except Exception:
+            print("Exception in event handler:")
+            traceback.print_exc()
+            return
+
+        if not inspect.isawaitable(result):
+            return
+
+        # If it needs awaiting do so in a task
+        async def worker() -> None:
+            try:
+                await result
+            except Exception:
+                print("Exception in event handler:")
+                traceback.print_exc()
+
+        self.create_task(worker(), name=f'Event handler for "{handler!r}"')
+
     def create_task(
         self,
         coro: Coroutine[Any, None, T],
@@ -647,6 +695,17 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             # Fundamental components require no further treatment
             if isinstance(component, component_base.FundamentalComponent):
                 continue
+
+            # Trigger the `on_populate` event, if it hasn't already. Since the
+            # whole point of this event is to fetch data and modify the
+            # component's state, wait for it to finish if it is synchronous.
+            if not component._on_populate_triggered_:
+                component._on_populate_triggered_ = True
+
+                for handler, unused in component._rio_event_handlers_[
+                    rio.event.EventTag.ON_POPULATE
+                ]:
+                    self._call_event_handler_sync(handler, component)
 
             # Others need to be built
             global_state.currently_building_component = component
@@ -959,6 +1018,10 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             old_component,
             new_component,
         )
+        assert old_component.key == new_component.key, (
+            old_component.key,
+            new_component.key,
+        )
 
         # Let any following code assume that the two components aren't the same
         # instance
@@ -1053,16 +1116,16 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                 )
                 break
 
-        # Override the key now. It should never be preserved, but doesn't make
-        # the component dirty
-        overridden_values["key"] = new_component.key
-
         # Now combine the old and new dictionaries
         #
         # Notice that the component's `_weak_builder_` is always preserved. So even
         # components whose position in the tree has changed still have the correct
         # builder set.
         old_component_dict.update(overridden_values)
+
+        # If the component has a `on_populate` handler, it must be triggered
+        # again
+        old_component._on_populate_triggered_ = False
 
     def _find_components_for_reconciliation(
         self,

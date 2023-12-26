@@ -140,6 +140,7 @@ def get_attribute_serializers(
             "_explicitly_set_properties_",
             "_id",
             "_init_signature_",
+            "_on_populate_triggered_",
             "_rio_builtin_",
             "_session_",
             "_state_bindings_initialized_",
