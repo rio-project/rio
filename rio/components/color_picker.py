@@ -50,7 +50,9 @@ class ColorPicker(component_base.FundamentalComponent):
         assert isinstance(msg, dict), msg
 
         # Update the color
-        self.color = color.Color.from_rgb(*msg["color"])
+        self._apply_delta_state_from_frontend(
+            {"color": color.Color.from_rgb(*msg["color"])}
+        )
 
         # Trigger the change event
         await self.call_event_handler(

@@ -1106,7 +1106,7 @@ class FundamentalComponent(Component):
     async def _call_event_handlers_for_delta_state(self, delta_state: JsonDoc) -> None:
         pass
 
-    def _apply_delta_state_from_frontend(self, delta_state: JsonDoc) -> None:
+    def _apply_delta_state_from_frontend(self, delta_state: Dict[str, Any]) -> None:
         """
         Applies the delta state received from the frontend without marking the
         component as dirty.
@@ -1120,7 +1120,6 @@ class FundamentalComponent(Component):
 
         # Update all state properties to reflect the new state
         for attr_name, attr_value in delta_state.items():
-            assert isinstance(attr_value, (bool, int, float, str)), attr_value
             setattr(self, attr_name, attr_value)
 
         if not was_already_dirty:
