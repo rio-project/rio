@@ -8,7 +8,6 @@ from typing import *  # type: ignore
 import rio
 
 __all__ = [
-    "on_create",
     "on_page_change",
     "on_mount",
     "on_unmount",
@@ -22,7 +21,6 @@ SyncOrAsyncNone = TypeVar("SyncOrAsyncNone", bound=SyncOrAsync[None])
 
 
 class EventTag(enum.Enum):
-    ON_CREATE = enum.auto()
     ON_POPULATE = enum.auto()
     ON_PAGE_CHANGE = enum.auto()
     ON_MOUNT = enum.auto()
@@ -36,19 +34,6 @@ def _register_as_event_handler(function: Callable, tag: EventTag, args: Any) -> 
     )
     events_like_this = all_events.setdefault(tag, [])
     events_like_this.append(args)
-
-
-def on_create(handler: Callable[[C], None]) -> Callable[[C], None]:
-    """
-    Triggered after the component has been created and has access to all of its
-    attributes and session. Use this if you need to do any setup that requires
-    accessing the component's attributes.
-
-    Accessing attributes in `__init__` doesn't work reliably, because the state
-    bindings are only initialized after `__init__` has run.
-    """
-    _register_as_event_handler(handler, EventTag.ON_CREATE, None)
-    return handler
 
 
 def on_populate(handler: Callable[[C], R]) -> Callable[[C], R]:

@@ -244,12 +244,6 @@ class ComponentMeta(abc.ABCMeta):
 
             post_init(component)
 
-        # Call `on_create` handlers
-        on_create_handlers = component._rio_event_handlers_[event.EventTag.ON_CREATE]
-
-        for handler, _ in on_create_handlers:
-            handler(component)
-
         return component
 
 
@@ -795,7 +789,7 @@ class Component(metaclass=ComponentMeta):
                     "You have attempted to read a state property in a component's"
                     " `__init__` method. This is not allowed because state"
                     " bindings are not yet initialized at that point. Please"
-                    " move this code into the `on_create` method."
+                    " move this code into the `__post_init__` method."
                 )
 
             return super().__getattribute__(attr_name)

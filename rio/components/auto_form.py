@@ -28,8 +28,7 @@ class AutoForm(component_base.Component):
     _: KW_ONLY
     on_change: rio.EventHandler[[AutoFormChangeEvent]] = None
 
-    @rio.event.on_create
-    def _on_create(self) -> None:
+    def __post_init__(self) -> None:
         # Make sure the passed value is a dataclass
         if not is_dataclass(self.value):
             raise TypeError(

@@ -85,12 +85,11 @@ class Slider(component_base.FundamentalComponent):
         self.minimum = minimum
         self.maximum = maximum
         self.step_size = step_size
-        self.value = value  # type: ignore  Possibly assigning None. Fixed in _on_create below
+        self.value = value  # type: ignore  Possibly assigning None. Fixed in __post_init__ below
         self.is_sensitive = is_sensitive
         self.on_change = on_change
 
-    @rio.event.on_create
-    def _on_create(self) -> None:
+    def __post_init__(self) -> None:
         # Don't hammer potential state bindings
         minimum = self.minimum
         maximum = self.maximum
