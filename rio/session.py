@@ -702,7 +702,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             if not component._on_populate_triggered_:
                 component._on_populate_triggered_ = True
 
-                for handler, unused in component._rio_event_handlers_[
+                for handler, _ in component._rio_event_handlers_[
                     rio.event.EventTag.ON_POPULATE
                 ]:
                     self._call_event_handler_sync(handler, component)
@@ -825,7 +825,9 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                     continue
 
                 # Trigger the event
-                for handler in comp._rio_event_handlers_[rio.event.EventTag.ON_UNMOUNT]:
+                for handler, _ in comp._rio_event_handlers_[
+                    rio.event.EventTag.ON_UNMOUNT
+                ]:
                     self.create_task(
                         self._call_event_handler(handler, comp),
                         name="`on_unmount` event handler",
@@ -847,7 +849,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                     continue
 
                 # Trigger the event
-                for handler in component._rio_event_handlers_[
+                for handler, _ in component._rio_event_handlers_[
                     rio.event.EventTag.ON_MOUNT
                 ]:
                     self.create_task(

@@ -59,6 +59,6 @@ export class ProgressBarComponent extends ComponentBase {
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = 1;
+        this.naturalHeight = 0.2;
     }
 }

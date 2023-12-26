@@ -533,7 +533,8 @@ class Component(metaclass=ComponentMeta):
 
         # Some events need attention right after the component is created
         for event_tag, event_handlers in self._rio_event_handlers_.items():
-            # Don't register event handlers if there aren't any, since that would slow down the session
+            # Don't register an empty list of handlers any, since that would
+            # still slow down the session
             if not event_handlers:
                 continue
 
@@ -692,12 +693,28 @@ class Component(metaclass=ComponentMeta):
         cls._initialize_state_properties(all_parent_state_properties)
 
         # Inherit event handlers from parents
+        cls._rio_event_handlers_ = defaultdict(list)
+
         for base in cls.__bases__:
             if not issubclass(base, Component):
                 continue
 
             for event_tag, handlers in base._rio_event_handlers_.items():
                 cls._rio_event_handlers_[event_tag].extend(handlers)
+
+        # Add events from this class itself
+        for member in cls_vars.values():
+            if not callable(member):
+                continue
+
+            try:
+                events = member._rio_events_
+            except AttributeError:
+                continue
+
+            for event_tag, args in events.items():
+                for arg in args:
+                    cls._rio_event_handlers_[event_tag].append((member, arg))
 
         # If the component is subscribed to `on_mount` or `on_unmount`, update
         # the boolean for that
@@ -752,8 +769,6 @@ class Component(metaclass=ComponentMeta):
                 "_on_populate_triggered_",
             ):
                 continue
-
-            print(f"Initializing state property for {attr_name} in {cls.__name__}")
 
             # Create the `StateProperty`
             # readonly = introspection.typing.has_annotation(annotation, Readonly
