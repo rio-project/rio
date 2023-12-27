@@ -162,7 +162,7 @@ export abstract class ComponentBase {
 
     addDragHandler(
         element: HTMLElement,
-        onStart: null | ((event: MouseEvent) => void) = null,
+        onStart: null | ((event: MouseEvent) => boolean) = null,
         onMove: null | ((event: MouseEvent) => void) = null,
         onEnd: null | ((event: MouseEvent) => void) = null
     ): DragHandler {

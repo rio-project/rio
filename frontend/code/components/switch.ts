@@ -16,7 +16,6 @@ export class SwitchComponent extends ComponentBase {
         element.classList.add('rio-switch');
 
         let containerElement = document.createElement('div');
-        containerElement.classList.add('container');
         element.appendChild(containerElement);
 
         let checkboxElement = document.createElement('input');
