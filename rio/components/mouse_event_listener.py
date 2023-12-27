@@ -13,6 +13,7 @@ from . import component_base
 __all__ = [
     "MouseEventListener",
     "MouseButton",
+    "PressEvent",
     "MouseDownEvent",
     "MouseUpEvent",
     "MouseMoveEvent",
@@ -33,6 +34,10 @@ class _MouseUpDownEvent:
     button: MouseButton
     x: float
     y: float
+
+
+class PressEvent(_MouseUpDownEvent):
+    pass
 
 
 class MouseDownEvent(_MouseUpDownEvent):
@@ -85,6 +90,10 @@ class MouseEventListener(component_base.FundamentalComponent):
     Attributes:
         child: The child component to display.
 
+        on_press: Triggered when the user presses/clicks/taps the component.
+            This is similar to `on_mouse_up`, but also verifies that the left
+            mouse button was pressed.
+
         on_mouse_down: Triggered when a mouse button is pressed down while
             the mouse is placed over the child component.
 
@@ -103,6 +112,7 @@ class MouseEventListener(component_base.FundamentalComponent):
 
     child: component_base.Component
     _: KW_ONLY
+    on_press: rio.EventHandler[PressEvent] = None
     on_mouse_down: rio.EventHandler[MouseDownEvent] = None
     on_mouse_up: rio.EventHandler[MouseUpEvent] = None
     on_mouse_move: rio.EventHandler[MouseMoveEvent] = None
@@ -113,7 +123,7 @@ class MouseEventListener(component_base.FundamentalComponent):
     def _custom_serialize(self) -> JsonDoc:
         return {
             "reportMouseDown": self.on_mouse_down is not None,
-            "reportMouseUp": self.on_mouse_up is not None,
+            "reportMouseUp": self.on_mouse_up is not None or self.on_press is not None,
             "reportMouseMove": self.on_mouse_move is not None,
             "reportMouseEnter": self.on_mouse_enter is not None,
             "reportMouseLeave": self.on_mouse_leave is not None,
@@ -139,12 +149,24 @@ class MouseEventListener(component_base.FundamentalComponent):
             )
 
         elif msg_type == "mouseUp":
+            button = MouseButton(msg["button"])
+
+            if button == MouseButton.LEFT:
+                await self.call_event_handler(
+                    self.on_press,
+                    PressEvent(
+                        x=msg["x"],
+                        y=msg["y"],
+                        button=button,
+                    ),
+                )
+
             await self.call_event_handler(
                 self.on_mouse_up,
                 MouseUpEvent(
                     x=msg["x"],
                     y=msg["y"],
-                    button=MouseButton(msg["button"]),
+                    button=button,
                 ),
             )
 
