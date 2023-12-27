@@ -64,6 +64,7 @@ export abstract class ComponentBase {
 
         this.element = this.createElement();
         this.element.id = `rio-id-${id}`;
+        this.element.classList.add('rio-component');
 
         this.isLayoutDirty = true;
     }
