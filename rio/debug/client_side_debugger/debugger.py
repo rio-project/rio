@@ -42,6 +42,8 @@ class ClientSideDebugger(rio.Component):
         )
 
     def build(self) -> rio.Component:
+        current_page = None if self.selected_page is None else self.get_selected_page()
+
         return rio.Row(
             # Big fat line to separate the debugger from the rest of the page
             rio.Rectangle(
@@ -49,12 +51,9 @@ class ClientSideDebugger(rio.Component):
                 style=rio.BoxStyle(fill=self.session.theme.primary_palette.background),
             ),
             # Currently active page
-            rio.Spacer(width=0)
-            if self.selected_page is None
-            else rio.components.class_container.ClassContainer(
-                self.get_selected_page(),
+            rio.components.class_container.ClassContainer(
+                rio.Switcher(current_page),
                 classes=["rio-switcheroo-neutral", "rio-debugger-background"],
-                width=22,
             ),
             # Navigation
             rio.Column(

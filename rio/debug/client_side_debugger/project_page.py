@@ -66,4 +66,5 @@ class ProjectPage(rio.Component):
             ),
             margin=1,
             align_y=0,
+            width=40,  # Just for testing the switcher
         )

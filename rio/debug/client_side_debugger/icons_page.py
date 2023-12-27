@@ -294,4 +294,5 @@ Use the `rio.Icon` component like this:
             *children,
             spacing=1,
             margin=1,
+            width=30,  # Just for testing the switcher
         )

@@ -12,7 +12,7 @@ __all__ = [
 
 
 class Switcher(component_base.FundamentalComponent):
-    child: rio.Component
+    child: Optional[rio.Component]
 
 
 Switcher._unique_id = "Switcher-builtin"
