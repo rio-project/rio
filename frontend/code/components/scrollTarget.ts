@@ -24,10 +24,10 @@ export class ScrollTargetComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ScrollTargetState): void {
-        let anchorElement = element.firstElementChild as HTMLElement;
+    updateElement(deltaState: ScrollTargetState): void {
+        let anchorElement = this.element.firstElementChild as HTMLElement;
 
-        replaceOnlyChild(element.id, anchorElement, deltaState.child);
+        replaceOnlyChild(this.element.id, anchorElement, deltaState.child);
 
         if (deltaState.id !== undefined) {
             anchorElement.id = deltaState.id;

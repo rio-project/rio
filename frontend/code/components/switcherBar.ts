@@ -387,7 +387,7 @@ export class SwitcherBarComponent extends ComponentBase {
         return result;
     }
 
-    updateElement(element: HTMLElement, deltaState: SwitcherBarState): void {
+    updateElement(deltaState: SwitcherBarState): void {
         let markerPositionNeedsUpdate = false;
         let needsReLayout = false;
 
@@ -451,7 +451,7 @@ export class SwitcherBarComponent extends ComponentBase {
             let flexDirection =
                 deltaState.orientation == 'vertical' ? 'column' : 'row';
 
-            element.style.flexDirection = flexDirection;
+            this.element.style.flexDirection = flexDirection;
             this.backgroundOptionsElement.style.flexDirection = flexDirection;
             this.markerOptionsElement.style.flexDirection = flexDirection;
 

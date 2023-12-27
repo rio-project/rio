@@ -43,15 +43,15 @@ export class PlotComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: PlotState): void {
-        element.innerHTML = '';
+    updateElement(deltaState: PlotState): void {
+        this.element.innerHTML = '';
         loadPlotly(() => {
             let plotJson = JSON.parse(deltaState.plotJson);
-            Plotly.newPlot(element, plotJson.data, plotJson.layout, {
+            Plotly.newPlot(this.element, plotJson.data, plotJson.layout, {
                 responsive: true,
             });
 
-            applyStyle(element, deltaState.boxStyle);
+            applyStyle(this.element, deltaState.boxStyle);
         });
     }
 }

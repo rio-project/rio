@@ -13,9 +13,9 @@ export class HtmlComponent extends ComponentBase {
         return document.createElement('div');
     }
 
-    updateElement(element: HTMLAnchorElement, deltaState: HtmlState): void {
+    updateElement(deltaState: HtmlState): void {
         if (deltaState.html !== undefined) {
-            element.innerHTML = deltaState.html;
+            this.element.innerHTML = deltaState.html;
         }
     }
 }

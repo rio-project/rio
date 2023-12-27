@@ -1,4 +1,4 @@
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
@@ -52,7 +52,9 @@ export class LinkComponent extends ComponentBase {
         return containerElement;
     }
 
-    updateElement(element: HTMLAnchorElement, deltaState: LinkState): void {
+    updateElement(deltaState: LinkState): void {
+        let element = this.element as HTMLAnchorElement;
+
         // Child Text?
         if (
             deltaState.child_text !== undefined &&
@@ -96,15 +98,14 @@ export class LinkComponent extends ComponentBase {
                 'text'
             );
         } else {
-            this.naturalWidth = ctx.inst(
-                this.state.child_component
-            ).requestedWidth;
+            this.naturalWidth =
+                componentsById[this.state.child_component]!.requestedWidth;
         }
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         if (this.state.child_component !== null) {
-            ctx.inst(this.state.child_component).allocatedWidth =
+            componentsById[this.state.child_component]!.allocatedWidth =
                 this.allocatedWidth;
         }
     }
@@ -113,18 +114,17 @@ export class LinkComponent extends ComponentBase {
         if (this.state.child_component === null) {
             // Already set in updateRequestedWidth
         } else {
-            this.naturalHeight = ctx.inst(
-                this.state.child_component
-            ).requestedHeight;
+            this.naturalHeight =
+                componentsById[this.state.child_component]!.requestedHeight;
         }
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         if (this.state.child_component !== null) {
-            ctx.inst(this.state.child_component).allocatedHeight =
+            componentsById[this.state.child_component]!.allocatedHeight =
                 this.allocatedHeight;
 
-            let element = ctx.elem(this.state.child_component);
+            let element = componentsById[this.state.child_component]!.element;
             element.style.left = '0';
             element.style.top = '0';
         }

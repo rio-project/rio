@@ -1,7 +1,7 @@
 import { applyColorSet } from '../designApplication';
 import { ColorSet, ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 
 export type CardState = ComponentState & {
@@ -41,7 +41,9 @@ export class CardComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: CardState): void {
+    updateElement(deltaState: CardState): void {
+        let element = this.element;
+
         // Update the child
         if (deltaState.child !== undefined) {
             replaceOnlyChild(element.id, element, deltaState.child);
@@ -109,7 +111,8 @@ export class CardComponent extends ComponentBase {
         if (this.state.child === null) {
             this.naturalWidth = 0;
         } else {
-            this.naturalWidth = ctx.inst(this.state.child).requestedWidth;
+            this.naturalWidth =
+                componentsById[this.state.child]!.requestedWidth;
         }
 
         this.naturalWidth += this.effectiveInnerMargin * 2;
@@ -117,7 +120,7 @@ export class CardComponent extends ComponentBase {
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         if (this.state.child !== null) {
-            ctx.inst(this.state.child).allocatedWidth =
+            componentsById[this.state.child]!.allocatedWidth =
                 this.allocatedWidth - this.effectiveInnerMargin * 2;
         }
     }
@@ -126,7 +129,8 @@ export class CardComponent extends ComponentBase {
         if (this.state.child === null) {
             this.naturalHeight = 0;
         } else {
-            this.naturalHeight = ctx.inst(this.state.child).requestedHeight;
+            this.naturalHeight =
+                componentsById[this.state.child]!.requestedHeight;
         }
 
         this.naturalHeight += this.effectiveInnerMargin * 2;
@@ -137,11 +141,11 @@ export class CardComponent extends ComponentBase {
             return;
         }
 
-        let child = ctx.inst(this.state.child);
+        let child = componentsById[this.state.child]!;
         child.allocatedHeight =
             this.allocatedHeight - this.effectiveInnerMargin * 2;
 
-        let element = child.element();
+        let element = child.element;
         element.style.left = `${this.effectiveInnerMargin}rem`;
         element.style.top = `${this.effectiveInnerMargin}rem`;
     }

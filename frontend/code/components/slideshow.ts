@@ -1,5 +1,5 @@
 import { replaceChildren } from '../componentManagement';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 import { SingleContainer } from './singleContainer';
 
@@ -69,11 +69,11 @@ export class SlideshowComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SlideshowState): void {
+    updateElement(deltaState: SlideshowState): void {
         // Update the children
         if (deltaState.children !== undefined) {
             replaceChildren(
-                element.id,
+                this.element.id,
                 this.childContainer,
                 deltaState.children,
                 true
@@ -106,15 +106,13 @@ export class SlideshowComponent extends SingleContainer {
             let [topLeft, topRight, bottomRight, bottomLeft] =
                 deltaState.corner_radius;
 
-            element.style.borderRadius = `${topLeft}rem ${topRight}rem ${bottomRight}rem ${bottomLeft}rem`;
+            this.element.style.borderRadius = `${topLeft}rem ${topRight}rem ${bottomRight}rem ${bottomLeft}rem`;
         }
     }
 
     async updateLoop() {
         // If the slideshow has been removed from the DOM, stop updating
-        let element = this.tryGetElement();
-
-        if (element === null || !element.isConnected) {
+        if (!this.element.isConnected) {
             return;
         }
 

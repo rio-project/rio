@@ -1,4 +1,8 @@
-import { getRootInstance, replaceOnlyChild } from '../componentManagement';
+import {
+    componentsById,
+    getRootComponent,
+    replaceOnlyChild,
+} from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
@@ -17,25 +21,25 @@ export class OverlayComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: OverlayState): void {
-        replaceOnlyChild(element.id, element, deltaState.child);
+    updateElement(deltaState: OverlayState): void {
+        replaceOnlyChild(this.element.id, this.element, deltaState.child);
         this.makeLayoutDirty();
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         // The root component keeps track of the correct overlay size. Take it
         // from there. To heck with what the parent says.
-        let root = getRootInstance();
-        ctx.inst(this.state.child).allocatedWidth = root.overlayWidth;
+        let root = getRootComponent();
+        componentsById[this.state.child]!.allocatedWidth = root.overlayWidth;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Honor the global overlay height.
-        let root = getRootInstance();
-        ctx.inst(this.state.child).allocatedHeight = root.overlayHeight;
+        let root = getRootComponent();
+        componentsById[this.state.child]!.allocatedHeight = root.overlayHeight;
 
         // Position the child
-        let element = ctx.elem(this.state.child);
+        let element = componentsById[this.state.child]!.element;
         element.style.left = '0';
         element.style.top = '0';
     }

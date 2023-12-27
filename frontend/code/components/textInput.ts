@@ -74,13 +74,13 @@ export class TextInputComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: TextInputState): void {
+    updateElement(deltaState: TextInputState): void {
         if (deltaState.text !== undefined) {
             this.inputElement.value = deltaState.text;
         }
 
         if (deltaState.label !== undefined) {
-            let labelElement = element.querySelector(
+            let labelElement = this.element.querySelector(
                 '.rio-input-box-label'
             ) as HTMLElement;
             labelElement.textContent = deltaState.label;
@@ -90,7 +90,7 @@ export class TextInputComponent extends ComponentBase {
         }
 
         if (deltaState.prefix_text !== undefined) {
-            let prefixElement = element.querySelector(
+            let prefixElement = this.element.querySelector(
                 '.rio-input-box-prefix-text'
             ) as HTMLElement;
             prefixElement.textContent = deltaState.prefix_text;
@@ -104,7 +104,7 @@ export class TextInputComponent extends ComponentBase {
         }
 
         if (deltaState.suffix_text !== undefined) {
-            let suffixElement = element.querySelector(
+            let suffixElement = this.element.querySelector(
                 '.rio-input-box-suffix-text'
             ) as HTMLElement;
             suffixElement.textContent = deltaState.suffix_text;
@@ -123,19 +123,19 @@ export class TextInputComponent extends ComponentBase {
 
         if (deltaState.is_sensitive === true) {
             this.inputElement.disabled = false;
-            element.classList.remove('rio-disabled-input');
+            this.element.classList.remove('rio-disabled-input');
         } else if (deltaState.is_sensitive === false) {
             this.inputElement.disabled = true;
-            element.classList.add('rio-disabled-input');
+            this.element.classList.add('rio-disabled-input');
         }
 
         if (deltaState.is_valid === false) {
-            element.style.setProperty(
+            this.element.style.setProperty(
                 '--rio-local-text-color',
                 'var(--rio-global-danger-bg)'
             );
         } else if (deltaState.is_valid === true) {
-            element.style.removeProperty('--rio-local-text-color');
+            this.element.style.removeProperty('--rio-local-text-color');
         }
     }
 

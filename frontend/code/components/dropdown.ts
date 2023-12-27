@@ -67,7 +67,7 @@ export class DropdownComponent extends ComponentBase {
 
         // Connect events
         element.addEventListener('click', () => {
-            let element = this.element();
+            let element = this.element;
 
             // Already open?
             if (this.isOpen) {
@@ -94,7 +94,7 @@ export class DropdownComponent extends ComponentBase {
     }
 
     _outsideClickHandler(event: MouseEvent): void {
-        let element = this.element();
+        let element = this.element;
 
         // Clicks into the dropdown are handled elsewhere
         if (
@@ -273,8 +273,8 @@ export class DropdownComponent extends ComponentBase {
         }, 300);
     }
 
-    onDestruction(element: HTMLElement): void {
-        super.onDestruction(element);
+    onDestruction(): void {
+        super.onDestruction();
 
         this.popupElement.remove();
     }
@@ -336,7 +336,7 @@ export class DropdownComponent extends ComponentBase {
     /// Update the visible options based on everything matching the search
     /// filter
     _updateOptionEntries() {
-        let element = this.element();
+        let element = this.element;
         this.optionsElement.innerHTML = '';
         let needleLower = this.inputElement.value.toLowerCase();
 
@@ -394,7 +394,9 @@ export class DropdownComponent extends ComponentBase {
             this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
     }
 
-    updateElement(element: HTMLElement, deltaState: DropdownState): void {
+    updateElement(deltaState: DropdownState): void {
+        let element = this.element;
+
         if (deltaState.optionNames !== undefined) {
             this.state.optionNames = deltaState.optionNames;
 

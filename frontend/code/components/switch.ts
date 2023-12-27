@@ -36,30 +36,30 @@ export class SwitchComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SwitchState): void {
+    updateElement(deltaState: SwitchState): void {
         if (deltaState.is_on !== undefined) {
             if (deltaState.is_on) {
-                element.classList.add('is-on');
+                this.element.classList.add('is-on');
             } else {
-                element.classList.remove('is-on');
+                this.element.classList.remove('is-on');
             }
 
             // Assign the new value to the checkbox element, but only if it
             // differs from the current value, to avoid immediately triggering
             // the event again.
-            let checkboxElement = element.querySelector('input');
+            let checkboxElement = this.element.querySelector('input');
             if (checkboxElement?.checked !== deltaState.is_on) {
                 checkboxElement!.checked = deltaState.is_on;
             }
         }
 
         if (deltaState.is_sensitive === true) {
-            element.classList.remove('rio-switcheroo-disabled');
-            let checkbox = element.querySelector('input');
+            this.element.classList.remove('rio-switcheroo-disabled');
+            let checkbox = this.element.querySelector('input');
             checkbox!.disabled = false;
         } else if (deltaState.is_sensitive === false) {
-            element.classList.add('rio-switcheroo-disabled');
-            let checkbox = element.querySelector('input');
+            this.element.classList.add('rio-switcheroo-disabled');
+            let checkbox = this.element.querySelector('input');
             checkbox!.disabled = true;
         }
 

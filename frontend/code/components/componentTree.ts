@@ -1,9 +1,10 @@
 import {
-    getInstanceByComponentId,
-    getRootInstance,
-    tryGetInstanceByElement,
+    componentsById,
+    getRootComponent,
+    tryGetComponentByElement,
 } from '../componentManagement';
 import { applyIcon } from '../designApplication';
+import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { DebuggerConnectorComponent } from './debuggerConnector';
 
@@ -11,10 +12,10 @@ export type ComponentTreeState = ComponentState & {
     _type_: 'ComponentTree-builtin';
 };
 
-var selectedElementId: string | null = null;
-
 export class ComponentTreeComponent extends ComponentBase {
     state: Required<ComponentTreeState>;
+
+    private selectedComponentId: ComponentId | null = null;
 
     /// When a component should be highlighted to the user, this HTML element
     /// does the highlighting.
@@ -46,7 +47,7 @@ export class ComponentTreeComponent extends ComponentBase {
         return element;
     }
 
-    onDestruction(element: HTMLElement): void {
+    onDestruction(): void {
         // Unregister this component from the global debugger
         let dbg: DebuggerConnectorComponent = globalThis.RIO_DEBUGGER;
         console.assert(dbg !== null);
@@ -56,23 +57,18 @@ export class ComponentTreeComponent extends ComponentBase {
         this.highlighterElement.remove();
     }
 
-    updateElement(element: HTMLElement, deltaState: ComponentState): void {}
+    updateElement(deltaState: ComponentState): void {}
 
     /// Returns the currently selected component. This will impute a sensible
     /// default if the selected component no longer exists.
     getSelectedComponent(): ComponentBase {
         // Does the previously selected component still exist?
-        let element: HTMLElement | null = null;
-        if (selectedElementId !== null) {
-            element = document.getElementById(selectedElementId);
-        }
+        let selectedComponent: ComponentBase | undefined =
+            this.selectedComponentId === null
+                ? undefined
+                : componentsById[this.selectedComponentId];
 
-        let selectedComponent: ComponentBase | null = null;
-        if (element !== null) {
-            selectedComponent = tryGetInstanceByElement(element);
-        }
-
-        if (selectedComponent !== null) {
+        if (selectedComponent !== undefined) {
             return selectedComponent;
         }
 
@@ -85,14 +81,12 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Stores the currently selected component, without updating any UI. Also
     /// notifies the backend.
     setSelectedComponent(component: ComponentBase) {
-        selectedElementId = component.elementId;
+        this.selectedComponentId = component.id;
 
-        let selectedComponentId = parseInt(
-            selectedElementId.substring('rio-id-'.length)
-        );
+        console.log(`DEBUG: Selected component ${this.selectedComponentId}`);
 
         this.sendMessageToBackend({
-            selectedComponentId: selectedComponentId,
+            selectedComponentId: parseInt(this.selectedComponentId),
         });
     }
 
@@ -136,17 +130,17 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Return the root component, but take care to discard any rio internal
     /// components.
     getDisplayedRootComponent(): ComponentBase {
-        let actualRoot = getRootInstance();
-        let userRoot = getInstanceByComponentId(actualRoot.state.child);
+        let actualRoot = getRootComponent();
+        let userRoot = componentsById[actualRoot.state.child]!;
         return userRoot;
     }
 
-    buildTree() {
+    buildTree(): void {
         // Get the rootmost displayed component
         let rootComponent = this.getDisplayedRootComponent();
 
         // Clear the tree
-        let element = this.element();
+        let element = this.element;
         element.innerHTML = '';
 
         // Build a fresh one
@@ -169,23 +163,23 @@ export class ComponentTreeComponent extends ComponentBase {
 
     buildNode(
         parentElement: HTMLElement,
-        instance: ComponentBase,
+        component: ComponentBase,
         level: number
     ) {
         // Create the element for this item
         let element = document.createElement('div');
-        element.id = `rio-debugger-component-tree-item-${instance.elementId}`;
+        element.id = `rio-debugger-component-tree-item-${component.element.id}`;
         element.classList.add('rio-debugger-component-tree-item');
         parentElement.appendChild(element);
 
         // Create the header
         let header = document.createElement('div');
         header.classList.add('rio-debugger-component-tree-item-header');
-        header.textContent = instance.state._python_type_;
+        header.textContent = component.state._python_type_;
         element.appendChild(header);
 
         // Add the children
-        let children = this.getDisplayableChildren(instance);
+        let children = this.getDisplayableChildren(component);
         let childElement = document.createElement('div');
         childElement.classList.add('rio-debugger-component-tree-item-children');
         childElement.style.marginLeft = '0.7rem';
@@ -196,7 +190,7 @@ export class ComponentTreeComponent extends ComponentBase {
         }
 
         // Expand the node, or not
-        let expanded = this.getNodeExpanded(instance);
+        let expanded = this.getNodeExpanded(component);
         childElement.style.display = expanded ? 'flex' : 'none';
 
         // Add icons to give additional information
@@ -211,7 +205,7 @@ export class ComponentTreeComponent extends ComponentBase {
         }
 
         // Icon: Key
-        if (instance.state._key_ !== null) {
+        if (component.state._key_ !== null) {
             icons.push('key');
         }
 
@@ -230,17 +224,17 @@ export class ComponentTreeComponent extends ComponentBase {
             event.stopPropagation();
 
             // Select the component
-            this.setSelectedComponent(instance);
+            this.setSelectedComponent(component);
 
             // Highlight the tree item
             this.highlightSelectedComponent();
 
             // Expand / collapse the node's children
-            let expanded = this.getNodeExpanded(instance);
-            this.setNodeExpanded(instance, !expanded);
+            let expanded = this.getNodeExpanded(component);
+            this.setNodeExpanded(component, !expanded);
 
             // Scroll to the element
-            let componentElement = instance.element();
+            let componentElement = component.element;
             componentElement.scrollIntoView({
                 behavior: 'smooth',
                 block: 'nearest',
@@ -251,7 +245,7 @@ export class ComponentTreeComponent extends ComponentBase {
         // Highlight the actual component when the element is hovered
         header.addEventListener('mouseover', (event) => {
             // Get the element for this instance
-            let componentElement = instance.element();
+            let componentElement = component.element;
             let rect = componentElement.getBoundingClientRect();
 
             // Highlight the component
@@ -280,24 +274,24 @@ export class ComponentTreeComponent extends ComponentBase {
     }
 
     setNodeExpanded(
-        instance: ComponentBase,
+        component: ComponentBase,
         expanded: boolean,
         allowRecursion: boolean = true
     ) {
         // Monkey-patch the new value in the instance
         // @ts-ignore
-        instance._rio_debugger_expanded_ = expanded;
+        component._rio_debugger_expanded_ = expanded;
 
         // Get the node element for this instance
         let element = document.getElementById(
-            `rio-debugger-component-tree-item-${instance.elementId}`
+            `rio-debugger-component-tree-item-${component.element.id}`
         );
 
         // Expand / collapse its children.
         //
         // Only do so if there are children, as the additional empty spacing
         // looks dumb otherwise.
-        let children = this.getDisplayableChildren(instance);
+        let children = this.getDisplayableChildren(component);
 
         if (element !== null) {
             let childrenElement = element.lastChild as HTMLElement;
@@ -328,13 +322,13 @@ export class ComponentTreeComponent extends ComponentBase {
         }
 
         // Get the selected component
-        let selectedInstance = this.getSelectedComponent();
+        let selectedComponent = this.getSelectedComponent();
 
         // Find all tree items
         let treeItems: HTMLElement[] = [];
 
         let cur: HTMLElement | null = document.getElementById(
-            `rio-debugger-component-tree-item-${selectedInstance.elementId}`
+            `rio-debugger-component-tree-item-${selectedComponent.element.id}`
         ) as HTMLElement;
 
         while (

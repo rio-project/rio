@@ -8,14 +8,18 @@ export type WebsiteState = ComponentState & {
 
 export class WebsiteComponent extends ComponentBase {
     state: Required<WebsiteState>;
+    element: HTMLIFrameElement;
 
     createElement(): HTMLElement {
         return document.createElement('iframe');
     }
 
-    updateElement(element: HTMLIFrameElement, deltaState: WebsiteState): void {
-        if (deltaState.url !== undefined && deltaState.url !== element.src) {
-            element.src = deltaState.url;
+    updateElement(deltaState: WebsiteState): void {
+        if (
+            deltaState.url !== undefined &&
+            deltaState.url !== this.element.src
+        ) {
+            this.element.src = deltaState.url;
         }
     }
 }

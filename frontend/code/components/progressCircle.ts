@@ -26,16 +26,16 @@ export class ProgressCircleComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ProgressCircleState): void {
+    updateElement(deltaState: ProgressCircleState): void {
         // Apply the progress
         if (deltaState.progress !== undefined) {
             if (deltaState.progress === null) {
-                element.classList.add('spinning');
+                this.element.classList.add('spinning');
             } else {
-                element.classList.remove('spinning');
+                this.element.classList.remove('spinning');
 
                 let fullCircle = 40 * Math.PI;
-                element.style.setProperty(
+                this.element.style.setProperty(
                     '--dasharray',
                     `${deltaState.progress * fullCircle}, ${
                         (1 - deltaState.progress) * fullCircle
@@ -47,7 +47,7 @@ export class ProgressCircleComponent extends ComponentBase {
         // Apply the color
         if (deltaState.color !== undefined) {
             applyColorSet(
-                element,
+                this.element,
                 deltaState.color === 'keep'
                     ? 'accent-to-plain'
                     : deltaState.color

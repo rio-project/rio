@@ -1,7 +1,7 @@
 import {
+    componentsById,
     getChildIds,
-    getInstanceByComponentId,
-    getInstanceByElement,
+    getComponentByElement,
     getParentComponentElementIncludingInjected,
 } from '../componentManagement';
 import { LayoutContext } from '../layouting';
@@ -40,7 +40,9 @@ export type ComponentState = {
 /// Note: Components that can have the keyboard focus must also implement a
 /// `grabKeyboardFocus(): void` method.
 export abstract class ComponentBase {
-    elementId: string;
+    id: string;
+    element: HTMLElement;
+
     state: Required<ComponentState>;
 
     isLayoutDirty: boolean;
@@ -56,30 +58,33 @@ export abstract class ComponentBase {
 
     private _eventHandlers: EventHandler[] = [];
 
-    constructor(elementId: string, state: Required<ComponentState>) {
-        this.elementId = elementId;
+    constructor(id: string, state: Required<ComponentState>) {
+        this.id = id;
         this.state = state;
+
+        this.element = this.createElement();
+        this.element.id = `rio-id-${id}`;
 
         this.isLayoutDirty = true;
     }
 
     /// Returns the children of this component. Slowish.
     getDirectChildren(): ComponentBase[] {
-        return getChildIds(this.state).map(getInstanceByComponentId);
+        return getChildIds(this.state).map((id) => componentsById[id]!);
     }
 
     /// Returns this element's parent. Returns `null` if this element has no
     /// parent.
     tryGetParent(): ComponentBase | null {
         let parentElement = getParentComponentElementIncludingInjected(
-            this.element()
+            this.element
         );
 
         if (parentElement === null) {
             return null;
         }
 
-        return getInstanceByElement(parentElement);
+        return getComponentByElement(parentElement);
     }
 
     /// Mark this element's layout as dirty, and chain up to the parent.
@@ -92,41 +97,14 @@ export abstract class ComponentBase {
         }
     }
 
-    /// Fetches the HTML element associated with this component. This is a slow
-    /// operation and should be avoided if possible. Returns `null` if the
-    /// element cannot be found.
-    tryGetElement(): HTMLElement | null {
-        return document.getElementById(this.elementId);
-    }
-
-    /// Fetches the HTML element associated with this component. This is a slow
-    /// operation and should be avoided if possible. It is an error to look up
-    /// an element which does not exist.
-    element(): HTMLElement {
-        let element = document.getElementById(this.elementId);
-
-        if (element === null) {
-            throw new Error(
-                `Instance for ${this.state._python_type_} component with id ${this.elementId} cannot find its element`
-            );
-        }
-
-        return element;
-    }
-
     /// Creates the HTML element associated with this component. This function does
     /// not attach the element to the DOM, but merely returns it.
-    abstract createElement(): HTMLElement;
+    protected abstract createElement(): HTMLElement;
 
-    /// This method is called after the component's HTML element has been
-    /// created. It is intended for components that need to do some additional
-    /// initialization once they know their initial state.
-    onCreation(element: HTMLElement, state: Required<ComponentState>): void {}
-
-    /// This method is called right before the component's HTML element is
-    /// removed from the DOM. It can be used for cleaning up event handlers and
-    /// helper HTML elements (like popups).
-    onDestruction(element: HTMLElement): void {
+    /// This method is called when a component is about to be removed from the
+    /// widget tree. It can be used for cleaning up event handlers and helper
+    /// HTML elements (like popups).
+    onDestruction(): void {
         for (let handler of this._eventHandlers) {
             handler.disconnect();
         }
@@ -135,47 +113,38 @@ export abstract class ComponentBase {
     /// Given a partial state update, this function updates the component's HTML
     /// element to reflect the new state.
     ///
-    /// The `element` parameter is identical to `this.element()`. It's passed as
-    /// an argument because it's more efficient than calling `this.element()`.
-    abstract updateElement(
-        element: HTMLElement,
-        deltaState: ComponentState
-    ): void;
+    /// The `element` parameter is identical to `this.element`. It's passed as
+    /// an argument because it's more efficient than calling `this.element`.
+    abstract updateElement(deltaState: ComponentState): void;
 
     /// Send a message to the python instance corresponding to this component. The
     /// message is an arbitrary JSON object and will be passed to the instance's
     /// `_on_message` method.
     sendMessageToBackend(message: object): void {
         callRemoteMethodDiscardResponse('componentMessage', {
-            // Remove the leading `rio-id-` from the element's ID
-            componentId: parseInt(this.elementId.substring('rio-id-'.length)),
+            componentId: parseInt(this.id),
             payload: message,
         });
     }
 
-    _setStateDontNotifyBackend(deltaState: object): void {
+    _setStateDontNotifyBackend(deltaState: ComponentState): void {
+        // Trigger an update
+        this.updateElement(deltaState);
+
         // Set the state
         this.state = {
             ...this.state,
             ...deltaState,
         };
-
-        // Trigger an update
-        // @ts-ignore
-        this.updateElement(this.element(), deltaState);
     }
 
     setStateAndNotifyBackend(deltaState: object): void {
         // Set the state. This also updates the component
         this._setStateDontNotifyBackend(deltaState);
 
-        // Remove the leading `rio-id-` from the element's ID
-        let componentIdString = this.elementId.substring('rio-id-'.length);
-        let componentIdInt = parseInt(componentIdString);
-
         // Notify the backend
         callRemoteMethodDiscardResponse('componentStateUpdate', {
-            componentId: componentIdInt,
+            componentId: parseInt(this.id),
             deltaState: deltaState,
         });
 

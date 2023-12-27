@@ -1,6 +1,6 @@
 import { applyColorSet } from '../designApplication';
 import { ColorSet } from '../models';
-import { ComponentBase, ComponentState } from './componentBase';
+import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
@@ -52,16 +52,16 @@ export class ButtonComponent extends SingleContainer {
             });
         };
 
+        setTimeout(() => {
+            this.isStillInitiallyDisabled = false;
+        }, this.state.initially_disabled_for * 1000);
+
         return element;
     }
 
-    onCreation(element: HTMLElement, state: Required<ButtonState>): void {
-        setTimeout(() => {
-            this.isStillInitiallyDisabled = false;
-        }, state.initially_disabled_for * 1000);
-    }
+    updateElement(deltaState: ButtonState): void {
+        let element = this.element;
 
-    updateElement(element: HTMLElement, deltaState: ButtonState): void {
         // Update the child
         if (deltaState.child !== undefined) {
             replaceOnlyChild(element.id, element, deltaState.child);

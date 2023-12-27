@@ -28,7 +28,7 @@ export class TableComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLTableElement, deltaState: TableState): void {
+    updateElement(deltaState: TableState): void {
         if (deltaState.data !== undefined) {
             let showRowNumbers =
                 deltaState.show_row_numbers ?? this.state.show_row_numbers;

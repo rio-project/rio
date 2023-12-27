@@ -1,6 +1,10 @@
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
-import { getInstanceByElement, replaceOnlyChild } from '../componentManagement';
+import {
+    componentsById,
+    getComponentByElement,
+    replaceOnlyChild,
+} from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { easeInOut } from '../easeFunctions';
 
@@ -29,14 +33,14 @@ export class SwitcherComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: SwitcherState): void {
+    updateElement(deltaState: SwitcherState): void {
         // Update the child & assign its position
         if (deltaState.child !== this.state.child) {
             // Add the child into a helper container
             let childContainer = document.createElement('div');
-            element.appendChild(childContainer);
+            this.element.appendChild(childContainer);
 
-            replaceOnlyChild(element.id, childContainer, deltaState.child);
+            replaceOnlyChild(this.element.id, childContainer, deltaState.child);
 
             // Position it
             let childElement = childContainer.firstElementChild as HTMLElement;
@@ -44,7 +48,7 @@ export class SwitcherComponent extends ComponentBase {
             childElement.style.top = '0';
 
             // Remember the child, as it is needed frequently
-            this.childInstance = getInstanceByElement(childElement);
+            this.childInstance = getComponentByElement(childElement);
 
             // Start the animation. This will also update the layout
             if (this.isInitialized) {
@@ -99,7 +103,7 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        ctx.inst(this.state.child).allocatedWidth = this.allocatedWidth;
+        componentsById[this.state.child]!.allocatedWidth = this.allocatedWidth;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
@@ -107,6 +111,7 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        ctx.inst(this.state.child).allocatedHeight = this.allocatedHeight;
+        componentsById[this.state.child]!.allocatedHeight =
+            this.allocatedHeight;
     }
 }

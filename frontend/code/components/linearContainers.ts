@@ -36,10 +36,9 @@ class LinearContainer extends ComponentBase {
         return element;
     }
 
-    updateElement(
-        element: HTMLElement,
-        deltaState: LinearContainerState
-    ): void {
+    updateElement(deltaState: LinearContainerState): void {
+        let element = this.element;
+
         // Children
         if (deltaState.children !== undefined) {
             replaceChildren(
@@ -76,7 +75,7 @@ export class RowComponent extends LinearContainer {
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 0;
         this.nGrowers = 0;
-        let children = ctx.directChildren(this);
+        let children = this.getDirectChildren();
 
         // Add up all children's requested widths
         for (let child of children) {
@@ -94,7 +93,7 @@ export class RowComponent extends LinearContainer {
         let additionalSpacePerGrower =
             this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             child.allocatedWidth = child.requestedWidth;
 
             if (child.state['_grow_'][0]) {
@@ -106,7 +105,7 @@ export class RowComponent extends LinearContainer {
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight = 0;
 
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             this.naturalHeight = Math.max(
                 this.naturalHeight,
                 child.requestedHeight
@@ -125,7 +124,7 @@ export class RowComponent extends LinearContainer {
             // If there is no child elements make a single undefined space take
             // up everything. This way there is no unsightly disconnect between
             // the two.
-            let element = this.element();
+            let element = this.element;
 
             if (element.children.length === 0) {
                 this.undef1.style.flexGrow = '1';
@@ -136,14 +135,14 @@ export class RowComponent extends LinearContainer {
             }
 
             console.log(
-                `Warning: Component #${this.elementId} has ${
+                `Warning: Component #${this.element.id} has ${
                     additionalSpace * pixelsPerEm
                 }px of unused space`
             );
         }
 
         // Assign the allocated height to the children
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             child.allocatedHeight = this.allocatedHeight;
         }
     }
@@ -159,7 +158,7 @@ export class ColumnComponent extends LinearContainer {
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 0;
 
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             this.naturalWidth = Math.max(
                 this.naturalWidth,
                 child.requestedWidth
@@ -169,7 +168,7 @@ export class ColumnComponent extends LinearContainer {
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         // Assign the allocated width to the children
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             child.allocatedWidth = this.allocatedWidth;
         }
     }
@@ -177,7 +176,7 @@ export class ColumnComponent extends LinearContainer {
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight = 0;
         this.nGrowers = 0;
-        let children = ctx.directChildren(this);
+        let children = this.getDirectChildren();
 
         // Add up all children's requested heights
         for (let child of children) {
@@ -201,7 +200,7 @@ export class ColumnComponent extends LinearContainer {
             // If there is no child elements make a single undefined space take
             // up everything. This way there is no unsightly disconnect between
             // the two.
-            let element = this.element();
+            let element = this.element;
 
             if (element.children.length === 0) {
                 this.undef1.style.flexGrow = '1';
@@ -212,14 +211,14 @@ export class ColumnComponent extends LinearContainer {
             }
 
             console.log(
-                `Warning: Component #${this.elementId} has ${
+                `Warning: Component #${this.element.id} has ${
                     additionalSpace * pixelsPerEm
                 }px of unused space`
             );
         }
 
         // Assign the allocated height to the children
-        let children = ctx.directChildren(this);
+        let children = this.getDirectChildren();
         let additionalSpacePerGrower =
             this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 

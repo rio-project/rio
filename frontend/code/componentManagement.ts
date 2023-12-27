@@ -96,60 +96,38 @@ const componentClasses = {
 
 globalThis.componentClasses = componentClasses;
 
-const elementsToInstances = new WeakMap<HTMLElement, ComponentBase>();
+export const componentsById: { [id: ComponentId]: ComponentBase | undefined } =
+    {};
 
-export function getRootInstance(): FundamentalRootComponent {
+export function getRootComponent(): FundamentalRootComponent {
     let element = document.body.firstElementChild as HTMLElement;
-    let instance = elementsToInstances.get(element);
-
-    if (instance === undefined) {
-        throw `Could not find root component`;
-    }
-
-    return instance as FundamentalRootComponent;
+    return getComponentByElement(element) as FundamentalRootComponent;
 }
 
-export function getElementByComponentId(id: ComponentId): HTMLElement {
-    let element = document.getElementById(`rio-id-${id}`);
+export function getComponentByElement(element: HTMLElement): ComponentBase {
+    let instance = tryGetComponentByElement(element);
 
-    if (element === null) {
-        throw `Could not find html element with id rio-id-${id}`;
-    }
-
-    return element;
-}
-
-export function getInstanceByComponentId(id: ComponentId): ComponentBase {
-    let element = getElementByComponentId(id);
-
-    let instance = elementsToInstances.get(element);
-
-    if (instance === undefined) {
-        throw `Could not find component with id ${id}`;
-    }
-
-    return instance;
-}
-
-globalThis.getInstanceByComponentId = getInstanceByComponentId; // For debugging
-
-export function getInstanceByElement(element: HTMLElement): ComponentBase {
-    let instance = elementsToInstances.get(element);
-
-    if (instance === undefined) {
+    if (instance === null) {
         throw `This element does not correspond to a component`;
     }
 
     return instance;
 }
 
-globalThis.getInstanceByElement = getInstanceByElement; // For debugging
+globalThis.getInstanceByElement = getComponentByElement; // For debugging
 
-export function tryGetInstanceByElement(
-    element: HTMLElement
+export function tryGetComponentByElement(
+    element: Element
 ): ComponentBase | null {
-    let instance = elementsToInstances.get(element);
-    return instance === undefined ? null : instance;
+    return componentsById[element.id.slice('rio-id-'.length)] ?? null;
+}
+
+export function isComponentElement(element: Element): boolean {
+    if (!element.id) {
+        return false;
+    }
+
+    return element.id.startsWith('rio-id-');
 }
 
 export function getParentComponentElementIncludingInjected(
@@ -190,13 +168,7 @@ function getCurrentComponentState(
     id: ComponentId,
     deltaState: ComponentState
 ): ComponentState {
-    let element = document.getElementById(`rio-id-${id}`);
-
-    if (element === null) {
-        return deltaState;
-    }
-
-    let instance = elementsToInstances.get(element);
+    let instance = componentsById[id];
 
     if (instance === undefined) {
         return deltaState;
@@ -368,7 +340,7 @@ function preprocessDeltaStates(message: {
             continue;
         }
 
-        let parentInstance = elementsToInstances.get(parentElement);
+        let parentInstance = getComponentByElement(parentElement);
         if (parentInstance === undefined) {
             throw `Parent component with id ${parentElement} not found`;
         }
@@ -389,15 +361,16 @@ export function updateComponentStates(
     preprocessDeltaStates(deltaStates);
 
     // Modifying the DOM makes the keyboard focus get lost. Remember which
-    // element had focus, so we can restore it later.
+    // element had focus so we can restore it later.
     let focusedElement = document.activeElement;
     // Find the component that this HTMLElement belongs to
-    while (
-        focusedElement !== null &&
-        !elementsToInstances.has(focusedElement as HTMLElement)
-    ) {
-        focusedElement = focusedElement.parentElement!;
+    while (focusedElement !== null && !isComponentElement(focusedElement)) {
+        focusedElement = focusedElement.parentElement;
     }
+    let focusedComponent =
+        focusedElement === null
+            ? null
+            : getComponentByElement(focusedElement as HTMLElement);
 
     // Create a HTML element to hold all latent components, so they aren't
     // garbage collected while updating the DOM.
@@ -410,11 +383,10 @@ export function updateComponentStates(
     // element
     for (let componentId in deltaStates) {
         let deltaState = deltaStates[componentId];
-        let elementId = `rio-id-${componentId}`;
-        let element = document.getElementById(elementId)!;
+        let component = componentsById[componentId];
 
-        // This is a reused element, no need to instantiate a new one
-        if (element) {
+        // This is a reused component, no need to instantiate a new one
+        if (component) {
             continue;
         }
 
@@ -427,64 +399,55 @@ export function updateComponentStates(
         }
 
         // Create an instance for this component
-        let instance: ComponentBase = new componentClass(elementId, deltaState);
+        let newComponent = new componentClass(componentId, deltaState);
 
-        // Build the component
-        element = instance.createElement();
-        element.classList.add('rio-component');
-        element.id = elementId;
+        // Register the component for quick and easy lookup
+        componentsById[componentId] = newComponent;
 
         // Store the component's class name in the element. Used for debugging.
-        element.setAttribute('dbg-py-class', deltaState._python_type_!);
+        newComponent.element.setAttribute(
+            'dbg-py-class',
+            deltaState._python_type_!
+        );
 
         // Set the component's key, if it has one. Used for debugging.
         let key = deltaState['key'];
         if (key !== undefined) {
-            element.setAttribute('dbg-key', `${key}`);
+            newComponent.element.setAttribute('dbg-key', `${key}`);
         }
-
-        // Let the component do any post-creation initialization
-        instance.onCreation(element, deltaState as Required<ComponentState>);
-
-        // Create a mapping from the element to the component instance
-        elementsToInstances.set(element, instance);
-
-        // Keep the component alive
-        latentComponents.appendChild(element);
     }
 
     // Update all components mentioned in the message
     for (let id in deltaStates) {
         let deltaState = deltaStates[id];
-        let element = getElementByComponentId(id);
+        let component = componentsById[id]!;
 
         // Perform updates specific to this component type
-        let instance = elementsToInstances.get(element!) as ComponentBase;
-        instance.updateElement(element, deltaState);
+        component.updateElement(deltaState);
 
         // If the component's width or height has changed, request a re-layout.
         let width_changed =
-            Math.abs(deltaState._size_![0] - instance.state._size_[0]) > 1e-6;
+            Math.abs(deltaState._size_![0] - component.state._size_[0]) > 1e-6;
         let height_changed =
-            Math.abs(deltaState._size_![1] - instance.state._size_[1]) > 1e-6;
+            Math.abs(deltaState._size_![1] - component.state._size_[1]) > 1e-6;
 
         if (width_changed || height_changed) {
             console.log(
-                `Triggering re-layout because component #${id} changed size: ${instance.state._size_} -> ${deltaState._size_}`
+                `Triggering re-layout because component #${id} changed size: ${component.state._size_} -> ${deltaState._size_}`
             );
-            instance.makeLayoutDirty();
+            component.makeLayoutDirty();
         }
 
         // Update the component's state
-        instance.state = {
-            ...instance.state,
+        component.state = {
+            ...component.state,
             ...deltaState,
         };
     }
 
-    // Replace the root component if requested
+    // Set the root component if necessary
     if (rootComponentId !== null) {
-        let rootElement = getElementByComponentId(rootComponentId);
+        let rootElement = componentsById[rootComponentId]!.element;
         document.body.appendChild(rootElement);
 
         // Initialize the debugger, or not
@@ -497,17 +460,23 @@ export function updateComponentStates(
     }
 
     // Restore the keyboard focus
-    if (focusedElement instanceof HTMLElement) {
-        restoreKeyboardFocus(focusedElement, latentComponents);
+    if (focusedComponent !== null) {
+        restoreKeyboardFocus(focusedComponent, latentComponents);
     }
 
     // Remove the latent components
     for (let element of latentComponents.children) {
-        let instance = elementsToInstances.get(element as HTMLElement)!;
-        if (instance === undefined) {
+        let component = tryGetComponentByElement(element);
+        if (component === null) {
             console.error("Couldn't find instance for latent element", element);
         } else {
-            instance.onDestruction(element as HTMLElement);
+            // Destruct the component and all its children
+            let queue = [component];
+            for (let comp of queue) {
+                queue.push(...comp.getDirectChildren());
+                comp.onDestruction();
+                delete componentsById[comp.id];
+            }
         }
     }
     latentComponents.remove();
@@ -522,7 +491,7 @@ function canHaveKeyboardFocus(instance: ComponentBase): boolean {
 }
 
 function restoreKeyboardFocus(
-    focusedElement: HTMLElement,
+    focusedComponent: ComponentBase,
     latentComponents: HTMLElement
 ): void {
     // The elements that are about to die still know the id of the parent from
@@ -532,27 +501,23 @@ function restoreKeyboardFocus(
     // Keep in mind that we have to traverse the component tree all the way up to
     // the root. Because even if a component still has a parent, the parent itself
     // might be about to die.
-    let rootComponent = getRootInstance().element();
-    let current: HTMLElement = focusedElement;
+    let rootComponent = getRootComponent();
+    let current = focusedComponent;
     let winner: ComponentBase | null = null;
 
     while (current !== rootComponent) {
         // If this component is dead, no child of it can get the keyboard focus
-        if (current.parentElement === latentComponents) {
+        if (current.element.parentElement === latentComponents) {
             winner = null;
-            break;
         }
 
-        // If we don't currently know of a focusable (and live) component, check if
-        // this one fits the bill
-        else if (winner === null) {
-            let instance = elementsToInstances.get(current)!;
-            if (canHaveKeyboardFocus(instance)) {
-                winner = instance;
-            }
+        // If we don't currently know of a focusable (and live) component, check
+        // if this one fits the bill
+        else if (winner === null && canHaveKeyboardFocus(current)) {
+            winner = current;
         }
 
-        current = document.getElementById(current.dataset.parentId!)!;
+        current = current.tryGetParent()!;
     }
 
     // We made it to the root. Do we have a winner?
@@ -565,7 +530,7 @@ function restoreKeyboardFocus(
 export function replaceOnlyChild(
     parentId: string,
     parentElement: HTMLElement,
-    childId: null | undefined | number | string
+    childId: null | undefined | ComponentId
 ): void {
     // If undefined, do nothing
     if (childId === undefined) {
@@ -596,17 +561,17 @@ export function replaceOnlyChild(
     }
 
     // Add the replacement component
-    let newElement = getElementByComponentId(childId);
-    parentElement?.appendChild(newElement);
-    newElement.dataset.parentId = parentId;
+    let childElement = componentsById[childId]!.element;
+    parentElement?.appendChild(childElement);
+    childElement.dataset.parentId = parentId;
 }
 
 export function replaceChildren(
     parentId: string,
     parentElement: HTMLElement,
-    childIds: undefined | (number | string)[],
+    childIds: undefined | ComponentId[],
     wrapInDivs: boolean = false
-) {
+): void {
     // If undefined, do nothing
     if (childIds === undefined) {
         return;
@@ -638,9 +603,9 @@ export function replaceChildren(
             while (curIdIndex < childIds.length) {
                 let curId = childIds[curIdIndex];
 
-                let newElement = getElementByComponentId(curId);
-                parentElement.appendChild(wrap(newElement!));
-                newElement.dataset.parentId = parentId;
+                let childElement = componentsById[curId]!.element;
+                parentElement.appendChild(wrap(childElement));
+                childElement.dataset.parentId = parentId;
 
                 curIdIndex++;
             }
@@ -668,9 +633,9 @@ export function replaceChildren(
 
         // This element is not the correct element, insert the correct one
         // instead
-        let newElement = getElementByComponentId(curId);
-        parentElement.insertBefore(wrap(newElement!), curElement);
-        newElement.dataset.parentId = parentId;
+        let childElement = componentsById[curId]!.element;
+        parentElement.insertBefore(wrap(childElement), curElement);
+        childElement.dataset.parentId = parentId;
 
         curIdIndex++;
     }

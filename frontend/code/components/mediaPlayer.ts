@@ -181,12 +181,12 @@ export class MediaPlayerComponent extends ComponentBase {
         if (this._isFullScreen) {
             document.exitFullscreen();
         } else {
-            this.element().requestFullscreen();
+            this.element.requestFullscreen();
         }
     }
 
     private _onFullscreenChange(): void {
-        this._isFullScreen = document.fullscreenElement === this.element();
+        this._isFullScreen = document.fullscreenElement === this.element;
 
         if (this._isFullScreen) {
             applyIcon(this.fullscreenButton, 'fullscreen-exit', 'white');
@@ -509,10 +509,7 @@ export class MediaPlayerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(
-        element: HTMLMediaElement,
-        deltaState: MediaPlayerState
-    ): void {
+    updateElement(deltaState: MediaPlayerState): void {
         if (deltaState.mediaUrl !== undefined) {
             let mediaUrl = new URL(deltaState.mediaUrl, document.location.href)
                 .href;
@@ -558,7 +555,7 @@ export class MediaPlayerComponent extends ComponentBase {
         this._updateVolumeSliderAndIcon();
 
         if (deltaState.background !== undefined) {
-            Object.assign(element.style, fillToCss(deltaState.background));
+            Object.assign(this.element.style, fillToCss(deltaState.background));
         }
 
         if (deltaState.reportError !== undefined) {
@@ -788,7 +785,7 @@ export class MediaPlayerComponent extends ComponentBase {
     }
 
     grabKeyboardFocus(): void {
-        this.element().focus();
+        this.element.focus();
     }
 
     private _onError(event: string | Event): void {

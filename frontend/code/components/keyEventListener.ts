@@ -701,10 +701,9 @@ export class KeyEventListenerComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(
-        element: HTMLElement,
-        deltaState: KeyEventListenerState
-    ): void {
+    updateElement(deltaState: KeyEventListenerState): void {
+        let element = this.element;
+
         let reportKeyDown =
             deltaState.reportKeyDown ?? this.state.reportKeyDown;
         let reportKeyUp = deltaState.reportKeyUp ?? this.state.reportKeyUp;
@@ -751,6 +750,6 @@ export class KeyEventListenerComponent extends SingleContainer {
     }
 
     grabKeyboardFocus(): void {
-        this.element().focus();
+        this.element.focus();
     }
 }

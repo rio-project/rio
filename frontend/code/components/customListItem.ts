@@ -1,6 +1,6 @@
 import { MDCRipple } from '@material/ripple';
 import { ComponentBase, ComponentState } from './componentBase';
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 
 const PADDING_X: number = 1.5;
@@ -25,7 +25,9 @@ export class CustomListItemComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: CustomListItemState): void {
+    updateElement(deltaState: CustomListItemState): void {
+        let element = this.element;
+
         // Update the child
         if (deltaState.child !== undefined) {
             replaceOnlyChild(element.id, element, deltaState.child);
@@ -69,25 +71,25 @@ export class CustomListItemComponent extends ComponentBase {
 
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth =
-            ctx.inst(this.state.child).requestedWidth + PADDING_X * 2;
+            componentsById[this.state.child]!.requestedWidth + PADDING_X * 2;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        ctx.inst(this.state.child).allocatedWidth =
+        componentsById[this.state.child]!.allocatedWidth =
             this.allocatedWidth - PADDING_X * 2;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight =
-            ctx.inst(this.state.child).requestedHeight + PADDING_Y * 2;
+            componentsById[this.state.child]!.requestedHeight + PADDING_Y * 2;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let child = ctx.inst(this.state.child);
+        let child = componentsById[this.state.child]!;
         child.allocatedHeight = this.allocatedHeight - PADDING_Y * 2;
 
         // Position the child
-        let element = child.element();
+        let element = child.element;
         element.style.left = `${PADDING_X}rem`;
         element.style.top = `${PADDING_Y}rem`;
 

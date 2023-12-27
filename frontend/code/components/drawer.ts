@@ -1,6 +1,6 @@
 import { pixelsPerEm } from '../app';
 import { commitCss } from '../utils';
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 import { LayoutContext } from '../layouting';
 
@@ -70,7 +70,9 @@ export class DrawerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: DrawerState): void {
+    updateElement(deltaState: DrawerState): void {
+        let element = this.element;
+
         // Update the children
         if (deltaState.anchor !== undefined) {
             replaceOnlyChild(
@@ -168,7 +170,7 @@ export class DrawerComponent extends ComponentBase {
         }
 
         // Update the class
-        let element = this.element();
+        let element = this.element;
         if (this.openFraction > 0.5) {
             element.classList.add('rio-drawer-open');
         } else {
@@ -178,14 +180,14 @@ export class DrawerComponent extends ComponentBase {
 
     _enableTransition() {
         // Remove the class and flush the style changes
-        let element = this.element();
+        let element = this.element;
         element.classList.remove('rio-drawer-no-transition');
         commitCss(element);
     }
 
     _disableTransition() {
         // Add the class and flush the style changes
-        let element = this.element();
+        let element = this.element;
         element.classList.add('rio-drawer-no-transition');
         commitCss(element);
     }
@@ -217,7 +219,7 @@ export class DrawerComponent extends ComponentBase {
     }
 
     beginDrag(event: MouseEvent) {
-        let element = this.element();
+        let element = this.element;
 
         // Find the location of the drawer
         //
@@ -339,8 +341,8 @@ export class DrawerComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        let anchorInst = ctx.inst(this.state.anchor);
-        let contentInst = ctx.inst(this.state.content);
+        let anchorInst = componentsById[this.state.anchor]!;
+        let contentInst = componentsById[this.state.content]!;
 
         this.naturalWidth = Math.max(
             anchorInst.requestedWidth,
@@ -349,8 +351,8 @@ export class DrawerComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        let anchorInst = ctx.inst(this.state.anchor);
-        let contentInst = ctx.inst(this.state.content);
+        let anchorInst = componentsById[this.state.anchor]!;
+        let contentInst = componentsById[this.state.content]!;
 
         anchorInst.allocatedWidth = this.allocatedWidth;
 
@@ -362,8 +364,8 @@ export class DrawerComponent extends ComponentBase {
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        let anchorInst = ctx.inst(this.state.anchor);
-        let contentInst = ctx.inst(this.state.content);
+        let anchorInst = componentsById[this.state.anchor]!;
+        let contentInst = componentsById[this.state.content]!;
 
         this.naturalHeight = Math.max(
             anchorInst.requestedHeight,
@@ -372,8 +374,8 @@ export class DrawerComponent extends ComponentBase {
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let anchorInst = ctx.inst(this.state.anchor);
-        let contentInst = ctx.inst(this.state.content);
+        let anchorInst = componentsById[this.state.anchor]!;
+        let contentInst = componentsById[this.state.content]!;
 
         anchorInst.allocatedHeight = this.allocatedHeight;
 

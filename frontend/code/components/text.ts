@@ -28,7 +28,7 @@ export class TextComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: TextState): void {
+    updateElement(deltaState: TextState): void {
         // Text content
         //
         // Make sure not to allow any linebreaks if the text is not multiline.

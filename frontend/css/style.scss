@@ -1578,11 +1578,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     pointer-events: auto;
 }
 
-.rio-scroll-container > * > * {
-    min-width: 100%;
-    min-height: 100%;
-}
-
 // Color Picker
 .rio-color-picker {
     pointer-events: none;

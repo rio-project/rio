@@ -15,7 +15,9 @@ export class ClassContainerComponent extends SingleContainer {
         return document.createElement('div');
     }
 
-    updateElement(element: HTMLElement, deltaState: ClassContainerState): void {
+    updateElement(deltaState: ClassContainerState): void {
+        let element = this.element;
+
         if (deltaState.child !== undefined) {
             replaceOnlyChild(element.id, element, deltaState.child);
             this.makeLayoutDirty();

@@ -1,7 +1,4 @@
-import {
-    getInstanceByComponentId,
-    replaceOnlyChild,
-} from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
@@ -20,50 +17,46 @@ export class AlignComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: AlignState): void {
-        replaceOnlyChild(element.id, element, deltaState.child);
+    updateElement(deltaState: AlignState): void {
+        replaceOnlyChild(this.element.id, this.element, deltaState.child);
 
         this.makeLayoutDirty();
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        this.naturalWidth = ctx.inst(this.state.child).requestedWidth;
+        this.naturalWidth = componentsById[this.state.child]!.requestedWidth;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        let childInstance = ctx.inst(this.state.child);
-        let childElement = ctx.elem(this.state.child);
+        let child = componentsById[this.state.child]!;
 
         if (this.state.align_x === null) {
-            childInstance.allocatedWidth = this.allocatedWidth;
-            childElement.style.left = '0';
+            child.allocatedWidth = this.allocatedWidth;
+            child.element.style.left = '0';
         } else {
-            childInstance.allocatedWidth = childInstance.requestedWidth;
+            child.allocatedWidth = child.requestedWidth;
 
-            let additionalSpace =
-                this.allocatedWidth - childInstance.requestedWidth;
-            childElement.style.left =
+            let additionalSpace = this.allocatedWidth - child.requestedWidth;
+            child.element.style.left =
                 additionalSpace * this.state.align_x + 'rem';
         }
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = ctx.inst(this.state.child).requestedHeight;
+        this.naturalHeight = componentsById[this.state.child]!.requestedHeight;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let childInstance = ctx.inst(this.state.child);
-        let childElement = ctx.elem(this.state.child);
+        let child = componentsById[this.state.child]!;
 
         if (this.state.align_y === null) {
-            childInstance.allocatedHeight = this.allocatedHeight;
-            childElement.style.top = '0';
+            child.allocatedHeight = this.allocatedHeight;
+            child.element.style.top = '0';
         } else {
-            childInstance.allocatedHeight = childInstance.requestedHeight;
+            child.allocatedHeight = child.requestedHeight;
 
-            let additionalSpace =
-                this.allocatedHeight - childInstance.requestedHeight;
-            childElement.style.top =
+            let additionalSpace = this.allocatedHeight - child.requestedHeight;
+            child.element.style.top =
                 additionalSpace * this.state.align_y + 'rem';
         }
     }
