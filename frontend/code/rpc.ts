@@ -1,10 +1,6 @@
 import { pixelsPerEm } from './app';
-import {
-    getInstanceByComponentId,
-    updateComponentStates,
-} from './componentManagement';
-import { ComponentTreeComponent } from './components/componentTree';
 import { DebuggerConnectorComponent } from './components/debuggerConnector';
+import { componentsById, updateComponentStates } from './componentManagement';
 import {
     requestFileUpload,
     registerFont,
@@ -250,9 +246,9 @@ export async function processMessageReturnResponse(
             break;
 
         case 'setKeyboardFocus':
-            let instance = getInstanceByComponentId(message.params.componentId);
+            let component = componentsById[message.params.componentId]!;
             // @ts-expect-error
-            instance.grabKeyboardFocus();
+            component.grabKeyboardFocus();
 
             response = null;
             break;

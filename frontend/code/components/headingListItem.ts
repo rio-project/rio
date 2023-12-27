@@ -38,18 +38,17 @@ export class HeadingListItemComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(
-        element: HTMLElement,
-        deltaState: HeadingListItemState
-    ): void {
+    updateElement(deltaState: HeadingListItemState): void {
         if (deltaState.text !== undefined) {
-            element.textContent = deltaState.text;
+            this.element.textContent = deltaState.text;
 
             // Cache the text's dimensions
             [this.textWidth, this.textHeight] = getTextDimensions(
                 deltaState.text,
                 'heading3'
             );
+
+            this.makeLayoutDirty();
         }
     }
 

@@ -7,7 +7,6 @@ import { micromark } from 'micromark';
 // https://github.com/highlightjs/highlight.js#importing-the-library
 import hljs from 'highlight.js/lib/common';
 import { LayoutContext } from '../layouting';
-import { pixelsPerEm } from '../app';
 import { getElementHeight, getElementWidth } from '../layoutHelpers';
 
 export type MarkdownViewState = ComponentState & {
@@ -132,7 +131,8 @@ function convertMarkdown(
         ) as HTMLButtonElement;
 
         copyButton.addEventListener('click', () => {
-            const codeToCopy = (codeBlockInner as HTMLElement).textContent;
+            const codeToCopy =
+                (codeBlockInner as HTMLElement).textContent ?? '';
             const textArea = document.createElement('textarea');
             textArea.value = codeToCopy;
             document.body.appendChild(textArea);
@@ -181,18 +181,18 @@ export class MarkdownViewComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: MarkdownViewState): void {
+    updateElement(deltaState: MarkdownViewState): void {
         if (deltaState.text !== undefined) {
             // Create a new div to hold the markdown content. This is so the
             // layouting code can move it around as needed.
             let defaultLanguage =
                 deltaState.default_language || this.state.default_language;
 
-            element.innerHTML = '';
+            this.element.innerHTML = '';
             let contentDiv = document.createElement('div');
             contentDiv.style.display = 'flex'; // Prevent collapsing margins
             contentDiv.style.flexDirection = 'column'; // Prevent collapsing margins
-            element.appendChild(contentDiv);
+            this.element.appendChild(contentDiv);
 
             convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
 
@@ -216,7 +216,7 @@ export class MarkdownViewComponent extends ComponentBase {
         }
 
         // No, re-layout
-        let element = this.element();
+        let element = this.element;
         let contentDiv = element.firstElementChild as HTMLElement;
         this.naturalHeight = getElementHeight(contentDiv);
         this.heightRequestAssumesWidth = this.allocatedWidth;

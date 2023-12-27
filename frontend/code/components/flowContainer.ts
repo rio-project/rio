@@ -18,9 +18,9 @@ export class FlowComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: FlowState): void {
+    updateElement(deltaState: FlowState): void {
         // Update the children
-        replaceChildren(element.id, element, deltaState.children);
+        replaceChildren(this.element.id, this.element, deltaState.children);
 
         // Update the layout
         this.makeLayoutDirty();
@@ -29,7 +29,7 @@ export class FlowComponent extends ComponentBase {
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 0;
 
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             this.naturalWidth = Math.max(
                 this.naturalWidth,
                 child.requestedWidth
@@ -38,14 +38,14 @@ export class FlowComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        for (let child of ctx.directChildren(this)) {
+        for (let child of this.getDirectChildren()) {
             child.allocatedWidth = child.requestedWidth;
         }
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
         // Allow the code below to assume there's at least one child
-        let children = ctx.directChildren(this);
+        let children = this.getDirectChildren();
 
         if (children.length === 0) {
             this.naturalHeight = 0;
@@ -84,7 +84,7 @@ export class FlowComponent extends ComponentBase {
             rowHeight = Math.max(rowHeight, child.requestedHeight);
 
             // Lay out the component horizontally
-            let elem = child.element();
+            let elem = child.element;
             elem.style.left = `${posX}rem`;
 
             // Account for the spacing
@@ -103,7 +103,7 @@ export class FlowComponent extends ComponentBase {
             let rowHeight = rowHeights[ii];
 
             for (let child of row) {
-                let elem = child.element();
+                let elem = child.element;
                 elem.style.top = `${posY}rem`;
 
                 child.allocatedHeight = rowHeight;

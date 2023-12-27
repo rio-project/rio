@@ -117,10 +117,7 @@ export class ColorPickerComponent extends ComponentBase {
         return containerElement;
     }
 
-    updateElement(
-        colorPicker: HTMLElement,
-        deltaState: ColorPickerState
-    ): void {
+    updateElement(deltaState: ColorPickerState): void {
         // Color
         //
         // Many combination of HSV values correspond to the same RGB color.
@@ -158,9 +155,7 @@ export class ColorPickerComponent extends ComponentBase {
         }
 
         // Apply the modified state
-        requestAnimationFrame(() => {
-            this.matchComponentToSelectedHsv();
-        });
+        this.matchComponentToSelectedHsv();
     }
 
     matchComponentToSelectedHsv(): void {
@@ -179,7 +174,7 @@ export class ColorPickerComponent extends ComponentBase {
         let rgbaHex = rgbaToHex(r, g, b, this.state.color[3]);
 
         // Update the colors
-        let element = this.element();
+        let element = this.element;
         element.style.setProperty('--chosen-color-opaque', `#${rgbHex}`);
         element.style.setProperty('--chosen-color-transparent', `#${rgbaHex}`);
 

@@ -1,8 +1,4 @@
-import {
-    getElementByComponentId,
-    getInstanceByComponentId,
-    replaceChildren,
-} from '../componentManagement';
+import { componentsById, replaceChildren } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { range } from '../utils';
@@ -69,7 +65,7 @@ export class GridComponent extends ComponentBase {
         this.growingRows = new Set();
 
         for (let gridChild of this.childrenByNumberOfRows) {
-            let childInstance = getInstanceByComponentId(gridChild.id);
+            let childInstance = componentsById[gridChild.id]!;
 
             // Keep track of how how many rows this grid has
             this.nRows = Math.max(this.nRows, gridChild.row + gridChild.height);
@@ -108,7 +104,7 @@ export class GridComponent extends ComponentBase {
         this.growingColumns = new Set();
 
         for (let gridChild of this.childrenByNumberOfColumns) {
-            let childInstance = getInstanceByComponentId(gridChild.id);
+            let childInstance = componentsById[gridChild.id]!;
 
             // Keep track of how how many columns this grid has
             this.nColumns = Math.max(
@@ -141,7 +137,9 @@ export class GridComponent extends ComponentBase {
         }
     }
 
-    updateElement(element: HTMLElement, deltaState: GridState): void {
+    updateElement(deltaState: GridState): void {
+        let element = this.element;
+
         if (deltaState._children !== undefined) {
             replaceChildren(element.id, element, deltaState._children);
             this.precomputeChildData(deltaState);
@@ -161,7 +159,7 @@ export class GridComponent extends ComponentBase {
 
     updateChildLayouts(): void {
         for (let gridChild of this.childrenByNumberOfRows) {
-            let childElement = getElementByComponentId(gridChild.id);
+            let childElement = componentsById[gridChild.id]!.element;
 
             childElement.style.gridRowStart = `${gridChild.row + 1}`;
             childElement.style.gridRowEnd = `${
@@ -183,7 +181,7 @@ export class GridComponent extends ComponentBase {
 
         // Determine the width of each column
         for (let gridChild of this.childrenByNumberOfColumns) {
-            let childInstance = ctx.inst(gridChild.id);
+            let childInstance = componentsById[gridChild.id]!;
 
             // How much of the child's width can the columns already accommodate?
             let availableWidthTotal: number =
@@ -242,7 +240,7 @@ export class GridComponent extends ComponentBase {
 
         // Pass on the space to the children
         for (let gridChild of this.childrenByNumberOfColumns) {
-            let childInstance = ctx.inst(gridChild.id);
+            let childInstance = componentsById[gridChild.id]!;
             childInstance.allocatedWidth =
                 this.state.column_spacing * (gridChild.width - 1);
 
@@ -257,7 +255,7 @@ export class GridComponent extends ComponentBase {
 
         // Determine the height of each row
         for (let gridChild of this.childrenByNumberOfRows) {
-            let childInstance = ctx.inst(gridChild.id);
+            let childInstance = componentsById[gridChild.id]!;
 
             // How much of the child's height can the rows already accommodate?
             let availableHeightTotal: number =
@@ -332,7 +330,7 @@ export class GridComponent extends ComponentBase {
 
         // Pass on the space to the children
         for (let gridChild of this.childrenByNumberOfRows) {
-            let childInstance = ctx.inst(gridChild.id);
+            let childInstance = componentsById[gridChild.id]!;
             childInstance.allocatedHeight =
                 this.state.row_spacing * (gridChild.height - 1);
 
@@ -341,7 +339,7 @@ export class GridComponent extends ComponentBase {
             }
 
             // Set everybody's position
-            let childElement = getElementByComponentId(gridChild.id);
+            let childElement = componentsById[gridChild.id]!.element;
 
             childElement.style.left = `${
                 columnWidthCumSum[gridChild.column]

@@ -1,5 +1,5 @@
 import { pixelsPerEm } from '../app';
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
@@ -35,22 +35,30 @@ export class PopupComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: PopupState): void {
+    updateElement(deltaState: PopupState): void {
         // Update the children
-        replaceOnlyChild(element.id, this.anchorContainer, deltaState.anchor);
-        replaceOnlyChild(element.id, this.contentContainer, deltaState.content);
+        replaceOnlyChild(
+            this.element.id,
+            this.anchorContainer,
+            deltaState.anchor
+        );
+        replaceOnlyChild(
+            this.element.id,
+            this.contentContainer,
+            deltaState.content
+        );
 
         // Open / Close
         if (deltaState.is_open === true) {
             this.open();
         } else {
-            element.classList.remove('rio-popup-open');
+            this.element.classList.remove('rio-popup-open');
         }
     }
 
     open() {
         // Add the open class. This will trigger the CSS animation
-        let element = this.element();
+        let element = this.element;
         element.classList.add('rio-popup-open');
 
         // The popup location is defined in developer-friendly terms. Convert
@@ -146,32 +154,32 @@ export class PopupComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        this.naturalWidth = ctx.inst(this.state.anchor).requestedWidth;
+        this.naturalWidth = componentsById[this.state.anchor]!.requestedWidth;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        ctx.inst(this.state.anchor).allocatedWidth = this.allocatedWidth;
+        componentsById[this.state.anchor]!.allocatedWidth = this.allocatedWidth;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = ctx.inst(this.state.anchor).requestedHeight;
+        this.naturalHeight = componentsById[this.state.anchor]!.requestedHeight;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         // Pass on the allocated space
-        let anchorInst = ctx.inst(this.state.anchor);
+        let anchorInst = componentsById[this.state.anchor]!;
         anchorInst.allocatedHeight = this.allocatedHeight;
 
-        let contentInst = ctx.inst(this.state.content);
+        let contentInst = componentsById[this.state.content]!;
         contentInst.allocatedWidth = this.allocatedWidth;
         contentInst.allocatedHeight = this.allocatedHeight;
 
         // And position the children
-        let anchorElem = ctx.elem(this.state.anchor);
+        let anchorElem = anchorInst.element;
         anchorElem.style.left = '0';
         anchorElem.style.top = '0';
 
-        let contentElem = ctx.elem(this.state.content);
+        let contentElem = contentInst.element;
         contentElem.style.left = '0';
         contentElem.style.top = '0';
     }

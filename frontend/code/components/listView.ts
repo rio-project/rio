@@ -13,14 +13,11 @@ export class ListViewComponent extends ColumnComponent {
         return element;
     }
 
-    updateElement(
-        element: HTMLElement,
-        deltaState: LinearContainerState
-    ): void {
+    updateElement(deltaState: LinearContainerState): void {
         // Columns don't wrap their children in divs, but ListView does. Hence
         // the overridden createElement.
         replaceChildren(
-            element.id,
+            this.element.id,
             this.childContainer,
             deltaState.children,
             true

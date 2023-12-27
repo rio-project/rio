@@ -83,7 +83,9 @@ export class RectangleComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: RectangleState): void {
+    updateElement(deltaState: RectangleState): void {
+        let element = this.element;
+
         if (deltaState.style !== undefined) {
             setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
         }

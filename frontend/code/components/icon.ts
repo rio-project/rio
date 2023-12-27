@@ -66,7 +66,9 @@ export class IconComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: IconState): void {
+    updateElement(deltaState: IconState): void {
+        let element = this.element;
+
         // Remove all children
         element.innerHTML = '';
 

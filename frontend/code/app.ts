@@ -1,4 +1,4 @@
-import { getInstanceByElement } from './componentManagement';
+import { getComponentByElement } from './componentManagement';
 import { updateLayout } from './layouting';
 import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
 
@@ -57,7 +57,9 @@ function main() {
         let rootElement = document.body.firstElementChild;
 
         if (rootElement !== null) {
-            let rootInstance = getInstanceByElement(rootElement as HTMLElement);
+            let rootInstance = getComponentByElement(
+                rootElement as HTMLElement
+            );
             rootInstance.makeLayoutDirty();
             updateLayout();
         }

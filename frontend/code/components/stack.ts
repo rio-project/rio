@@ -16,8 +16,8 @@ export class StackComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: StackState): void {
-        replaceChildren(element.id, element, deltaState.children);
+    updateElement(deltaState: StackState): void {
+        replaceChildren(this.element.id, this.element, deltaState.children);
         this.makeLayoutDirty();
     }
 }

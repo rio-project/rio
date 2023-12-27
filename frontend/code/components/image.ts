@@ -35,8 +35,8 @@ export class ImageComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ImageState): void {
-        let imgElement = element.firstElementChild as HTMLImageElement;
+    updateElement(deltaState: ImageState): void {
+        let imgElement = this.imageElement;
 
         if (
             deltaState.imageUrl !== undefined &&

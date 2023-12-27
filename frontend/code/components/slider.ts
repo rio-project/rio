@@ -31,7 +31,7 @@ export class SliderComponent extends ComponentBase {
         }
     }
 
-    updateElement(element: HTMLElement, deltaState: SliderState): void {
+    updateElement(deltaState: SliderState): void {
         if (
             deltaState.minimum !== undefined ||
             deltaState.maximum !== undefined ||
@@ -46,7 +46,7 @@ export class SliderComponent extends ComponentBase {
             // the MDC slider contains margin. If Rio explicitly sets the
             // component's width, that makes the slider exceed its boundaries.
             // Thus, contain it in a sub-div.
-            element.innerHTML = `
+            this.element.innerHTML = `
             <div class="mdc-slider" style="pointer-events: auto">
                 <input class="mdc-slider__input" type="range" min="${min}" max="${max}" value="${value}" step="${step}">
                 <div class="mdc-slider__track">
@@ -63,7 +63,7 @@ export class SliderComponent extends ComponentBase {
 
             // Initialize the material design component
             this.mdcSlider = new MDCSlider(
-                element.firstElementChild as HTMLElement
+                this.element.firstElementChild as HTMLElement
             );
 
             // Subscribe to changes

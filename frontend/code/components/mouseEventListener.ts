@@ -61,10 +61,9 @@ export class MouseEventListenerComponent extends SingleContainer {
         return document.createElement('div');
     }
 
-    updateElement(
-        element: HTMLElement,
-        deltaState: MouseEventListenerState
-    ): void {
+    updateElement(deltaState: MouseEventListenerState): void {
+        let element = this.element;
+
         if (deltaState.child !== undefined) {
             replaceOnlyChild(element.id, element, deltaState.child);
             this.makeLayoutDirty();

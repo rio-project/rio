@@ -1,5 +1,5 @@
 import { ComponentBase, ComponentState } from './componentBase';
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 
 export type MarginState = ComponentState & {
@@ -19,21 +19,21 @@ export class MarginComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: MarginState): void {
-        replaceOnlyChild(element.id, element, deltaState.child);
+    updateElement(deltaState: MarginState): void {
+        replaceOnlyChild(this.element.id, this.element, deltaState.child);
 
         this.makeLayoutDirty();
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth =
-            ctx.inst(this.state.child).requestedWidth +
+            componentsById[this.state.child]!.requestedWidth +
             this.state.margin_left +
             this.state.margin_right;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        let childInstance = ctx.inst(this.state.child);
+        let childInstance = componentsById[this.state.child]!;
         childInstance.allocatedWidth =
             this.allocatedWidth -
             this.state.margin_left -
@@ -42,19 +42,19 @@ export class MarginComponent extends ComponentBase {
 
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight =
-            ctx.inst(this.state.child).requestedHeight +
+            componentsById[this.state.child]!.requestedHeight +
             this.state.margin_top +
             this.state.margin_bottom;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let childInstance = ctx.inst(this.state.child);
+        let childInstance = componentsById[this.state.child]!;
         childInstance.allocatedHeight =
             this.allocatedHeight -
             this.state.margin_top -
             this.state.margin_bottom;
 
-        let childElement = ctx.elem(this.state.child);
+        let childElement = childInstance.element;
         childElement.style.left = `${this.state.margin_left}rem`;
         childElement.style.top = `${this.state.margin_top}rem`;
     }

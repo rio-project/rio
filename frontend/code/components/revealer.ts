@@ -1,4 +1,4 @@
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { textStyleToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
 import { easeInOut } from '../easeFunctions';
@@ -104,7 +104,7 @@ export class RevealerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: RevealerState): void {
+    updateElement(deltaState: RevealerState): void {
         // Update the header
         if (deltaState.header === null) {
             this.headerElement.style.display = 'none';
@@ -115,7 +115,7 @@ export class RevealerComponent extends ComponentBase {
 
         // Update the child
         replaceOnlyChild(
-            element.id,
+            this.element.id,
             this.contentInnerElement,
             deltaState.content
         );
@@ -167,9 +167,9 @@ export class RevealerComponent extends ComponentBase {
 
             // Update the CSS
             if (this.state.is_open) {
-                element.classList.add('rio-revealer-open');
+                this.element.classList.add('rio-revealer-open');
             } else {
-                element.classList.remove('rio-revealer-open');
+                this.element.classList.remove('rio-revealer-open');
             }
         }
 
@@ -241,7 +241,7 @@ export class RevealerComponent extends ComponentBase {
 
     updateNaturalWidth(ctx: LayoutContext): void {
         // Account for the content
-        this.naturalWidth = ctx.inst(this.state.content).requestedWidth;
+        this.naturalWidth = componentsById[this.state.content]!.requestedWidth;
 
         // If a header is present, consider that as well
         if (this.state.header !== null) {
@@ -255,7 +255,8 @@ export class RevealerComponent extends ComponentBase {
         // Pass on space to the child, but only if the revealer is open. If not,
         // avoid forcing a re-layout of the child.
         if (this.state.is_open) {
-            ctx.inst(this.state.content).allocatedWidth = this.allocatedWidth;
+            componentsById[this.state.content]!.allocatedWidth =
+                this.allocatedWidth;
         }
     }
 
@@ -271,7 +272,8 @@ export class RevealerComponent extends ComponentBase {
         // Account for the content
         if (this.openFractionBeforeEase > 0) {
             let t = easeInOut(this.openFractionBeforeEase);
-            let innerHeight = ctx.inst(this.state.content).requestedHeight;
+            let innerHeight =
+                componentsById[this.state.content]!.requestedHeight;
             this.naturalHeight += t * innerHeight;
         }
     }
@@ -288,13 +290,14 @@ export class RevealerComponent extends ComponentBase {
                 ? 0
                 : this.labelHeight + 2 * HEADER_PADDING * this.headerScale;
 
-        ctx.inst(this.state.content).allocatedHeight = Math.max(
+        let child = componentsById[this.state.content]!;
+        child.allocatedHeight = Math.max(
             this.allocatedHeight - headerHeight,
-            ctx.inst(this.state.content).requestedHeight
+            componentsById[this.state.content]!.requestedHeight
         );
 
         // Position the child
-        let element = ctx.elem(this.state.content);
+        let element = child.element;
         element.style.left = '0';
         element.style.top = '0';
     }

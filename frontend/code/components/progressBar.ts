@@ -36,7 +36,7 @@ export class ProgressBarComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(element: HTMLElement, deltaState: ProgressBarState): void {
+    updateElement(deltaState: ProgressBarState): void {
         // No progress specified
         if (deltaState.progress === undefined) {
         }
