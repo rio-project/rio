@@ -26,11 +26,16 @@ __all__ = ["Component"]
 
 
 JAVASCRIPT_SOURCE_TEMPLATE = """
+
 %(js_source)s
 
-if (%(js_class_name)s !== undefined) {
-    window.componentClasses['%(cls_unique_id)s'] = %(js_class_name)s;
-    window.childAttributeNames['%(cls_unique_id)s'] = %(child_attribute_names)s;
+console.log(window);
+
+try {
+    window.COMPONENT_CLASSES['%(cls_unique_id)s'] = %(js_class_name)s;
+    window.CHILD_ATTRIBUTE_NAMES['%(cls_unique_id)s'] = %(child_attribute_names)s;
+} catch (e) {
+    console.error(`Failed to register component with unique ID \\`%(cls_unique_id)s\\` due to error:`, e);
 }
 """
 

@@ -1,10 +1,6 @@
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
-import {
-    componentsById,
-    getComponentByElement,
-    replaceOnlyChild,
-} from '../componentManagement';
+import { componentsById, replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { easeInOut } from '../easeFunctions';
 
@@ -12,7 +8,7 @@ const TRANSITION_TIME: number = 0.2;
 
 export type SwitcherState = ComponentState & {
     _type_: 'Switcher-builtin';
-    child?: ComponentId;
+    child?: ComponentId | null;
 };
 
 export class SwitcherComponent extends ComponentBase {
@@ -23,9 +19,11 @@ export class SwitcherComponent extends ComponentBase {
     private animationInitialHeight: number;
     private animationIsRunning: boolean = false;
 
-    private isInitialized: boolean = false;
+    private activeChildInstance: ComponentBase | null = null;
+    private activeChildContainer: HTMLElement | null = null;
 
-    private childInstance: ComponentBase;
+    private isInitialized: boolean = false;
+    private hasBeenLaidOut: boolean = false;
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -34,35 +32,95 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     updateElement(deltaState: SwitcherState): void {
+        console.debug(
+            'SwitcherComponent.updateElement',
+            deltaState,
+            deltaState.child,
+            this.state.child
+        );
+
         // Update the child & assign its position
-        if (deltaState.child !== this.state.child) {
-            // Add the child into a helper container
-            let childContainer = document.createElement('div');
-            this.element.appendChild(childContainer);
+        if (!this.isInitialized && deltaState.child !== null) {
+            console.assert(deltaState.child !== undefined);
 
-            replaceOnlyChild(this.element.id, childContainer, deltaState.child);
+            this.activeChildContainer = document.createElement('div');
+            this.activeChildContainer.style.left = '0';
+            this.activeChildContainer.style.top = '0';
+            this.element.appendChild(this.activeChildContainer);
 
-            // Position it
-            let childElement = childContainer.firstElementChild as HTMLElement;
-            childElement.style.left = '0';
-            childElement.style.top = '0';
+            replaceOnlyChild(
+                this.element.id,
+                this.activeChildContainer,
+                deltaState.child
+            );
 
-            // Remember the child, as it is needed frequently
-            this.childInstance = getComponentByElement(childElement);
+            this.activeChildInstance =
+                componentsById[
+                    // @ts-ignore
+                    deltaState.child
+                ]!;
+        } else if (
+            deltaState.child !== undefined &&
+            deltaState.child !== this.state.child
+        ) {
+            console.debug('SwitcherComponent.updateElement: child changed');
+
+            // Out with the old
+            if (this.activeChildContainer !== null) {
+                console.debug(
+                    'SwitcherComponent.updateElement: removing old child'
+                );
+
+                // TODO: Animate
+                replaceOnlyChild(
+                    this.element.id,
+                    this.activeChildContainer,
+                    null
+                );
+                this.activeChildContainer = null;
+                this.activeChildInstance = null;
+            }
+
+            // In with the new
+            if (deltaState.child !== null) {
+                console.debug('SwitcherComponent.updateElement: adding child');
+
+                // Add the child into a helper container
+                this.activeChildContainer = document.createElement('div');
+                this.activeChildContainer.style.left = '0';
+                this.activeChildContainer.style.top = '0';
+                this.element.appendChild(this.activeChildContainer);
+
+                replaceOnlyChild(
+                    this.element.id,
+                    this.activeChildContainer,
+                    deltaState.child
+                );
+
+                // TODO: Animate
+
+                // Remember the child, as it is needed frequently
+                this.activeChildInstance = componentsById[deltaState.child]!;
+            }
 
             // Start the animation. This will also update the layout
-            if (this.isInitialized) {
-                this.startAnimationIfNotRunning();
-            } else {
-                this.makeLayoutDirty();
-            }
+            this.startAnimationIfNotRunning();
+            console.debug('starting animation from update');
         }
+
+        // The component is now initialized
+        this.isInitialized = true;
     }
 
     startAnimationIfNotRunning(): void {
         if (this.animationIsRunning) {
+            console.debug(
+                'rejecting startAnimationIfNotRunning because animationIsRunning'
+            );
             return;
         }
+
+        console.debug('starting animation from startAnimationIfNotRunning');
 
         this.animationStartedAt = Date.now();
         this.animationInitialWidth = this.allocatedWidth;
@@ -73,6 +131,7 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     animationWorker(): void {
+        console.debug('animation worker');
         // How far into the animation is it?
         let now = Date.now();
         let elapsed = (now - this.animationStartedAt) / 1000;
@@ -80,14 +139,26 @@ export class SwitcherComponent extends ComponentBase {
         let easedT = easeInOut(linearT);
 
         // Update the layout
+        let targetWidth, targetHeight;
+        if (this.activeChildInstance === null) {
+            targetWidth = 0;
+            targetHeight = 0;
+        } else {
+            targetWidth = this.activeChildInstance.requestedWidth;
+            targetHeight = this.activeChildInstance.requestedHeight;
+        }
+
+        console.debug(
+            `T: ${linearT} / ${easedT} from (${this.animationInitialWidth}, ${this.animationInitialHeight}) to (${targetWidth}, ${targetHeight})`
+        );
+
         this.naturalWidth =
             this.animationInitialWidth +
-            (this.childInstance.requestedWidth - this.animationInitialWidth) *
-                easedT;
+            easedT * (targetWidth - this.animationInitialWidth);
         this.naturalHeight =
             this.animationInitialHeight +
-            (this.childInstance.requestedHeight - this.animationInitialHeight) *
-                easedT;
+            easedT * (targetHeight - this.animationInitialHeight);
+
         this.makeLayoutDirty();
 
         // Keep going?
@@ -99,19 +170,49 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        // Updated by the animation
+        // If this is the first layout, copy the child's size
+        if (!this.hasBeenLaidOut) {
+            if (this.state.child === null) {
+                this.naturalWidth = 0;
+            } else {
+                let child = componentsById[this.state.child]!;
+                this.naturalWidth = child.requestedWidth;
+            }
+        }
+
+        // Otherwise let the animation handle it
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        componentsById[this.state.child]!.allocatedWidth = this.allocatedWidth;
+        if (this.state.child !== null) {
+            componentsById[this.state.child]!.allocatedWidth =
+                this.allocatedWidth;
+        }
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        // Updated by the animation
+        // If this is the first layout, copy the child's size
+        if (!this.hasBeenLaidOut) {
+            if (this.state.child === null) {
+                this.naturalHeight = 0;
+            } else {
+                let child = componentsById[this.state.child]!;
+                this.naturalHeight = child.requestedHeight;
+            }
+        }
+
+        // Otherwise let the animation handle it
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        componentsById[this.state.child]!.allocatedHeight =
-            this.allocatedHeight;
+        if (this.state.child === null) {
+            return;
+        }
+
+        let child = componentsById[this.state.child]!;
+        child.allocatedHeight = this.allocatedHeight;
+
+        // This component is now laid out
+        this.hasBeenLaidOut = true;
     }
 }

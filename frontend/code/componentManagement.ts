@@ -46,7 +46,7 @@ import { TextInputComponent } from './components/textInput';
 import { updateLayout } from './layouting';
 import { SwitcherComponent } from './components/switcher';
 
-const componentClasses = {
+const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
     'Button-builtin': ButtonComponent,
     'Card-builtin': CardComponent,
@@ -94,7 +94,7 @@ const componentClasses = {
     Placeholder: PlaceholderComponent,
 };
 
-globalThis.componentClasses = componentClasses;
+globalThis.COMPONENT_CLASSES = COMPONENT_CLASSES;
 
 export const componentsById: { [id: ComponentId]: ComponentBase | undefined } =
     {};
@@ -391,7 +391,7 @@ export function updateComponentStates(
         }
 
         // Get the class for this component
-        const componentClass = componentClasses[deltaState._type_!];
+        const componentClass = COMPONENT_CLASSES[deltaState._type_!];
 
         // Make sure the component type is valid (Just helpful for debugging)
         if (!componentClass) {
@@ -537,13 +537,20 @@ export function replaceOnlyChild(
         return;
     }
 
-    // If null, remove the child
+    // If null, remove the current child
+    const currentChildElement = parentElement.firstElementChild;
+
     if (childId === null) {
-        parentElement.innerHTML = '';
+        if (currentChildElement !== null) {
+            let latentComponents = document.getElementById(
+                'rio-latent-components'
+            );
+            latentComponents?.appendChild(currentChildElement);
+        }
+
+        console.assert(parentElement.firstElementChild === null);
         return;
     }
-
-    const currentChildElement = parentElement.firstElementChild;
 
     // If a child already exists, either move it to the latent container or
     // leave it alone if it's already the correct element

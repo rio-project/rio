@@ -867,7 +867,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
         for component in visited_components:
             if (
                 not isinstance(component, component_base.FundamentalComponent)
-                or type(component)._unique_id in self._initialized_html_components
+                or component._unique_id in self._initialized_html_components
             ):
                 continue
 
@@ -1150,8 +1150,8 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
 
         matches_by_topology: List[Tuple[rio.Component, rio.Component]] = []
 
-        # First scan all components for topological matches, and also keep track of
-        # each component by its key
+        # First scan all components for topological matches, and also keep track
+        # of each component by its key
         def register_component_by_key(
             components_by_key: Dict[str, rio.Component],
             component: rio.Component,

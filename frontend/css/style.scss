@@ -679,9 +679,6 @@ body {
 .rio-input-box {
     pointer-events: auto;
 
-    position: relative;
-    min-width: 6rem;
-
     display: flex;
     flex-direction: row;
     align-items: end;
@@ -710,6 +707,7 @@ body {
 .rio-input-box > input {
     order: 1;
 
+    min-width: 0;
     flex-grow: 1;
 
     background-color: transparent;
