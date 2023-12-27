@@ -141,9 +141,10 @@ export class MouseEventListenerComponent extends SingleContainer {
         }
     }
 
-    private _onDragStart(event: MouseEvent): void {
+    private _onDragStart(event: MouseEvent): boolean {
         this._dragStart = event;
         this._dragStartComponent = findComponentUnderMouse(event);
+        return true;
     }
 
     private _onDragEnd(event: MouseEvent): void {

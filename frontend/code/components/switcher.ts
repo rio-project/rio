@@ -32,13 +32,6 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     updateElement(deltaState: SwitcherState): void {
-        console.debug(
-            'SwitcherComponent.updateElement',
-            deltaState,
-            deltaState.child,
-            this.state.child
-        );
-
         // Update the child & assign its position
         if (!this.isInitialized && deltaState.child !== null) {
             console.assert(deltaState.child !== undefined);
@@ -63,14 +56,8 @@ export class SwitcherComponent extends ComponentBase {
             deltaState.child !== undefined &&
             deltaState.child !== this.state.child
         ) {
-            console.debug('SwitcherComponent.updateElement: child changed');
-
             // Out with the old
             if (this.activeChildContainer !== null) {
-                console.debug(
-                    'SwitcherComponent.updateElement: removing old child'
-                );
-
                 // TODO: Animate
                 replaceOnlyChild(
                     this.element.id,
@@ -83,8 +70,6 @@ export class SwitcherComponent extends ComponentBase {
 
             // In with the new
             if (deltaState.child !== null) {
-                console.debug('SwitcherComponent.updateElement: adding child');
-
                 // Add the child into a helper container
                 this.activeChildContainer = document.createElement('div');
                 this.activeChildContainer.style.left = '0';

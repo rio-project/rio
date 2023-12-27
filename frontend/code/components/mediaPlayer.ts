@@ -80,7 +80,7 @@ export class MediaPlayerComponent extends ComponentBase {
     private volumeCurrent: HTMLElement;
     private volumeKnob: HTMLElement;
 
-    private _lastInteractionAt: number = 0;
+    private _lastInteractionAt: number = -1;
     private _overlayVisible: boolean = true;
     private _isFullScreen: boolean = false;
     private _hasAudio: boolean = false;
@@ -119,9 +119,27 @@ export class MediaPlayerComponent extends ComponentBase {
         }
     }
 
+    interactWorker(): void {
+        // Has the user recently interacted?
+        let now = Date.now();
+        let waitTime = this._lastInteractionAt + OVERLAY_TIMEOUT - now;
+
+        // Wait?
+        if (waitTime > 0) {
+            setTimeout(this.interactWorker.bind(this), waitTime);
+            return;
+        }
+
+        // Update the overlay
+        this._lastInteractionAt = -1;
+        this._updateOverlay();
+    }
+
     /// Register an interaction with the video player, so it knows to show/hide
     /// the controls.
     interact(): void {
+        let timeoutIsRunning = this._lastInteractionAt !== -1;
+
         // Update the last interaction time
         this._lastInteractionAt = Date.now();
 
@@ -129,7 +147,9 @@ export class MediaPlayerComponent extends ComponentBase {
         this._updateOverlay();
 
         // And again after the overlay timeout + some fudge factor
-        setTimeout(this._updateOverlay.bind(this), OVERLAY_TIMEOUT + 50);
+        if (!timeoutIsRunning) {
+            setTimeout(this.interactWorker.bind(this), OVERLAY_TIMEOUT);
+        }
     }
 
     /// Mute/Unmute the video
@@ -355,6 +375,9 @@ export class MediaPlayerComponent extends ComponentBase {
             if (!this.state.controls) {
                 return;
             }
+
+            this.interact();
+
             if (this.mediaPlayer.paused) {
                 this.mediaPlayer.play();
             } else {
@@ -364,6 +387,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
         this.playButton.addEventListener('click', (event: Event) => {
             event.stopPropagation();
+            this.interact();
 
             if (this.mediaPlayer.paused) {
                 this.mediaPlayer.play();
@@ -374,11 +398,13 @@ export class MediaPlayerComponent extends ComponentBase {
 
         this.muteButton.addEventListener('click', (event: Event) => {
             event.stopPropagation();
+            this.interact();
             this.setMute(!this.mediaPlayer.muted);
         });
 
         this.fullscreenButton.addEventListener('click', (event: Event) => {
             event.stopPropagation();
+            this.interact();
             this.toggleFullscreen();
         });
         document.addEventListener(
@@ -388,6 +414,7 @@ export class MediaPlayerComponent extends ComponentBase {
 
         this.timelineOuter.addEventListener('click', (event: MouseEvent) => {
             event.stopPropagation();
+            this.interact();
             this._seekFromMousePosition(event);
         });
 
@@ -419,6 +446,8 @@ export class MediaPlayerComponent extends ComponentBase {
             if (!this._hasAudio) {
                 return;
             }
+
+            this.interact();
 
             this._setVolumeFromMousePosition(event);
         });
@@ -652,11 +681,13 @@ export class MediaPlayerComponent extends ComponentBase {
         this.setVolume(Math.max(humanVolume - 0.1, 0));
     }
 
-    private _onVolumeDrag(event: MouseEvent): void {
+    private _onVolumeDrag(event: MouseEvent): boolean {
         // While dragging, change the volume but don't send it to the backend
         // yet
         this._notifyBackend = false;
         this._setVolumeFromMousePosition(event);
+        this.interact();
+        return true;
     }
 
     private _onVolumeDragEnd(event: MouseEvent): void {
@@ -682,15 +713,17 @@ export class MediaPlayerComponent extends ComponentBase {
         return (event.clientX - rect.left) / rect.width;
     }
 
-    private _onTimelineDragStart(event: MouseEvent): void {
+    private _onTimelineDragStart(event: MouseEvent): boolean {
         this.mediaPlayer.pause(); // Pause the playback while dragging
         this._onTimelineDrag(event);
+        return true;
     }
 
     private _onTimelineDrag(event: MouseEvent): void {
         let progress = this._getProgressFractionFromMousePosition(event);
         this.timelinePlayed.style.width = `${progress * 100}%`;
         this.mediaPlayer.currentTime = this.mediaPlayer.duration * progress;
+        this.interact();
     }
 
     private _onTimelineDragEnd(event: MouseEvent): void {

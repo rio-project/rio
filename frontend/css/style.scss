@@ -820,7 +820,11 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 // Switch
-.rio-switch .container {
+.rio-switch {
+    display: flex;
+}
+
+.rio-switch > * {
     pointer-events: auto;
     position: relative;
     width: 3.18rem;
@@ -832,7 +836,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     z-index: 1;
 }
 
-.rio-switch.is-on .container {
+.rio-switch.is-on > * {
     background-color: var(--rio-local-accent-bg);
 }
 
@@ -1779,7 +1783,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-drawer-content-outer {
-    pointer-events: none;
+    pointer-events: auto;
 
     display: flex;
 

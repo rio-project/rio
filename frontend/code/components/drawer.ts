@@ -23,16 +23,15 @@ export class DrawerComponent extends ComponentBase {
     private contentOuterContainer: HTMLElement;
     private contentInnerContainer: HTMLElement;
     private shadeElement: HTMLElement;
-    private knobElement: HTMLElement;
 
     private dragStartedAt: number = 0;
     private openFractionAtDragStart: number = 0;
     private openFraction: number = 1;
-    private dragEventHandlers: Map<string, any> = new Map();
 
     private isFirstUpdate: boolean = true;
 
     createElement(): HTMLElement {
+        // Create the HTML
         let element = document.createElement('div');
         element.classList.add('rio-drawer');
 
@@ -63,9 +62,13 @@ export class DrawerComponent extends ComponentBase {
             '.rio-drawer-content-inner'
         ) as HTMLElement;
 
-        this.knobElement = element.querySelector(
-            '.rio-drawer-knob'
-        ) as HTMLElement;
+        // Connect to events
+        this.addDragHandler(
+            element,
+            this.beginDrag.bind(this),
+            this.dragMove.bind(this),
+            this.endDrag.bind(this)
+        );
 
         return element;
     }
@@ -108,23 +111,6 @@ export class DrawerComponent extends ComponentBase {
             this.openFraction = 1;
         } else if (deltaState.is_open === false) {
             this.openFraction = 0;
-        }
-
-        // If user-openable, connect to events
-        if (
-            deltaState.is_user_openable === true &&
-            (this.state.is_user_openable !== true || this.isFirstUpdate)
-        ) {
-            let beginDrag = this.beginDrag.bind(this);
-            this.dragEventHandlers.set('mousedown', beginDrag);
-            element.addEventListener('mousedown', beginDrag, true);
-        } else if (
-            deltaState.is_user_openable === false &&
-            this.state.is_user_openable === true
-        ) {
-            for (let [name, handler] of this.dragEventHandlers) {
-                element.removeEventListener(name, handler);
-            }
         }
 
         // Make sure the CSS matches the state
@@ -218,7 +204,7 @@ export class DrawerComponent extends ComponentBase {
         }
     }
 
-    beginDrag(event: MouseEvent) {
+    beginDrag(event: MouseEvent): boolean {
         let element = this.element;
 
         // Find the location of the drawer
@@ -271,28 +257,20 @@ export class DrawerComponent extends ComponentBase {
         ) {
             this.openFractionAtDragStart = this.openFraction;
             this.dragStartedAt = relevantClickCoordinate;
-
-            let moveHandler = this.dragMove.bind(this);
-            this.dragEventHandlers.set('mousemove', moveHandler);
-            window.addEventListener('mousemove', moveHandler, true);
-
-            let upHandler = this.endDrag.bind(this);
-            this.dragEventHandlers.set('mouseup', upHandler);
-            this.dragEventHandlers.set('blur', upHandler);
-            window.addEventListener('mouseup', upHandler, true);
-            window.addEventListener('blur', upHandler, true);
-
-            // Eat the event
-            event.stopPropagation();
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            return true;
         }
 
         // The anchor was clicked. Collapse the drawer if modal
         else if (this.state.is_modal) {
             this.closeDrawer();
-
-            // Eat the event
-            event.stopPropagation();
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            return false;
         }
+
+        return false;
     }
 
     dragMove(event: MouseEvent) {
@@ -332,11 +310,6 @@ export class DrawerComponent extends ComponentBase {
             this.openDrawer();
         } else {
             this.closeDrawer();
-        }
-
-        // Remove the event handlers
-        for (let [name, handler] of this.dragEventHandlers) {
-            window.removeEventListener(name, handler, true);
         }
     }
 
