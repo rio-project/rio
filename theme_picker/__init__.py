@@ -24,7 +24,7 @@ class ColorPickerPopup(rio.Component):
     #     self._color = getattr(self.theme, self.property_name)
 
     async def _on_confirm(self) -> None:
-        await self._call_event_handler(
+        await self.call_event_handler(
             self.on_color_change,
             rio.ColorChangeEvent(self._color),
         )
@@ -177,9 +177,7 @@ class ColorSwatch(rio.Component):
 
             rects[ii] = rio.MouseEventListener(
                 child=rect,
-                on_mouse_up=lambda event, pname=property_name: self._on_color_click(
-                    pname
-                ),
+                on_press=lambda event, pname=property_name: self._on_color_click(pname),
                 width="grow",
             )
 

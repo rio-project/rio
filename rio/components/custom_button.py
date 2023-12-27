@@ -93,9 +93,9 @@ class CustomButton(component_base.Component):
 
         self._is_pressed = True
 
-    async def _on_mouse_up(self, event: rio.MouseUpEvent) -> None:
-        # Only react to left mouse button, and only if sensitive
-        if event.button != rio.MouseButton.LEFT or not self.is_sensitive:
+    async def _on_press(self, event: rio.PressEvent) -> None:
+        # Only react if sensitive
+        if not self.is_sensitive:
             return
 
         await self.call_event_handler(self.on_press)
@@ -143,5 +143,5 @@ class CustomButton(component_base.Component):
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,
             on_mouse_down=self._on_mouse_down,
-            on_mouse_up=self._on_mouse_up,
+            on_press=self._on_press,
         )
