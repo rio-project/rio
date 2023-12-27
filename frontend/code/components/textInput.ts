@@ -89,13 +89,7 @@ export class TextInputComponent extends ComponentBase {
             labelElement.textContent = deltaState.label;
 
             // Update the layout
-            updateInputBoxNaturalHeight(
-                this,
-                deltaState.label === undefined
-                    ? this.state.label
-                    : deltaState.label,
-                0
-            );
+            updateInputBoxNaturalHeight(this, deltaState.label, 0);
         }
 
         if (deltaState.prefix_text !== undefined) {
