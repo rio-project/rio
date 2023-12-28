@@ -1,14 +1,14 @@
-import { replaceChildren } from '../componentManagement';
 import { ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 import { SingleContainer } from './singleContainer';
+import { ComponentId } from '../models';
 
 const switchDuration = 0.8;
 const progressBarFadeDuration = 0.2;
 
 export type SlideshowState = ComponentState & {
     _type_: 'Slideshow-builtin';
-    children?: (number | string)[];
+    children?: ComponentId[];
     linger_time?: number;
     corner_radius?: [number, number, number, number];
 };
@@ -72,10 +72,10 @@ export class SlideshowComponent extends SingleContainer {
     updateElement(deltaState: SlideshowState): void {
         // Update the children
         if (deltaState.children !== undefined) {
-            replaceChildren(
-                this.element.id,
-                this.childContainer,
+            this.replaceChildren(
                 deltaState.children,
+                this.childContainer,
+
                 true
             );
 

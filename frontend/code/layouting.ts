@@ -6,7 +6,7 @@ export class LayoutContext {
     private updateRequestedWidthRecursive(component: ComponentBase) {
         if (!component.isLayoutDirty) return;
 
-        for (let child of component.getDirectChildren()) {
+        for (let child of component.children) {
             this.updateRequestedWidthRecursive(child);
         }
 
@@ -24,7 +24,7 @@ export class LayoutContext {
     private updateAllocatedWidthRecursive(component: ComponentBase) {
         if (!component.isLayoutDirty) return;
 
-        let children = component.getDirectChildren();
+        let children = Array.from(component.children);
         let childAllocatedWidths = children.map(
             (child) => child.allocatedWidth
         );
@@ -50,7 +50,7 @@ export class LayoutContext {
     private updateRequestedHeightRecursive(component: ComponentBase) {
         if (!component.isLayoutDirty) return;
 
-        for (let child of component.getDirectChildren()) {
+        for (let child of component.children) {
             this.updateRequestedHeightRecursive(child);
         }
 
@@ -68,7 +68,7 @@ export class LayoutContext {
     private updateAllocatedHeightRecursive(component: ComponentBase) {
         if (!component.isLayoutDirty) return;
 
-        let children = component.getDirectChildren();
+        let children = Array.from(component.children);
         let childAllocatedHeights = children.map(
             (child) => child.allocatedHeight
         );

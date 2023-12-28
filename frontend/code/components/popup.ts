@@ -1,13 +1,14 @@
 import { pixelsPerEm } from '../app';
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
 export type PopupState = ComponentState & {
     _type_: 'Popup-builtin';
-    anchor?: number | string;
-    content?: number | string;
+    anchor?: ComponentId;
+    content?: ComponentId;
     direction?: 'left' | 'top' | 'right' | 'bottom' | 'center';
     alignment?: number;
     gap?: number;
@@ -37,16 +38,8 @@ export class PopupComponent extends ComponentBase {
 
     updateElement(deltaState: PopupState): void {
         // Update the children
-        replaceOnlyChild(
-            this.element.id,
-            this.anchorContainer,
-            deltaState.anchor
-        );
-        replaceOnlyChild(
-            this.element.id,
-            this.contentContainer,
-            deltaState.content
-        );
+        this.replaceOnlyChild(deltaState.anchor, this.anchorContainer);
+        this.replaceOnlyChild(deltaState.content, this.contentContainer);
 
         // Open / Close
         if (deltaState.is_open === true) {

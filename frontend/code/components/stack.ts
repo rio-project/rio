@@ -1,10 +1,10 @@
-import { replaceChildren } from '../componentManagement';
+import { ComponentId } from '../models';
 import { ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
 
 export type StackState = ComponentState & {
     _type_: 'Stack-builtin';
-    children?: number[];
+    children?: ComponentId[];
 };
 
 export class StackComponent extends SingleContainer {
@@ -17,7 +17,6 @@ export class StackComponent extends SingleContainer {
     }
 
     updateElement(deltaState: StackState): void {
-        replaceChildren(this.element.id, this.element, deltaState.children);
-        this.makeLayoutDirty();
+        this.replaceChildren(deltaState.children);
     }
 }

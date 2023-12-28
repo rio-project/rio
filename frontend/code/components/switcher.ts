@@ -1,6 +1,6 @@
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { easeInOut } from '../easeFunctions';
 
@@ -41,11 +41,7 @@ export class SwitcherComponent extends ComponentBase {
             this.activeChildContainer.style.top = '0';
             this.element.appendChild(this.activeChildContainer);
 
-            replaceOnlyChild(
-                this.element.id,
-                this.activeChildContainer,
-                deltaState.child
-            );
+            this.replaceOnlyChild(deltaState.child, this.activeChildContainer);
 
             this.activeChildInstance =
                 componentsById[
@@ -59,11 +55,7 @@ export class SwitcherComponent extends ComponentBase {
             // Out with the old
             if (this.activeChildContainer !== null) {
                 // TODO: Animate
-                replaceOnlyChild(
-                    this.element.id,
-                    this.activeChildContainer,
-                    null
-                );
+                this.replaceOnlyChild(null, this.activeChildContainer);
                 this.activeChildContainer = null;
                 this.activeChildInstance = null;
             }
@@ -76,10 +68,9 @@ export class SwitcherComponent extends ComponentBase {
                 this.activeChildContainer.style.top = '0';
                 this.element.appendChild(this.activeChildContainer);
 
-                replaceOnlyChild(
-                    this.element.id,
-                    this.activeChildContainer,
-                    deltaState.child
+                this.replaceOnlyChild(
+                    deltaState.child,
+                    this.activeChildContainer
                 );
 
                 // TODO: Animate

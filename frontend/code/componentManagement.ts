@@ -45,6 +45,7 @@ import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
 import { updateLayout } from './layouting';
 import { SwitcherComponent } from './components/switcher';
+import { reprElement } from './utils';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -99,16 +100,20 @@ globalThis.COMPONENT_CLASSES = COMPONENT_CLASSES;
 export const componentsById: { [id: ComponentId]: ComponentBase | undefined } =
     {};
 
+export const componentsByElement = new Map<HTMLElement, ComponentBase>();
+
 export function getRootComponent(): FundamentalRootComponent {
     let element = document.body.firstElementChild as HTMLElement;
     return getComponentByElement(element) as FundamentalRootComponent;
 }
 
-export function getComponentByElement(element: HTMLElement): ComponentBase {
+export function getComponentByElement(element: Element): ComponentBase {
     let instance = tryGetComponentByElement(element);
 
     if (instance === null) {
-        throw `This element does not correspond to a component`;
+        throw `Element ${reprElement(
+            element
+        )} does not correspond to a component`;
     }
 
     return instance;
@@ -119,15 +124,11 @@ globalThis.getInstanceByElement = getComponentByElement; // For debugging
 export function tryGetComponentByElement(
     element: Element
 ): ComponentBase | null {
-    return componentsById[element.id.slice('rio-id-'.length)] ?? null;
+    return componentsByElement.get(element as HTMLElement) ?? null;
 }
 
 export function isComponentElement(element: Element): boolean {
-    if (!element.id) {
-        return false;
-    }
-
-    return element.id.startsWith('rio-id-');
+    return componentsByElement.has(element as HTMLElement);
 }
 
 export function getParentComponentElementIncludingInjected(
@@ -136,7 +137,7 @@ export function getParentComponentElementIncludingInjected(
     let curElement = element.parentElement;
 
     while (curElement !== null) {
-        if (curElement.id.startsWith('rio-id-')) {
+        if (isComponentElement(curElement)) {
             return curElement;
         }
 
@@ -144,24 +145,6 @@ export function getParentComponentElementIncludingInjected(
     }
 
     return null;
-}
-
-export function getParentComponentElementExcludingInjected(
-    element: HTMLElement
-): HTMLElement | null {
-    let curElement: HTMLElement | null = element;
-
-    while (true) {
-        curElement = getParentComponentElementIncludingInjected(curElement);
-
-        if (curElement === null) {
-            return null;
-        }
-
-        if (curElement.id.match(/rio-id-\d+$/)) {
-            return curElement;
-        }
-    }
 }
 
 function getCurrentComponentState(
@@ -181,10 +164,10 @@ function getCurrentComponentState(
 }
 
 function createLayoutComponentStates(
-    componentId: number | string,
-    deltaState: ComponentState,
+    componentId: ComponentId,
     message: { [id: string]: ComponentState }
-): number | string {
+): ComponentId {
+    let deltaState = message[componentId] || {};
     let entireState = getCurrentComponentState(componentId, deltaState);
     let resultId = componentId;
 
@@ -199,7 +182,7 @@ function createLayoutComponentStates(
         margin[2] !== 0 ||
         margin[3] !== 0
     ) {
-        let marginId = `${componentId}-margin`;
+        let marginId = (componentId * -10) as ComponentId;
         message[marginId] = {
             _type_: 'Margin-builtin',
             _python_type_: 'Margin (injected)',
@@ -220,8 +203,11 @@ function createLayoutComponentStates(
 
     // Align
     let align = entireState['_align_']!;
+    if (align === undefined) {
+        console.error(`Got incomplete state for component ${componentId}`);
+    }
     if (align[0] !== null || align[1] !== null) {
-        let alignId = `${componentId}-align`;
+        let alignId = (componentId * -10 - 1) as ComponentId;
         message[alignId] = {
             _type_: 'Align-builtin',
             _python_type_: 'Align (injected)',
@@ -263,34 +249,39 @@ export function getChildIds(state: ComponentState): ComponentId[] {
 
 function replaceChildrenWithLayoutComponents(
     deltaState: ComponentState,
-    childIds: Set<string>,
+    childIds: Set<ComponentId>,
     message: { [id: string]: ComponentState }
 ): void {
     let propertyNamesWithChildren =
         globalThis.CHILD_ATTRIBUTE_NAMES[deltaState['_type_']!] || [];
 
-    function cleanId(id: string): string {
-        return id.split('-')[0];
+    function uninjectedId(id: ComponentId): ComponentId {
+        if (id >= 0) {
+            return id;
+        }
+
+        return Math.floor(id / -10) as ComponentId;
     }
 
     for (let propertyName of propertyNamesWithChildren) {
-        let propertyValue = deltaState[propertyName];
+        let propertyValue = deltaState[propertyName] as
+            | ComponentId[]
+            | ComponentId
+            | null
+            | undefined;
 
         if (Array.isArray(propertyValue)) {
-            deltaState[propertyName] = propertyValue.map((childId) => {
-                childId = cleanId(childId.toString());
-                childIds.add(childId);
-                return createLayoutComponentStates(
-                    childId,
-                    message[childId] || {},
-                    message
-                );
-            });
+            deltaState[propertyName] = propertyValue.map(
+                (childId: ComponentId): ComponentId => {
+                    childId = uninjectedId(childId);
+                    childIds.add(childId);
+                    return createLayoutComponentStates(childId, message);
+                }
+            );
         } else if (propertyValue !== null && propertyValue !== undefined) {
-            let childId = cleanId(propertyValue.toString());
+            let childId = uninjectedId(propertyValue);
             deltaState[propertyName] = createLayoutComponentStates(
                 childId,
-                message[childId] || {},
                 message
             );
             childIds.add(childId);
@@ -304,10 +295,12 @@ function preprocessDeltaStates(message: {
     // Fortunately the root component is created internally by the server, so we
     // don't need to worry about it having a margin or alignment.
 
-    let originalComponentIds = Object.keys(message);
+    let originalComponentIds = Object.keys(message).map((id) =>
+        parseInt(id)
+    ) as ComponentId[];
 
     // Keep track of which components have their parents in the message
-    let childIds: Set<string> = new Set();
+    let childIds: Set<ComponentId> = new Set();
 
     // Walk over all components in the message and inject layout components. The
     // message is modified in-place, so take care to have a copy of all keys
@@ -329,32 +322,25 @@ function preprocessDeltaStates(message: {
         }
 
         // The parent isn't contained in the message. Find and add it.
-        let childElement = document.getElementById(`rio-id-${componentId}`);
-        if (childElement === null) {
+        let child = componentsById[componentId];
+        if (child === undefined) {
             continue;
         }
 
-        let parentElement =
-            getParentComponentElementExcludingInjected(childElement);
-        if (parentElement === null) {
+        let parent = child.getParentExcludingInjected();
+        if (parent === null) {
             continue;
         }
 
-        let parentInstance = getComponentByElement(parentElement);
-        if (parentInstance === undefined) {
-            throw `Parent component with id ${parentElement} not found`;
-        }
-
-        let parentId = parentElement.id.slice('rio-id-'.length);
-        let newParentState = { ...parentInstance.state };
+        let newParentState = { ...parent.state };
         replaceChildrenWithLayoutComponents(newParentState, childIds, message);
-        message[parentId] = newParentState;
+        message[parent.id] = newParentState;
     }
 }
 
 export function updateComponentStates(
     deltaStates: { [id: string]: ComponentState },
-    rootComponentId: string | number | null
+    rootComponentId: ComponentId | null
 ): void {
     // Preprocess the message. This converts `_align_` and `_margin_` properties
     // into actual components, amongst other things.
@@ -381,9 +367,9 @@ export function updateComponentStates(
 
     // Make sure all components mentioned in the message have a corresponding HTML
     // element
-    for (let componentId in deltaStates) {
-        let deltaState = deltaStates[componentId];
-        let component = componentsById[componentId];
+    for (let componentIdAsString in deltaStates) {
+        let deltaState = deltaStates[componentIdAsString];
+        let component = componentsById[componentIdAsString];
 
         // This is a reused component, no need to instantiate a new one
         if (component) {
@@ -399,16 +385,18 @@ export function updateComponentStates(
         }
 
         // Create an instance for this component
-        let newComponent = new componentClass(componentId, deltaState);
+        let newComponent: ComponentBase = new componentClass(
+            parseInt(componentIdAsString),
+            deltaState
+        );
 
         // Register the component for quick and easy lookup
-        componentsById[componentId] = newComponent;
+        componentsById[componentIdAsString] = newComponent;
+        componentsByElement.set(newComponent.element, newComponent);
 
         // Store the component's class name in the element. Used for debugging.
-        newComponent.element.setAttribute(
-            'dbg-py-class',
-            deltaState._python_type_!
-        );
+        newComponent.element.dataset.pyClass = deltaState._python_type_!;
+        newComponent.element.dataset.id = componentIdAsString;
 
         // Set the component's key, if it has one. Used for debugging.
         let key = deltaState['key'];
@@ -472,10 +460,12 @@ export function updateComponentStates(
         } else {
             // Destruct the component and all its children
             let queue = [component];
+
             for (let comp of queue) {
-                queue.push(...comp.getDirectChildren());
+                queue.push(...comp.children);
                 comp.onDestruction();
                 delete componentsById[comp.id];
+                componentsByElement.delete(comp.element);
             }
         }
     }
@@ -517,133 +507,12 @@ function restoreKeyboardFocus(
             winner = current;
         }
 
-        current = current.tryGetParent()!;
+        current = current.parent!;
     }
 
     // We made it to the root. Do we have a winner?
     if (winner !== null) {
         // @ts-expect-error
         winner.grabKeyboardFocus();
-    }
-}
-
-export function replaceOnlyChild(
-    parentId: string,
-    parentElement: HTMLElement,
-    childId: null | undefined | ComponentId
-): void {
-    // If undefined, do nothing
-    if (childId === undefined) {
-        return;
-    }
-
-    // If null, remove the current child
-    const currentChildElement = parentElement.firstElementChild;
-
-    if (childId === null) {
-        if (currentChildElement !== null) {
-            let latentComponents = document.getElementById(
-                'rio-latent-components'
-            );
-            latentComponents?.appendChild(currentChildElement);
-        }
-
-        console.assert(parentElement.firstElementChild === null);
-        return;
-    }
-
-    // If a child already exists, either move it to the latent container or
-    // leave it alone if it's already the correct element
-    if (currentChildElement !== null) {
-        // Don't reparent the child if not necessary. This way things like
-        // keyboard focus are preserved
-        if (currentChildElement.id === `rio-id-${childId}`) {
-            return;
-        }
-
-        // Move the child element to a latent container, so it isn't garbage
-        // collected
-        let latentComponents = document.getElementById('rio-latent-components');
-        latentComponents?.appendChild(currentChildElement);
-    }
-
-    // Add the replacement component
-    let childElement = componentsById[childId]!.element;
-    parentElement?.appendChild(childElement);
-    childElement.dataset.parentId = parentId;
-}
-
-export function replaceChildren(
-    parentId: string,
-    parentElement: HTMLElement,
-    childIds: undefined | ComponentId[],
-    wrapInDivs: boolean = false
-): void {
-    // If undefined, do nothing
-    if (childIds === undefined) {
-        return;
-    }
-    let latentComponents = document.getElementById('rio-latent-components')!;
-
-    let curElement = parentElement.firstElementChild;
-    let curIdIndex = 0;
-
-    let wrap, unwrap;
-    if (wrapInDivs) {
-        wrap = (element: HTMLElement) => {
-            let wrapper = document.createElement('div');
-            wrapper.appendChild(element);
-            return wrapper;
-        };
-        unwrap = (element: HTMLElement) => {
-            return element.firstElementChild!;
-        };
-    } else {
-        wrap = (element: HTMLElement) => element;
-        unwrap = (element: HTMLElement) => element;
-    }
-
-    while (true) {
-        // If there are no more children in the DOM element, add the remaining
-        // children
-        if (curElement === null) {
-            while (curIdIndex < childIds.length) {
-                let curId = childIds[curIdIndex];
-
-                let childElement = componentsById[curId]!.element;
-                parentElement.appendChild(wrap(childElement));
-                childElement.dataset.parentId = parentId;
-
-                curIdIndex++;
-            }
-            break;
-        }
-
-        // If there are no more children in the message, remove the remaining
-        // DOM children
-        if (curIdIndex >= childIds.length) {
-            while (curElement !== null) {
-                let nextElement = curElement.nextElementSibling;
-                latentComponents.appendChild(wrap(curElement));
-                curElement = nextElement;
-            }
-            break;
-        }
-
-        // This element is the correct element, move on
-        let curId = childIds[curIdIndex];
-        if (unwrap(curElement).id === `rio-id-${curId}`) {
-            curElement = curElement.nextElementSibling;
-            curIdIndex++;
-            continue;
-        }
-
-        // This element is not the correct element, insert the correct one
-        // instead
-        let childElement = componentsById[curId]!.element;
-        parentElement.insertBefore(wrap(childElement), curElement);
-        childElement.dataset.parentId = parentId;
-
-        curIdIndex++;
     }
 }

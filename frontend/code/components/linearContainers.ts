@@ -1,11 +1,11 @@
 import { pixelsPerEm } from '../app';
-import { replaceChildren } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type LinearContainerState = ComponentState & {
     _type_: 'Row-builtin' | 'Column-builtin' | 'ListView-builtin';
-    children?: (number | string)[];
+    children?: ComponentId[];
     spacing?: number;
 };
 
@@ -37,21 +37,15 @@ class LinearContainer extends ComponentBase {
     }
 
     updateElement(deltaState: LinearContainerState): void {
-        let element = this.element;
-
         // Children
         if (deltaState.children !== undefined) {
-            replaceChildren(
-                element.id,
-                this.childContainer,
-                deltaState.children
-            );
+            this.replaceChildren(deltaState.children, this.childContainer);
 
             // Clear everybody's position
-            for (let child of this.childContainer.children) {
-                let element = child as HTMLElement;
-                element.style.left = '0';
-                element.style.top = '0';
+            for (let childElement of this.childContainer
+                .children as Iterable<HTMLElement>) {
+                childElement.style.left = '0';
+                childElement.style.top = '0';
             }
         }
 
@@ -75,17 +69,15 @@ export class RowComponent extends LinearContainer {
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 0;
         this.nGrowers = 0;
-        let children = this.getDirectChildren();
-
         // Add up all children's requested widths
-        for (let child of children) {
+        for (let child of this.children) {
             this.naturalWidth += child.requestedWidth;
             this.nGrowers += child.state['_grow_'][0] as any as number;
         }
 
         // Account for spacing
         this.naturalWidth +=
-            Math.max(children.length - 1, 0) * this.state.spacing;
+            Math.max(this.children.size - 1, 0) * this.state.spacing;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
@@ -93,7 +85,7 @@ export class RowComponent extends LinearContainer {
         let additionalSpacePerGrower =
             this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             child.allocatedWidth = child.requestedWidth;
 
             if (child.state['_grow_'][0]) {
@@ -105,7 +97,7 @@ export class RowComponent extends LinearContainer {
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight = 0;
 
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             this.naturalHeight = Math.max(
                 this.naturalHeight,
                 child.requestedHeight
@@ -142,7 +134,7 @@ export class RowComponent extends LinearContainer {
         }
 
         // Assign the allocated height to the children
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             child.allocatedHeight = this.allocatedHeight;
         }
     }
@@ -158,7 +150,7 @@ export class ColumnComponent extends LinearContainer {
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 0;
 
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             this.naturalWidth = Math.max(
                 this.naturalWidth,
                 child.requestedWidth
@@ -168,7 +160,7 @@ export class ColumnComponent extends LinearContainer {
 
     updateAllocatedWidth(ctx: LayoutContext): void {
         // Assign the allocated width to the children
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             child.allocatedWidth = this.allocatedWidth;
         }
     }
@@ -176,17 +168,16 @@ export class ColumnComponent extends LinearContainer {
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight = 0;
         this.nGrowers = 0;
-        let children = this.getDirectChildren();
 
         // Add up all children's requested heights
-        for (let child of children) {
+        for (let child of this.children) {
             this.naturalHeight += child.requestedHeight;
             this.nGrowers += child.state['_grow_'][1] as any as number;
         }
 
         // Account for spacing
         this.naturalHeight +=
-            Math.max(children.length - 1, 0) * this.state.spacing;
+            Math.max(this.children.size - 1, 0) * this.state.spacing;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
@@ -218,7 +209,7 @@ export class ColumnComponent extends LinearContainer {
         }
 
         // Assign the allocated height to the children
-        let children = this.getDirectChildren();
+        let children = this.children;
         let additionalSpacePerGrower =
             this.nGrowers === 0 ? 0 : additionalSpace / this.nGrowers;
 

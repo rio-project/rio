@@ -1,10 +1,10 @@
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { textStyleToCss } from '../cssUtils';
 import { applyIcon } from '../designApplication';
 import { easeInOut } from '../easeFunctions';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext, updateLayout } from '../layouting';
-import { TextStyle } from '../models';
+import { ComponentId, TextStyle } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 let HEADER_PADDING: number = 0.8;
@@ -12,7 +12,7 @@ let HEADER_PADDING: number = 0.8;
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';
     header?: string | null;
-    content?: number | string;
+    content?: ComponentId;
     header_style?: 'heading1' | 'heading2' | 'heading3' | 'text' | TextStyle;
     is_open: boolean;
 };
@@ -114,11 +114,7 @@ export class RevealerComponent extends ComponentBase {
         }
 
         // Update the child
-        replaceOnlyChild(
-            this.element.id,
-            this.contentInnerElement,
-            deltaState.content
-        );
+        this.replaceOnlyChild(deltaState.content, this.contentInnerElement);
 
         // Update the text style
         if (deltaState.header_style !== undefined) {

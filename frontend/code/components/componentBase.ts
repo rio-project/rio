@@ -9,6 +9,7 @@ import { callRemoteMethodDiscardResponse } from '../rpc';
 import { EventHandler, DragHandler } from '../eventHandling';
 import { ComponentTreeComponent } from './componentTree';
 import { DebuggerConnectorComponent } from './debuggerConnector';
+import { ComponentId } from '../models';
 
 /// Base for all component states. Updates received from the backend are
 /// partial, hence most properties may be undefined.
@@ -40,10 +41,17 @@ export type ComponentState = {
 /// Note: Components that can have the keyboard focus must also implement a
 /// `grabKeyboardFocus(): void` method.
 export abstract class ComponentBase {
-    id: string;
+    id: ComponentId;
     element: HTMLElement;
 
     state: Required<ComponentState>;
+
+    // Reference to the parent component. If the component is about to be
+    // removed from the widget tree (i.e. it's in `latent-components`), this
+    // still references the *last* parent component. `null` is only for newly
+    // created components and the root component.
+    parent: ComponentBase | null = null;
+    children = new Set<ComponentBase>();
 
     isLayoutDirty: boolean;
 
@@ -58,34 +66,14 @@ export abstract class ComponentBase {
 
     private _eventHandlers: EventHandler[] = [];
 
-    constructor(id: string, state: Required<ComponentState>) {
+    constructor(id: ComponentId, state: Required<ComponentState>) {
         this.id = id;
         this.state = state;
 
         this.element = this.createElement();
-        this.element.id = `rio-id-${id}`;
         this.element.classList.add('rio-component');
 
         this.isLayoutDirty = true;
-    }
-
-    /// Returns the children of this component. Slowish.
-    getDirectChildren(): ComponentBase[] {
-        return getChildIds(this.state).map((id) => componentsById[id]!);
-    }
-
-    /// Returns this element's parent. Returns `null` if this element has no
-    /// parent.
-    tryGetParent(): ComponentBase | null {
-        let parentElement = getParentComponentElementIncludingInjected(
-            this.element
-        );
-
-        if (parentElement === null) {
-            return null;
-        }
-
-        return getComponentByElement(parentElement);
     }
 
     /// Mark this element's layout as dirty, and chain up to the parent.
@@ -94,7 +82,182 @@ export abstract class ComponentBase {
 
         while (cur !== null && !cur.isLayoutDirty) {
             cur.isLayoutDirty = true;
-            cur = cur.tryGetParent();
+            cur = cur.parent;
+        }
+    }
+
+    isInjectedLayoutComponent(): boolean {
+        // Injected layout components have negative ids
+        return this.id < 0;
+    }
+
+    getParentExcludingInjected(): ComponentBase | null {
+        let parent: ComponentBase | null = this.parent;
+
+        while (true) {
+            if (parent === null) {
+                return null;
+            }
+
+            if (!parent.isInjectedLayoutComponent()) {
+                return parent;
+            }
+
+            parent = parent.parent;
+        }
+    }
+
+    replaceOnlyChild(
+        childId: null | undefined | ComponentId,
+        parentElement: HTMLElement = this.element
+    ): void {
+        // If undefined, do nothing
+        if (childId === undefined) {
+            return;
+        }
+
+        // If null, remove the current child
+        const currentChildElement = parentElement.firstElementChild;
+
+        if (childId === null) {
+            if (currentChildElement !== null) {
+                let latentComponents = document.getElementById(
+                    'rio-latent-components'
+                )!;
+                latentComponents.appendChild(currentChildElement);
+
+                let child = getComponentByElement(currentChildElement);
+                this.children.delete(child);
+
+                this.makeLayoutDirty();
+            }
+
+            console.assert(parentElement.firstElementChild === null);
+            return;
+        }
+
+        // If a child already exists, either move it to the latent container or
+        // leave it alone if it's already the correct element
+        if (currentChildElement !== null) {
+            let child = getComponentByElement(currentChildElement);
+
+            // Don't reparent the child if not necessary. This way things like
+            // keyboard focus are preserved
+            if (child.id === childId) {
+                return;
+            }
+
+            // Move the child element to a latent container, so it isn't garbage
+            // collected
+            let latentComponents = document.getElementById(
+                'rio-latent-components'
+            )!;
+            latentComponents.appendChild(currentChildElement);
+
+            this.children.delete(child);
+        }
+
+        // Add the replacement component
+        let child = componentsById[childId]!;
+        parentElement.appendChild(child.element);
+
+        child.parent = this;
+        this.children.add(child);
+    }
+
+    replaceChildren(
+        childIds: undefined | ComponentId[],
+        parentElement: HTMLElement = this.element,
+        wrapInDivs: boolean = false
+    ): void {
+        // If undefined, do nothing
+        if (childIds === undefined) {
+            return;
+        }
+
+        let dirty = false;
+
+        let latentComponents = document.getElementById(
+            'rio-latent-components'
+        )!;
+
+        let curElement = parentElement.firstElementChild;
+        let children = childIds.map((id) => componentsById[id]!);
+        let curIndex = 0;
+
+        let wrap: (element: HTMLElement) => Element;
+        let unwrap: (element: Element) => HTMLElement;
+        if (wrapInDivs) {
+            wrap = (element: HTMLElement) => {
+                let wrapper = document.createElement('div');
+                wrapper.appendChild(element);
+                return wrapper;
+            };
+            unwrap = (element: Element) =>
+                element.firstElementChild as HTMLElement;
+        } else {
+            wrap = (element: HTMLElement) => element;
+            unwrap = (element: Element) => element as HTMLElement;
+        }
+
+        while (true) {
+            // If there are no more children in the DOM element, add the remaining
+            // children
+            if (curElement === null) {
+                while (curIndex < children.length) {
+                    let child = children[curIndex];
+
+                    parentElement.appendChild(wrap(child.element));
+                    child.parent = this;
+                    this.children.add(child);
+
+                    dirty = true;
+                    curIndex++;
+                }
+                break;
+            }
+
+            // If there are no more children in the message, remove the
+            // remaining DOM children
+            if (curIndex >= children.length) {
+                while (curElement !== null) {
+                    let nextElement = curElement.nextElementSibling;
+
+                    // Make sure to remove the wrapper element (if any) *and*
+                    // move the real child component to latentComponents
+                    let child = getComponentByElement(unwrap(curElement));
+
+                    curElement.remove();
+                    latentComponents.appendChild(child.element);
+                    this.children.delete(child);
+
+                    dirty = true;
+                    curElement = nextElement;
+                }
+                break;
+            }
+
+            // If this element is the correct element, move on
+            let curChild = getComponentByElement(unwrap(curElement));
+            let expectedChild = children[curIndex];
+            if (curChild === expectedChild) {
+                curElement = curElement.nextElementSibling;
+                curIndex++;
+                continue;
+            }
+
+            // This element is not the correct element, insert the correct one
+            // instead
+            parentElement.insertBefore(wrap(expectedChild.element), curElement);
+            expectedChild.parent = this;
+            this.children.add(expectedChild);
+
+            curIndex++;
+            dirty = true;
+        }
+
+        if (dirty) {
+            this.makeLayoutDirty();
         }
     }
 
@@ -123,7 +286,7 @@ export abstract class ComponentBase {
     /// `_on_message` method.
     sendMessageToBackend(message: object): void {
         callRemoteMethodDiscardResponse('componentMessage', {
-            componentId: parseInt(this.id),
+            componentId: this.id,
             payload: message,
         });
     }
@@ -145,7 +308,7 @@ export abstract class ComponentBase {
 
         // Notify the backend
         callRemoteMethodDiscardResponse('componentStateUpdate', {
-            componentId: parseInt(this.id),
+            componentId: this.id,
             deltaState: deltaState,
         });
 

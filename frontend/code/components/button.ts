@@ -1,8 +1,7 @@
 import { applyColorSet } from '../designApplication';
-import { ColorSet } from '../models';
+import { ColorSet, ComponentId } from '../models';
 import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
-import { replaceOnlyChild } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { SingleContainer } from './singleContainer';
 
@@ -11,7 +10,7 @@ export type ButtonState = ComponentState & {
     shape?: 'pill' | 'rounded' | 'rectangle';
     style?: 'major' | 'minor' | 'plain';
     color?: ColorSet;
-    child?: number | string;
+    child?: ComponentId;
     is_sensitive?: boolean;
     initially_disabled_for?: number;
 };
@@ -63,10 +62,7 @@ export class ButtonComponent extends SingleContainer {
         let element = this.element;
 
         // Update the child
-        if (deltaState.child !== undefined) {
-            replaceOnlyChild(element.id, element, deltaState.child);
-            this.makeLayoutDirty();
-        }
+        this.replaceOnlyChild(deltaState.child);
 
         // Set the shape
         if (deltaState.shape !== undefined) {

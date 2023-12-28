@@ -1,15 +1,16 @@
 import { pixelsPerEm } from '../app';
 import { commitCss } from '../utils';
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 
 const CONTENT_MARGIN_INSIDE: number = 2;
 
 export type DrawerState = ComponentState & {
     _type_: 'Drawer-builtin';
-    anchor?: number | string;
-    content?: number | string;
+    anchor?: ComponentId;
+    content?: ComponentId;
     side?: 'left' | 'right' | 'top' | 'bottom';
     is_modal?: boolean;
     is_open?: boolean;
@@ -74,34 +75,19 @@ export class DrawerComponent extends ComponentBase {
     }
 
     updateElement(deltaState: DrawerState): void {
-        let element = this.element;
-
         // Update the children
-        if (deltaState.anchor !== undefined) {
-            replaceOnlyChild(
-                element.id,
-                this.anchorContainer,
-                deltaState.anchor
-            );
-            this.makeLayoutDirty();
-        }
-
-        if (deltaState.content !== undefined) {
-            replaceOnlyChild(
-                element.id,
-                this.contentInnerContainer,
-                deltaState.content
-            );
-            this.makeLayoutDirty();
-        }
+        this.replaceOnlyChild(deltaState.anchor, this.anchorContainer);
+        this.replaceOnlyChild(deltaState.content, this.contentInnerContainer);
 
         // Assign the correct class for the side
         if (deltaState.side !== undefined) {
-            element.classList.remove('rio-drawer-left');
-            element.classList.remove('rio-drawer-right');
-            element.classList.remove('rio-drawer-top');
-            element.classList.remove('rio-drawer-bottom');
-            element.classList.add(`rio-drawer-${deltaState.side}`);
+            this.element.classList.remove(
+                'rio-drawer-left',
+                'rio-drawer-right',
+                'rio-drawer-top',
+                'rio-drawer-bottom'
+            );
+            this.element.classList.add(`rio-drawer-${deltaState.side}`);
 
             this.makeLayoutDirty();
         }

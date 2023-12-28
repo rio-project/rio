@@ -1,10 +1,10 @@
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
-import { replaceOnlyChild } from '../componentManagement';
+import { ComponentId } from '../models';
 
 export type ClassContainerState = ComponentState & {
     _type_: 'ClassContainer-builtin';
-    child?: null | number | string;
+    child?: ComponentId | null;
     classes?: string[];
 };
 
@@ -16,19 +16,14 @@ export class ClassContainerComponent extends SingleContainer {
     }
 
     updateElement(deltaState: ClassContainerState): void {
-        let element = this.element;
-
-        if (deltaState.child !== undefined) {
-            replaceOnlyChild(element.id, element, deltaState.child);
-            this.makeLayoutDirty();
-        }
+        this.replaceOnlyChild(deltaState.child);
 
         if (deltaState.classes !== undefined) {
             // Remove all old values
-            element.className = '';
+            this.element.className = '';
 
             // Add all new values
-            element.classList.add(...deltaState.classes);
+            this.element.classList.add(...deltaState.classes);
         }
     }
 }

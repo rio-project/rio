@@ -1,4 +1,4 @@
-import { componentsById, replaceChildren } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { range } from '../utils';
@@ -141,7 +141,7 @@ export class GridComponent extends ComponentBase {
         let element = this.element;
 
         if (deltaState._children !== undefined) {
-            replaceChildren(element.id, element, deltaState._children);
+            this.replaceChildren(deltaState._children);
             this.precomputeChildData(deltaState);
             this.updateChildLayouts();
         }

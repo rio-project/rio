@@ -1,10 +1,11 @@
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type AlignState = ComponentState & {
     _type_: 'Align-builtin';
-    child?: number | string;
+    child?: ComponentId;
     align_x?: number | null;
     align_y?: number | null;
 };
@@ -18,7 +19,7 @@ export class AlignComponent extends ComponentBase {
     }
 
     updateElement(deltaState: AlignState): void {
-        replaceOnlyChild(this.element.id, this.element, deltaState.child);
+        this.replaceOnlyChild(deltaState.child);
 
         this.makeLayoutDirty();
     }

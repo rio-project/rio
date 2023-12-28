@@ -1,7 +1,7 @@
 import { applyColorSet } from '../designApplication';
 import { ColorSet, ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 
 export type CardState = ComponentState & {
@@ -45,10 +45,7 @@ export class CardComponent extends ComponentBase {
         let element = this.element;
 
         // Update the child
-        if (deltaState.child !== undefined) {
-            replaceOnlyChild(element.id, element, deltaState.child);
-            this.makeLayoutDirty();
-        }
+        this.replaceOnlyChild(deltaState.child);
 
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {

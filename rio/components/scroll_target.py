@@ -26,12 +26,5 @@ class ScrollTarget(FundamentalComponent):
     id: str
     child: Optional[Component] = None
 
-    def __post_init__(self):
-        if self.id.startswith("rio-id-"):
-            raise ValueError(
-                f"Invalid ID for ScrollTarget: `{self.id}`. IDs starting with"
-                f"`rio-id-` are reserved for internal use."
-            )
-
 
 ScrollTarget._unique_id = "ScrollTarget-builtin"

@@ -1,10 +1,10 @@
-import { replaceChildren } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type FlowState = ComponentState & {
     _type_: 'FlowContainer-builtin';
-    children?: (number | string)[];
+    children?: ComponentId[];
     spacing_x?: number;
     spacing_y?: number;
 };
@@ -20,16 +20,17 @@ export class FlowComponent extends ComponentBase {
 
     updateElement(deltaState: FlowState): void {
         // Update the children
-        replaceChildren(this.element.id, this.element, deltaState.children);
+        this.replaceChildren(deltaState.children);
 
-        // Update the layout
+        // Regardless of whether the children or the spacing changed, a
+        // re-layout is required
         this.makeLayoutDirty();
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 0;
 
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             this.naturalWidth = Math.max(
                 this.naturalWidth,
                 child.requestedWidth
@@ -38,16 +39,14 @@ export class FlowComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        for (let child of this.getDirectChildren()) {
+        for (let child of this.children) {
             child.allocatedWidth = child.requestedWidth;
         }
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
         // Allow the code below to assume there's at least one child
-        let children = this.getDirectChildren();
-
-        if (children.length === 0) {
+        if (this.children.size === 0) {
             this.naturalHeight = 0;
             return;
         }
@@ -65,7 +64,7 @@ export class FlowComponent extends ComponentBase {
         let rowHeight = 0;
         let row: ComponentBase[] = [];
 
-        for (let child of children) {
+        for (let child of this.children) {
             // If the child is too wide, move on to the next row
             if (posX + child.requestedWidth > this.allocatedWidth) {
                 posX = 0;
