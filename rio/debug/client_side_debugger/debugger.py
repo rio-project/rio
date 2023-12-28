@@ -12,7 +12,7 @@ class ClientSideDebugger(rio.Component):
         "docs",
         "ai-chat",
         "deploy",
-    ] | None = "ai-chat"
+    ] | None = None
 
     def get_selected_page(self) -> rio.Component:
         # Project
@@ -43,6 +43,7 @@ class ClientSideDebugger(rio.Component):
 
     def build(self) -> rio.Component:
         current_page = None if self.selected_page is None else self.get_selected_page()
+        print(f'Building page "{self.selected_page}"')
 
         return rio.Row(
             # Big fat line to separate the debugger from the rest of the page

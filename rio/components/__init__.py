@@ -3,12 +3,14 @@ from .app_root import *
 from .auto_form import *
 from .banner import *
 from .button import *
+import typing
 from .card import *
 from .color_picker import *
 from .column import *
 from .component_base import *
 from .container import *
 from .custom_button import *
+from .devel_component import *
 from .drawer import *
 from .dropdown import *
 from .flow_container import *
@@ -48,3 +50,8 @@ from .table import *
 from .text import *
 from .text_input import *
 from .website import *
+
+
+assert (
+    Container is not typing.Container
+), "Looks like somebody imported `typing.Container`, accidentally overwriting `rio.Container`. Are you missing a `__all__` in some component?"

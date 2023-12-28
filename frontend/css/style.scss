@@ -1963,7 +1963,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: end;
+    justify-content: space-between;
     cursor: pointer;
 
     overflow: hidden;
