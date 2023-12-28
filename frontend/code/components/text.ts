@@ -28,7 +28,10 @@ export class TextComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: TextState): void {
+    updateElement(
+        deltaState: TextState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Text content
         //
         // Make sure not to allow any linebreaks if the text is not multiline.

@@ -28,7 +28,10 @@ export class DebuggerConnectorComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: DebuggerConnectorState): void {}
+    updateElement(
+        deltaState: DebuggerConnectorState,
+        latentComponents: Set<ComponentBase>
+    ): void {}
 
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth = 3;

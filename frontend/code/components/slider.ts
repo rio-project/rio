@@ -31,7 +31,10 @@ export class SliderComponent extends ComponentBase {
         }
     }
 
-    updateElement(deltaState: SliderState): void {
+    updateElement(
+        deltaState: SliderState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (
             deltaState.minimum !== undefined ||
             deltaState.maximum !== undefined ||

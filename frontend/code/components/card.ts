@@ -41,11 +41,14 @@ export class CardComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: CardState): void {
+    updateElement(
+        deltaState: CardState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         // Update the child
-        this.replaceOnlyChild(deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {

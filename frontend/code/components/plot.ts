@@ -43,7 +43,10 @@ export class PlotComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: PlotState): void {
+    updateElement(
+        deltaState: PlotState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         this.element.innerHTML = '';
         loadPlotly(() => {
             let plotJson = JSON.parse(deltaState.plotJson);

@@ -1,5 +1,5 @@
 import { SingleContainer } from './singleContainer';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { ComponentId } from '../models';
 
 export type PlaceholderState = ComponentState & {
@@ -14,7 +14,10 @@ export class PlaceholderComponent extends SingleContainer {
         return document.createElement('div');
     }
 
-    updateElement(deltaState: PlaceholderState): void {
-        this.replaceOnlyChild(deltaState._child_);
+    updateElement(
+        deltaState: PlaceholderState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceOnlyChild(latentComponents, deltaState._child_);
     }
 }

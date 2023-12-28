@@ -31,7 +31,10 @@ export class SwitcherComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: SwitcherState): void {
+    updateElement(
+        deltaState: SwitcherState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Update the child & assign its position
         if (!this.isInitialized && deltaState.child !== null) {
             console.assert(deltaState.child !== undefined);
@@ -41,7 +44,11 @@ export class SwitcherComponent extends ComponentBase {
             this.activeChildContainer.style.top = '0';
             this.element.appendChild(this.activeChildContainer);
 
-            this.replaceOnlyChild(deltaState.child, this.activeChildContainer);
+            this.replaceOnlyChild(
+                latentComponents,
+                deltaState.child,
+                this.activeChildContainer
+            );
 
             this.activeChildInstance =
                 componentsById[

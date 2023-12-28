@@ -17,8 +17,10 @@ export class LayoutContext {
         );
 
         // TODO / REMOVEME For debugging
-        let element = component.element;
-        element.dataset['requestedWidth'] = `${component.requestedWidth}`;
+        component.element.setAttribute(
+            'dbg-requested-width',
+            `${component.requestedWidth}`
+        );
     }
 
     private updateAllocatedWidthRecursive(component: ComponentBase) {
@@ -61,8 +63,10 @@ export class LayoutContext {
         );
 
         // TODO / REMOVEME For debugging
-        let element = component.element;
-        element.dataset['requestedHeight'] = `${component.requestedHeight}`;
+        component.element.setAttribute(
+            'dbg-requested-height',
+            `${component.requestedHeight}`
+        );
     }
 
     private updateAllocatedHeightRecursive(component: ComponentBase) {

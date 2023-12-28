@@ -62,11 +62,14 @@ export class IconComponent extends ComponentBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add('rio-icon', 'rio-zero-size-request-container');
+        element.classList.add('rio-icon');
         return element;
     }
 
-    updateElement(deltaState: IconState): void {
+    updateElement(
+        deltaState: IconState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         // Remove all children

@@ -36,10 +36,17 @@ class LinearContainer extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: LinearContainerState): void {
+    updateElement(
+        deltaState: LinearContainerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Children
         if (deltaState.children !== undefined) {
-            this.replaceChildren(deltaState.children, this.childContainer);
+            this.replaceChildren(
+                latentComponents,
+                deltaState.children,
+                this.childContainer
+            );
 
             // Clear everybody's position
             for (let childElement of this.childContainer

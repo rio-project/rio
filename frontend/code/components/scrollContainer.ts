@@ -29,8 +29,11 @@ export class ScrollContainerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: ScrollContainerState): void {
-        this.replaceOnlyChild(deltaState.child);
+    updateElement(
+        deltaState: ScrollContainerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         if (deltaState.scroll_x !== undefined) {
             this.element.style.overflowX =

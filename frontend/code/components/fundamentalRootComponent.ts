@@ -30,7 +30,10 @@ export class FundamentalRootComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: FundamentalRootComponentState): void {
+    updateElement(
+        deltaState: FundamentalRootComponentState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Unlike what you'd expect, this function can actually be called more
         // than once. This is because of injected layout components; if the
         // user's root component changes, then its parent - this component right
@@ -48,7 +51,7 @@ export class FundamentalRootComponent extends ComponentBase {
             children.push(deltaState.debugger);
         }
 
-        this.replaceChildren(children);
+        this.replaceChildren(latentComponents, children);
 
         // Initialize CSS
         this.rootScrollerElement = document.createElement('div');

@@ -1,5 +1,5 @@
 import { ComponentId } from '../models';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
 
 export type StackState = ComponentState & {
@@ -16,7 +16,10 @@ export class StackComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(deltaState: StackState): void {
-        this.replaceChildren(deltaState.children);
+    updateElement(
+        deltaState: StackState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceChildren(latentComponents, deltaState.children);
     }
 }

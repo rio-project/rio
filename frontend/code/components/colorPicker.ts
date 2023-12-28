@@ -117,7 +117,10 @@ export class ColorPickerComponent extends ComponentBase {
         return containerElement;
     }
 
-    updateElement(deltaState: ColorPickerState): void {
+    updateElement(
+        deltaState: ColorPickerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Color
         //
         // Many combination of HSV values correspond to the same RGB color.

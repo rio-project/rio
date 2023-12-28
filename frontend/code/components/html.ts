@@ -13,7 +13,10 @@ export class HtmlComponent extends ComponentBase {
         return document.createElement('div');
     }
 
-    updateElement(deltaState: HtmlState): void {
+    updateElement(
+        deltaState: HtmlState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.html !== undefined) {
             this.element.innerHTML = deltaState.html;
         }

@@ -36,10 +36,21 @@ export class PopupComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: PopupState): void {
+    updateElement(
+        deltaState: PopupState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Update the children
-        this.replaceOnlyChild(deltaState.anchor, this.anchorContainer);
-        this.replaceOnlyChild(deltaState.content, this.contentContainer);
+        this.replaceOnlyChild(
+            latentComponents,
+            deltaState.anchor,
+            this.anchorContainer
+        );
+        this.replaceOnlyChild(
+            latentComponents,
+            deltaState.content,
+            this.contentContainer
+        );
 
         // Open / Close
         if (deltaState.is_open === true) {

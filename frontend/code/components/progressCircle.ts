@@ -19,14 +19,14 @@ export class ProgressCircleComponent extends ComponentBase {
                 <circle class="progress" cx="50" cy="50" r="20"></circle>
             </svg>
         `;
-        element.classList.add(
-            'rio-progress-circle',
-            'rio-zero-size-request-container'
-        );
+        element.classList.add('rio-progress-circle');
         return element;
     }
 
-    updateElement(deltaState: ProgressCircleState): void {
+    updateElement(
+        deltaState: ProgressCircleState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Apply the progress
         if (deltaState.progress !== undefined) {
             if (deltaState.progress === null) {

@@ -1,5 +1,5 @@
 import { SingleContainer } from './singleContainer';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { ComponentId } from '../models';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values
@@ -701,7 +701,10 @@ export class KeyEventListenerComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(deltaState: KeyEventListenerState): void {
+    updateElement(
+        deltaState: KeyEventListenerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         let reportKeyDown =
@@ -743,7 +746,7 @@ export class KeyEventListenerComponent extends SingleContainer {
             element.onkeyup = null;
         }
 
-        this.replaceOnlyChild(deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.child);
     }
 
     grabKeyboardFocus(): void {

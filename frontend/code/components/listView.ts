@@ -1,4 +1,5 @@
 import { ComponentId } from '../models';
+import { ComponentBase } from './componentBase';
 import { ColumnComponent, LinearContainerState } from './linearContainers';
 
 export class ListViewComponent extends ColumnComponent {
@@ -13,10 +14,18 @@ export class ListViewComponent extends ColumnComponent {
         return element;
     }
 
-    updateElement(deltaState: LinearContainerState): void {
+    updateElement(
+        deltaState: LinearContainerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Columns don't wrap their children in divs, but ListView does. Hence
         // the overridden createElement.
-        this.replaceChildren(deltaState.children, this.childContainer, true);
+        this.replaceChildren(
+            latentComponents,
+            deltaState.children,
+            this.childContainer,
+            true
+        );
 
         // Clear everybody's position
         for (let child of this.childContainer.children) {

@@ -1,6 +1,6 @@
 import { applyColorSet } from '../designApplication';
 import { ColorSet, ComponentId } from '../models';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { LayoutContext } from '../layouting';
 import { SingleContainer } from './singleContainer';
@@ -58,11 +58,14 @@ export class ButtonComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(deltaState: ButtonState): void {
+    updateElement(
+        deltaState: ButtonState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         // Update the child
-        this.replaceOnlyChild(deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         // Set the shape
         if (deltaState.shape !== undefined) {

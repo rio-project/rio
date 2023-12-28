@@ -137,11 +137,14 @@ export class GridComponent extends ComponentBase {
         }
     }
 
-    updateElement(deltaState: GridState): void {
+    updateElement(
+        deltaState: GridState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         if (deltaState._children !== undefined) {
-            this.replaceChildren(deltaState._children);
+            this.replaceChildren(latentComponents, deltaState._children);
             this.precomputeChildData(deltaState);
             this.updateChildLayouts();
         }
