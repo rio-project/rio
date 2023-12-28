@@ -1,12 +1,13 @@
-import { replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 import { SCROLL_BAR_SIZE } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
 export type ScrollContainerState = ComponentState & {
     _type_: 'ScrollContainer-builtin';
-    child?: number | string;
+    child?: ComponentId;
     scroll_x?: 'never' | 'auto' | 'always';
     scroll_y?: 'never' | 'auto' | 'always';
 };
@@ -29,9 +30,7 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateElement(deltaState: ScrollContainerState): void {
-        if (deltaState.child !== undefined) {
-            replaceOnlyChild(this.element.id, this.element, deltaState.child);
-        }
+        this.replaceOnlyChild(deltaState.child);
 
         if (deltaState.scroll_x !== undefined) {
             this.element.style.overflowX =

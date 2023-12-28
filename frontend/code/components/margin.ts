@@ -1,10 +1,11 @@
 import { ComponentBase, ComponentState } from './componentBase';
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 
 export type MarginState = ComponentState & {
     _type_: 'Margin-builtin';
-    child?: number | string;
+    child?: ComponentId;
     margin_left?: number;
     margin_top?: number;
     margin_right?: number;
@@ -20,9 +21,7 @@ export class MarginComponent extends ComponentBase {
     }
 
     updateElement(deltaState: MarginState): void {
-        replaceOnlyChild(this.element.id, this.element, deltaState.child);
-
-        this.makeLayoutDirty();
+        this.replaceOnlyChild(deltaState.child);
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {

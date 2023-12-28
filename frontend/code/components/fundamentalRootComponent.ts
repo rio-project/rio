@@ -1,5 +1,5 @@
 import { pixelsPerEm } from '../app';
-import { componentsById, replaceChildren } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { setConnectionLostPopupVisible } from '../rpc';
@@ -48,7 +48,7 @@ export class FundamentalRootComponent extends ComponentBase {
             children.push(deltaState.debugger);
         }
 
-        replaceChildren(this.element.id, this.element, children);
+        this.replaceChildren(children);
 
         // Initialize CSS
         this.rootScrollerElement = document.createElement('div');

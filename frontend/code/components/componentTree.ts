@@ -86,7 +86,7 @@ export class ComponentTreeComponent extends ComponentBase {
         console.log(`DEBUG: Selected component ${this.selectedComponentId}`);
 
         this.sendMessageToBackend({
-            selectedComponentId: parseInt(this.selectedComponentId),
+            selectedComponentId: this.selectedComponentId,
         });
     }
 
@@ -105,7 +105,7 @@ export class ComponentTreeComponent extends ComponentBase {
         // No, drill down
         let result: ComponentBase[] = [];
 
-        for (let child of comp.getDirectChildren()) {
+        for (let child of comp.children) {
             result.push(...this._drillDown(child));
         }
 
@@ -115,12 +115,11 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Given a component, return all of its children which should be displayed
     /// in the tree.
     getDisplayableChildren(comp: ComponentBase): ComponentBase[] {
-        let allChildren = comp.getDirectChildren();
         let result: ComponentBase[] = [];
 
         // Keep drilling down until a component which should be displayed
         // is encountered
-        for (let child of allChildren) {
+        for (let child of comp.children) {
             result.push(...this._drillDown(child));
         }
 

@@ -1,14 +1,13 @@
-import { BoxStyle } from '../models';
+import { BoxStyle, ComponentId } from '../models';
 import { colorToCssString, fillToCss } from '../cssUtils';
 import { ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { SingleContainer } from './singleContainer';
-import { replaceOnlyChild } from '../componentManagement';
 
 export type RectangleState = ComponentState & {
     _type_: 'Rectangle-builtin';
     style?: BoxStyle;
-    child?: null | number | string;
+    child?: ComponentId | null;
     hover_style?: BoxStyle | null;
     transition_time?: number;
     cursor?: string;
@@ -90,10 +89,7 @@ export class RectangleComponent extends SingleContainer {
             setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
         }
 
-        if (deltaState.child !== undefined) {
-            replaceOnlyChild(element.id, element, deltaState.child);
-            this.makeLayoutDirty();
-        }
+        this.replaceOnlyChild(deltaState.child);
 
         if (deltaState.transition_time !== undefined) {
             element.style.transitionDuration = `${deltaState.transition_time}s`;

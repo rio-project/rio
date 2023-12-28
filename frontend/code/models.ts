@@ -1,4 +1,4 @@
-export type ComponentId = number | string;
+export type ComponentId = number & { __brand: 'ComponentId' };
 
 export type Color = [number, number, number, number];
 

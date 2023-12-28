@@ -1,4 +1,4 @@
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
@@ -61,7 +61,7 @@ export class LinkComponent extends ComponentBase {
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            replaceOnlyChild(element.id, element, null);
+            this.replaceOnlyChild(null);
 
             // Add the new text
             let textElement = document.createElement('div');
@@ -70,9 +70,6 @@ export class LinkComponent extends ComponentBase {
 
             // Update the CSS classes
             element.classList.add('rio-text-link');
-
-            // Update the layout
-            this.makeLayoutDirty();
         }
 
         // Child Component?
@@ -80,9 +77,8 @@ export class LinkComponent extends ComponentBase {
             deltaState.child_component !== undefined &&
             deltaState.child_component !== null
         ) {
-            replaceOnlyChild(element.id, element, deltaState.child_component);
+            this.replaceOnlyChild(deltaState.child_component);
             element.classList.remove('rio-text-link');
-            this.makeLayoutDirty();
         }
 
         // Target URL?

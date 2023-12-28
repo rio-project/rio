@@ -57,6 +57,16 @@ export async function sleep(durationInSeconds: number): Promise<void> {
     );
 }
 
+export function reprElement(element: Element): string {
+    let chunks = [element.tagName.toLowerCase()];
+
+    for (let attr of element.attributes) {
+        chunks.push(`${attr.name}=${JSON.stringify(attr.value)}`);
+    }
+
+    return `<${chunks.join(' ')}>`;
+}
+
 export function range(start: number, end: number): number[] {
     let result: number[] = [];
 

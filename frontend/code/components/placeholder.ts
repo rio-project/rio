@@ -1,10 +1,10 @@
 import { SingleContainer } from './singleContainer';
 import { ComponentState } from './componentBase';
-import { replaceOnlyChild } from '../componentManagement';
+import { ComponentId } from '../models';
 
 export type PlaceholderState = ComponentState & {
     _type_: 'Placeholder'; // Not 'Placeholder-builtin'!
-    _child_?: number | string;
+    _child_?: ComponentId;
 };
 
 export class PlaceholderComponent extends SingleContainer {
@@ -15,7 +15,6 @@ export class PlaceholderComponent extends SingleContainer {
     }
 
     updateElement(deltaState: PlaceholderState): void {
-        replaceOnlyChild(this.element.id, this.element, deltaState._child_);
-        this.makeLayoutDirty();
+        this.replaceOnlyChild(deltaState._child_);
     }
 }

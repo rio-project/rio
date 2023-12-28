@@ -1,4 +1,3 @@
-import { replaceOnlyChild } from '../componentManagement';
 import { ComponentId } from '../models';
 import { ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
@@ -13,26 +12,14 @@ export class ScrollTargetComponent extends SingleContainer {
     state: Required<ScrollTargetState>;
 
     createElement(): HTMLElement {
-        // We need to set the element's id, but elements for components must all
-        // have ids of the form `rio-id-...`. So we must create a container
-        // for our <a> element.
-        let element = document.createElement('span');
-
-        let anchorElement = document.createElement('a');
-        element.appendChild(anchorElement);
-
-        return element;
+        return document.createElement('a');
     }
 
     updateElement(deltaState: ScrollTargetState): void {
-        let anchorElement = this.element.firstElementChild as HTMLElement;
-
-        replaceOnlyChild(this.element.id, anchorElement, deltaState.child);
+        this.replaceOnlyChild(deltaState.child);
 
         if (deltaState.id !== undefined) {
-            anchorElement.id = deltaState.id;
+            this.element.id = deltaState.id;
         }
-
-        this.makeLayoutDirty();
     }
 }

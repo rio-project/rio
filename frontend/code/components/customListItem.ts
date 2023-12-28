@@ -1,14 +1,15 @@
 import { MDCRipple } from '@material/ripple';
 import { ComponentBase, ComponentState } from './componentBase';
-import { componentsById, replaceOnlyChild } from '../componentManagement';
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
+import { ComponentId } from '../models';
 
 const PADDING_X: number = 1.5;
 const PADDING_Y: number = 0.7;
 
 export type CustomListItemState = ComponentState & {
     _type_: 'CustomListItem-builtin';
-    child?: number | string;
+    child?: ComponentId;
     pressable?: boolean;
 };
 
@@ -26,39 +27,34 @@ export class CustomListItemComponent extends ComponentBase {
     }
 
     updateElement(deltaState: CustomListItemState): void {
-        let element = this.element;
-
         // Update the child
-        if (deltaState.child !== undefined) {
-            replaceOnlyChild(element.id, element, deltaState.child);
-            this.makeLayoutDirty();
-        }
+        this.replaceOnlyChild(deltaState.child);
 
         // Style the surface depending on whether it is pressable.
         if (deltaState.pressable === true) {
             if (this.mdcRipple === null) {
-                this.mdcRipple = new MDCRipple(element);
+                this.mdcRipple = new MDCRipple(this.element);
 
-                element.classList.add(
+                this.element.classList.add(
                     'mdc-ripple-surface',
                     'rio-rectangle-ripple'
                 );
-                element.style.cursor = 'pointer';
+                this.element.style.cursor = 'pointer';
 
-                element.onclick = this._on_press.bind(this);
+                this.element.onclick = this._on_press.bind(this);
             }
         } else if (deltaState.pressable === false) {
             if (this.mdcRipple !== null) {
                 this.mdcRipple.destroy();
                 this.mdcRipple = null;
 
-                element.classList.remove(
+                this.element.classList.remove(
                     'mdc-ripple-surface',
                     'rio-rectangle-ripple'
                 );
-                element.style.removeProperty('cursor');
+                this.element.style.removeProperty('cursor');
 
-                element.onclick = null;
+                this.element.onclick = null;
             }
         }
     }
