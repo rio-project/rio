@@ -1,6 +1,5 @@
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
-// TODO
 
 export type SwitchState = ComponentState & {
     _type_: 'Switch-builtin';
@@ -71,10 +70,10 @@ export class SwitchComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        this.naturalWidth = 10;
+        this.naturalWidth = 3.18;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = 5;
+        this.naturalHeight = 1.54;
     }
 }

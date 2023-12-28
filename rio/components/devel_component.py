@@ -1,4 +1,5 @@
-import os
+from __future__ import annotations
+
 import subprocess
 import tempfile
 from pathlib import Path
@@ -7,6 +8,11 @@ from typing import *  # type: ignore
 import rio
 
 from . import component_base
+
+
+__all__ = [
+    "DevelComponent",
+]
 
 _SOURCE_DIRECTORY: Optional[Path] = None
 

@@ -100,10 +100,11 @@ export class FundamentalRootComponent extends ComponentBase {
             this.overlayWidth -= dbg.allocatedWidth;
         }
 
-        // The connection lost popup is an overlay
+        // Despite being an overlay, the connection lost popup should also cover
+        // the debugger
         let connectionLostPopup =
             componentsById[this.state.connection_lost_component]!;
-        connectionLostPopup.allocatedWidth = this.overlayWidth;
+        connectionLostPopup.allocatedWidth = this.allocatedWidth;
 
         // The child may receive more than the overlay width, if it's larger
         // than the window. In that case, it will scroll.
