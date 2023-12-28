@@ -53,7 +53,8 @@ class ClientSideDebugger(rio.Component):
             ),
             # Currently active page
             rio.components.class_container.ClassContainer(
-                rio.Switcher(current_page),
+                # rio.Switcher(current_page),
+                rio.Spacer(width=0) if current_page is None else current_page,
                 classes=["rio-switcheroo-neutral", "rio-debugger-background"],
             ),
             # Navigation
