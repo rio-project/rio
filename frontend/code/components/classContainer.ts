@@ -1,5 +1,5 @@
 import { SingleContainer } from './singleContainer';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { ComponentId } from '../models';
 
 export type ClassContainerState = ComponentState & {
@@ -15,8 +15,11 @@ export class ClassContainerComponent extends SingleContainer {
         return document.createElement('div');
     }
 
-    updateElement(deltaState: ClassContainerState): void {
-        this.replaceOnlyChild(deltaState.child);
+    updateElement(
+        deltaState: ClassContainerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         if (deltaState.classes !== undefined) {
             // Remove all old values

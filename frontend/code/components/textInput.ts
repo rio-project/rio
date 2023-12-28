@@ -74,7 +74,10 @@ export class TextInputComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: TextInputState): void {
+    updateElement(
+        deltaState: TextInputState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.text !== undefined) {
             this.inputElement.value = deltaState.text;
         }

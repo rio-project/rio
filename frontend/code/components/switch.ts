@@ -35,7 +35,10 @@ export class SwitchComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: SwitchState): void {
+    updateElement(
+        deltaState: SwitchState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.is_on !== undefined) {
             if (deltaState.is_on) {
                 this.element.classList.add('is-on');

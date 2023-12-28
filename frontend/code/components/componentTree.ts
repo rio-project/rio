@@ -57,7 +57,10 @@ export class ComponentTreeComponent extends ComponentBase {
         this.highlighterElement.remove();
     }
 
-    updateElement(deltaState: ComponentState): void {}
+    updateElement(
+        deltaState: ComponentState,
+        latentComponents: Set<ComponentBase>
+    ): void {}
 
     /// Returns the currently selected component. This will impute a sensible
     /// default if the selected component no longer exists.

@@ -394,7 +394,10 @@ export class DropdownComponent extends ComponentBase {
             this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
     }
 
-    updateElement(deltaState: DropdownState): void {
+    updateElement(
+        deltaState: DropdownState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         if (deltaState.optionNames !== undefined) {

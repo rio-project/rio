@@ -1,6 +1,6 @@
 import { BoxStyle, ComponentId } from '../models';
 import { colorToCssString, fillToCss } from '../cssUtils';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { SingleContainer } from './singleContainer';
 
@@ -82,14 +82,17 @@ export class RectangleComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(deltaState: RectangleState): void {
+    updateElement(
+        deltaState: RectangleState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let element = this.element;
 
         if (deltaState.style !== undefined) {
             setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
         }
 
-        this.replaceOnlyChild(deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         if (deltaState.transition_time !== undefined) {
             element.style.transitionDuration = `${deltaState.transition_time}s`;

@@ -1,5 +1,5 @@
 import { ComponentId } from '../models';
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { SingleContainer } from './singleContainer';
 
 export type ScrollTargetState = ComponentState & {
@@ -15,8 +15,11 @@ export class ScrollTargetComponent extends SingleContainer {
         return document.createElement('a');
     }
 
-    updateElement(deltaState: ScrollTargetState): void {
-        this.replaceOnlyChild(deltaState.child);
+    updateElement(
+        deltaState: ScrollTargetState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         if (deltaState.id !== undefined) {
             this.element.id = deltaState.id;

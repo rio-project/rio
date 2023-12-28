@@ -14,7 +14,10 @@ export class WebsiteComponent extends ComponentBase {
         return document.createElement('iframe');
     }
 
-    updateElement(deltaState: WebsiteState): void {
+    updateElement(
+        deltaState: WebsiteState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (
             deltaState.url !== undefined &&
             deltaState.url !== this.element.src

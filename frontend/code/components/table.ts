@@ -28,7 +28,10 @@ export class TableComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: TableState): void {
+    updateElement(
+        deltaState: TableState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.data !== undefined) {
             let showRowNumbers =
                 deltaState.show_row_numbers ?? this.state.show_row_numbers;

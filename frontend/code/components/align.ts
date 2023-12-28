@@ -18,8 +18,11 @@ export class AlignComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: AlignState): void {
-        this.replaceOnlyChild(deltaState.child);
+    updateElement(
+        deltaState: AlignState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         this.makeLayoutDirty();
     }

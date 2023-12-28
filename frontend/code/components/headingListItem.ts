@@ -38,7 +38,10 @@ export class HeadingListItemComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: HeadingListItemState): void {
+    updateElement(
+        deltaState: HeadingListItemState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.text !== undefined) {
             this.element.textContent = deltaState.text;
 

@@ -74,10 +74,21 @@ export class DrawerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: DrawerState): void {
+    updateElement(
+        deltaState: DrawerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Update the children
-        this.replaceOnlyChild(deltaState.anchor, this.anchorContainer);
-        this.replaceOnlyChild(deltaState.content, this.contentInnerContainer);
+        this.replaceOnlyChild(
+            latentComponents,
+            deltaState.anchor,
+            this.anchorContainer
+        );
+        this.replaceOnlyChild(
+            latentComponents,
+            deltaState.content,
+            this.contentInnerContainer
+        );
 
         // Assign the correct class for the side
         if (deltaState.side !== undefined) {

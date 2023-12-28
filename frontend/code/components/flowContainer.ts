@@ -18,9 +18,12 @@ export class FlowComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: FlowState): void {
+    updateElement(
+        deltaState: FlowState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Update the children
-        this.replaceChildren(deltaState.children);
+        this.replaceChildren(latentComponents, deltaState.children);
 
         // Regardless of whether the children or the spacing changed, a
         // re-layout is required

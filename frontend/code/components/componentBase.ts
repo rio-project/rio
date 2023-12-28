@@ -108,6 +108,7 @@ export abstract class ComponentBase {
     }
 
     replaceOnlyChild(
+        latentComponents: Set<ComponentBase>,
         childId: null | undefined | ComponentId,
         parentElement: HTMLElement = this.element
     ): void {
@@ -121,13 +122,11 @@ export abstract class ComponentBase {
 
         if (childId === null) {
             if (currentChildElement !== null) {
-                let latentComponents = document.getElementById(
-                    'rio-latent-components'
-                )!;
-                latentComponents.appendChild(currentChildElement);
-
                 let child = getComponentByElement(currentChildElement);
+
+                currentChildElement.remove();
                 this.children.delete(child);
+                latentComponents.add(child);
 
                 this.makeLayoutDirty();
             }
@@ -147,14 +146,9 @@ export abstract class ComponentBase {
                 return;
             }
 
-            // Move the child element to a latent container, so it isn't garbage
-            // collected
-            let latentComponents = document.getElementById(
-                'rio-latent-components'
-            )!;
-            latentComponents.appendChild(currentChildElement);
-
+            currentChildElement.remove();
             this.children.delete(child);
+            latentComponents.add(child);
         }
 
         // Add the replacement component
@@ -163,9 +157,13 @@ export abstract class ComponentBase {
 
         child.parent = this;
         this.children.add(child);
+        latentComponents.delete(child);
+
+        this.makeLayoutDirty();
     }
 
     replaceChildren(
+        latentComponents: Set<ComponentBase>,
         childIds: undefined | ComponentId[],
         parentElement: HTMLElement = this.element,
         wrapInDivs: boolean = false
@@ -176,10 +174,6 @@ export abstract class ComponentBase {
         }
 
         let dirty = false;
-
-        let latentComponents = document.getElementById(
-            'rio-latent-components'
-        )!;
 
         let curElement = parentElement.firstElementChild;
         let children = childIds.map((id) => componentsById[id]!);
@@ -210,6 +204,7 @@ export abstract class ComponentBase {
                     parentElement.appendChild(wrap(child.element));
                     child.parent = this;
                     this.children.add(child);
+                    latentComponents.delete(child);
 
                     dirty = true;
                     curIndex++;
@@ -223,12 +218,10 @@ export abstract class ComponentBase {
                 while (curElement !== null) {
                     let nextElement = curElement.nextElementSibling;
 
-                    // Make sure to remove the wrapper element (if any) *and*
-                    // move the real child component to latentComponents
-                    let child = getComponentByElement(unwrap(curElement));
-
                     curElement.remove();
-                    latentComponents.appendChild(child.element);
+
+                    let child = getComponentByElement(unwrap(curElement));
+                    latentComponents.add(child);
                     this.children.delete(child);
 
                     dirty = true;
@@ -251,6 +244,7 @@ export abstract class ComponentBase {
             parentElement.insertBefore(wrap(expectedChild.element), curElement);
             expectedChild.parent = this;
             this.children.add(expectedChild);
+            latentComponents.delete(expectedChild);
 
             curIndex++;
             dirty = true;
@@ -279,7 +273,10 @@ export abstract class ComponentBase {
     ///
     /// The `element` parameter is identical to `this.element`. It's passed as
     /// an argument because it's more efficient than calling `this.element`.
-    abstract updateElement(deltaState: ComponentState): void;
+    abstract updateElement(
+        deltaState: ComponentState,
+        latentComponents: Set<ComponentBase>
+    ): void;
 
     /// Send a message to the python instance corresponding to this component. The
     /// message is an arbitrary JSON object and will be passed to the instance's
@@ -293,7 +290,7 @@ export abstract class ComponentBase {
 
     _setStateDontNotifyBackend(deltaState: ComponentState): void {
         // Trigger an update
-        this.updateElement(deltaState);
+        this.updateElement(deltaState, null as any as Set<ComponentBase>);
 
         // Set the state
         this.state = {

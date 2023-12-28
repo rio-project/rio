@@ -387,7 +387,10 @@ export class SwitcherBarComponent extends ComponentBase {
         return result;
     }
 
-    updateElement(deltaState: SwitcherBarState): void {
+    updateElement(
+        deltaState: SwitcherBarState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         let markerPositionNeedsUpdate = false;
         let needsReLayout = false;
 

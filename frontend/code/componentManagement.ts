@@ -360,10 +360,7 @@ export function updateComponentStates(
 
     // Create a HTML element to hold all latent components, so they aren't
     // garbage collected while updating the DOM.
-    let latentComponents = document.createElement('div');
-    latentComponents.id = 'rio-latent-components';
-    latentComponents.style.display = 'none';
-    document.body.appendChild(latentComponents);
+    let latentComponents = new Set<ComponentBase>();
 
     // Make sure all components mentioned in the message have a corresponding HTML
     // element
@@ -395,8 +392,11 @@ export function updateComponentStates(
         componentsByElement.set(newComponent.element, newComponent);
 
         // Store the component's class name in the element. Used for debugging.
-        newComponent.element.dataset.pyClass = deltaState._python_type_!;
-        newComponent.element.dataset.id = componentIdAsString;
+        newComponent.element.setAttribute(
+            'dbg-py-class',
+            deltaState._python_type_!
+        );
+        newComponent.element.setAttribute('dbg-id', componentIdAsString);
 
         // Set the component's key, if it has one. Used for debugging.
         let key = deltaState['key'];
@@ -408,10 +408,10 @@ export function updateComponentStates(
     // Update all components mentioned in the message
     for (let id in deltaStates) {
         let deltaState = deltaStates[id];
-        let component = componentsById[id]!;
+        let component: ComponentBase = componentsById[id]!;
 
         // Perform updates specific to this component type
-        component.updateElement(deltaState);
+        component.updateElement(deltaState, latentComponents);
 
         // If the component's width or height has changed, request a re-layout.
         let width_changed =
@@ -453,23 +453,18 @@ export function updateComponentStates(
     }
 
     // Remove the latent components
-    for (let element of latentComponents.children) {
-        let component = tryGetComponentByElement(element);
-        if (component === null) {
-            console.error("Couldn't find instance for latent element", element);
-        } else {
-            // Destruct the component and all its children
-            let queue = [component];
+    for (let component of latentComponents) {
+        // Destruct the component and all its children
+        let queue = [component];
 
-            for (let comp of queue) {
-                queue.push(...comp.children);
-                comp.onDestruction();
-                delete componentsById[comp.id];
-                componentsByElement.delete(comp.element);
-            }
+        for (let comp of queue) {
+            queue.push(...comp.children);
+
+            comp.onDestruction();
+            delete componentsById[comp.id];
+            componentsByElement.delete(comp.element);
         }
     }
-    latentComponents.remove();
 
     // Update the layout
     updateLayout();
@@ -482,7 +477,7 @@ function canHaveKeyboardFocus(instance: ComponentBase): boolean {
 
 function restoreKeyboardFocus(
     focusedComponent: ComponentBase,
-    latentComponents: HTMLElement
+    latentComponents: Set<ComponentBase>
 ): void {
     // The elements that are about to die still know the id of the parent from
     // which they were just removed. We'll go up the tree until we find a parent
@@ -497,7 +492,7 @@ function restoreKeyboardFocus(
 
     while (current !== rootComponent) {
         // If this component is dead, no child of it can get the keyboard focus
-        if (current.element.parentElement === latentComponents) {
+        if (latentComponents.has(current)) {
             winner = null;
         }
 

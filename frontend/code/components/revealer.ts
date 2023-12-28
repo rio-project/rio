@@ -104,7 +104,10 @@ export class RevealerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: RevealerState): void {
+    updateElement(
+        deltaState: RevealerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Update the header
         if (deltaState.header === null) {
             this.headerElement.style.display = 'none';
@@ -114,7 +117,11 @@ export class RevealerComponent extends ComponentBase {
         }
 
         // Update the child
-        this.replaceOnlyChild(deltaState.content, this.contentInnerElement);
+        this.replaceOnlyChild(
+            latentComponents,
+            deltaState.content,
+            this.contentInnerElement
+        );
 
         // Update the text style
         if (deltaState.header_style !== undefined) {

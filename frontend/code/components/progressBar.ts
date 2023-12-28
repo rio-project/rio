@@ -36,7 +36,10 @@ export class ProgressBarComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: ProgressBarState): void {
+    updateElement(
+        deltaState: ProgressBarState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // No progress specified
         if (deltaState.progress === undefined) {
         }

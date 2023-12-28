@@ -65,8 +65,11 @@ export class MouseEventListenerComponent extends SingleContainer {
         return document.createElement('div');
     }
 
-    updateElement(deltaState: MouseEventListenerState): void {
-        this.replaceOnlyChild(deltaState.child);
+    updateElement(
+        deltaState: MouseEventListenerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
+        this.replaceOnlyChild(latentComponents, deltaState.child);
 
         if (deltaState.reportMouseDown) {
             this.element.onmousedown = (e) => {

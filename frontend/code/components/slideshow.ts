@@ -1,4 +1,4 @@
-import { ComponentState } from './componentBase';
+import { ComponentBase, ComponentState } from './componentBase';
 import { easeIn, easeInOut, easeOut } from '../easeFunctions';
 import { SingleContainer } from './singleContainer';
 import { ComponentId } from '../models';
@@ -69,10 +69,14 @@ export class SlideshowComponent extends SingleContainer {
         return element;
     }
 
-    updateElement(deltaState: SlideshowState): void {
+    updateElement(
+        deltaState: SlideshowState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         // Update the children
         if (deltaState.children !== undefined) {
             this.replaceChildren(
+                latentComponents,
                 deltaState.children,
                 this.childContainer,
 

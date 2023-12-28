@@ -83,7 +83,7 @@ export class MediaPlayerComponent extends ComponentBase {
     private _lastInteractionAt: number = -1;
     private _overlayVisible: boolean = true;
     private _isFullScreen: boolean = false;
-    private _hasAudio: boolean = false;
+    private _hasAudio: boolean = true;
     private _notifyBackend: boolean = true;
 
     /// Update the overlay's opacity to be what it currently should be.
@@ -268,49 +268,44 @@ export class MediaPlayerComponent extends ComponentBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
-        element.classList.add(
-            'rio-media-player',
-            'rio-zero-size-request-container'
-        );
+        element.classList.add('rio-media-player');
         element.setAttribute('tabindex', '0');
 
         element.innerHTML = `
-            <div>
-                <video></video>
-                <div class="rio-media-player-alt-display" style="display: none"></div>
-                <div class="rio-media-player-controls">
-                    <!-- Timeline -->
-                    <div class="rio-media-player-timeline">
+            <video></video>
+            <div class="rio-media-player-alt-display" style="display: none"></div>
+            <div class="rio-media-player-controls">
+                <!-- Timeline -->
+                <div class="rio-media-player-timeline">
+                    <div>
+                        <div class="rio-media-player-timeline-background"></div>
+                        <div class="rio-media-player-timeline-loaded"></div>
+                        <div class="rio-media-player-timeline-hover"></div>
+                        <div class="rio-media-player-timeline-played">
+                            <div class="rio-media-player-timeline-knob"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Controls -->
+                <div class="rio-media-player-controls-row">
+                    <div class="rio-media-player-button rio-media-player-button-play"></div>
+                    <div class="rio-media-player-button rio-media-player-button-mute"></div>
+                    <!-- Volume -->
+                    <div class="rio-media-player-volume">
                         <div>
-                            <div class="rio-media-player-timeline-background"></div>
-                            <div class="rio-media-player-timeline-loaded"></div>
-                            <div class="rio-media-player-timeline-hover"></div>
-                            <div class="rio-media-player-timeline-played">
-                                <div class="rio-media-player-timeline-knob"></div>
+                            <div class="rio-media-player-volume-background"></div>
+                            <div class="rio-media-player-volume-current">
+                                <div class="rio-media-player-volume-knob"></div>
                             </div>
                         </div>
                     </div>
-                    <!-- Controls -->
-                    <div class="rio-media-player-controls-row">
-                        <div class="rio-media-player-button rio-media-player-button-play"></div>
-                        <div class="rio-media-player-button rio-media-player-button-mute"></div>
-                        <!-- Volume -->
-                        <div class="rio-media-player-volume">
-                            <div>
-                                <div class="rio-media-player-volume-background"></div>
-                                <div class="rio-media-player-volume-current">
-                                    <div class="rio-media-player-volume-knob"></div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="rio-media-player-playtime-label"></div>
+                    <div class="rio-media-player-playtime-label"></div>
 
-                        <!-- Spacer -->
-                        <div style="flex-grow: 1;"></div>
+                    <!-- Spacer -->
+                    <div style="flex-grow: 1;"></div>
 
-                        <div class="rio-media-player-button rio-media-player-button-fullscreen"></div>
-                    </div>
+                    <div class="rio-media-player-button rio-media-player-button-fullscreen"></div>
                 </div>
             </div>
         `;
@@ -538,7 +533,10 @@ export class MediaPlayerComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: MediaPlayerState): void {
+    updateElement(
+        deltaState: MediaPlayerState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.mediaUrl !== undefined) {
             let mediaUrl = new URL(deltaState.mediaUrl, document.location.href)
                 .href;

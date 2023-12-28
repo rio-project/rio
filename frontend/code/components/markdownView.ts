@@ -181,7 +181,10 @@ export class MarkdownViewComponent extends ComponentBase {
         return element;
     }
 
-    updateElement(deltaState: MarkdownViewState): void {
+    updateElement(
+        deltaState: MarkdownViewState,
+        latentComponents: Set<ComponentBase>
+    ): void {
         if (deltaState.text !== undefined) {
             // Create a new div to hold the markdown content. This is so the
             // layouting code can move it around as needed.
