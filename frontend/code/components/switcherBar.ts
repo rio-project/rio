@@ -5,7 +5,6 @@ import { applyColorSet } from '../designApplication';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { textStyleToCss } from '../cssUtils';
-import { pixelsPerEm } from '../app';
 import { easeInOut } from '../easeFunctions';
 
 const ACCELERATION: number = 350; // rem/s^2
@@ -59,12 +58,12 @@ export class SwitcherBarComponent extends ComponentBase {
     // Marker animation state
     private markerCurFade: number;
 
-    private markerCurLeft: number;
-    private markerCurTop: number;
-    private markerCurWidth: number;
-    private markerCurHeight: number;
+    private markerCurLeft: number = 0;
+    private markerCurTop: number = 0;
+    private markerCurWidth: number = 0;
+    private markerCurHeight: number = 0;
 
-    private markerCurVelocity: number;
+    private markerCurVelocity: number = 0;
 
     // -1 if no animation is running
     private lastAnimationTickAt: number = -1;
@@ -137,7 +136,9 @@ export class SwitcherBarComponent extends ComponentBase {
             if (this.state.names.length === 1) {
                 left = additionalWidth / 2;
             } else {
-                let spacing = additionalWidth / (this.state.names.length - 1);
+                let spacing =
+                    additionalWidth / (this.state.names.length - 1) +
+                    this.state.spacing;
                 left = spacing * selectedIndex;
             }
 
@@ -212,85 +213,70 @@ export class SwitcherBarComponent extends ComponentBase {
         // Where to move to?
         let target = this.getMarkerTarget();
 
-        // The target has disappeared while the animation was running
+        // The target may disappear while the animation is running. Handle that
+        // gracefully.
         if (target === null) {
             return false;
         }
 
-        this.markerCurLeft = target[0];
-        this.markerCurTop = target[1];
-        this.markerCurWidth = target[2];
-        this.markerCurHeight = target[3];
-        return false;
+        // Calculate the distance to the target
+        let curPos: number, targetPos: number;
+        if (this.state.orientation == 'horizontal') {
+            curPos = this.markerCurLeft;
+            targetPos = target[0];
+        } else {
+            curPos = this.markerCurTop;
+            targetPos = target[1];
+        }
 
-        // // The value may have switched to `null` since the animation has started
-        // if (this.state.selectedName === null) {
-        //     this.moveAnimationIsRunning = false;
-        //     return;
-        // }
+        let signedRemainingDistance = targetPos - curPos;
 
-        // // Calculate the distance to the target
-        // let target = this._getMarkerTarget();
+        // Which direction to accelerate towards?
+        let accelerationFactor; // + means towards the target
+        let brakingDistance =
+            Math.pow(this.markerCurVelocity, 2) / (2 * ACCELERATION);
 
-        // let curPos: number, targetPos: number;
-        // if (this.state.orientation == 'horizontal') {
-        //     curPos = this.markerCurLeft;
-        //     targetPos = target[0];
-        // } else {
-        //     curPos = this.markerCurTop;
-        //     targetPos = target[1];
-        // }
+        // Case: Moving away from the target
+        if (
+            Math.sign(signedRemainingDistance) !=
+            Math.sign(this.markerCurVelocity)
+        ) {
+            accelerationFactor = 3;
+        }
+        // Case: Don't run over the target quite so hard
+        else if (Math.abs(signedRemainingDistance) < brakingDistance) {
+            accelerationFactor = -1;
+        }
+        // Case: Accelerate towards the target
+        else {
+            accelerationFactor = 1;
+        }
 
-        // let signedRemainingDistance = targetPos - curPos;
+        let currentAcceleration =
+            ACCELERATION *
+            accelerationFactor *
+            Math.sign(signedRemainingDistance);
 
-        // // Which direction to accelerate towards?
-        // let acceleration = ACCELERATION * pixelsPerEm;
-        // let accelerationFactor; // + means towards the target
-        // let brakingDistance =
-        //     Math.pow(this.markerCurVelocity, 2) / (2 * acceleration);
+        // Update the velocity
+        this.markerCurVelocity += currentAcceleration * deltaTime;
+        let deltaDistance = this.markerCurVelocity * deltaTime;
 
-        // // Case: Moving away from the target
-        // if (
-        //     Math.sign(signedRemainingDistance) !=
-        //     Math.sign(this.markerCurVelocity)
-        // ) {
-        //     accelerationFactor = 3;
-        // }
-        // // Case: Don't run over the target quite so hard
-        // else if (Math.abs(signedRemainingDistance) < brakingDistance) {
-        //     accelerationFactor = -1;
-        // }
-        // // Case: Accelerate towards the target
-        // else {
-        //     accelerationFactor = 1;
-        // }
+        // Arrived?
+        let t;
+        if (Math.abs(deltaDistance) >= Math.abs(signedRemainingDistance)) {
+            t = 1;
+        } else {
+            t = deltaDistance / signedRemainingDistance;
+        }
 
-        // let currentAcceleration =
-        //     acceleration *
-        //     accelerationFactor *
-        //     Math.sign(signedRemainingDistance);
+        // Update the marker
+        this.markerCurLeft += t * (target[0] - this.markerCurLeft);
+        this.markerCurTop += t * (target[1] - this.markerCurTop);
+        this.markerCurWidth += t * (target[2] - this.markerCurWidth);
+        this.markerCurHeight += t * (target[3] - this.markerCurHeight);
 
-        // // Update the velocity
-        // this.markerCurVelocity += currentAcceleration * deltaTime;
-        // let deltaDistance = this.markerCurVelocity * deltaTime;
-
-        // // Arrived?
-        // let t;
-        // if (Math.abs(deltaDistance) > Math.abs(signedRemainingDistance)) {
-        //     t = 1;
-        //     this.moveAnimationIsRunning = false;
-        // } else {
-        //     t = deltaDistance / signedRemainingDistance;
-        //     requestAnimationFrame(this._moveAnimationWorker.bind(this));
-        // }
-
-        // // Update the marker
-        // this.updateMarkerToMatchState(
-        //     this.markerCurLeft + t * (target[0] - this.markerCurLeft),
-        //     this.markerCurTop + t * (target[1] - this.markerCurTop),
-        //     this.markerCurWidth + t * (target[2] - this.markerCurWidth),
-        //     this.markerCurHeight + t * (target[3] - this.markerCurHeight)
-        // );
+        // Done?
+        return t !== 1;
     }
 
     fadeAnimationWorker(deltaTime: number): boolean {
@@ -319,6 +305,8 @@ export class SwitcherBarComponent extends ComponentBase {
         let fadeKeepGoing = this.fadeAnimationWorker(deltaTime);
         let keepGoing = moveKeepGoing || fadeKeepGoing;
 
+        console.log('anim', moveKeepGoing, fadeKeepGoing);
+
         // Update the marker to match the current state
         this.placeMarkerToState();
 
@@ -345,13 +333,18 @@ export class SwitcherBarComponent extends ComponentBase {
     /// appropriate.
     switchMarkerToSelectedName(): void {
         // No value selected? Fade out
-        if (this.state.selectedName === null) {
+        let target = this.getMarkerTarget();
+        if (target === null) {
             this.startAnimationIfNotRunning();
             return;
         }
 
         // If the marker is currently invisible, teleport it
         if (this.markerCurFade === 0) {
+            this.markerCurLeft = target[0];
+            this.markerCurTop = target[1];
+            this.markerCurWidth = target[2];
+            this.markerCurHeight = target[3];
             this.placeMarkerToState();
         }
 
@@ -359,7 +352,7 @@ export class SwitcherBarComponent extends ComponentBase {
         this.startAnimationIfNotRunning();
     }
 
-    _buildContent(deltaState: SwitcherBarState): HTMLElement {
+    buildContent(deltaState: SwitcherBarState): HTMLElement {
         let result = document.createElement('div');
         result.classList.add('rio-switcher-bar-options');
         Object.assign(result.style, TEXT_STYLE_CSS_OPTIONS);
@@ -484,14 +477,14 @@ export class SwitcherBarComponent extends ComponentBase {
                 this.innerElement.innerHTML = '';
 
                 // Background options
-                this.backgroundOptionsElement = this._buildContent(deltaState);
+                this.backgroundOptionsElement = this.buildContent(deltaState);
                 this.innerElement.appendChild(this.backgroundOptionsElement);
 
                 // Marker
                 this.innerElement.appendChild(this.markerElement);
 
                 // Marker options
-                this.markerOptionsElement = this._buildContent(deltaState);
+                this.markerOptionsElement = this.buildContent(deltaState);
                 this.markerElement.appendChild(this.markerOptionsElement);
             }
 
@@ -568,7 +561,6 @@ export class SwitcherBarComponent extends ComponentBase {
             });
         } else {
             // Options
-            console.debug('widths', this.optionWidths);
             this.naturalWidth = 0;
 
             this.optionWidths.forEach((width) => {
