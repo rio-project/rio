@@ -70,9 +70,9 @@ class Icon(component_base.FundamentalComponent):
 
         There must not already be a set with the given name.
 
-        The icon set is a `.tar.xz` compressed archive containing SVG files.
-        The SVG files must have a `viewBox` attribute, but no height or width.
-        They will be colored by the `fill` property of the `Icon` component.
+        The icon set is a `.tar.xz` compressed archive containing SVG files. The
+        SVG files must have a `viewBox` attribute, but no height or width. They
+        will be colored by the `fill` property of the `Icon` component.
 
         The archive must contain exactly one directory, which must be named
         identically to the icon set. Files located in the root of that directory

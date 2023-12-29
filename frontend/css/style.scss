@@ -1568,7 +1568,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-color-picker {
     pointer-events: none;
 
-    min-width: 10rem;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -1800,8 +1799,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-drawer-left,
 .rio-drawer-right {
-    min-height: 8rem;
-
     .rio-drawer-knob {
         width: 0.4rem;
         height: 4rem;
@@ -1810,8 +1807,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-drawer-top,
 .rio-drawer-bottom {
-    min-width: 8rem;
-
     .rio-drawer-knob {
         width: 4rem;
         height: 0.4rem;
@@ -2481,4 +2476,9 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     animation: barber-pole 8s linear infinite;
 
     opacity: 0.03;
+}
+
+// Switcher
+.rio-switcher {
+    overflow: hidden;
 }

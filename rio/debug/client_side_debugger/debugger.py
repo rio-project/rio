@@ -43,7 +43,7 @@ class ClientSideDebugger(rio.Component):
 
     def build(self) -> rio.Component:
         current_page = None if self.selected_page is None else self.get_selected_page()
-        print(f'Building page "{self.selected_page}"')
+        # current_page = rio.Spacer(width=0) if current_page is None else current_page
 
         return rio.Row(
             # Big fat line to separate the debugger from the rest of the page
@@ -53,8 +53,14 @@ class ClientSideDebugger(rio.Component):
             ),
             # Currently active page
             rio.components.class_container.ClassContainer(
-                # rio.Switcher(current_page),
-                rio.Spacer(width=0) if current_page is None else current_page,
+                rio.Switcher(current_page),
+                # rio.Rectangle(
+                #     child=current_page,
+                #     style=rio.BoxStyle(
+                #         fill=rio.Color.WHITE,
+                #     ),
+                # ),
+                # rio.Spacer(width=0) if current_page is None else current_page,
                 classes=["rio-switcheroo-neutral", "rio-debugger-background"],
             ),
             # Navigation

@@ -123,7 +123,7 @@ function onOpen(): void {
 async function onMessage(event: any) {
     // Parse the message JSON
     let message = JSON.parse(event.data);
-    console.log('Received message: ', message);
+    console.log('Received message: ', JSON.parse(JSON.stringify(message)));
 
     // Handle it
     let response = await processMessageReturnResponse(message);
