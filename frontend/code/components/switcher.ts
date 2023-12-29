@@ -1,10 +1,10 @@
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { componentsById } from '../componentManagement';
-import { LayoutContext } from '../layouting';
+import { LayoutContext, updateLayout } from '../layouting';
 import { easeInOut } from '../easeFunctions';
 
-const TRANSITION_TIME: number = 0.2;
+const TRANSITION_TIME: number = 0.35;
 
 export type SwitcherState = ComponentState & {
     _type_: 'Switcher-builtin';
@@ -25,8 +25,8 @@ export class SwitcherComponent extends ComponentBase {
 
     // The width and height that the child will receive once the animation
     // finishes.
-    private targetWidth: number;
-    private targetHeight: number;
+    private finalChildWidth: number;
+    private finalChildHeight: number;
 
     // -1 if no animation is running
     private animationStartedAt: number = -1;
@@ -47,8 +47,6 @@ export class SwitcherComponent extends ComponentBase {
         deltaState: SwitcherState,
         latentComponents: Set<ComponentBase>
     ): void {
-        // console.debug(`Switcher:`, deltaState);
-
         // Update the child
         if (
             !this.isInitialized ||
@@ -59,7 +57,6 @@ export class SwitcherComponent extends ComponentBase {
 
             // Out with the old
             if (this.activeChildContainer !== null) {
-                // TODO: Animate
                 this.replaceOnlyChild(
                     latentComponents,
                     null,
@@ -86,21 +83,13 @@ export class SwitcherComponent extends ComponentBase {
                     this.activeChildContainer
                 );
 
-                // TODO: Animate
-
                 // Remember the child, as it is needed frequently
                 this.activeChildInstance = componentsById[deltaState.child!]!;
             }
 
             // Start the layouting process
-            if (this.isInitialized) {
-                this.isDeterminingLayout = true;
-            }
+            this.isDeterminingLayout = true;
             this.makeLayoutDirty();
-
-            // console.debug(
-            //     `Switcher: ${this.state.child} -> ${deltaState.child}, ${this.isInitialized}`
-            // );
         }
 
         // The component is now initialized
@@ -114,15 +103,19 @@ export class SwitcherComponent extends ComponentBase {
         }
 
         this.animationStartedAt = Date.now();
-        this.makeLayoutDirty();
+
+        requestAnimationFrame(() => {
+            this.makeLayoutDirty();
+            updateLayout();
+        });
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
         // Case: Trying to determine the size the child will receive once the
         // animation finishes
         if (this.isDeterminingLayout) {
-            this.initialWidth = this.allocatedWidth;
-            this.initialHeight = this.allocatedHeight;
+            this.initialWidth = this.naturalWidth;
+            this.initialHeight = this.naturalHeight;
 
             this.naturalWidth =
                 this.activeChildInstance === null
@@ -131,19 +124,42 @@ export class SwitcherComponent extends ComponentBase {
             return;
         }
 
-        // Case: actual layouting
+        // Case: animated layouting
         let now = Date.now();
-        let t = Math.min(
+        let linearT = Math.min(
             1,
             (now - this.animationStartedAt) / 1000 / TRANSITION_TIME
         );
-        let easedT = easeInOut(t);
+        let easedT = easeInOut(linearT);
 
-        this.requestedWidth =
-            this.initialWidth + easedT * (this.targetWidth - this.initialWidth);
-        this.requestedHeight =
+        let childRequestedWidth =
+            this.activeChildInstance === null
+                ? 0
+                : this.activeChildInstance.requestedWidth;
+
+        let childRequestedHeight =
+            this.activeChildInstance === null
+                ? 0
+                : this.activeChildInstance.requestedHeight;
+
+        this.naturalWidth =
+            this.initialWidth +
+            easedT * (childRequestedWidth - this.initialWidth);
+
+        this.naturalHeight =
             this.initialHeight +
-            easedT * (this.targetHeight - this.initialHeight);
+            easedT * (childRequestedHeight - this.initialHeight);
+
+        // Keep going?
+        if (linearT < 1) {
+            requestAnimationFrame(() => {
+                this.makeLayoutDirty();
+                updateLayout();
+            });
+        } else {
+            this.animationStartedAt = -1;
+            // this.isDeterminingLayout = true;
+        }
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
@@ -156,7 +172,7 @@ export class SwitcherComponent extends ComponentBase {
             return;
         }
 
-        // Case: actual layouting
+        // Case: animated layouting
         //
         // Nothing to do here
     }
@@ -172,7 +188,7 @@ export class SwitcherComponent extends ComponentBase {
             return;
         }
 
-        // Case: actual layouting
+        // Case: animated layouting
         //
         // Already handled above
     }
@@ -187,18 +203,24 @@ export class SwitcherComponent extends ComponentBase {
 
             this.isDeterminingLayout = false;
 
-            this.targetWidth = this.allocatedWidth;
-            this.targetHeight = this.allocatedHeight;
+            this.finalChildWidth = this.allocatedWidth;
+            this.finalChildHeight = this.allocatedHeight;
 
             if (this.hasBeenLaidOut) {
-                this.startAnimationIfNotRunning();
+                if (this.animationStartedAt === -1) {
+                    this.animationStartedAt = Date.now();
+
+                    ctx.requestImmediateReLayout(() => {
+                        this.makeLayoutDirty();
+                    });
+                }
             } else {
                 this.hasBeenLaidOut = true;
             }
             return;
         }
 
-        // Case: actual layouting
+        // Case: animated layouting
         //
         // Nothing to do here
     }

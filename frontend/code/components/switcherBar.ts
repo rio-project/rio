@@ -305,8 +305,6 @@ export class SwitcherBarComponent extends ComponentBase {
         let fadeKeepGoing = this.fadeAnimationWorker(deltaTime);
         let keepGoing = moveKeepGoing || fadeKeepGoing;
 
-        console.log('anim', moveKeepGoing, fadeKeepGoing);
-
         // Update the marker to match the current state
         this.placeMarkerToState();
 

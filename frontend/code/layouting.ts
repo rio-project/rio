@@ -3,6 +3,8 @@ import { getRootComponent } from './componentManagement';
 import { ComponentBase } from './components/componentBase';
 
 export class LayoutContext {
+    _immediateReLayoutCallbacks: (() => void)[] = [];
+
     private updateRequestedWidthRecursive(component: ComponentBase) {
         if (!component.isLayoutDirty) return;
 
@@ -118,9 +120,33 @@ export class LayoutContext {
         // Distribute the just received height to all children
         this.updateAllocatedHeightRecursive(rootComponent);
     }
+
+    /// Signal to the layout engine that it should re-layout the component tree
+    /// immediately after the current layout cycle finishes. The given function
+    /// will be called before the re-layout happens, allowing the caller to
+    /// dirty components or do other things.
+    public requestImmediateReLayout(callback: () => void) {
+        this._immediateReLayoutCallbacks.push(callback);
+    }
 }
 
 export function updateLayout() {
     let context = new LayoutContext();
-    context.updateLayout();
+
+    while (true) {
+        // Update the layout
+        context.updateLayout();
+
+        // Are any re-layouts requested?
+        if (context._immediateReLayoutCallbacks.length === 0) {
+            break;
+        }
+
+        // Call all hooks
+        for (let callback of context._immediateReLayoutCallbacks) {
+            callback();
+        }
+
+        context._immediateReLayoutCallbacks = [];
+    }
 }

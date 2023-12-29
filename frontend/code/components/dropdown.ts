@@ -1,5 +1,4 @@
 import { ComponentBase, ComponentState } from './componentBase';
-import { SCROLL_BAR_SIZE } from '../utils';
 import { applyIcon } from '../designApplication';
 import {
     updateInputBoxNaturalHeight,
@@ -386,12 +385,6 @@ export class DropdownComponent extends ComponentBase {
             // Resize the popup to fit the new content
             this.popupElement.style.height = `${this.optionsElement.scrollHeight}px`;
         }
-
-        // Because the popup isn't a child element of the dropdown, manually
-        // make the popup wide enough to fit the widest option + a potential
-        // scrollbar.
-        element.style.minWidth =
-            this.optionsElement.scrollWidth + SCROLL_BAR_SIZE + 'px';
     }
 
     updateElement(
@@ -430,6 +423,8 @@ export class DropdownComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
+        // TODO: Request enough space to fit the longest option + potentially a
+        // scrollbar
         updateInputBoxNaturalWidth(this, 0);
     }
 
