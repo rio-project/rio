@@ -12,6 +12,12 @@
 
 @include linear-progress.core-styles;
 
+@mixin center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 // Light / Dark highlight.js themes
 //
 // Switch between these by setting the `data-theme` attribute on the `html`
@@ -1136,6 +1142,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 // Icon
 .rio-icon {
     pointer-events: auto;
+    @include center-content;
 }
 
 // Slideshow
@@ -1906,16 +1913,10 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 // Image
-.rio-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
+.rio-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 // Card
