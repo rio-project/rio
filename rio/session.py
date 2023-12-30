@@ -1080,9 +1080,15 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             # Components are a special case. Component attributes are dirty iff the
             # component isn't reconciled, i.e. it is a new component
             if isinstance(new, rio.Component):
-                return old is new or old is reconciled_components_new_to_old.get(
-                    new, None
-                )
+                if old is new:
+                    return True
+
+                try:
+                    new_before_reconciliation = reconciled_components_new_to_old[new]
+                except KeyError:
+                    return False
+                else:
+                    return old is new_before_reconciliation
 
             if isinstance(new, list):
                 if not isinstance(old, list):

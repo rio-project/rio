@@ -382,6 +382,7 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = False,
+        debug_mode: bool = False,
     ) -> None:
         """
         Creates and runs a webserver that serves this app.
@@ -415,6 +416,7 @@ class App:
             port=port,
             quiet=quiet,
             running_in_window=False,
+            debug_mode=debug_mode,
         )
 
     def run_in_browser(
@@ -423,6 +425,7 @@ class App:
         host: str = "localhost",
         port: Optional[int] = None,
         quiet: bool = False,
+        debug_mode: bool = False,
     ) -> None:
         """
         Runs an internal webserver and opens the app in the default browser.
@@ -460,6 +463,7 @@ class App:
             host=host,
             port=port,
             quiet=quiet,
+            debug_mode=debug_mode,
             running_in_window=False,
             internal_on_app_start=on_startup,
         )
