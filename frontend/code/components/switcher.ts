@@ -23,11 +23,6 @@ export class SwitcherComponent extends ComponentBase {
     private initialWidth: number;
     private initialHeight: number;
 
-    // The width and height that the child will receive once the animation
-    // finishes.
-    private finalChildWidth: number;
-    private finalChildHeight: number;
-
     // -1 if no animation is running
     private animationStartedAt: number = -1;
 

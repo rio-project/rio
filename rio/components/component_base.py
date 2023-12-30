@@ -26,21 +26,50 @@ __all__ = ["Component"]
 
 
 JAVASCRIPT_SOURCE_TEMPLATE = """
+// Run the code in a function to avoid name clashes with globals
+(function () {
 
-%(js_source)s
+    %(js_source)s
 
-console.log(window);
 
-try {
-    window.COMPONENT_CLASSES['%(cls_unique_id)s'] = %(js_class_name)s;
+    // Make sure the user has defined the expected class.
+    if (typeof %(js_user_class_name)s === 'undefined') {
+        let message = `Failed to register component with unique ID \\`%(cls_unique_id)s\\` because its JavaScript source has not defined the expected class \\`%(js_user_class_name)s\\``;
+        console.error(message);
+        throw new Error(message);
+    }
+
+
+    // Wrap it in a class which inherits from Rio's ComponentBase
+    class %(js_wrapper_class_name)s extends window.RIO_COMPONENT_BASE {
+        createElement() {
+            this.userInstance = new %(js_user_class_name)s();
+            this.userInstance.__rio_wrapper__ = this;
+            let element = this.userInstance.createElement();
+            this.userInstance.element = element;
+            return element;
+        }
+
+        updateElement(deltaState, latentComponents) {
+            this.userInstance.updateElement(deltaState);
+        }
+    }
+
+    // Expose additional functionality to the user
+    %(js_user_class_name)s.prototype.element = function () {
+        return this.__rio_wrapper__.element;
+    }
+
+    // Register the component
+    window.COMPONENT_CLASSES['%(cls_unique_id)s'] = %(js_wrapper_class_name)s;
     window.CHILD_ATTRIBUTE_NAMES['%(cls_unique_id)s'] = %(child_attribute_names)s;
-} catch (e) {
-    console.error(`Failed to register component with unique ID \\`%(cls_unique_id)s\\` due to error:`, e);
-}
+})();
+
 """
 
 
 CSS_SOURCE_TEMPLATE = """
+
 const style = document.createElement('style');
 style.innerHTML = %(escaped_css_source)s;
 document.head.appendChild(style);
@@ -1066,7 +1095,8 @@ class FundamentalComponent(Component):
         if javascript_source:
             message_source += JAVASCRIPT_SOURCE_TEMPLATE % {
                 "js_source": javascript_source,
-                "js_class_name": cls.__name__,
+                "js_user_class_name": cls.__name__,
+                "js_wrapper_class_name": f"{cls.__name__}Wrapper",
                 "cls_unique_id": cls._unique_id,
                 "child_attribute_names": json.dumps(
                     inspection.get_child_component_containing_attribute_names(cls)
@@ -1081,6 +1111,7 @@ class FundamentalComponent(Component):
             }
 
         if message_source:
+            open("/home/jakob/out.js", "w").write(message_source)
             await sess._evaluate_javascript(message_source)
 
     async def _on_message(self, message: Jsonable, /) -> None:

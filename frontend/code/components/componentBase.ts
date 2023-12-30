@@ -343,4 +343,4 @@ export abstract class ComponentBase {
     updateAllocatedHeight(ctx: LayoutContext): void {}
 }
 
-globalThis.ComponentBase = ComponentBase;
+globalThis.RIO_COMPONENT_BASE = ComponentBase;

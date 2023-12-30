@@ -2296,7 +2296,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     transition: opacity 0.1s ease-out;
 }
 .rio-debugger-tree-component-tree {
-    overflow: scroll;
+    overflow: auto;
 }
 
 .rio-debugger-tree-component-tree > * {
