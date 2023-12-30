@@ -14,37 +14,51 @@ class ClientSideDebugger(rio.Component):
         "deploy",
     ] | None = None
 
-    def get_selected_page(self) -> rio.Component:
+    def get_selected_page(self) -> Optional[rio.Component]:
+        PAGE_WIDTH = 22
+
+        # Nothing selected
+        if self.selected_page is None:
+            return None
+
         # Project
         if self.selected_page == "project":
-            return project_page.ProjectPage()
+            return project_page.ProjectPage(
+                width=PAGE_WIDTH,
+            )
 
         # Tree
         if self.selected_page == "tree":
-            return tree_page.TreePage()
+            return tree_page.TreePage(
+                width=PAGE_WIDTH,
+            )
 
         # Icons
         if self.selected_page == "icons":
-            return icons_page.IconsPage()
+            return icons_page.IconsPage(
+                width=PAGE_WIDTH,
+            )
 
         # Docs
         if self.selected_page == "docs":
-            return docs_page.DocsPage()
+            return docs_page.DocsPage(
+                width=PAGE_WIDTH,
+            )
 
         # Deploy
         if self.selected_page == "deploy":
-            return deploy_page.DeployPage()
+            return deploy_page.DeployPage(
+                width=PAGE_WIDTH,
+            )
 
         # Anything else / TODO
         return rio.Text(
             f"TODO: {self.selected_page}",
             margin=2,
+            width=PAGE_WIDTH,
         )
 
     def build(self) -> rio.Component:
-        current_page = None if self.selected_page is None else self.get_selected_page()
-        # current_page = rio.Spacer(width=0) if current_page is None else current_page
-
         return rio.Row(
             # Big fat line to separate the debugger from the rest of the page
             rio.Rectangle(
@@ -53,14 +67,7 @@ class ClientSideDebugger(rio.Component):
             ),
             # Currently active page
             rio.components.class_container.ClassContainer(
-                rio.Switcher(current_page),
-                # rio.Rectangle(
-                #     child=current_page,
-                #     style=rio.BoxStyle(
-                #         fill=rio.Color.WHITE,
-                #     ),
-                # ),
-                # rio.Spacer(width=0) if current_page is None else current_page,
+                rio.Switcher(self.get_selected_page()),
                 classes=["rio-switcheroo-neutral", "rio-debugger-background"],
             ),
             # Navigation
@@ -99,6 +106,5 @@ class ClientSideDebugger(rio.Component):
                 ),
                 rio.Spacer(),
                 rio.components.debugger_connector.DebuggerConnector(),
-                width=3.5,
             ),
         )

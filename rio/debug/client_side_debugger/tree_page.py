@@ -23,7 +23,7 @@ class TreePage(rio.Component):
             ),
             # TODO: Scrolling
             rio.components.component_tree.ComponentTree(
-                width=22,
+                width=10,
                 height="grow",
                 margin=margin,
                 on_select_component=self._on_select_component,
