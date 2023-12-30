@@ -9,7 +9,6 @@ import rio
 
 from . import component_base
 
-
 __all__ = [
     "DevelComponent",
 ]
@@ -71,7 +70,6 @@ class DevelComponent(component_base.FundamentalComponent):
 
     @classmethod
     def build_javascript_source(cls, sess: rio.Session) -> str:
-        print("build js called")
         if _SOURCE_DIRECTORY is None:
             raise RuntimeError("`DevelComponent` is not initialized")
 
@@ -79,7 +77,6 @@ class DevelComponent(component_base.FundamentalComponent):
 
     @classmethod
     def build_css_source(cls, sess: rio.Session) -> str:
-        print("build css called")
         if _SOURCE_DIRECTORY is None:
             raise RuntimeError("`DevelComponent` is not initialized")
 
