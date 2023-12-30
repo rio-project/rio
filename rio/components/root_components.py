@@ -21,6 +21,7 @@ class HighLevelRootComponent(Component):
 
     def build(self) -> Component:
         # Spawn a debugger if running in debug mode
+
         if self.session._app_server.debug_mode:
             # Avoid a circular import
             import rio.debug.client_side_debugger
