@@ -23,6 +23,22 @@ const NATURAL_SIZE = 1.0;
 export class ScrollContainerComponent extends ComponentBase {
     state: Required<ScrollContainerState>;
 
+    private assumeVerticalScrollBarWillBeNeeded: boolean = true;
+    private incorrectAssumptionCount: number = 0;
+
+    private get layoutWithVerticalScrollbar(): boolean {
+        switch (this.state.scroll_y) {
+            case 'always':
+                return true;
+
+            case 'auto':
+                return this.assumeVerticalScrollBarWillBeNeeded;
+
+            case 'never':
+                return false;
+        }
+    }
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-scroll-container');
@@ -52,7 +68,7 @@ export class ScrollContainerComponent extends ComponentBase {
         this.naturalWidth = NATURAL_SIZE;
 
         // If there will be a vertical scroll bar, reserve space for it
-        if (this.state.scroll_y === 'always') {
+        if (this.layoutWithVerticalScrollbar) {
             this.naturalWidth += SCROLL_BAR_SIZE;
         }
     }
@@ -62,13 +78,13 @@ export class ScrollContainerComponent extends ComponentBase {
 
         // If the child needs more space than we have, we'll need to display a
         // scroll bar. So just give the child the width it wants.
-        if (child.naturalWidth > this.allocatedWidth) {
-            child.allocatedWidth = child.naturalWidth;
+        if (child.requestedWidth > this.allocatedWidth) {
+            child.allocatedWidth = child.requestedWidth;
             return;
         }
 
         // Otherwise, stretch the child to use up all the available width
-        if (this.state.scroll_y === 'always') {
+        if (this.layoutWithVerticalScrollbar) {
             child.allocatedWidth = this.allocatedWidth - SCROLL_BAR_SIZE;
         } else {
             child.allocatedWidth = this.allocatedWidth;
@@ -91,10 +107,44 @@ export class ScrollContainerComponent extends ComponentBase {
     updateAllocatedHeight(ctx: LayoutContext): void {
         let child = componentsById[this.state.child]!;
 
+        // First, check if our assumption for the vertical scroll bar was
+        // correct. If not, we have to immediately re-layout the child.
+        if (this.state.scroll_y === 'auto') {
+            let assumptionWasCorrect = this.assumeVerticalScrollBarWillBeNeeded
+                ? this.allocatedHeight < child.requestedHeight
+                : this.allocatedHeight >= child.requestedHeight;
+
+            if (!assumptionWasCorrect) {
+                // Theoretically, there could be a situation where our
+                // assumptions are always wrong and we re-layout endlessly.
+                //
+                // It's acceptable to have an unnecessary scroll bar, but it's
+                // not acceptable to be missing a scroll bar when one is
+                // required. So we will only re-layout if this is the first time
+                // our assumption was wrong, or if we don't currently have a
+                // scroll bar.
+                if (
+                    this.incorrectAssumptionCount == 0 ||
+                    !this.assumeVerticalScrollBarWillBeNeeded
+                ) {
+                    this.incorrectAssumptionCount++;
+                    this.assumeVerticalScrollBarWillBeNeeded =
+                        !this.assumeVerticalScrollBarWillBeNeeded;
+
+                    ctx.requestImmediateReLayout(() => {
+                        this.makeLayoutDirty();
+                    });
+                    return;
+                }
+            }
+        }
+
+        this.incorrectAssumptionCount = 0;
+
         // If the child needs more space than we have, we'll need to display a
         // scroll bar. So just give the child the height it wants.
-        if (child.naturalHeight > this.allocatedHeight) {
-            child.allocatedHeight = child.naturalHeight;
+        if (child.requestedHeight > this.allocatedHeight) {
+            child.allocatedHeight = child.requestedHeight;
             return;
         }
 
