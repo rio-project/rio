@@ -22,8 +22,6 @@ export class FundamentalRootComponent extends ComponentBase {
     public overlayWidth: number = 0;
     public overlayHeight: number = 0;
 
-    public rootScrollerElement: HTMLElement;
-
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-fundamental-root-component');
@@ -54,16 +52,6 @@ export class FundamentalRootComponent extends ComponentBase {
         this.replaceChildren(latentComponents, children);
 
         // Initialize CSS
-        this.rootScrollerElement = document.createElement('div');
-        this.rootScrollerElement.appendChild(
-            this.element.firstElementChild as HTMLElement
-        );
-        this.rootScrollerElement.classList.add('rio-user-root-scroller');
-        this.element.insertBefore(
-            this.rootScrollerElement,
-            this.element.firstChild
-        );
-
         let connectionLostPopupElement = this.element
             .children[1] as HTMLElement;
         connectionLostPopupElement.classList.add('rio-connection-lost-popup');
@@ -100,19 +88,17 @@ export class FundamentalRootComponent extends ComponentBase {
             this.overlayWidth -= dbg.allocatedWidth;
         }
 
+        // The child receives the remaining width. (The child is a
+        // ScrollContainer, it takes care of scrolling if the user content is
+        // too large)
+        let child = componentsById[this.state.child]!;
+        child.allocatedWidth = this.overlayWidth;
+
         // Despite being an overlay, the connection lost popup should also cover
         // the debugger
         let connectionLostPopup =
             componentsById[this.state.connection_lost_component]!;
         connectionLostPopup.allocatedWidth = this.allocatedWidth;
-
-        // The child may receive more than the overlay width, if it's larger
-        // than the window. In that case, it will scroll.
-        let child = componentsById[this.state.child]!;
-        child.allocatedWidth = Math.max(
-            child.requestedWidth,
-            this.overlayWidth
-        );
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
@@ -123,7 +109,7 @@ export class FundamentalRootComponent extends ComponentBase {
         // Overlays take up the full window
         this.overlayHeight = this.allocatedHeight;
 
-        // If there's a debugger give it some space
+        // If there's a debugger, set its height and position it
         if (this.state.debugger !== null) {
             let dbgInst = componentsById[this.state.debugger]!;
             dbgInst.allocatedHeight = this.overlayHeight;
@@ -134,20 +120,15 @@ export class FundamentalRootComponent extends ComponentBase {
             dbgElement.style.top = '0';
         }
 
-        // Size the user root wrapper
-        this.rootScrollerElement.style.width = `${this.overlayWidth}rem`;
-        this.rootScrollerElement.style.height = `${this.overlayHeight}rem`;
-
         // The connection lost popup is an overlay
         let connectionLostPopup =
             componentsById[this.state.connection_lost_component]!;
         connectionLostPopup.allocatedHeight = this.overlayHeight;
 
-        // The child may once again receive more than the overlay height
+        // The child once again receives the remaining width. (The child is a
+        // ScrollContainer, it takes care of scrolling if the user content is
+        // too large)
         let child = componentsById[this.state.child]!;
-        child.allocatedHeight = Math.max(
-            child.requestedHeight,
-            this.overlayHeight
-        );
+        child.allocatedHeight = this.overlayHeight;
     }
 }

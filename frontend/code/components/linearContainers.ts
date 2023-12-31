@@ -134,7 +134,7 @@ export class RowComponent extends LinearContainer {
             }
 
             console.log(
-                `Warning: Component #${this.element.id} has ${
+                `Warning: Component #${this.id} has ${
                     additionalSpace * pixelsPerEm
                 }px of unused space`
             );
@@ -209,7 +209,7 @@ export class ColumnComponent extends LinearContainer {
             }
 
             console.log(
-                `Warning: Component #${this.element.id} has ${
+                `Warning: Component #${this.id} has ${
                     additionalSpace * pixelsPerEm
                 }px of unused space`
             );

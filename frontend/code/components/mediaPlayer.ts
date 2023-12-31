@@ -427,12 +427,12 @@ export class MediaPlayerComponent extends ComponentBase {
             this.timelineHover.style.opacity = '0';
         });
 
-        this.addDragHandler(
-            this.timelineOuter,
-            this._onTimelineDragStart.bind(this),
-            this._onTimelineDrag.bind(this),
-            this._onTimelineDragEnd.bind(this)
-        );
+        this.addDragHandler({
+            element: this.timelineOuter,
+            onStart: this._onTimelineDragStart.bind(this),
+            onMove: this._onTimelineDrag.bind(this),
+            onEnd: this._onTimelineDragEnd.bind(this),
+        });
 
         this.volumeOuter.addEventListener('click', (event: MouseEvent) => {
             event.stopPropagation();
@@ -447,12 +447,12 @@ export class MediaPlayerComponent extends ComponentBase {
             this._setVolumeFromMousePosition(event);
         });
 
-        this.addDragHandler(
-            this.volumeOuter,
-            this._onVolumeDrag.bind(this),
-            this._onVolumeDrag.bind(this),
-            this._onVolumeDragEnd.bind(this)
-        );
+        this.addDragHandler({
+            element: this.volumeOuter,
+            onStart: this._onVolumeDrag.bind(this),
+            onMove: this._onVolumeDrag.bind(this),
+            onEnd: this._onVolumeDragEnd.bind(this),
+        });
 
         this.muteButton.addEventListener(
             'wheel',

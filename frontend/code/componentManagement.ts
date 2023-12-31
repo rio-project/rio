@@ -119,6 +119,7 @@ export function getComponentByElement(element: Element): ComponentBase {
     return instance;
 }
 
+globalThis.componentsById = componentsById; // For debugging
 globalThis.getInstanceByElement = getComponentByElement; // For debugging
 
 export function tryGetComponentByElement(

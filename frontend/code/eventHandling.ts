@@ -1,11 +1,30 @@
+import { ComponentBase } from './components/componentBase';
+
 export abstract class EventHandler {
-    // TODO: Should `disconnect` also remove the handler from `ComponentBase._eventHandlers`?
-    abstract disconnect(): void;
+    component: ComponentBase;
+
+    constructor(component: ComponentBase) {
+        this.component = component;
+
+        component._eventHandlers.add(this);
+    }
+
+    disconnect(): void {
+        this.component._eventHandlers.delete(this);
+    }
 }
 
 function _no_op(): boolean {
     return true;
 }
+
+export type DragHandlerArguments = {
+    element: HTMLElement;
+    onStart?: (event: MouseEvent) => boolean;
+    onMove?: (event: MouseEvent) => void;
+    onEnd?: (event: MouseEvent) => void;
+    capturing?: boolean;
+};
 
 export class DragHandler extends EventHandler {
     private element: HTMLElement;
@@ -18,21 +37,17 @@ export class DragHandler extends EventHandler {
     private onMouseUp = this._onMouseUp.bind(this);
     private onClick = this._onClick.bind(this);
 
-    constructor(
-        element: HTMLElement,
-        onStart: null | ((event: MouseEvent) => boolean) = null,
-        onMove: null | ((event: MouseEvent) => void) = null,
-        onEnd: null | ((event: MouseEvent) => void) = null
-    ) {
-        super();
+    constructor(component: ComponentBase, args: DragHandlerArguments) {
+        super(component);
 
-        this.element = element;
+        this.element = args.element;
 
-        this.onStart = onStart ?? _no_op;
-        this.onMove = onMove ?? _no_op;
-        this.onEnd = onEnd ?? _no_op;
+        this.onStart = args.onStart ?? _no_op;
+        this.onMove = args.onMove ?? _no_op;
+        this.onEnd = args.onEnd ?? _no_op;
 
-        element.addEventListener('mousedown', this.onMouseDown, true);
+        let capturing = args.capturing ?? true;
+        this.element.addEventListener('mousedown', this.onMouseDown, capturing);
     }
 
     private _onMouseDown(event: MouseEvent): void {
@@ -85,6 +100,8 @@ export class DragHandler extends EventHandler {
     }
 
     override disconnect(): void {
+        super.disconnect();
+
         this.element.removeEventListener('mousedown', this.onMouseDown, true);
         this._disconnectDragListeners();
     }
