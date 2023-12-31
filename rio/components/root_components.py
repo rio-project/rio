@@ -6,6 +6,7 @@ import rio
 import rio.debug
 
 from .component_base import Component, FundamentalComponent
+from .scroll_container import ScrollContainer
 
 
 # The HighLevelRootComponent is the top-most element. It's a high-level element
@@ -30,8 +31,12 @@ class HighLevelRootComponent(Component):
         else:
             debugger = None
 
+        # User content should automatically scroll if it grows too large, so we
+        # wrap it in a ScrollContainer
+        user_content = ScrollContainer(self.build_function())
+
         return FundamentalRootComponent(
-            self.build_function(),
+            user_content,
             self.build_connection_lost_message_function(),
             debugger=debugger,
         )

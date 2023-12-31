@@ -1,13 +1,11 @@
-import {
-    componentsById,
-    getChildIds,
-    getComponentByElement,
-    getParentComponentElementIncludingInjected,
-} from '../componentManagement';
+import { componentsById, getComponentByElement } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { callRemoteMethodDiscardResponse } from '../rpc';
-import { EventHandler, DragHandler } from '../eventHandling';
-import { ComponentTreeComponent } from './componentTree';
+import {
+    EventHandler,
+    DragHandler,
+    DragHandlerArguments,
+} from '../eventHandling';
 import { DebuggerConnectorComponent } from './debuggerConnector';
 import { ComponentId } from '../models';
 
@@ -64,7 +62,7 @@ export abstract class ComponentBase {
     allocatedWidth: number;
     allocatedHeight: number;
 
-    private _eventHandlers: EventHandler[] = [];
+    _eventHandlers = new Set<EventHandler>();
 
     constructor(id: ComponentId, state: Required<ComponentState>) {
         this.id = id;
@@ -320,15 +318,8 @@ export abstract class ComponentBase {
         }
     }
 
-    addDragHandler(
-        element: HTMLElement,
-        onStart: null | ((event: MouseEvent) => boolean) = null,
-        onMove: null | ((event: MouseEvent) => void) = null,
-        onEnd: null | ((event: MouseEvent) => void) = null
-    ): DragHandler {
-        let handler = new DragHandler(element, onStart, onMove, onEnd);
-        this._eventHandlers.push(handler);
-        return handler;
+    addDragHandler(args: DragHandlerArguments): DragHandler {
+        return new DragHandler(this, args);
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {

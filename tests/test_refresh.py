@@ -53,3 +53,31 @@ async def test_rebuild_component_with_dead_parent():
 
         # Make sure no data for dead components was sent to JS
         assert app.last_updated_components == {root_component}
+
+
+async def test_unmount_and_remount():
+    class DemoComponent(rio.Component):
+        child: rio.Component
+        show_child: bool
+
+        def build(self) -> rio.Component:
+            children = [self.child] if self.show_child else []
+            return rio.Row(*children)
+
+    def build() -> rio.Component:
+        return DemoComponent(
+            rio.Text("hi"),
+            show_child=True,
+        )
+
+    async with create_mockapp(build) as app:
+        root_component = app.get_component(DemoComponent)
+        child_component = root_component.child
+
+        root_component.show_child = False
+        await app.refresh()
+
+        root_component.show_child = True
+        await app.refresh()
+
+        assert app.last_updated_components == {root_component, child_component}

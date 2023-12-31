@@ -5,8 +5,6 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 
-const CONTENT_MARGIN_INSIDE: number = 2;
-
 export type DrawerState = ComponentState & {
     _type_: 'Drawer-builtin';
     anchor?: ComponentId;
@@ -37,10 +35,8 @@ export class DrawerComponent extends ComponentBase {
         element.classList.add('rio-drawer');
 
         element.innerHTML = `
-            <div class="rio-drawer-anchor">
-            </div>
-            <div class="rio-drawer-shade">
-            </div>
+            <div class="rio-drawer-anchor"></div>
+            <div class="rio-drawer-shade"></div>
             <div class="rio-drawer-content-outer">
                 <div class="rio-drawer-content-inner"></div>
                 <div class="rio-drawer-knob"></div>
@@ -64,12 +60,19 @@ export class DrawerComponent extends ComponentBase {
         ) as HTMLElement;
 
         // Connect to events
-        this.addDragHandler(
-            element,
-            this.beginDrag.bind(this),
-            this.dragMove.bind(this),
-            this.endDrag.bind(this)
-        );
+        this.addDragHandler({
+            element: element,
+            onStart: this.beginDrag.bind(this),
+            onMove: this.dragMove.bind(this),
+            onEnd: this.endDrag.bind(this),
+            // Let things like Buttons and TextInputs consume mouse events
+            capturing: false,
+        });
+
+        // this.shadeElement.addEventListener(
+        //     'click',
+        //     this._onShadeClick.bind(this)
+        // );
 
         return element;
     }
@@ -161,21 +164,21 @@ export class DrawerComponent extends ComponentBase {
         }
     }
 
-    _enableTransition() {
+    _enableTransition(): void {
         // Remove the class and flush the style changes
         let element = this.element;
         element.classList.remove('rio-drawer-no-transition');
         commitCss(element);
     }
 
-    _disableTransition() {
+    _disableTransition(): void {
         // Add the class and flush the style changes
         let element = this.element;
         element.classList.add('rio-drawer-no-transition');
         commitCss(element);
     }
 
-    openDrawer() {
+    openDrawer(): void {
         this.openFraction = 1;
         this._enableTransition();
         this._updateCss();
@@ -188,7 +191,7 @@ export class DrawerComponent extends ComponentBase {
         }
     }
 
-    closeDrawer() {
+    closeDrawer(): void {
         this.openFraction = 0;
         this._enableTransition();
         this._updateCss();
@@ -199,6 +202,10 @@ export class DrawerComponent extends ComponentBase {
                 is_open: false,
             });
         }
+    }
+
+    private _onShadeClick(): void {
+        this.closeDrawer();
     }
 
     beginDrag(event: MouseEvent): boolean {
@@ -299,7 +306,7 @@ export class DrawerComponent extends ComponentBase {
         this._updateCss();
     }
 
-    endDrag() {
+    endDrag(): void {
         // Snap to fully open or fully closed
         let threshold = this.openFractionAtDragStart > 0.5 ? 0.7 : 0.3;
 

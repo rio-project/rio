@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import json
 import types
 from typing import *
 
@@ -7,6 +8,10 @@ from uniserde import Jsonable, JsonDoc
 
 import rio
 from rio.app_server import AppServer
+from rio.components.root_components import (
+    FundamentalRootComponent,
+    HighLevelRootComponent,
+)
 
 T = TypeVar("T")
 C = TypeVar("C", bound=rio.Component)
@@ -40,7 +45,9 @@ class MockApp:
             }
         )
 
-    async def _send_message(self, message: JsonDoc) -> None:
+    async def _send_message(self, message_text: str) -> None:
+        message = json.loads(message_text)
+
         self.outgoing_messages.append(message)
 
         if "id" in message:
@@ -67,19 +74,33 @@ class MockApp:
         for message in reversed(self.outgoing_messages):
             if message["method"] == "updateComponentStates":
                 return {
-                    self._session._weak_components_by_id[component_id]
+                    self._session._weak_components_by_id[int(component_id)]
                     for component_id in message["params"]["deltaStates"]  # type: ignore
-                    if component_id != self._session._root_component._id
+                    if int(component_id) != self._session._root_component._id
                 }
 
         return set()
 
     def get_root_component(self) -> rio.Component:
         sess = self._session
-        return sess._weak_component_data_by_component[sess._root_component].build_result
+
+        high_level_root = sess._root_component
+        assert isinstance(high_level_root, HighLevelRootComponent), high_level_root
+
+        low_level_root = sess._weak_component_data_by_component[
+            high_level_root
+        ].build_result
+        assert isinstance(low_level_root, FundamentalRootComponent), low_level_root
+
+        scroll_container = low_level_root.child
+        assert isinstance(scroll_container, rio.ScrollContainer), scroll_container
+
+        return scroll_container.child
 
     def get_component(self, component_type: Type[C]) -> C:
-        for component in self._session._root_component._iter_component_tree():
+        root_component = self.get_root_component()
+
+        for component in root_component._iter_component_tree():
             if type(component) is component_type:
                 return component  # type: ignore
 
@@ -135,7 +156,7 @@ async def create_mockapp(
 
     fake_websocket: Any = types.SimpleNamespace(
         accept=lambda: _make_awaitable(),
-        send_json=mock_app._send_message,
+        send_text=mock_app._send_message,
         receive_json=mock_app._receive_message,
     )
     server_task = asyncio.create_task(
