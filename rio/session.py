@@ -51,6 +51,8 @@ T = typing.TypeVar("T")
 class ComponentData:
     build_result: rio.Component
 
+    all_children_in_build_boundary: Set[component_base.Component]
+
     # Keep track of how often this component has been built. This is used by
     # components to determine whether they are still part of their parent's current
     # build output.
@@ -305,10 +307,6 @@ class Session(unicall.Unicall):
         # client before an earlier message, leading to invalid component
         # references.
         self._refresh_lock = asyncio.Lock()
-
-        # All components wich are currently in the component tree and are
-        # subscribed to either `on_mount` or `on_unmount` events.
-        self._watched_and_mounted_components: Set[rio.Component] = set()
 
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
@@ -660,7 +658,14 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                 include_children_recursively=True,
             )
 
-    def _refresh_sync(self) -> Tuple[Dict[rio.Component, bool], Set[rio.Component]]:
+    def _refresh_sync(
+        self,
+    ) -> Tuple[
+        Dict[rio.Component, bool],
+        Set[rio.Component],
+        Set[rio.Component],
+        Set[rio.Component],
+    ]:
         """
         See `refresh` for details on what this function does.
 
@@ -677,6 +682,9 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
         # Keep track of all components which are visited. Only they will be sent to
         # the client.
         visited_components: collections.Counter[rio.Component] = collections.Counter()
+
+        # Keep track of of previous child components
+        old_children_in_build_boundary_for_visited_children = {}
 
         # Build all dirty components
         while self._dirty_components:
@@ -730,7 +738,11 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             # No, this is the first time
             except KeyError:
                 # Create the component data and cache it
-                component_data = ComponentData(build_result, 0)
+                component_data = ComponentData(
+                    build_result,
+                    set(),  # Set of all children - filled in below
+                    0,
+                )
                 self._weak_component_data_by_component[component] = component_data
 
             # Yes, rescue state. This will:
@@ -759,28 +771,59 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                 # from now on.
                 del build_result
 
+            # Remember the previous children of this component
+            old_children_in_build_boundary_for_visited_children[
+                component
+            ] = component_data.all_children_in_build_boundary
+
             # Inject the builder and build generation
             weak_builder = weakref.ref(component)
 
-            children = component_data.build_result._iter_direct_and_indirect_child_containing_attributes(
-                include_self=True,
-                recurse_into_high_level_components=False,
+            component_data.all_children_in_build_boundary = set(
+                component_data.build_result._iter_direct_and_indirect_child_containing_attributes(
+                    include_self=True,
+                    recurse_into_high_level_components=False,
+                )
             )
-            for child in children:
+            for child in component_data.all_children_in_build_boundary:
                 child._weak_builder_ = weak_builder
                 child._build_generation_ = component_data.build_generation
 
         # Determine which components are alive, to avoid sending references to
         # dead components to the frontend.
-        alive_cache: Dict[rio.Component, bool] = {
+        is_in_component_tree_cache: Dict[rio.Component, bool] = {
             self._root_component: True,
         }
 
-        return alive_cache, {
+        visited_and_live_components: Set[component_base.Component] = {
             component
             for component in visited_components
-            if component._is_in_component_tree(alive_cache)
+            if component._is_in_component_tree(is_in_component_tree_cache)
         }
+
+        all_children_old = set()
+        all_children_new = set()
+
+        for component in visited_and_live_components:
+            # Fundamental components aren't tracked, since they are never built
+            if isinstance(component, component_base.FundamentalComponent):
+                continue
+
+            all_children_old.update(
+                old_children_in_build_boundary_for_visited_children[component]
+            )
+            all_children_new.update(
+                self._weak_component_data_by_component[
+                    component
+                ].all_children_in_build_boundary
+            )
+
+        return (
+            is_in_component_tree_cache,
+            visited_and_live_components,
+            all_children_old,
+            all_children_new,
+        )
 
     async def _refresh(self) -> None:
         """
@@ -798,7 +841,26 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
             # Refresh and get a set of all components which have been visited
-            alive_cache, visited_components = self._refresh_sync()
+            (
+                is_in_component_tree_cache,
+                visited_components,
+                all_children_old,
+                all_children_new,
+            ) = self._refresh_sync()
+
+            print(visited_components)
+            print(all_children_old)
+            print(all_children_new)
+
+            # Find all components which have recently been added to or removed
+            # from the component tree
+            mounted_components = all_children_new - all_children_old
+            unmounted_components = all_children_old - all_children_new
+
+            # Any components which were previously unmounted, and are now
+            # mounted may not show up in the `visited_components` set, but must
+            # be sent to the client because it considers them to be dead.
+            visited_components |= mounted_components
 
             # Avoid sending empty messages
             if not visited_components:
@@ -819,11 +881,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             #   of the changes. This way, if the event handlers trigger another
             #   client message themselves, any referenced components will already
             #   exist
-            for comp in list(self._watched_and_mounted_components):
-                # Still alive
-                if comp._is_in_component_tree(alive_cache):
-                    continue
-
+            for comp in unmounted_components:
                 # Trigger the event
                 for handler, _ in comp._rio_event_handlers_[
                     rio.event.EventTag.ON_UNMOUNT
@@ -833,9 +891,6 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                         name="`on_unmount` event handler",
                     )
 
-                # Remember that this component is no longer mounted
-                self._watched_and_mounted_components.remove(comp)
-
             # Trigger the `on_mount` event
             #
             # Notes:
@@ -843,11 +898,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             # - This function enlarges the set of watched components. The
             #   `on_unmount` event handler iterates over that set. By processing
             #   that handler first it only needs to process a smaller set
-            for component in visited_components - self._watched_and_mounted_components:
-                # Disinterested
-                if not component._watch_tree_mount_and_unmount_:
-                    continue
-
+            for component in mounted_components:
                 # Trigger the event
                 for handler, _ in component._rio_event_handlers_[
                     rio.event.EventTag.ON_MOUNT
@@ -856,9 +907,6 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
                         self._call_event_handler(handler, component),
                         name="`on_mount` event handler",
                     )
-
-                # Remember that this component is now mounted
-                self._watched_and_mounted_components.add(component)
 
     async def _update_component_states(
         self, visited_components: Set[rio.Component], delta_states: Dict[int, JsonDoc]

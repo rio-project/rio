@@ -442,12 +442,6 @@ class Component(metaclass=ComponentMeta):
         default=False, init=False, repr=False
     )
 
-    # True if the component is subscribed to either the `on_mount` or
-    # `on_unmount` events.
-    _watch_tree_mount_and_unmount_: ClassVar[bool] = dataclasses.field(
-        default=False, init=False, repr=False
-    )
-
     # This flag indicates whether state bindings for this component have already
     # been initialized. Used by `__getattribute__` to check if it should throw
     # an error.
@@ -743,13 +737,6 @@ class Component(metaclass=ComponentMeta):
             for event_tag, args in events.items():
                 for arg in args:
                     cls._rio_event_handlers_[event_tag].append((member, arg))
-
-        # If the component is subscribed to `on_mount` or `on_unmount`, update
-        # the boolean for that
-        mount_event_handlers = cls._rio_event_handlers_[event.EventTag.ON_MOUNT]
-        unmount_event_handlers = cls._rio_event_handlers_[event.EventTag.ON_UNMOUNT]
-        if mount_event_handlers or unmount_event_handlers:
-            cls._watch_tree_mount_and_unmount_ = True
 
         # Is this class built into Rio?
         cls._rio_builtin_ = cls.__module__.startswith("rio.")
