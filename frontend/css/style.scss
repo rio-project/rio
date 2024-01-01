@@ -487,14 +487,12 @@ code {
     font-family: 'Roboto Mono', monospace;
 }
 
-// Make sure the whole GUI can scroll. The <html> element can scroll by
-// default, so we'll just make sure the <body> uses all the available space.
-//
-// This is a little simpler than the `ScrollContainer` component, because our
-// child element is always the `HighLevelRootComponent` from python, which
-// doesn't have a `width` or `height` set.
 html {
     background: var(--rio-global-background-bg);
+
+    // Don't scroll under any circumstances. Our layouting system takes care of
+    // scrolling.
+    overflow: hidden;
 }
 
 body {
@@ -502,15 +500,6 @@ body {
     padding: 0;
 
     font-family: var(--rio-global-text-font-name, Roboto, sans-serif);
-}
-
-// Wraps the user's root component
-.rio-user-root-scroller {
-    overflow: auto;
-}
-
-.rio-user-root-scroller > * {
-    position: relative !important;
 }
 
 // All components
