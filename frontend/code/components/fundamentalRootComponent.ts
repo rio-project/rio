@@ -70,11 +70,25 @@ export class FundamentalRootComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        // Don't use `window.innerWidth`. It appears to be rounded to the
-        // nearest integer, so it's inaccurate.
-        let rect = document.documentElement.getBoundingClientRect();
-        this.naturalWidth = this.allocatedWidth = rect.width / pixelsPerEm;
-        this.naturalHeight = this.allocatedHeight = rect.height / pixelsPerEm;
+        // We have a bunch of problems here:
+        // 1. `window.innerWidth` isn't accurate. (It seems to be rounded to the
+        //    nearest integer.)
+        // 2. `document.documentElement.getBoundingClientRect().width` is
+        //    accurate, but excludes space reserved for a scroll bar. (The
+        //    window should never have a scroll bar, and yet it does. No idea
+        //    why. To reproduce, simply open your browser console - there'll be
+        //    unallocated space on the right-hand side.)
+        // 3. Whatever measurement we get is in pixels, but we need it in rem.
+        //    We divide it to get rem, then the browser multiplies it to get
+        //    pixels. Floating point inaccuracies can happen in this process. We
+        //    must ensure that the content always fits on the screen, otherwise
+        //    the browser will create scroll bars and screw up our layouting.
+
+        // I can't think of a better solution ¯\_(ツ)_/¯
+        this.naturalWidth = this.allocatedWidth =
+            (window.innerWidth - 2) / pixelsPerEm;
+        this.naturalHeight = this.allocatedHeight =
+            (window.innerHeight - 2) / pixelsPerEm;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
