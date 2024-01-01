@@ -669,6 +669,9 @@ body {
     flex-direction: row;
     align-items: end;
 
+    padding: 0.3rem;
+    box-sizing: border-box;
+
     background-color: var(--rio-local-plain-bg-variant);
 
     border-radius: var(--rio-global-corner-radius-small)
@@ -699,7 +702,6 @@ body {
     background-color: transparent;
     color: var(--rio-local-text-color);
     caret-color: var(--rio-local-accent-bg);
-    padding: 0.5rem;
     border: none;
     font-size: 1rem;
 }
@@ -901,9 +903,14 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     order: 2;
 
-    margin: 0 0.7rem 0.4rem 0.7rem;
-    width: 1.3rem;
-    height: 1.3rem;
+    // Position the SVG
+    display: flex;
+    align-items: end;
+
+    svg {
+        width: 1.3rem;
+        height: 1.3rem;
+    }
 }
 
 .rio-dropdown-option-highlight {

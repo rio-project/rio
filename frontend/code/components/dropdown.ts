@@ -5,7 +5,12 @@ import {
     updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
 import { LayoutContext } from '../layouting';
-import { pixelsPerEm } from '../app';
+import { pixelsPerEm, scrollBarSize } from '../app';
+import { getTextDimensions } from '../layoutHelpers';
+
+// Make sure this is in sync with the CSS
+const RESERVED_WIDTH_FOR_ARROW = 1.5;
+const DROPDOWN_LIST_HORIZONTAL_PADDING = 1;
 
 export type DropdownState = ComponentState & {
     _type_: 'Dropdown-builtin';
@@ -30,6 +35,8 @@ export class DropdownComponent extends ComponentBase {
 
     // The currently highlighted option, if any
     private highlightedOptionName: HTMLElement | null = null;
+
+    private longestOptionWidth: number = 0;
 
     createElement(): HTMLElement {
         // Create the elements
@@ -79,7 +86,7 @@ export class DropdownComponent extends ComponentBase {
             }
 
             // Show the popup
-            this.showPopup(element);
+            this.showPopup();
 
             // Make the text input appear as active
             element.classList.add('rio-input-box-focused');
@@ -188,7 +195,7 @@ export class DropdownComponent extends ComponentBase {
         }
     }
 
-    private showPopup(element: HTMLElement): void {
+    private showPopup(): void {
         this.isOpen = true;
 
         // In order to guarantee that the popup is on top of all components, it
@@ -204,7 +211,7 @@ export class DropdownComponent extends ComponentBase {
         this._updateOptionEntries();
 
         // Position & Animate
-        let dropdownRect = element.getBoundingClientRect();
+        let dropdownRect = this.element.getBoundingClientRect();
         let popupHeight = this.popupElement.scrollHeight;
         let windowHeight = window.innerHeight - 1; // innerHeight is rounded
 
@@ -335,7 +342,6 @@ export class DropdownComponent extends ComponentBase {
     /// Update the visible options based on everything matching the search
     /// filter
     _updateOptionEntries() {
-        let element = this.element;
         this.optionsElement.innerHTML = '';
         let needleLower = this.inputElement.value.toLowerCase();
 
@@ -396,6 +402,13 @@ export class DropdownComponent extends ComponentBase {
         if (deltaState.optionNames !== undefined) {
             this.state.optionNames = deltaState.optionNames;
 
+            this.longestOptionWidth = Math.max(
+                0,
+                ...this.state.optionNames.map(
+                    (option) => getTextDimensions(option, 'text')[0]
+                )
+            );
+
             if (this.isOpen) {
                 this._updateOptionEntries();
             }
@@ -423,9 +436,16 @@ export class DropdownComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        // TODO: Request enough space to fit the longest option + potentially a
-        // scrollbar
-        updateInputBoxNaturalWidth(this, 0);
+        updateInputBoxNaturalWidth(this, RESERVED_WIDTH_FOR_ARROW);
+
+        // Make sure we're wide enough to fit even the longest option + a scroll
+        // bar
+        this.naturalWidth = Math.max(
+            this.naturalWidth,
+            this.longestOptionWidth +
+                scrollBarSize +
+                2 * DROPDOWN_LIST_HORIZONTAL_PADDING
+        );
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
