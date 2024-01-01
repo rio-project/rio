@@ -1,9 +1,8 @@
+import { scrollBarSize } from '../app';
 import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
-import { SCROLL_BAR_SIZE } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
-// TODO
 
 export type ScrollContainerState = ComponentState & {
     _type_: 'ScrollContainer-builtin';
@@ -24,7 +23,7 @@ export class ScrollContainerComponent extends ComponentBase {
     state: Required<ScrollContainerState>;
 
     private assumeVerticalScrollBarWillBeNeeded: boolean = true;
-    private incorrectAssumptionCount: number = 0;
+    private numSequentialIncorrectAssumptions: number = 0;
 
     private get layoutWithVerticalScrollbar(): boolean {
         switch (this.state.scroll_y) {
@@ -69,7 +68,7 @@ export class ScrollContainerComponent extends ComponentBase {
 
         // If there will be a vertical scroll bar, reserve space for it
         if (this.layoutWithVerticalScrollbar) {
-            this.naturalWidth += SCROLL_BAR_SIZE;
+            this.naturalWidth += scrollBarSize;
         }
     }
 
@@ -85,7 +84,7 @@ export class ScrollContainerComponent extends ComponentBase {
 
         // Otherwise, stretch the child to use up all the available width
         if (this.layoutWithVerticalScrollbar) {
-            child.allocatedWidth = this.allocatedWidth - SCROLL_BAR_SIZE;
+            child.allocatedWidth = this.allocatedWidth - scrollBarSize;
         } else {
             child.allocatedWidth = this.allocatedWidth;
         }
@@ -100,7 +99,7 @@ export class ScrollContainerComponent extends ComponentBase {
             componentsById[this.state.child]!.allocatedWidth >
                 this.allocatedWidth
         ) {
-            this.naturalHeight += SCROLL_BAR_SIZE;
+            this.naturalHeight += scrollBarSize;
         }
     }
 
@@ -124,10 +123,10 @@ export class ScrollContainerComponent extends ComponentBase {
                 // our assumption was wrong, or if we don't currently have a
                 // scroll bar.
                 if (
-                    this.incorrectAssumptionCount == 0 ||
+                    this.numSequentialIncorrectAssumptions == 0 ||
                     !this.assumeVerticalScrollBarWillBeNeeded
                 ) {
-                    this.incorrectAssumptionCount++;
+                    this.numSequentialIncorrectAssumptions++;
                     this.assumeVerticalScrollBarWillBeNeeded =
                         !this.assumeVerticalScrollBarWillBeNeeded;
 
@@ -139,7 +138,7 @@ export class ScrollContainerComponent extends ComponentBase {
             }
         }
 
-        this.incorrectAssumptionCount = 0;
+        this.numSequentialIncorrectAssumptions = 0;
 
         // If the child needs more space than we have, we'll need to display a
         // scroll bar. So just give the child the height it wants.
@@ -150,7 +149,7 @@ export class ScrollContainerComponent extends ComponentBase {
 
         // Otherwise, stretch the child to use up all the available height
         if (this.state.scroll_x === 'always') {
-            child.allocatedHeight = this.allocatedHeight - SCROLL_BAR_SIZE;
+            child.allocatedHeight = this.allocatedHeight - scrollBarSize;
         } else {
             child.allocatedHeight = this.allocatedHeight;
         }

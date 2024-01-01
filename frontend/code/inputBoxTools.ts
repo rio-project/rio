@@ -7,7 +7,7 @@ import { ComponentBase } from './components/componentBase';
 export function updateInputBoxNaturalWidth(
     component: ComponentBase,
     additionalSpace: number
-) {
+): void {
     // Enforce a minimum width, common to all input boxes
     let newWidth = Math.max(13, additionalSpace);
 
