@@ -660,12 +660,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
 
     def _refresh_sync(
         self,
-    ) -> Tuple[
-        Dict[rio.Component, bool],
-        Set[rio.Component],
-        Set[rio.Component],
-        Set[rio.Component],
-    ]:
+    ) -> Tuple[Set[rio.Component], Set[rio.Component], Set[rio.Component],]:
         """
         See `refresh` for details on what this function does.
 
@@ -819,7 +814,6 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
             )
 
         return (
-            is_in_component_tree_cache,
             visited_and_live_components,
             all_children_old,
             all_children_new,
@@ -842,15 +836,10 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
         async with self._refresh_lock:
             # Refresh and get a set of all components which have been visited
             (
-                is_in_component_tree_cache,
                 visited_components,
                 all_children_old,
                 all_children_new,
             ) = self._refresh_sync()
-
-            print(visited_components)
-            print(all_children_old)
-            print(all_children_new)
 
             # Find all components which have recently been added to or removed
             # from the component tree
@@ -1937,6 +1926,10 @@ document.body.removeChild(a)
         component._validate_delta_state_from_frontend(delta_state)
         component._apply_delta_state_from_frontend(delta_state)
         await component._call_event_handlers_for_delta_state(delta_state)
+
+        # Trigger a refresh. The component itself doesn't need to rebuild, but
+        # other components with a state binding to the changed values might.
+        await self._refresh()
 
     @unicall.local(name="componentMessage")
     async def _component_message(
