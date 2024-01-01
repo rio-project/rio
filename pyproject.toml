@@ -40,6 +40,8 @@ watchfiles = "^0.21.0"
 gitignore-parser = "^0.1.9"
 tomlkit = "^0.12.3"
 keyring = "^24.3.0"
+fuzzywuzzy = "^0.18.0"
+python-levenshtein = "^0.23.0"
 
 [tool.poetry.extras]
 window = ["cefpython3", "platformdirs", "pygobject", "pywebview"]

@@ -7,6 +7,10 @@ docstrings.
 import inspect
 from typing import *  # type: ignore
 
+# Some rio modules optionally depend on libraries and evaling their type
+# annotations can fail if they're not installed. Import them explicitly here to produce more obvious error messages
+import pandas
+import polars
 from revel import *  # type: ignore
 
 import rio
