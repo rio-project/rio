@@ -3,16 +3,28 @@ from __future__ import annotations
 import collections.abc
 from typing import *  # type: ignore
 
-if TYPE_CHECKING:
-    import pandas  # type: ignore
-    import polars  # type: ignore
-
 from uniserde import JsonDoc  # type: ignore
 
 from .. import maybes
 from .component_base import FundamentalComponent
 
-__all__ = ["Table"]
+try:
+    import pandas  # type: ignore
+except ImportError:
+    if not TYPE_CHECKING:
+        pandas = None
+
+
+try:
+    import polars  # type: ignore
+except ImportError:
+    if not TYPE_CHECKING:
+        polars = None
+
+
+__all__ = [
+    "Table",
+]
 
 
 TableValue = Union[int, float, str]

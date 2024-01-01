@@ -4,8 +4,13 @@ import re
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
+import fuzzywuzzy.fuzz
+
 import rio
 import rio.icon_registry
+
+T = TypeVar("T")
+
 
 ITEMS_PER_ROW = 5
 
@@ -28,6 +33,48 @@ def normalize_for_search(text: str) -> str:
     text = text.strip(".")
     text = text.lower()
     return text
+
+
+def search(
+    needle: str,
+    haystack: List[T],
+    *,
+    min_results: int = 5,
+    threshold: float = 0.85,
+    key: Callable[[T], str] = lambda x: x,  # type: ignore
+) -> List[Tuple[T, float]]:
+    """
+    Given a set of candidate strings, return the best matches for the provided
+    search string. The result is a list of (string, score) tuples, sorted by
+    score. The score is 1.0 for a perfect match and 0.0 for no match.
+    """
+    # Convert the haystack elements to strings using the provided key function
+    haystack_strs = [key(item) for item in haystack]
+
+    # Use fuzzywuzzy to get the matches and their scores
+    scores = [
+        fuzzywuzzy.fuzz.partial_ratio(needle, haystack_strs)
+        for haystack_strs in haystack_strs
+    ]
+
+    # Sort the original values by their score
+    scored_haystack = sorted(
+        zip(haystack, scores),
+        key=lambda x: x[1],
+        reverse=True,
+    )
+
+    # Apply a threshold, but never remove all results
+    result = []
+    for ii, (item, score) in enumerate(scored_haystack):
+        score = score / 100
+
+        if score < threshold and ii >= min_results:
+            break
+
+        result.append((item, score))
+
+    return result
 
 
 def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
@@ -103,13 +150,13 @@ class IconsPage(rio.Component):
             return
 
         # TODO: Add a proper search
-        normalized_search_text = normalize_for_search(normalized_search_text)
+        scored_matches = search(
+            normalized_search_text,
+            get_available_icons(),
+            key=lambda x: x[1],
+        )
 
-        for icon_set, icon_name, variants in get_available_icons():
-            if normalized_search_text not in normalize_for_search(icon_name):
-                continue
-
-            self.matches.append((icon_set, icon_name, variants))
+        self.matches = [x for x, _ in scored_matches]
 
     def _on_select_icon(
         self,
