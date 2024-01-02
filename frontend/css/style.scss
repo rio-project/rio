@@ -861,8 +861,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-dropdown {
     pointer-events: auto;
     cursor: pointer;
-
-    position: relative;
 }
 
 .rio-dropdown-popup {
@@ -1144,7 +1142,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 // Slideshow
 .rio-slideshow {
     pointer-events: auto;
-    position: relative;
     overflow: hidden;
 }
 
@@ -1736,7 +1733,6 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 // Drawer
 .rio-drawer {
     pointer-events: auto;
-    position: relative;
     overflow: hidden;
 
     display: flex;

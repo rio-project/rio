@@ -37,8 +37,11 @@ export class GridComponent extends ComponentBase {
     private nRows: number;
     private nColumns: number;
 
-    private rowHeights: number[];
-    private columnWidths: number[];
+    private rowNaturalHeights: number[];
+    private columnNaturalWidths: number[];
+
+    private rowAllocatedHeights: number[];
+    private columnAllocatedWidths: number[];
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -49,10 +52,12 @@ export class GridComponent extends ComponentBase {
     precomputeChildData(deltaState: GridState): void {
         let children = deltaState._children as ComponentId[];
 
-        // Build the list of grid childs
+        // Build the list of grid children
         for (let ii = 0; ii < children.length; ii++) {
             let child = deltaState._child_positions![ii] as GridChild;
             child.id = children[ii];
+            child.allRows = range(child.row, child.row + child.height);
+            child.allColumns = range(child.column, child.column + child.width);
         }
 
         // Sort the children by the number of rows they take up
@@ -69,12 +74,6 @@ export class GridComponent extends ComponentBase {
 
             // Keep track of how how many rows this grid has
             this.nRows = Math.max(this.nRows, gridChild.row + gridChild.height);
-
-            // Initialize the rows & columns stored in the child
-            gridChild.allRows = range(
-                gridChild.row,
-                gridChild.row + gridChild.height
-            );
 
             // Determine which rows need to grow
             if (!childInstance.state._grow_[1]) {
@@ -112,12 +111,6 @@ export class GridComponent extends ComponentBase {
                 gridChild.column + gridChild.width
             );
 
-            // Initialize the rows & columns stored in the child
-            gridChild.allColumns = range(
-                gridChild.column,
-                gridChild.column + gridChild.width
-            );
-
             // Determine which columns need to grow
             if (!childInstance.state._grow_[0]) {
                 continue;
@@ -146,7 +139,6 @@ export class GridComponent extends ComponentBase {
         if (deltaState._children !== undefined) {
             this.replaceChildren(latentComponents, deltaState._children);
             this.precomputeChildData(deltaState);
-            this.updateChildLayouts();
         }
 
         if (deltaState.row_spacing !== undefined) {
@@ -160,39 +152,21 @@ export class GridComponent extends ComponentBase {
         this.makeLayoutDirty();
     }
 
-    updateChildLayouts(): void {
-        for (let gridChild of this.childrenByNumberOfRows) {
-            let childElement = componentsById[gridChild.id]!.element;
-
-            childElement.style.gridRowStart = `${gridChild.row + 1}`;
-            childElement.style.gridRowEnd = `${
-                gridChild.row + 1 + gridChild.height
-            }`;
-
-            childElement.style.gridColumnStart = `${gridChild.column + 1}`;
-            childElement.style.gridColumnEnd = `${
-                gridChild.column + 1 + gridChild.width
-            }`;
-
-            childElement.style.left = '0';
-            childElement.style.top = '0';
-        }
-    }
-
     updateNaturalWidth(ctx: LayoutContext): void {
-        this.columnWidths = new Array(this.nColumns).fill(0);
+        this.columnNaturalWidths = new Array(this.nColumns).fill(0);
 
         // Determine the width of each column
         for (let gridChild of this.childrenByNumberOfColumns) {
             let childInstance = componentsById[gridChild.id]!;
 
-            // How much of the child's width can the columns already accommodate?
+            // How much of the child's width can the columns already
+            // accommodate?
             let availableWidthTotal: number =
                 (gridChild.width - 1) * this.state.column_spacing;
             let growCols: number[] = [];
 
             for (let ii of gridChild.allColumns) {
-                let columnWidth = this.columnWidths[ii];
+                let columnWidth = this.columnNaturalWidths[ii];
 
                 availableWidthTotal += columnWidth;
                 if (this.growingColumns.has(ii)) {
@@ -215,14 +189,14 @@ export class GridComponent extends ComponentBase {
             let spacePerColumn = neededSpace / targetColumns.length;
 
             for (let column of targetColumns) {
-                this.columnWidths[column] += spacePerColumn;
+                this.columnNaturalWidths[column] += spacePerColumn;
             }
         }
 
         // Sum over all widths
         this.naturalWidth = this.state.column_spacing * (this.nColumns - 1);
 
-        for (let columnWidth of this.columnWidths) {
+        for (let columnWidth of this.columnNaturalWidths) {
             this.naturalWidth += columnWidth;
         }
     }
@@ -236,9 +210,10 @@ export class GridComponent extends ComponentBase {
                 : new Set(range(0, this.nColumns));
 
         let spacePerColumn = additionalSpace / targetColumns.size;
+        this.columnAllocatedWidths = [...this.columnNaturalWidths];
 
         for (let column of targetColumns) {
-            this.columnWidths[column] += spacePerColumn;
+            this.columnAllocatedWidths[column] += spacePerColumn;
         }
 
         // Pass on the space to the children
@@ -248,13 +223,14 @@ export class GridComponent extends ComponentBase {
                 this.state.column_spacing * (gridChild.width - 1);
 
             for (let column of gridChild.allColumns) {
-                childInstance.allocatedWidth += this.columnWidths[column];
+                childInstance.allocatedWidth +=
+                    this.columnAllocatedWidths[column];
             }
         }
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.rowHeights = new Array(this.nRows).fill(0);
+        this.rowNaturalHeights = new Array(this.nRows).fill(0);
 
         // Determine the height of each row
         for (let gridChild of this.childrenByNumberOfRows) {
@@ -266,7 +242,7 @@ export class GridComponent extends ComponentBase {
             let growRows: number[] = [];
 
             for (let ii of gridChild.allRows) {
-                let rowHeight = this.rowHeights[ii];
+                let rowHeight = this.rowNaturalHeights[ii];
 
                 availableHeightTotal += rowHeight;
                 if (this.growingRows.has(ii)) {
@@ -287,13 +263,13 @@ export class GridComponent extends ComponentBase {
             let spacePerRow = neededSpace / targetRows.length;
 
             for (let row of targetRows) {
-                this.rowHeights[row] += spacePerRow;
+                this.rowNaturalHeights[row] += spacePerRow;
             }
         }
 
         // Sum over all heights
         this.naturalHeight = this.state.row_spacing * (this.nRows - 1);
-        for (let rowHeight of this.rowHeights) {
+        for (let rowHeight of this.rowNaturalHeights) {
             this.naturalHeight += rowHeight;
         }
     }
@@ -307,14 +283,15 @@ export class GridComponent extends ComponentBase {
                 : new Set(range(0, this.nRows));
 
         let spacePerRow = additionalSpace / targetRows.size;
+        this.rowAllocatedHeights = [...this.rowNaturalHeights];
 
         for (let row of targetRows) {
-            this.rowHeights[row] += spacePerRow;
+            this.rowAllocatedHeights[row] += spacePerRow;
         }
 
         // Precompute position data
         let columnWidthCumSum: number[] = [0];
-        for (let columnWidth of this.columnWidths) {
+        for (let columnWidth of this.columnAllocatedWidths) {
             columnWidthCumSum.push(
                 columnWidthCumSum[columnWidthCumSum.length - 1] +
                     columnWidth +
@@ -323,7 +300,7 @@ export class GridComponent extends ComponentBase {
         }
 
         let rowHeightCumSum: number[] = [0];
-        for (let rowHeight of this.rowHeights) {
+        for (let rowHeight of this.rowAllocatedHeights) {
             rowHeightCumSum.push(
                 rowHeightCumSum[rowHeightCumSum.length - 1] +
                     rowHeight +
@@ -338,7 +315,7 @@ export class GridComponent extends ComponentBase {
                 this.state.row_spacing * (gridChild.height - 1);
 
             for (let row of gridChild.allRows) {
-                childInstance.allocatedHeight += this.rowHeights[row];
+                childInstance.allocatedHeight += this.rowAllocatedHeights[row];
             }
 
             // Set everybody's position
