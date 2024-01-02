@@ -87,9 +87,15 @@ export function getTextDimensions(
 /// This works even if the element is not visible, e.g. because a parent is
 /// hidden.
 export function getElementDimensions(element: HTMLElement): [number, number] {
-    // Make sure the element is visible
+    // Make sure the element is attached to the DOM and visible
+    let isInDom = element.isConnected;
     let originalDisplay = element.style.display;
-    element.style.display = 'fixed';
+
+    if (!isInDom) {
+        document.body.appendChild(element);
+    } else {
+        element.style.display = 'fixed';
+    }
 
     // Get its dimensions
     let result = [
@@ -97,8 +103,13 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
         element.scrollHeight / pixelsPerEm,
     ] as [number, number];
 
-    // Restore the original display mode
+    // Restore the original parent and display mode
+    if (!isInDom) {
+        element.remove();
+    }
     element.style.display = originalDisplay;
+
+    console.debug(element, result);
 
     return result;
 }

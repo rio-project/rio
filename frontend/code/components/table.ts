@@ -1,5 +1,6 @@
+import { getElementDimensions } from '../layoutHelpers';
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
-// TODO
 
 type TableValue = number | string;
 
@@ -46,10 +47,18 @@ export class TableComponent extends ComponentBase {
                 this.removeRowNumbers();
             }
         }
+
+        [this.naturalWidth, this.naturalHeight] = getElementDimensions(
+            this.element
+        );
     }
 
+    // Natural size is set in updateElement
+    updateNaturalWidth(ctx: LayoutContext): void {}
+    updateNaturalHeight(ctx: LayoutContext): void {}
+
     private replaceData(
-        data: { string: TableValue[] },
+        data: { [columnName: string]: TableValue[] },
         showRowNumbers: boolean
     ): void {
         // Figure out if only the data in the table changed, or if the columns
@@ -182,7 +191,7 @@ export class TableComponent extends ComponentBase {
     }
 
     private applySort(
-        data: { string: TableValue[] },
+        data: { [columnName: string]: TableValue[] },
         columnName: string,
         headerCell: HTMLElement,
         reverse: boolean
