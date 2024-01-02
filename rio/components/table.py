@@ -8,18 +8,9 @@ from uniserde import JsonDoc  # type: ignore
 from .. import maybes
 from .component_base import FundamentalComponent
 
-try:
-    import pandas  # type: ignore
-except ImportError:
-    if not TYPE_CHECKING:
-        pandas = None
-
-
-try:
-    import polars  # type: ignore
-except ImportError:
-    if not TYPE_CHECKING:
-        polars = None
+if TYPE_CHECKING:
+    import pandas
+    import polars
 
 
 __all__ = [
