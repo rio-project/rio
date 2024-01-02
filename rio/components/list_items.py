@@ -56,18 +56,14 @@ class SimpleListItem(component_base.Component):
                 )
             )
 
-        if len(text_children) == 1:
-            children.append(text_children[0])
-        else:
-            children.append(
-                rio.Column(
-                    *text_children,
-                    spacing=0.5,
-                )
+        children.append(
+            rio.Column(
+                *text_children,
+                spacing=0.5,
+                width="grow",
+                align_y=0.5,  # Prevent Undefined space
             )
-
-        # Space
-        children.append(rio.Spacer())
+        )
 
         # Right child
         if self.right_child is not None:
