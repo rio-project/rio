@@ -3,21 +3,38 @@ from __future__ import annotations
 import functools
 import sys
 import types
+from dataclasses import dataclass
 from typing import *  # type: ignore
 
-from introspection import iter_subclasses, safe_is_subclass
+from introspection import iter_subclasses
 
 from . import serialization
 from .components import component_base
 
+__all__ = [
+    "UnevaluatedAnnotation",
+    "get_type_annotations_raw",
+    "get_type_annotations",
+    "get_child_component_containing_attribute_names",
+    "get_child_component_containing_attribute_names_for_builtin_components",
+]
+
+
+@dataclass(frozen=True)
+class UnevaluatedAnnotation:
+    annotation_as_text: str
+    error: BaseException
+
 
 @functools.lru_cache(maxsize=None)
-def get_type_annotations_raw(cls: type) -> Mapping[str, Union[type, str]]:
+def get_type_annotations_raw(
+    cls: type,
+) -> Mapping[str, Union[type, UnevaluatedAnnotation]]:
     """
     Reimplementation of `typing.get_type_hints` because it has a stupid bug in
     python 3.10 where it dies if something is annotated as `dataclasses.KW_ONLY`.
     """
-    type_hints: Dict[str, Union[type, str]] = {}
+    type_hints: Dict[str, Union[type, UnevaluatedAnnotation]] = {}
 
     for cls in cls.__mro__:
         for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
@@ -31,8 +48,8 @@ def get_type_annotations_raw(cls: type) -> Mapping[str, Union[type, str]]:
                 globs = vars(sys.modules[cls.__module__])
                 try:
                     annotation = eval(annotation, globs)
-                except NameError:
-                    pass
+                except Exception as error:
+                    annotation = UnevaluatedAnnotation(annotation, error)
 
             type_hints[attr_name] = annotation
 
@@ -47,9 +64,11 @@ def get_type_annotations(cls: type) -> Mapping[str, type]:
     annotations = get_type_annotations_raw(cls)
 
     for attr_name, annotation in annotations.items():
-        if isinstance(annotation, str):
+        if isinstance(annotation, UnevaluatedAnnotation):
             raise ValueError(
-                f"Failed to eval annotation for attribute {attr_name!r}: {annotation}"
+                f"Failed to eval annotation for attribute {attr_name!r}:"
+                f" {annotation.annotation_as_text}\n"
+                f" {annotation.error}"
             )
 
     return annotations  # type: ignore

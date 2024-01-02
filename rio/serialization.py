@@ -163,7 +163,7 @@ def get_attribute_serializers(
             continue
 
         # Annotation couldn't be eval'd? Then we can't serialize it.
-        if isinstance(annotation, str):
+        if isinstance(annotation, inspection.UnevaluatedAnnotation):
             continue
 
         serializer = _get_serializer_for_annotation(annotation)

@@ -16,7 +16,7 @@ aiofiles = "^23.2.1"
 babel = "^2.12.1"
 cefpython3 = { version = "^66.1", platform = "windows", optional = true }
 fastapi = "^0.95.1"
-introspection = "^1.7.0"
+introspection = "^1.7.1"
 pandas = "^2.0.3"
 pillow = "^9.2.0"
 platformdirs = { version = "^3.11.0", optional = true }

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import dataclasses
 import inspect
-import re
 import textwrap
-from dataclasses import dataclass, is_dataclass
+from dataclasses import is_dataclass
 from typing import *  # type: ignore
 
 import introspection.typing
