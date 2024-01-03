@@ -327,6 +327,7 @@ class AppServer(fastapi.FastAPI):
             ),
         )
 
+        # TODO: uvicorn has ping-pong built in, configurable via `ws_ping_interval`
         html = html.replace(
             '"{ping_pong_interval}"',
             str(self.app._ping_pong_interval.total_seconds()),
@@ -641,6 +642,9 @@ class AppServer(fastapi.FastAPI):
             sess._send_message = send_message
             sess._receive_message = receive_message
 
+        sess._websocket = websocket
+        sess._is_active_event.set()
+
         # Check if this is a reconnect
         if hasattr(sess, "window_width"):
             init_coro = sess._send_reconnect_message()
@@ -651,21 +655,31 @@ class AppServer(fastapi.FastAPI):
             # frontend.
             init_coro = sess._refresh()
 
-        try:
-            # This is done in a task because the server is not yet running, so
-            # the method would never receive a response, and thus would hang
-            # indefinitely.
-            sess.create_task(init_coro, name=f"Session {sess} init")
+        # This is done in a task because the server is not yet running, so the
+        # method would never receive a response, and thus would hang
+        # indefinitely.
+        sess.create_task(init_coro, name=f"Session {sess} init")
 
+        try:
             # Serve the socket
             await sess.serve()
 
-        # Don't spam the terminal just because a client disconnected
+        # Don't throw an error just because a client disconnected.
+        #
+        # As far as I can tell, this error is raised regardless of whether the
+        # websocket was disconnected intentionally or not. If we were sure that
+        # the client intentionally disconnected, we could close the session. But
+        # we don't know, so the session has to remain open for now.
         except fastapi.WebSocketDisconnect:
             pass
 
         else:
+            # I don't think this branch can even be reached, but better safe
+            # than sorry, I guess?
             sess.close()
+        finally:
+            sess._websocket = None
+            sess._is_active_event.clear()
 
     async def _finish_session_initialization(
         self,

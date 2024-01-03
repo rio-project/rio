@@ -109,9 +109,18 @@ async def _periodic_event_worker(
     handler: Callable,
     period: float,
 ) -> None:
+    try:
+        sess = weak_component().session  # type: ignore
+    except AttributeError:
+        return
+
     while True:
         # Wait for the next tick
         await asyncio.sleep(period)
+
+        # Wait until there's an active connection to the client. We won't run
+        # code periodically if we aren't sure whether the client will come back.
+        await sess._is_active_event.wait()
 
         # Call the handler
         await call_component_handler_once(weak_component, handler)
