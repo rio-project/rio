@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import collections
-import enum
 import inspect
 import json
 import logging
@@ -16,6 +15,9 @@ from dataclasses import dataclass
 from datetime import tzinfo
 from pathlib import Path
 from typing import *  # type: ignore
+
+if TYPE_CHECKING:
+    import fastapi
 
 import aiofiles
 import babel
@@ -236,7 +238,8 @@ class Session(unicall.Unicall):
             font.ROBOTO_MONO.name: [],
         }
 
-        # These are injected by the app server after the session has already been created
+        # These are injected by the app server after the session has already
+        # been created
         self._root_component: "root_components.HighLevelRootComponent"
         self.external_url: Optional[str]  # None if running in a window
         self.preferred_locales: Tuple[
@@ -248,6 +251,12 @@ class Session(unicall.Unicall):
         self.window_height: float
 
         self.theme: theme.Theme
+
+        # The currently connected websocket, if any
+        self._websocket: Optional[fastapi.WebSocket] = None
+
+        # Event indicating whether there is currently a connected websocket
+        self._is_active_event = asyncio.Event()
 
         # Must be acquired while synchronizing the user's settings
         self._settings_sync_lock = asyncio.Lock()
@@ -372,6 +381,13 @@ class Session(unicall.Unicall):
         """
         return self._active_page_instances
 
+    @property
+    def _is_active(self) -> bool:
+        """
+        Returns whether there is an active websocket connection to a client
+        """
+        return self._websocket is not None
+
     def close(self) -> None:
         self.create_task(self._close(True))
 
@@ -408,6 +424,10 @@ class Session(unicall.Unicall):
         # Cancel all running tasks
         for task in self._running_tasks:
             task.cancel()
+
+        # Close the websocket connection
+        if self._websocket is not None:
+            await self._websocket.close()
 
     async def _get_webview_window(self):
         import webview  # type: ignore

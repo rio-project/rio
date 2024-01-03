@@ -109,8 +109,6 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
     }
     element.style.display = originalDisplay;
 
-    console.debug(element, result);
-
     return result;
 }
 
