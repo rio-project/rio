@@ -567,6 +567,7 @@ class AppServer(fastapi.FastAPI):
         del sessionToken
 
         # Accept the socket
+        print(f"Debug: Accepting websocket from {websocket.client}")
         await websocket.accept()
 
         # Look up the session token. If it is valid the session's duration is
@@ -642,26 +643,32 @@ class AppServer(fastapi.FastAPI):
             sess._send_message = send_message
             sess._receive_message = receive_message
 
+        print("Debug: Setting active event")
         sess._websocket = websocket
         sess._is_active_event.set()
 
         # Check if this is a reconnect
-        if hasattr(sess, "window_width"):
-            init_coro = sess._send_reconnect_message()
-        else:
-            await self._finish_session_initialization(sess, websocket, session_token)
-
-            # Trigger a refresh. This will also send the initial state to the
-            # frontend.
-            init_coro = sess._refresh()
-
-        # This is done in a task because the server is not yet running, so the
-        # method would never receive a response, and thus would hang
-        # indefinitely.
-        sess.create_task(init_coro, name=f"Session {sess} init")
-
         try:
+            if hasattr(sess, "window_width"):
+                init_coro = sess._send_reconnect_message()
+            else:
+                print("Debug: Finishing session initialization")
+                await self._finish_session_initialization(
+                    sess, websocket, session_token
+                )
+
+                # Trigger a refresh. This will also send the initial state to the
+                # frontend.
+                print("Debug: Refreshing session")
+                init_coro = sess._refresh()
+
+            # This is done in a task because the server is not yet running, so the
+            # method would never receive a response, and thus would hang
+            # indefinitely.
+            sess.create_task(init_coro, name=f"Session {sess} init")
+
             # Serve the socket
+            print("Debug: Serving session")
             await sess.serve()
 
         # Don't throw an error just because a client disconnected.
@@ -670,10 +677,12 @@ class AppServer(fastapi.FastAPI):
         # websocket was disconnected intentionally or not. If we were sure that
         # the client intentionally disconnected, we could close the session. But
         # we don't know, so the session has to remain open for now.
-        except fastapi.WebSocketDisconnect:
+        except fastapi.WebSocketDisconnect as err:
+            print(f'Debug: Closing connection to "{websocket.client}" because of {err}')
             pass
 
         else:
+            print("Debug: Closing websocket without exception")
             # I don't think this branch can even be reached, but better safe
             # than sorry, I guess?
             sess.close()
