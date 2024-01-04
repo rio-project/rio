@@ -7,6 +7,7 @@ import { applyIcon } from '../designApplication';
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { DebuggerConnectorComponent } from './debuggerConnector';
+import { ScrollContainerComponent } from './scrollContainer';
 
 export type ComponentTreeState = ComponentState & {
     _type_: 'ComponentTree-builtin';
@@ -133,7 +134,10 @@ export class ComponentTreeComponent extends ComponentBase {
     /// components.
     getDisplayedRootComponent(): ComponentBase {
         let actualRoot = getRootComponent();
-        let userRoot = componentsById[actualRoot.state.child]!;
+        let rootScroller = componentsById[
+            actualRoot.state.child
+        ]! as ScrollContainerComponent;
+        let userRoot = componentsById[rootScroller.state.child]!;
         return userRoot;
     }
 
