@@ -14,10 +14,6 @@ class Outliner(rio.Component):
     def build(self) -> rio.Component:
         docs_page = self.session.active_page_instances[0]
 
-        print()
-        for child in docs_page.children:
-            print(child.page_url)
-
         if not docs_page.children:
             return rio.Spacer(width=0, height=0)
 

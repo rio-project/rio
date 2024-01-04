@@ -3,14 +3,16 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import article, articles
+from . import article_models, articles
 
 __all__ = [
     "DOCUMENTATION_STRUCTURE",
 ]
 
 
-ArticleType: TypeAlias = Union[Tuple[str, str, Callable[[], article.Article]], Type]
+ArticleType: TypeAlias = Union[
+    Tuple[str, str, Callable[[], article_models.BuiltArticle]], Type
+]
 SectionType: TypeAlias = Union[Tuple[str, Tuple[ArticleType, ...]], None]
 
 
@@ -200,13 +202,19 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
 # - Article generation function, or `Component` class
 def _compute_linear() -> (
     Tuple[
-        Tuple[str, str, str, Union[Callable[[], article.Article], Type[rio.Component]]],
+        Tuple[
+            str,
+            str,
+            str,
+            Union[Callable[[], article_models.BuiltArticle], Type[rio.Component]],
+        ],
         ...,
     ]
 ):
     result = []
 
     for section in DOCUMENTATION_STRUCTURE:
+        print(section)
         # `None` is used to represent whitespace
         if section is None:
             continue
@@ -218,16 +226,15 @@ def _compute_linear() -> (
         # article), or a rio `Component`
         for art in arts:
             if isinstance(art, tuple):
-                for art in arts:
-                    name, url_segment, generate_article = art  # type: ignore
-                    result.append((url_segment, section_title, name, generate_article))
+                name, url_segment, generate_article = art  # type: ignore
+                result.append((url_segment, section_title, name, generate_article))
 
             else:
                 assert inspect.isclass(art), art
+                name = art.__name__  # type: ignore
+                result.append((name.lower(), section_title, name, art))
 
-                for art in arts:
-                    name = art.__name__  # type: ignore
-                    result.append((name.lower(), section_title, name, art))
+    print(result)
 
     return tuple(result)
 

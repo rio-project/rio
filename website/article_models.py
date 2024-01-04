@@ -3,7 +3,9 @@ Contains helpers for creating articles on the website. Articles are represented
 as sequences of `Union[rio.Component, str]`. Strings are rendered as markdown.
 """
 
+from abc import ABC, abstractmethod
 from typing import *  # type: ignore
+from typing import Type
 
 import rio
 import rio.snippets
@@ -15,7 +17,7 @@ from . import components as comps
 from . import theme
 
 
-class Article:
+class BuiltArticle:
     def __init__(
         self,
         *,
@@ -62,7 +64,7 @@ class Article:
                 text,
                 style=style,
                 # Match the alignment of `MarkdownView`
-                align_x=None if style == "text" else 0,
+                align_x=0.5 if style == "text" else 0,
             )
         )
 
@@ -247,7 +249,7 @@ def _str_function_signature(
 
 
 def _append_method_docs_to_article(
-    art: Article,
+    art: BuiltArticle,
     docs: docmodels.ClassDocs,
     *,
     filter: Callable[[docmodels.FunctionDocs], bool] = lambda _: True,
@@ -308,7 +310,7 @@ def _append_method_docs_to_article(
 
 
 def _append_field_docs_to_article(
-    art: Article,
+    art: BuiltArticle,
     docs: docmodels.ClassDocs,
 ) -> None:
     # Are there any fields to document?
@@ -341,7 +343,7 @@ def _append_field_docs_to_article(
 
 
 def _append_heading_and_short_description(
-    art: Article,
+    art: BuiltArticle,
     heading: str,
     short_description: Optional[str],
 ) -> None:
@@ -376,8 +378,8 @@ def _append_heading_and_short_description(
     )
 
 
-def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
-    art = Article()
+def create_class_api_docs(docs: docmodels.ClassDocs) -> BuiltArticle:
+    art = BuiltArticle()
 
     # Heading / short description
     _append_heading_and_short_description(
@@ -406,8 +408,8 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> Article:
 def create_component_api_docs(
     docs: docmodels.ClassDocs,
     interactive_example: Optional[Callable[[], rio.Component]],
-) -> Article:
-    art = Article()
+) -> BuiltArticle:
+    art = BuiltArticle()
 
     # Heading / short description
     _append_heading_and_short_description(
@@ -451,3 +453,34 @@ def create_component_api_docs(
     )
 
     return art
+
+
+class ArticleBuilder(ABC):
+    def __init__(self, title: str, url_segment: str):
+        self.title = title
+        self.url_segment = url_segment
+
+    @abstractmethod
+    def build(self) -> BuiltArticle:
+        raise NotImplementedError()
+
+
+class ApiDocsArticle(ArticleBuilder):
+    def __init__(self, component_class: Type):
+        super().__init__(
+            component_class.__name__,
+            component_class.__name__.lower(),
+        )
+
+        self.component_class = component_class
+
+    def build(self) -> BuiltArticle:
+        result = BuiltArticle()
+
+        result.markdown(
+            f"""
+# TODO: {self.title}
+        """
+        )
+
+        return result
