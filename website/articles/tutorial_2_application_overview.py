@@ -1,10 +1,10 @@
 import rio
 
-from .. import article
+from .. import article_models
 
 
-def generate() -> article.Article:
-    result = article.Article()
+def generate() -> article_models.BuiltArticle:
+    result = article_models.BuiltArticle()
 
     result.markdown(
         """

@@ -6,7 +6,7 @@ import rio
 import rio.debug
 import rio_docs
 
-from . import article
+from . import article_models
 from . import components as comps
 from . import pages, structure, theme
 
@@ -50,7 +50,7 @@ def get_docs(component_class: Type) -> rio.Component:
     if issubclass(component_class, rio.Component):
         rio_docs.custom.postprocess_component_docs(docs)
 
-        art = article.create_component_api_docs(
+        art = article_models.create_component_api_docs(
             docs,
             example,
         )
@@ -58,7 +58,7 @@ def get_docs(component_class: Type) -> rio.Component:
     else:
         rio_docs.custom.postprocess_class_docs(docs)
 
-        art = article.create_class_api_docs(docs)
+        art = article_models.create_class_api_docs(docs)
 
     return art.build()
 
