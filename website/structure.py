@@ -214,7 +214,6 @@ def _compute_linear() -> (
     result = []
 
     for section in DOCUMENTATION_STRUCTURE:
-        print(section)
         # `None` is used to represent whitespace
         if section is None:
             continue
@@ -233,8 +232,6 @@ def _compute_linear() -> (
                 assert inspect.isclass(art), art
                 name = art.__name__  # type: ignore
                 result.append((name.lower(), section_title, name, art))
-
-    print(result)
 
     return tuple(result)
 
