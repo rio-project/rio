@@ -324,6 +324,7 @@ export class SwitcherBarComponent extends ComponentBase {
 
         // Nope, get going
         this.lastAnimationTickAt = Date.now();
+        this.markerCurVelocity = 0;
         this.animationWorker();
     }
 

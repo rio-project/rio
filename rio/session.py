@@ -581,7 +581,6 @@ class Session(unicall.Unicall):
 
         # Normalize the target URL. Having it always be lowercase helps the user
         # avoid navigation problems because of casing issues.
-        target_url = ""
         if isinstance(target_url, rio.URL):
             target_url = str(target_url)
 
@@ -609,8 +608,6 @@ window.location.href = {json.dumps(str(target_url))};
 
             self.create_task(history_worker(), name="history worker")
             return
-
-        print(f"Cur: {self.active_page_url} -> {target_url_absolute} ({target_url})")
 
         # Is any guard opposed to this page?
         active_page_instances, active_page = routing.check_page_guards(
