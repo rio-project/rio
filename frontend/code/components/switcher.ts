@@ -57,6 +57,8 @@ export class SwitcherComponent extends ComponentBase {
                     null,
                     this.activeChildContainer
                 );
+                this.activeChildContainer.remove();
+
                 this.activeChildContainer = null;
                 this.activeChildInstance = null;
             }
@@ -197,9 +199,6 @@ export class SwitcherComponent extends ComponentBase {
             }
 
             this.isDeterminingLayout = false;
-
-            this.finalChildWidth = this.allocatedWidth;
-            this.finalChildHeight = this.allocatedHeight;
 
             if (this.hasBeenLaidOut) {
                 if (this.animationStartedAt === -1) {
