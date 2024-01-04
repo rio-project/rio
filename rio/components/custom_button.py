@@ -126,6 +126,7 @@ class CustomButton(component_base.Component):
         # Prepare the child
         child = rio.Text(
             self.child,
+            selectable=False,  # Make sure the child can be clicked-through
             style=text_style,
             margin=0.3,
         )

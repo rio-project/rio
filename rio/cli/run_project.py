@@ -2,6 +2,7 @@ import asyncio
 import html
 import importlib
 import json
+import logging
 import signal
 import socket
 import sys
@@ -29,6 +30,16 @@ try:
     import webview  # type: ignore
 except ImportError:
     webview = None
+
+
+# There is a hillarious problem with `watchfiles`: When a change occurs,
+# `watchfiles` logs that change. If Python is configured to log into the project
+# directory, then `watchfiles` will pick up on that new log line, thus
+# triggering another change. Infinite loop, here we come!
+#
+# -> STFFU, watchfiles!
+logging.getLogger("watchfiles").setLevel(logging.CRITICAL + 1)
+
 
 LOGO_TEXT = r"""  _____  _
  |  __ \(_)
@@ -399,7 +410,11 @@ class RunningApp:
         """
         Watch the project directory for changes and report them as events.
         """
-        async for changes in watchfiles.awatch(self.proj.project_directory):
+        filter = watchfiles.PythonFilter()
+
+        async for changes in watchfiles.awatch(
+            self.proj.project_directory, watch_filter=filter
+        ):
             for change, path in changes:
                 path = Path(path)
 

@@ -105,6 +105,28 @@ export abstract class ComponentBase {
         }
     }
 
+    private unparent(latentComponents: Set<ComponentBase>): void {
+        // Remove this component from its parent
+        console.assert(this.parent !== null);
+        this.parent!.children.delete(this);
+        latentComponents.add(this);
+    }
+
+    private registerChild(
+        latentComponents: Set<ComponentBase>,
+        child: ComponentBase
+    ): void {
+        // Remove the child from its previous parent
+        if (child.parent !== null) {
+            child.parent.children.delete(child);
+        }
+
+        // Add it to this component
+        child.parent = this;
+        this.children.add(child);
+        latentComponents.delete(child);
+    }
+
     replaceOnlyChild(
         latentComponents: Set<ComponentBase>,
         childId: null | undefined | ComponentId,
@@ -123,8 +145,7 @@ export abstract class ComponentBase {
                 let child = getComponentByElement(currentChildElement);
 
                 currentChildElement.remove();
-                this.children.delete(child);
-                latentComponents.add(child);
+                child.unparent(latentComponents);
 
                 this.makeLayoutDirty();
             }
@@ -145,17 +166,14 @@ export abstract class ComponentBase {
             }
 
             currentChildElement.remove();
-            this.children.delete(child);
-            latentComponents.add(child);
+            child.unparent(latentComponents);
         }
 
         // Add the replacement component
         let child = componentsById[childId]!;
         parentElement.appendChild(child.element);
 
-        child.parent = this;
-        this.children.add(child);
-        latentComponents.delete(child);
+        this.registerChild(latentComponents, child);
 
         this.makeLayoutDirty();
     }
@@ -200,9 +218,7 @@ export abstract class ComponentBase {
                     let child = children[curIndex];
 
                     parentElement.appendChild(wrap(child.element));
-                    child.parent = this;
-                    this.children.add(child);
-                    latentComponents.delete(child);
+                    this.registerChild(latentComponents, child);
 
                     dirty = true;
                     curIndex++;
@@ -219,8 +235,7 @@ export abstract class ComponentBase {
                     curElement.remove();
 
                     let child = getComponentByElement(unwrap(curElement));
-                    latentComponents.add(child);
-                    this.children.delete(child);
+                    child.unparent(latentComponents);
 
                     dirty = true;
                     curElement = nextElement;
@@ -240,9 +255,7 @@ export abstract class ComponentBase {
             // This element is not the correct element, insert the correct one
             // instead
             parentElement.insertBefore(wrap(expectedChild.element), curElement);
-            expectedChild.parent = this;
-            this.children.add(expectedChild);
-            latentComponents.delete(expectedChild);
+            this.registerChild(latentComponents, expectedChild);
 
             curIndex++;
             dirty = true;
