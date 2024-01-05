@@ -1,5 +1,5 @@
 $node-padding: 0.7rem;
-$port-size: 1rem;
+$port-size: 0.7rem;
 
 html,
 body {
@@ -44,6 +44,8 @@ body {
 }
 
 .rio-node-editor-node-header {
+    user-select: none;
+
     font-weight: bold;
     text-align: center;
     padding: 0.3rem $node-padding 0.3rem $node-padding;
