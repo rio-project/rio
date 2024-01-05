@@ -714,11 +714,7 @@ class AppServer(fastapi.FastAPI):
 
         for raw_locale_string in initial_message.preferred_languages:
             try:
-                preferred_locales.append(
-                    babel.Locale.parse(
-                        raw_locale_string.replace("-", "_"),
-                    )
-                )
+                preferred_locales.append(babel.Locale.parse(raw_locale_string, sep="-"))
             except ValueError:
                 pass
 
