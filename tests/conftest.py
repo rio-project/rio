@@ -1,7 +1,6 @@
 import asyncio
 from typing import *  # type: ignore
 
-import babel
 import pytest
 from uniserde import Jsonable
 
@@ -46,7 +45,8 @@ def enable_component_instantiation():
         rio.URL("https://unit.test"),
     )
     session.external_url = None
-    session.preferred_locales = (babel.Locale.parse("en_US"),)
+    session._decimal_separator = "."
+    session._thousands_separator = ","
     session._send_message = _fake_send_message
     session._receive_message = _fake_receive_message
 

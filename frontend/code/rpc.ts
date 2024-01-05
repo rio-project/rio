@@ -74,8 +74,9 @@ export function initWebsocket(): void {
     websocket.addEventListener('open', sendInitialMessage);
 }
 
+/// Send the initial message with user information to the server
 function sendInitialMessage(): void {
-    // Send the initial message with user information to the server
+    // User Settings
     let userSettings = {};
     for (let key in localStorage) {
         if (!key.startsWith('rio:userSetting:')) {
@@ -91,10 +92,18 @@ function sendInitialMessage(): void {
         }
     }
 
+    // Locale information:
+    // - Decimal separator
+    // - Thousands separator
+    let decimalSeparator = (1.1).toLocaleString().replace('1', '');
+    let thousandsSeparator = (1111).toLocaleString().replace('1', '');
+
     sendMessageOverWebsocket({
         websiteUrl: window.location.href,
         preferredLanguages: navigator.languages,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        decimalSeparator: decimalSeparator,
+        thousandsSeparator: thousandsSeparator,
         userSettings: userSettings,
         prefersLightTheme: !window.matchMedia('(prefers-color-scheme: dark)')
             .matches,

@@ -56,10 +56,6 @@ class NewSwitchPanel(rio.Component):
 
 class RootComponent(rio.Component):
     def build(self) -> rio.Component:
-        return OldSwitchPanel(
-            "foo",
-            rio.Text("foo"),
-        )
         return rio.Drawer(
             anchor=rio.Column(
                 rio.Button("fooo"),

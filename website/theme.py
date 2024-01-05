@@ -7,7 +7,8 @@ from . import common
 THEME = rio.Theme.from_color(
     # primary_color=rio.Color.from_rgb(0.9, 0.7, 0),
     # neutral_color=rio.Color.from_hex("0f052f"),
-    # light=False
+    # neutral_color=rio.Color.from_hex("0f052f"),
+    # light=False,
 )
 
 
