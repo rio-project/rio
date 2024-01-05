@@ -15,7 +15,6 @@ import weakref
 from datetime import timedelta
 from typing import *  # type: ignore
 
-import babel
 import fastapi
 import pytz
 import timer_dict
@@ -64,6 +63,8 @@ class InitialClientMessage(uniserde.Serde):
     website_url: str
     preferred_languages: List[str]
     timezone: str
+    decimal_separator: str
+    thousands_separator: str
     user_settings: Dict[str, Any]
     prefers_light_theme: bool
 
@@ -709,19 +710,22 @@ class AppServer(fastapi.FastAPI):
         sess.window_width = initial_message.window_width
         sess.window_height = initial_message.window_height
 
-        # Parse the preferred locales
-        preferred_locales: List[babel.Locale] = []
+        # Get locale information
+        if len(initial_message.decimal_separator) != 1:
+            logging.warning(
+                f'Client sent invalid decimal separator "{initial_message.decimal_separator}". Using "." instead.'
+            )
+            sess._decimal_separator = "."
+        else:
+            sess._decimal_separator = initial_message.decimal_separator
 
-        for raw_locale_string in initial_message.preferred_languages:
-            try:
-                preferred_locales.append(babel.Locale.parse(raw_locale_string, sep="-"))
-            except ValueError:
-                pass
-
-        if not preferred_locales:
-            preferred_locales.append(babel.Locale.parse("en"))
-
-        sess.preferred_locales = tuple(preferred_locales)
+        if len(initial_message.thousands_separator) > 1:
+            logging.warning(
+                f'Client sent invalid thousands separator "{initial_message.thousands_separator}". Using "" instead.'
+            )
+            sess._thousands_separator = ""
+        else:
+            sess._thousands_separator = initial_message.thousands_separator
 
         # Parse the timezone
         try:

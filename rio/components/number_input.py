@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-import babel.numbers
 
 import rio
 
@@ -94,14 +93,16 @@ class NumberInput(component_base.Component):
         """
 
         # Strip the number down as much as possible
-        locale = self.session.preferred_locales[0]
         raw_value = raw_value.strip()
+
+        try:
+            raw_value = raw_value.replace(self.session._thousands_separator, "")
+        except KeyError:
+            pass
 
         # Try to parse the value
         if not raw_value:
             return False
-
-        decimals = self.decimals
 
         # Check for a multiplier suffix
         suffix = raw_value[-1].lower()
@@ -117,13 +118,9 @@ class NumberInput(component_base.Component):
 
         # Try to parse the number
         try:
-            if self.decimals == 0:
-                value = babel.numbers.parse_number(raw_value, locale)
-            else:
-                value = float(
-                    babel.numbers.parse_decimal(raw_value, locale, strict=True)
-                )
-        except babel.numbers.NumberFormatError:
+            value = float(raw_value.replace(self.session._thousands_separator, "."))
+        except ValueError:
+            self.value = self.value  # Force the old value to stay
             return False
 
         # Apply the multiplier
@@ -132,7 +129,7 @@ class NumberInput(component_base.Component):
         # Limit the number of decimals
         #
         # Ensure the value is an integer, if the number of decimals is 0
-        value = round(value, None if decimals == 0 else decimals)
+        value = round(value, None if self.decimals == 0 else self.decimals)
 
         # Clamp the value
         minimum = self.minimum
@@ -167,17 +164,26 @@ class NumberInput(component_base.Component):
 
     def build(self) -> rio.Component:
         # Format the number
-        locale = self.session.preferred_locales[0]
-
-        decimals = self.decimals
-        if decimals == 0:
-            value_str = babel.numbers.format_number(self.value, locale)
+        value_str = f"{self.value:.{self.decimals}f}"
+        if self.decimals == 0:
+            int_str, frac_str = value_str, ""
         else:
-            value_str = babel.numbers.format_decimal(
-                self.value,
-                "#,##0." + "#" * decimals,
-                locale,
-            )
+            int_str, frac_str = value_str.split(".")
+
+        # Add thousands separators
+        groups = []
+        while len(int_str) > 3:
+            groups.append(int_str[-3:])
+            int_str = int_str[:-3]
+
+        groups.append(int_str)
+        int_str = self.session._thousands_separator.join(reversed(groups))
+
+        # Join the strings
+        if self.decimals == 0:
+            value_str = int_str
+        else:
+            value_str = int_str + self.session._decimal_separator + frac_str
 
         # Build the component
         self._text_input = rio.TextInput(

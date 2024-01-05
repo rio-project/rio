@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     import fastapi
 
 import aiofiles
-import babel
 import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc
@@ -242,10 +241,10 @@ class Session(unicall.Unicall):
         # been created
         self._root_component: "root_components.HighLevelRootComponent"
         self.external_url: Optional[str]  # None if running in a window
-        self.preferred_locales: Tuple[
-            babel.Locale, ...
-        ]  # Always has at least one member
         self.timezone: tzinfo
+
+        self._decimal_separator: str  # == 1 character
+        self._thousands_separator: str  # <= 1 character
 
         self.window_width: float
         self.window_height: float
