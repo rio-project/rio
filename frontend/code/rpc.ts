@@ -95,8 +95,8 @@ function sendInitialMessage(): void {
     // Locale information:
     // - Decimal separator
     // - Thousands separator
-    let decimalSeparator = (1.1).toLocaleString().replace('1', '');
-    let thousandsSeparator = (1111).toLocaleString().replace('1', '');
+    let decimalSeparator = (1.1).toLocaleString().replace(/1/g, '');
+    let thousandsSeparator = (1111).toLocaleString().replace(/1/g, '');
 
     sendMessageOverWebsocket({
         websiteUrl: window.location.href,

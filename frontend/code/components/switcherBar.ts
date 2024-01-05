@@ -12,7 +12,7 @@ const ACCELERATION: number = 350; // rem/s^2
 const MARKER_FADE_DURATION: number = 0.18; // s
 
 // Whitespace around each option
-const OPTION_MARGIN: number = 0.5;
+const OPTION_MARGIN: number = 0.35;
 
 // Width & height of the SVG in each option
 const ICON_HEIGHT: number = 1.8;
