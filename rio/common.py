@@ -200,6 +200,15 @@ def choose_free_port(host: str) -> int:
         return sock.getsockname()[1]
 
 
+def port_is_free(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        try:
+            sock.bind((host, port))
+            return True
+        except OSError as err:
+            return False
+
+
 def ensure_valid_port(host: str, port: Optional[int]) -> int:
     if port is None:
         return choose_free_port(host)
