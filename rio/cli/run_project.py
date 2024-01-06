@@ -100,22 +100,6 @@ def make_traceback_html(
 """
 
 
-def make_traceback_app(
-    err: Union[str, BaseException], project_directory: Path
-) -> rio.App:
-    """
-    Creates an app that displays the given error message.
-    """
-    html = make_traceback_html(err=err, project_directory=project_directory)
-
-    def build() -> rio.Component:
-        return rio.Html(html)
-
-    return rio.App(
-        build=build,
-    )
-
-
 class RunningApp:
     def __init__(
         self,
@@ -164,6 +148,12 @@ class RunningApp:
         # If a webview is being displayed, this is the window
         self._webview_window: Optional["webview.Window"] = None  # type: ignore
 
+        # The app to use for creating apps. This keeps the theme consistent if
+        # for-example the user's app crashes and then a mock-app is injected.
+        self._app_theme: Union[
+            rio.Theme, Tuple[rio.Theme, rio.Theme]
+        ] = rio.Theme.from_color()
+
         # A list of worker tasks that must shut down gracefully. That means the
         # asyncio event loop mustn't stop running until these tasks are done.
         self._workers: list[asyncio.Task] = []
@@ -186,6 +176,24 @@ class RunningApp:
             local_ip = "127.0.0.1"
 
         return f"http://{local_ip}:{self._port}"
+
+    def make_traceback_app(
+        self,
+        err: Union[str, BaseException],
+        project_directory: Path,
+    ) -> rio.App:
+        """
+        Creates an app that displays the given error message.
+        """
+        html = make_traceback_html(err=err, project_directory=project_directory)
+
+        def build() -> rio.Component:
+            return rio.Html(html)
+
+        return rio.App(
+            build=build,
+            theme=self._app_theme,
+        )
 
     def _create_worker(
         self, worker_coro: Coroutine, *, name: str | None = None
@@ -331,8 +339,16 @@ class RunningApp:
         print("Starting")
 
         # Find a port to run on
+        #
+        # Prefer to consistently run on the same port, as that makes it easier
+        # to connect to - this way old browser tabs don't get invalidated constantly.
         if self._port is None:
-            self._port = common.choose_free_port(self._host)
+            if common.port_is_free(self._host, 8000):
+                self._port = 8000
+            else:
+                self._port = common.choose_free_port(self._host)
+
+        # If a port is specified, use that. Just make sure it's free.
         else:
             if not common.ensure_valid_port(self._host, self._port):
                 error(f"The port [bold]{self._port}[/] is already in use.")
@@ -479,6 +495,9 @@ class RunningApp:
             error(message)
             return message
 
+        # Remember the app's theme
+        self._app_theme = app._theme
+
         # Explicitly set the asset directory because it can't reliably be
         # auto-detected
         module_path = self.proj.module_path
@@ -527,7 +546,7 @@ window.setConnectionLostPopupVisible(true);
             if self._uvicorn_server is not None:
                 self._spawn_traceback_popups(app)
 
-            app = make_traceback_app(app, self.proj.project_directory)
+            app = self.make_traceback_app(app, self.proj.project_directory)
 
         # Already running - restart it
         if self._uvicorn_task is not None:
@@ -596,7 +615,12 @@ window.setConnectionLostPopupVisible(true);
         assert self._uvicorn_server is None, "Can't start the server twice"
         assert self._app_server is None, "Can't start the server twice"
 
+        def start_callback() -> None:
+            print("Debug: Internal on app start")
+            self._run_in_mainloop(app_has_started_event.set)
+
         # Create the app server
+        print("Debug: As fastapi")
         app_server = app._as_fastapi(
             debug_mode=self.debug_mode,
             running_in_window=self.run_in_window,
@@ -605,6 +629,7 @@ window.setConnectionLostPopupVisible(true);
                 app_has_started_event.set
             ),
         )
+        print("Debug: After as fastapi")
 
         assert isinstance(app_server, rio.app_server.AppServer), app_server
         self._app_server = app_server
@@ -696,4 +721,4 @@ window.setConnectionLostPopupVisible(true);
             asyncio.create_task(
                 evaljs_as_coroutine(sess),
                 name=f"Eval JS in session {sess._session_token}",
-            )
+            )  #
