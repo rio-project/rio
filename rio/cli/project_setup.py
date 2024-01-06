@@ -236,7 +236,6 @@ def create_project(
         f.write(f"[app]\n")
         f.write(f'app_type = "{type}"  # This is either "website" or "app"\n')
         f.write(f'main_module = "{python_name}"  # The name of your Python module\n')
-        f.write(f'app_variable = "app"  # The name of your `rio.App` variable\n')
 
     # Create the main module and its subdirectories
     main_module_dir = project_dir / python_name

@@ -7,8 +7,6 @@ type NodeGraphState = {
 type NodeState = {
     id: number;
     title: string;
-    inputs: string[];
-    outputs: string[];
     left: number;
     top: number;
 };
@@ -116,83 +114,32 @@ class DevelComponent {
                 let childId = deltaState.children[ii];
                 let rawNode: NodeState = {
                     id: ii,
-                    title: `Node ${childId}`,
-                    inputs: ['Input 1', 'Input 2'],
-                    outputs: ['Output 1'],
+                    title: `Node ${ii}`,
                     left: 10 + ii * 10,
                     top: 10 + ii * 10,
                 };
 
-                let nodeElement = this._makeNode(rawNode);
+                let nodeElement = this._makeNode(rawNode, childId);
                 let augmentedNode = rawNode as AugmentedNodeState;
                 augmentedNode.element = nodeElement;
                 this.graphStore.addNode(augmentedNode);
             }
 
             // Connect them
-            requestAnimationFrame(() => {
-                for (let ii = 0; ii < deltaState.children.length - 1; ii++) {
-                    let rawConn: ConnectionState = {
-                        id: ii,
-                        fromNode: ii,
-                        fromPort: 'Output 1',
-                        toNode: ii + 1,
-                        toPort: 'Input 1',
-                    };
+            // requestAnimationFrame(() => {
+            //     for (let ii = 0; ii < deltaState.children.length - 1; ii++) {
+            //         let rawConn: ConnectionState = {
+            //             id: ii,
+            //             fromNode: ii,
+            //             fromPort: 'Output 1',
+            //             toNode: ii + 1,
+            //             toPort: 'Input 1',
+            //         };
 
-                    let augmentedConn = this._makeConnection(rawConn);
-                    this.graphStore.addConnection(augmentedConn);
-                }
-            });
-        }
-    }
-
-    debugInit(): void {
-        // Create some nodes
-        let rawNodes: NodeState[] = [
-            {
-                id: 1,
-                title: 'Test Node',
-                inputs: ['Input 1', 'Input 2'],
-                outputs: ['Output 1'],
-                left: 5,
-                top: 5,
-            },
-            {
-                id: 2,
-                title: 'Test Node 2',
-                inputs: ['Input 1', 'Input 2'],
-                outputs: ['Output 1'],
-                left: 20,
-                top: 20,
-            },
-        ];
-
-        let rawConnections: ConnectionState[] = [
-            {
-                id: 1,
-                fromNode: 1,
-                fromPort: 'Output 1',
-                toNode: 2,
-                toPort: 'Input 1',
-            },
-        ];
-
-        // Create all nodes and add them to the graph store
-        this.graphStore = new GraphStore();
-
-        for (let node of rawNodes) {
-            let nodeElement = this._makeNode(node);
-
-            let augmentedNode = node as AugmentedNodeState;
-            augmentedNode.element = nodeElement;
-            this.graphStore.addNode(augmentedNode);
-        }
-
-        // Same again, for connections
-        for (let conn of rawConnections) {
-            let augmentedConn = this._makeConnection(conn);
-            this.graphStore.addConnection(augmentedConn);
+            //         let augmentedConn = this._makeConnection(rawConn);
+            //         this.graphStore.addConnection(augmentedConn);
+            //     }
+            // });
         }
     }
 
@@ -320,7 +267,23 @@ class DevelComponent {
         this.latentConnectionPath = null;
     }
 
-    _makeNode(nodeState: NodeState): HTMLElement {
+    _makeshiftReplaceOnlyChild(
+        childId: string,
+        parentElement: HTMLElement
+    ): void {
+        // TODO
+        // @ts-ignore
+        let child = componentsById[childId]!;
+        parentElement.appendChild(child.element);
+
+        // @ts-ignore
+        child.parent = this.rioWrapper;
+
+        // @ts-ignore
+        this.rioWrapper.children.add(child);
+    }
+
+    _makeNode(nodeState: NodeState, childId: string): HTMLElement {
         // Build the node HTML
         const nodeElement = document.createElement('div');
         nodeElement.dataset.nodeId = nodeState.id.toString();
@@ -339,65 +302,68 @@ class DevelComponent {
         nodeElement.appendChild(header);
 
         // Body
-        const body = document.createElement('div');
-        body.classList.add('rio-node-editor-node-body');
-        nodeElement.appendChild(body);
+        const nodeBody = document.createElement('div');
+        nodeBody.classList.add('rio-node-editor-node-body');
+        nodeElement.appendChild(nodeBody);
+
+        // Content
+        this._makeshiftReplaceOnlyChild(childId, nodeBody);
 
         // Inputs
-        for (let input of nodeState.inputs) {
-            const portElement = document.createElement('div');
-            portElement.classList.add(
-                'rio-node-editor-port',
-                'rio-node-editor-input'
-            );
-            body.appendChild(portElement);
+        // for (let input of nodeState.inputs) {
+        //     const portElement = document.createElement('div');
+        //     portElement.classList.add(
+        //         'rio-node-editor-port',
+        //         'rio-node-editor-input'
+        //     );
+        //     body.appendChild(portElement);
 
-            const circleElement = document.createElement('div');
-            portElement.appendChild(circleElement);
+        //     const circleElement = document.createElement('div');
+        //     portElement.appendChild(circleElement);
 
-            const labelElement = document.createElement('div');
-            labelElement.innerText = input;
-            labelElement.classList.add('rio-node-editor-port-label');
-            portElement.appendChild(labelElement);
+        //     const labelElement = document.createElement('div');
+        //     labelElement.innerText = input;
+        //     labelElement.classList.add('rio-node-editor-port-label');
+        //     portElement.appendChild(labelElement);
 
-            // Allow dragging the port
-            // @ts-ignore
-            this.rioWrapper.addDragHandler({
-                element: portElement,
-                onStart: (event: MouseEvent) =>
-                    this._beginDragConnection(true, circleElement, event),
-                onMove: (event: MouseEvent) => this._dragMoveConnection(event),
-                onEnd: (event: MouseEvent) => this._endDragConnection(event),
-            });
-        }
+        //     // Allow dragging the port
+        //     // @ts-ignore
+        //     this.rioWrapper.addDragHandler({
+        //         element: portElement,
+        //         onStart: (event: MouseEvent) =>
+        //             this._beginDragConnection(true, circleElement, event),
+        //         onMove: (event: MouseEvent) => this._dragMoveConnection(event),
+        //         onEnd: (event: MouseEvent) => this._endDragConnection(event),
+        //     });
+        // }
 
         // Outputs
-        for (let output of nodeState.outputs) {
-            // Create the port
-            const portElement = document.createElement('div');
-            portElement.classList.add(
-                'rio-node-editor-port',
-                'rio-node-editor-output'
-            );
-            body.appendChild(portElement);
+        // for (let output of nodeState.outputs) {
+        //     // Create the port
+        //     const portElement = document.createElement('div');
+        //     portElement.classList.add(
+        //         'rio-node-editor-port',
+        //         'rio-node-editor-output'
+        //     );
+        //     body.appendChild(portElement);
 
-            const circleElement = document.createElement('div');
-            portElement.appendChild(circleElement);
+        //     const circleElement = document.createElement('div');
+        //     portElement.appendChild(circleElement);
 
-            const labelElement = document.createElement('div');
-            labelElement.innerText = output;
-            portElement.appendChild(labelElement);
+        //     const labelElement = document.createElement('div');
+        //     labelElement.innerText = output;
+        //     portElement.appendChild(labelElement);
 
-            // Allow dragging the port
-            // @ts-ignore
-            this.rioWrapper.addDragHandler({
-                element: portElement,
-                onStart: (event: MouseEvent) =>
-                    this._beginDragConnection(false, circleElement, event),
-                onMove: (event: MouseEvent) => this._dragMoveConnection(event),
-                onEnd: (event: MouseEvent) => this._endDragConnection(event),
-            });
-        }
+        //     // Allow dragging the port
+        //     // @ts-ignore
+        //     this.rioWrapper.addDragHandler({
+        //         element: portElement,
+        //         onStart: (event: MouseEvent) =>
+        //             this._beginDragConnection(false, circleElement, event),
+        //         onMove: (event: MouseEvent) => this._dragMoveConnection(event),
+        //         onEnd: (event: MouseEvent) => this._endDragConnection(event),
+        //     });
+        // }
 
         // Allow dragging the node
         // @ts-ignore

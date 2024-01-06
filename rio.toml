@@ -2,7 +2,6 @@
 app_type = "website"
 # main_module = "tinytest"
 main_module = "website"
-app_variable = "app"
 
 [deploy]
 app_name = "my-app"
