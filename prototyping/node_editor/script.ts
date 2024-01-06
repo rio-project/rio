@@ -79,6 +79,17 @@ class DevelComponent {
 
     private graphStore: GraphStore;
 
+    // When clicking & dragging a port, a latent connection is created. This
+    // connection is already connected at one end (either start or end), but the
+    // change has not yet been committed to the graph store.
+    private latentConnectionStartElement: HTMLElement | null;
+    private latentConnectionEndElement: HTMLElement | null;
+    private latentConnectionPath: SVGPathElement | null;
+
+    // This may be null even if a port is currently being dragged, if the latent
+    // connection is new, rather than one that already existed on the graph.
+    private latentConnection: AugmentedConnectionState | null;
+
     // Constructor
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -150,7 +161,7 @@ class DevelComponent {
         }
     }
 
-    _beginDrag(
+    _beginDragNode(
         nodeState: NodeState,
         nodeElement: HTMLElement,
         event: MouseEvent
@@ -162,7 +173,7 @@ class DevelComponent {
         return true;
     }
 
-    _dragMove(
+    _dragMoveNode(
         nodeState: NodeState,
         nodeElement: HTMLElement,
         event: MouseEvent
@@ -183,13 +194,81 @@ class DevelComponent {
         }
     }
 
-    _endDrag(
+    _endDragNode(
         nodeState: NodeState,
         nodeElement: HTMLElement,
         event: MouseEvent
     ): void {
         // The node no longer needs to be on top
         nodeElement.style.removeProperty('z-index');
+    }
+
+    _beginDragConnection(
+        isInput: boolean,
+        portElement: HTMLElement,
+        event: MouseEvent
+    ): boolean {
+        // Create a latent connection
+        this.latentConnectionPath = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            'path'
+        ) as SVGPathElement;
+        this.latentConnectionPath.setAttribute('stroke', '#999');
+        this.latentConnectionPath.setAttribute('stroke-width', '0.2rem');
+        this.latentConnectionPath.setAttribute('fill', 'none');
+        this.latentConnectionPath.setAttribute('stroke-dasharray', '5,5');
+        this.svgChild.appendChild(this.latentConnectionPath);
+
+        if (isInput) {
+            this.latentConnectionStartElement = null;
+            this.latentConnectionEndElement = portElement;
+        } else {
+            this.latentConnectionStartElement = portElement;
+            this.latentConnectionEndElement = null;
+        }
+
+        // If a connection was already connected to this port, it is being
+        // dragged now.
+        this.latentConnection = null;
+        // TODO
+
+        // Accept the drag
+        return true;
+    }
+
+    _dragMoveConnection(event: MouseEvent): void {
+        // Update the latent connection
+        let x1, y1, x4, y4;
+
+        if (this.latentConnectionStartElement !== null) {
+            let startPoint =
+                this.latentConnectionStartElement!.getBoundingClientRect();
+            x1 = startPoint.left + startPoint.width * 0.5;
+            y1 = startPoint.top + startPoint.height * 0.5;
+
+            x4 = event.clientX;
+            y4 = event.clientY;
+        } else {
+            x1 = event.clientX;
+            y1 = event.clientY;
+
+            let endPoint =
+                this.latentConnectionEndElement!.getBoundingClientRect();
+            x4 = endPoint.left + endPoint.width * 0.5;
+            y4 = endPoint.top + endPoint.height * 0.5;
+        }
+
+        this._updateConnectionPath(this.latentConnectionPath!, x1, y1, x4, y4);
+    }
+
+    _endDragConnection(event: MouseEvent): void {
+        // Remove the latent connection
+        this.latentConnectionPath!.remove();
+
+        // Reset state
+        this.latentConnectionStartElement = null;
+        this.latentConnectionEndElement = null;
+        this.latentConnectionPath = null;
     }
 
     _makeNode(nodeState: NodeState): HTMLElement {
@@ -215,7 +294,7 @@ class DevelComponent {
         nodeElement.appendChild(body);
 
         // Inputs
-        nodeState.inputs.forEach((input) => {
+        for (let input of nodeState.inputs) {
             const portElement = document.createElement('div');
             portElement.classList.add(
                 'rio-node-editor-port',
@@ -230,10 +309,21 @@ class DevelComponent {
             labelElement.innerText = input;
             labelElement.classList.add('rio-node-editor-port-label');
             portElement.appendChild(labelElement);
-        });
+
+            // Allow dragging the port
+            // @ts-ignore
+            this.rioWrapper.addDragHandler({
+                element: portElement,
+                onStart: (event: MouseEvent) =>
+                    this._beginDragConnection(true, circleElement, event),
+                onMove: (event: MouseEvent) => this._dragMoveConnection(event),
+                onEnd: (event: MouseEvent) => this._endDragConnection(event),
+            });
+        }
 
         // Outputs
-        nodeState.outputs.forEach((output) => {
+        for (let output of nodeState.outputs) {
+            // Create the port
             const portElement = document.createElement('div');
             portElement.classList.add(
                 'rio-node-editor-port',
@@ -247,18 +337,28 @@ class DevelComponent {
             const labelElement = document.createElement('div');
             labelElement.innerText = output;
             portElement.appendChild(labelElement);
-        });
+
+            // Allow dragging the port
+            // @ts-ignore
+            this.rioWrapper.addDragHandler({
+                element: portElement,
+                onStart: (event: MouseEvent) =>
+                    this._beginDragConnection(false, circleElement, event),
+                onMove: (event: MouseEvent) => this._dragMoveConnection(event),
+                onEnd: (event: MouseEvent) => this._endDragConnection(event),
+            });
+        }
 
         // Allow dragging the node
         // @ts-ignore
         this.rioWrapper.addDragHandler({
             element: header,
             onStart: (event: MouseEvent) =>
-                this._beginDrag(nodeState, nodeElement, event),
+                this._beginDragNode(nodeState, nodeElement, event),
             onMove: (event: MouseEvent) =>
-                this._dragMove(nodeState, nodeElement, event),
+                this._dragMoveNode(nodeState, nodeElement, event),
             onEnd: (event: MouseEvent) =>
-                this._endDrag(nodeState, nodeElement, event),
+                this._endDragNode(nodeState, nodeElement, event),
         });
 
         return nodeElement;
@@ -305,21 +405,28 @@ class DevelComponent {
         const box2 = port2Element.getBoundingClientRect();
 
         // Calculate the start and end points
-        const x1 = box1.left + box1.width / 2;
-        const y1 = box1.top + box1.height / 2;
+        const x1 = box1.left + box1.width * 0.5;
+        const y1 = box1.top + box1.height * 0.5;
 
-        const x4 = box2.left + box2.width / 2;
-        const y4 = box2.top + box2.height / 2;
+        const x4 = box2.left + box2.width * 0.5;
+        const y4 = box2.top + box2.height * 0.5;
 
+        // Update the SVG path
+        this._updateConnectionPath(connectionState.element, x1, y1, x4, y4);
+    }
+
+    _updateConnectionPath(
+        connectionElement: SVGPathElement,
+        x1: number,
+        y1: number,
+        x4: number,
+        y4: number
+    ): void {
         // Control the curve's bend
         let signedDistance = x4 - x1;
 
-        let minVelocity = 4 * pixelsPerEm;
-        let maxVelocity = 15 * pixelsPerEm;
-
-        let velocity = signedDistance * 0.5;
-        velocity = Math.max(velocity, minVelocity);
-        velocity = Math.min(velocity, maxVelocity);
+        let velocity = Math.sqrt(Math.abs(signedDistance * 20));
+        velocity = Math.max(velocity, 2 * pixelsPerEm);
 
         // Calculate the intermediate points
         const x2 = x1 + velocity;
@@ -329,7 +436,7 @@ class DevelComponent {
         const y3 = y4;
 
         // Update the SVG path
-        connectionState.element.setAttribute(
+        connectionElement.setAttribute(
             'd',
             `M${x1} ${y1} C ${x2} ${y2}, ${x3} ${y3}, ${x4} ${y4}`
         );

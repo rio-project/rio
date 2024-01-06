@@ -1,5 +1,5 @@
 $node-padding: 0.7rem;
-$port-size: 0.7rem;
+$port-size: 1.4rem;
 
 html,
 body {
@@ -34,13 +34,14 @@ body {
     border-radius: var(--rio-global-corner-radius-small);
 
     background-color: var(--rio-local-plain-bg);
-    box-shadow: 0 0.2rem 0.5rem var(--rio-global-shadow-color);
+    box-shadow: 0 0rem 0rem var(--rio-global-shadow-color);
 
-    transition: box-shadow 0.15s ease-in-out;
+    transition: box-shadow 0.1s ease-in-out;
 }
 
 .rio-node-editor-node:hover {
-    box-shadow: 0 0.4rem 1.5rem var(--rio-global-shadow-color);
+    // background-color: var(--rio-local-plain-bg-variant);
+    box-shadow: 0 0.15rem 0.4rem var(--rio-global-shadow-color);
 }
 
 .rio-node-editor-node-header {
@@ -52,9 +53,17 @@ body {
 
     cursor: move;
 
-    background-color: green;
+    background-color: var(--rio-global-secondary-bg);
+    color: var(--rio-global-secondary-fg);
+
     border-radius: var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small) 0 0;
+
+    transition: background-color 0.1s ease-in-out;
+}
+
+.rio-node-editor-node:hover .rio-node-editor-node-header {
+    background-color: var(--rio-global-secondary-bg-variant);
 }
 
 .rio-node-editor-node-body {
@@ -67,25 +76,41 @@ body {
 }
 
 .rio-node-editor-port {
-    display: flex;
-    justify-content: center;
+    position: relative;
 }
 
 .rio-node-editor-port > *:first-child {
+    pointer-events: auto;
+    cursor: pointer;
+
     width: $port-size;
     height: $port-size;
 
-    cursor: pointer;
-
     aspect-ratio: 1/1;
-    background-color: green;
     border-radius: 50%;
-
-    transition: background-color 0.1s ease-in-out;
 }
 
-.rio-node-editor-port > *:first-child:hover {
-    background-color: lightgreen;
+.rio-node-editor-port > *:first-child::after {
+    pointer-events: none;
+
+    content: '';
+    position: absolute;
+    width: 0.75rem;
+    height: 0.75rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background-color: var(--rio-global-secondary-bg);
+
+    transition:
+        width 0.1s ease-in-out,
+        height 0.1s ease-in-out;
+}
+
+.rio-node-editor-port > *:first-child:hover::after {
+    width: 1rem;
+    height: 1rem;
 }
 
 .rio-node-editor-input {
@@ -95,7 +120,8 @@ body {
 .rio-node-editor-input > *:first-child {
     position: absolute;
     left: 0;
-    transform: translateX(calc($port-size * -0.5));
+    top: 50%;
+    transform: translate(calc($port-size * -0.5 - $node-padding), -50%);
 }
 
 .rio-node-editor-input > *:last-child {
@@ -104,13 +130,13 @@ body {
 
 .rio-node-editor-output {
     align-self: flex-end;
-    flex-direction: row-reverse;
 }
 
 .rio-node-editor-output > *:first-child {
     position: absolute;
     right: 0;
-    transform: translateX(calc($port-size * 0.5));
+    top: 50%;
+    transform: translate(calc($port-size * 0.5 + $node-padding), -50%);
 }
 
 .rio-node-editor-output > *:last-child {
