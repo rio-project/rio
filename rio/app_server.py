@@ -167,6 +167,7 @@ class AppServer(fastapi.FastAPI):
 
     @contextlib.asynccontextmanager
     async def _lifespan(self):
+        print("Debug: Start of the lifespan function")
         # If running as a server, periodically clean up expired sessions
         if not self.running_in_window:
             assert type(self) is AppServer  # Shut up pyright
@@ -197,6 +198,8 @@ class AppServer(fastapi.FastAPI):
         if self.internal_on_app_start is not None:
             self.internal_on_app_start()
 
+        print("Debug: Yielding from the lifespan function")
+
         try:
             yield
         finally:
@@ -211,6 +214,8 @@ class AppServer(fastapi.FastAPI):
                     traceback.print_exception(
                         type(result), result, result.__traceback__
                     )
+
+        print("Debug: End of the lifespan function")
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """

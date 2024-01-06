@@ -1,5 +1,9 @@
 let pixelsPerEm = 16;
 
+type NodeGraphState = {
+    children?: string[];
+};
+
 type NodeState = {
     id: number;
     title: string;
@@ -77,7 +81,7 @@ class DevelComponent {
     private htmlChild: HTMLElement;
     private svgChild: SVGSVGElement;
 
-    private graphStore: GraphStore;
+    private graphStore: GraphStore = new GraphStore();
 
     // When clicking & dragging a port, a latent connection is created. This
     // connection is already connected at one end (either start or end), but the
@@ -102,15 +106,46 @@ class DevelComponent {
         this.htmlChild = element.querySelector('div') as HTMLElement;
         this.svgChild = element.querySelector('svg') as SVGSVGElement;
 
-        // Populate the graph for debugging
-        requestAnimationFrame(() => {
-            this.debugInit();
-        });
-
         return element;
     }
 
-    updateElement(deltaState: object): void {}
+    updateElement(deltaState: NodeGraphState): void {
+        if (deltaState.children !== undefined) {
+            // Spawn all nodes
+            for (let ii = 0; ii < deltaState.children.length; ii++) {
+                let childId = deltaState.children[ii];
+                let rawNode: NodeState = {
+                    id: ii,
+                    title: `Node ${childId}`,
+                    inputs: ['Input 1', 'Input 2'],
+                    outputs: ['Output 1'],
+                    left: 10 + ii * 10,
+                    top: 10 + ii * 10,
+                };
+
+                let nodeElement = this._makeNode(rawNode);
+                let augmentedNode = rawNode as AugmentedNodeState;
+                augmentedNode.element = nodeElement;
+                this.graphStore.addNode(augmentedNode);
+            }
+
+            // Connect them
+            requestAnimationFrame(() => {
+                for (let ii = 0; ii < deltaState.children.length - 1; ii++) {
+                    let rawConn: ConnectionState = {
+                        id: ii,
+                        fromNode: ii,
+                        fromPort: 'Output 1',
+                        toNode: ii + 1,
+                        toPort: 'Input 1',
+                    };
+
+                    let augmentedConn = this._makeConnection(rawConn);
+                    this.graphStore.addConnection(augmentedConn);
+                }
+            });
+        }
+    }
 
     debugInit(): void {
         // Create some nodes
@@ -166,6 +201,11 @@ class DevelComponent {
         nodeElement: HTMLElement,
         event: MouseEvent
     ): boolean {
+        // Only care about left clicks
+        if (event.button !== 0) {
+            return false;
+        }
+
         // Make sure this node is on top
         nodeElement.style.zIndex = '1';
 
@@ -208,12 +248,21 @@ class DevelComponent {
         portElement: HTMLElement,
         event: MouseEvent
     ): boolean {
+        // Only care about left clicks
+        if (event.button !== 0) {
+            return false;
+        }
+
         // Create a latent connection
         this.latentConnectionPath = document.createElementNS(
             'http://www.w3.org/2000/svg',
             'path'
         ) as SVGPathElement;
-        this.latentConnectionPath.setAttribute('stroke', '#999');
+        this.latentConnectionPath.setAttribute(
+            'stroke',
+            'var(--rio-local-text-color)'
+        );
+        this.latentConnectionPath.setAttribute('stroke-opacity', '0.5');
         this.latentConnectionPath.setAttribute('stroke-width', '0.2rem');
         this.latentConnectionPath.setAttribute('fill', 'none');
         this.latentConnectionPath.setAttribute('stroke-dasharray', '5,5');
@@ -275,11 +324,12 @@ class DevelComponent {
         // Build the node HTML
         const nodeElement = document.createElement('div');
         nodeElement.dataset.nodeId = nodeState.id.toString();
-        nodeElement.classList.add('rio-node-editor-node');
+        nodeElement.classList.add(
+            'rio-node-editor-node',
+            'rio-switcheroo-neutral'
+        );
         nodeElement.style.left = `${nodeState.left}rem`;
         nodeElement.style.top = `${nodeState.top}rem`;
-        nodeElement.style.width = `$25rem`;
-        nodeElement.style.height = `$40rem`;
         this.htmlChild.appendChild(nodeElement);
 
         // Header
@@ -373,7 +423,8 @@ class DevelComponent {
             'path'
         ) as SVGPathElement;
 
-        svgPath.setAttribute('stroke', '#999');
+        svgPath.setAttribute('stroke', 'var(--rio-local-text-color)');
+        svgPath.setAttribute('stroke-opacity', '0.5');
         svgPath.setAttribute('stroke-width', '0.2rem');
         svgPath.setAttribute('fill', 'none');
         this.svgChild.appendChild(svgPath);

@@ -9,7 +9,13 @@ rio.DevelComponent.initialize(HERE)
 
 
 app = rio.App(
-    build=rio.DevelComponent,
+    build=lambda: rio.DevelComponent(
+        children=[
+            rio.Text("Child 1"),
+            rio.Text("Child 2"),
+        ],
+    ),
+    theme=rio.Theme.from_color(light=False),
 )
 
 app.run_as_web_server(
