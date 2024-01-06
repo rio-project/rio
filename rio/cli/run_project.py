@@ -480,20 +480,29 @@ class RunningApp:
             )
             return err
 
-        # Try to get the app variable
-        try:
-            app = getattr(app_module, self.proj.app_variable)
-        except AttributeError as err:
-            error(
-                f"Could not find the app variable `{self.proj.app_variable}` in `{self.proj.app_main_module}`"
-            )
-            return err
+        # Find the variable holding the Rio app
+        apps: List[Tuple[str, rio.App]] = []
+        for var_name, var in app_module.__dict__.items():
+            if isinstance(var, rio.App):
+                apps.append((var_name, var))
 
-        # Make sure the app is indeed a Rio app
-        if not isinstance(app, rio.App):
-            message = f"The app variable `{self.proj.app_variable}` in `{self.proj.app_main_module}` is not a Rio app, but `{type(app)}`"
+        if app_module.__file__ is None:
+            main_file_reference = f"Your app's main file"
+        else:
+            main_file_reference = f"The file `{Path(app_module.__file__).relative_to(self.proj.project_directory)}`"
+
+        if len(apps) == 0:
+            message = f"Cannot find your app. {main_file_reference} needs to to define a variable that is a Rio app. Something like `app = rio.App(...)`"
             error(message)
             return message
+
+        if len(apps) > 1:
+            variables_string = "`" + "`, `".join(var_name for var_name, _ in apps) + "`"
+            message = f"{main_file_reference} defines multiple Rio apps: {variables_string}. Please make sure there is exactly one."
+            error(message)
+            return message
+
+        app = apps[0][1]
 
         # Remember the app's theme
         self._app_theme = app._theme

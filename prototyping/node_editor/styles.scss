@@ -64,18 +64,26 @@ $port-size: 1.4rem;
     min-height: 3rem;
 
     padding: $node-padding;
-    margin-bottom: -0.1rem; // Make sure no stray pixels bleed at the corners
 
     border-radius: 0 0 var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small);
 
     background-color: var(--rio-local-plain-bg);
 
-    transition: margin-bottom 0.1s ease-in-out;
+    // By default, the margin is negative rather than just zero. This is to
+    // prevent the odd pixel peeping through when the node isn't hovered. These
+    // can be really obvious and distracting, since the body is neutrally
+    // colored, while the header is bright and colorful.
+    //
+    // This in turn makes animations awkward, as any amount of time causes a
+    // delay between the user's hover and the animation visibly starting, since
+    // the margin has to be transitioned from negative to zero first.
+    margin-bottom: -0.04rem;
+    transition: margin-bottom 0.07s ease-in-out;
 }
 
 .rio-node-editor-node:hover .rio-node-editor-node-body {
-    margin-bottom: 0.12rem;
+    margin-bottom: 0.15rem;
 }
 
 .rio-node-editor-port {

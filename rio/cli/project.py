@@ -172,10 +172,6 @@ class RioProject:
     def app_main_module(self) -> str:
         return self.get_key("app", "main_module", str, DEFAULT_FATAL)
 
-    @property
-    def app_variable(self) -> str:
-        return self.get_key("app", "app_variable", str, "app")
-
     @functools.cached_property
     def deploy_name(self) -> str:
         # Is a name already stored in the `rio.toml`?
