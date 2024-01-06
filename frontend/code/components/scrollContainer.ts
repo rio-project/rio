@@ -64,6 +64,12 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
+        if (this.state.scroll_x === 'never') {
+            let child = componentsById[this.state.child]!;
+            this.naturalWidth = child.requestedWidth;
+            return;
+        }
+
         this.naturalWidth = NATURAL_SIZE;
 
         // If there will be a vertical scroll bar, reserve space for it
@@ -91,6 +97,12 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
+        if (this.state.scroll_y === 'never') {
+            let child = componentsById[this.state.child]!;
+            this.naturalWidth = child.requestedWidth;
+            return;
+        }
+
         this.naturalHeight = NATURAL_SIZE;
 
         // If there will be a horizontal scroll bar, reserve space for it
