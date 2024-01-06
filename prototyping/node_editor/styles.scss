@@ -1,15 +1,6 @@
 $node-padding: 0.7rem;
 $port-size: 1.4rem;
 
-html,
-body {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    background: var(--rio-local-plain-bg-variant);
-}
-
 .rio-node-editor {
     height: 100%;
     width: 100%;
@@ -29,11 +20,10 @@ body {
 
     position: absolute;
     min-width: 8rem;
-    min-height: 12rem;
 
+    background-color: var(--rio-global-secondary-bg);
     border-radius: var(--rio-global-corner-radius-small);
 
-    background-color: var(--rio-local-plain-bg);
     box-shadow: 0 0rem 0rem var(--rio-global-shadow-color);
 
     transition: box-shadow 0.1s ease-in-out;
@@ -53,7 +43,6 @@ body {
 
     cursor: move;
 
-    background-color: var(--rio-global-secondary-bg);
     color: var(--rio-global-secondary-fg);
 
     border-radius: var(--rio-global-corner-radius-small)
@@ -72,7 +61,21 @@ body {
     align-items: stretch;
     gap: 0.5rem;
 
+    min-height: 3rem;
+
     padding: $node-padding;
+    margin-bottom: -0.1rem; // Make sure no stray pixels bleed at the corners
+
+    border-radius: 0 0 var(--rio-global-corner-radius-small)
+        var(--rio-global-corner-radius-small);
+
+    background-color: var(--rio-local-plain-bg);
+
+    transition: margin-bottom 0.1s ease-in-out;
+}
+
+.rio-node-editor-node:hover .rio-node-editor-node-body {
+    margin-bottom: 0.12rem;
 }
 
 .rio-node-editor-port {

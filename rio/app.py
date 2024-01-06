@@ -237,7 +237,7 @@ class App:
             build = rio.PageView
 
         if theme is None:
-            theme = rio.Theme.pair_from_color()
+            theme = rio.Theme.from_color()
 
         # The `main_file` isn't detected correctly if the app is launched via
         # `rio run`. We'll store the user input so that `rio run` can fix the

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import concurrent.futures
 import subprocess
 import tempfile
+from dataclasses import field
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -20,6 +22,42 @@ _JS_SOURCE: str = ""
 
 
 class DevelComponent(component_base.FundamentalComponent):
+    children: List[rio.Component] = field(default_factory=list)
+
+    def __init__(
+        self,
+        *,
+        children: Iterable[rio.Component],
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        super().__init__(
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
+
+        self.children = list(children)
+
     @classmethod
     def initialize(cls, directory_path: Path):
         global _SOURCE_DIRECTORY, _CSS_SOURCE, _JS_SOURCE
@@ -52,19 +90,27 @@ class DevelComponent(component_base.FundamentalComponent):
                 "Missing `script.ts` in `DevelComponent` source directory"
             )
 
-        # Compile the scss source
+        # Compile the two, in parallel
+        print("DevelComponent: Compiling `DevelComponent` component source")
         css_path = Path(tempfile.NamedTemporaryFile(suffix=".css", delete=False).name)
-        subprocess.run(["sass", str(scss_path), str(css_path)], check=True)
+        js_path = Path(tempfile.NamedTemporaryFile(suffix=".js", delete=False).name)
+
+        tasks = [
+            ("sass", str(scss_path), str(css_path)),
+            ("tsc", str(ts_path), "--outFile", str(js_path)),
+        ]
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for task in tasks:
+                executor.submit(subprocess.run, task, check=True)
+
+        # Read the source files
         assert css_path.exists(), "Sass compilation failed"
         print(f"DevelComponent: The compiled CSS is at {css_path}")
 
-        # Compile the typescript source
-        js_path = Path(tempfile.NamedTemporaryFile(suffix=".js", delete=False).name)
-        subprocess.run(["tsc", str(ts_path), "--outFile", str(js_path)], check=True)
         assert js_path.exists(), "Typescript compilation failed"
         print(f"DevelComponent: The compiled JS is at {js_path}")
 
-        # Read the source files
         _CSS_SOURCE = css_path.read_text()
         _JS_SOURCE = js_path.read_text()
 
