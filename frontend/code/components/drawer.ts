@@ -69,11 +69,6 @@ export class DrawerComponent extends ComponentBase {
             capturing: false,
         });
 
-        // this.shadeElement.addEventListener(
-        //     'click',
-        //     this._onShadeClick.bind(this)
-        // );
-
         return element;
     }
 
@@ -204,10 +199,6 @@ export class DrawerComponent extends ComponentBase {
         }
     }
 
-    private _onShadeClick(): void {
-        this.closeDrawer();
-    }
-
     beginDrag(event: MouseEvent): boolean {
         let element = this.element;
 
@@ -261,16 +252,14 @@ export class DrawerComponent extends ComponentBase {
         ) {
             this.openFractionAtDragStart = this.openFraction;
             this.dragStartedAt = relevantClickCoordinate;
-            event.stopImmediatePropagation();
-            event.preventDefault();
+            event.stopPropagation();
             return true;
         }
 
         // The anchor was clicked. Collapse the drawer if modal
         else if (this.state.is_modal) {
             this.closeDrawer();
-            event.stopImmediatePropagation();
-            event.preventDefault();
+            event.stopPropagation();
             return false;
         }
 

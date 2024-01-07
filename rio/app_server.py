@@ -252,6 +252,7 @@ class AppServer(fastapi.FastAPI):
         """
         Handler for serving the index HTML page via fastapi.
         """
+        print("Debug: Serving index page")
 
         # Because Rio apps are single-page, this route serves as the fallback.
         # In addition to legitimate requests for HTML pages, it will also catch
@@ -582,7 +583,7 @@ class AppServer(fastapi.FastAPI):
         try:
             sess = self._active_session_tokens[session_token]
         except KeyError:
-            # Inform the client that it's session token is unknown and request a
+            # Inform the client that its session token is unknown and request a
             # refresh
             await websocket.send_json(
                 {
@@ -656,22 +657,23 @@ class AppServer(fastapi.FastAPI):
         # Check if this is a reconnect
         try:
             if hasattr(sess, "window_width"):
-                init_coro = sess._send_reconnect_message()
+                print("Debug: Sending reconnect message")
+                init_coro = sess._send_all_components_on_reconnect()
             else:
                 print("Debug: Finishing session initialization")
                 await self._finish_session_initialization(
                     sess, websocket, session_token
                 )
 
-                # Trigger a refresh. This will also send the initial state to the
-                # frontend.
+                # Trigger a refresh. This will also send the initial state to
+                # the frontend.
                 print("Debug: Refreshing session")
                 init_coro = sess._refresh()
 
             # This is done in a task because the server is not yet running, so the
             # method would never receive a response, and thus would hang
             # indefinitely.
-            sess.create_task(init_coro, name=f"Session {sess} init")
+            sess.create_task(init_coro, name=f"Session `{sess}` init")
 
             # Serve the socket
             print("Debug: Serving session")
@@ -693,6 +695,7 @@ class AppServer(fastapi.FastAPI):
             # than sorry, I guess?
             sess.close()
         finally:
+            print("Debug: Clearing active event")
             sess._websocket = None
             sess._is_active_event.clear()
 

@@ -391,7 +391,7 @@ export class SwitcherBarComponent extends ComponentBase {
             MDCRipple.attachTo(optionElement);
 
             // Detect clicks
-            optionElement.addEventListener('click', () => {
+            optionElement.addEventListener('click', (event) => {
                 // If this item was already selected, the new value may be `None`
                 if (this.state.selectedName === name) {
                     if (this.state.allow_none) {
@@ -410,6 +410,9 @@ export class SwitcherBarComponent extends ComponentBase {
                 this.sendMessageToBackend({
                     name: this.state.selectedName,
                 });
+
+                // Eat the event
+                event.stopPropagation();
             });
         }
 
