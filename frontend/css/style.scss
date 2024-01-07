@@ -958,6 +958,11 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     pointer-events: auto;
     stroke: var(--rio-local-plain-bg);
 
+    // For some reason, `align-items: center` makes the spinner grow. So we
+    // can't use `@include center-content()` here.
+    display: flex;
+    justify-content: center;
+
     // Since the svg inside is rotating, the corners of its bounding box will
     // stick out. This can cause frequent re-layouting. To prevent this, we
     // hide the overflow.
