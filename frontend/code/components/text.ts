@@ -35,8 +35,18 @@ export class TextComponent extends ComponentBase {
         // Text content
         //
         // Make sure not to allow any linebreaks if the text is not multiline.
-        if (deltaState.text !== undefined) {
-            this.inner.textContent = deltaState.text.replace(/\n/g, ' ');
+        if (
+            deltaState.text !== undefined ||
+            deltaState.multiline !== undefined
+        ) {
+            let text = deltaState.text ?? this.state.text;
+            let multiline = deltaState.multiline ?? this.state.multiline;
+
+            if (!multiline) {
+                text = text.replace(/\n/g, ' ');
+            }
+
+            this.inner.textContent = text;
         }
 
         // Multiline
@@ -79,7 +89,7 @@ export class TextComponent extends ComponentBase {
             this.naturalWidth = 0;
         } else {
             [this.naturalWidth, this.naturalHeight] = getTextDimensions(
-                this.state.text,
+                this.element.textContent!,
                 this.state.style
             );
         }
@@ -93,5 +103,7 @@ export class TextComponent extends ComponentBase {
                 this.allocatedWidth
             )[1];
         }
+
+        // Single-line case is already handled in `updateNaturalWidth`
     }
 }
