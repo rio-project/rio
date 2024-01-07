@@ -5,6 +5,7 @@ import {
     updateInputBoxNaturalHeight,
     updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
+import { pixelsPerEm } from '../app';
 
 export type TextInputState = ComponentState & {
     _type_: 'TextInput-builtin';
@@ -20,7 +21,10 @@ export type TextInputState = ComponentState & {
 export class TextInputComponent extends ComponentBase {
     state: Required<TextInputState>;
 
+    private labelElement: HTMLElement;
     private inputElement: HTMLInputElement;
+    private prefixTextElement: HTMLElement;
+    private suffixTextElement: HTMLElement;
 
     private prefixTextWidth: number = 0;
     private suffixTextWidth: number = 0;
@@ -36,12 +40,20 @@ export class TextInputComponent extends ComponentBase {
 
         element.innerHTML = `
             <input type="text" style="order: 2" placeholder="">
-            <div class="rio-input-box-hint-text rio-input-box-prefix-text" style="order: 1"></div>
-            <div class="rio-input-box-hint-text rio-input-box-suffix-text" style="order: 3"></div>
+            <div class="rio-text-input-hint-text" style="order: 1"></div>
+            <div class="rio-text-input-hint-text" style="order: 3"></div>
             <div class="rio-input-box-label"></div>
             <div class="rio-input-box-plain-bar"></div>
             <div class="rio-input-box-color-bar"></div>
         `;
+
+        this.labelElement = element.querySelector(
+            '.rio-input-box-label'
+        ) as HTMLElement;
+
+        [this.prefixTextElement, this.suffixTextElement] = Array.from(
+            element.querySelectorAll('.rio-text-input-hint-text')
+        ) as HTMLElement[];
 
         // Detect value changes and send them to the backend
         this.inputElement = element.querySelector('input') as HTMLInputElement;
@@ -64,11 +76,43 @@ export class TextInputComponent extends ComponentBase {
                     text: this.state.text,
                 });
             }
+
+            event.stopPropagation();
         });
 
         // Detect clicks on any part of the component and focus the input
-        element.addEventListener('click', () => {
+        //
+        // The `mousedown` are needed to prevent any potential drag events from
+        // starting.
+        this.prefixTextElement.addEventListener('mousedown', (event) => {
+            event.stopPropagation();
+        });
+
+        this.suffixTextElement.addEventListener('mousedown', (event) => {
+            event.stopPropagation();
+        });
+
+        // The `mouseup` events pass focus to the input and move the cursor.
+        // This has to be done in `mouseup`, rather than `mousedown`, because
+        // otherwise the browser removes the focus again on mouseup.
+        this.prefixTextElement.addEventListener('mouseup', (event) => {
             this.inputElement.focus();
+            this.inputElement.setSelectionRange(0, 0);
+            event.stopPropagation();
+        });
+
+        this.suffixTextElement.addEventListener('mouseup', (event) => {
+            this.inputElement.focus();
+            this.inputElement.setSelectionRange(
+                this.inputElement.value.length,
+                this.inputElement.value.length
+            );
+            event.stopPropagation();
+        });
+
+        // Eat the event so other components don't get it
+        this.inputElement.addEventListener('mousedown', (event) => {
+            event.stopPropagation();
         });
 
         return element;
@@ -83,20 +127,19 @@ export class TextInputComponent extends ComponentBase {
         }
 
         if (deltaState.label !== undefined) {
-            let labelElement = this.element.querySelector(
-                '.rio-input-box-label'
-            ) as HTMLElement;
-            labelElement.textContent = deltaState.label;
+            this.labelElement.textContent = deltaState.label;
 
             // Update the layout
             updateInputBoxNaturalHeight(this, deltaState.label, 0);
         }
 
-        if (deltaState.prefix_text !== undefined) {
-            let prefixElement = this.element.querySelector(
-                '.rio-input-box-prefix-text'
-            ) as HTMLElement;
-            prefixElement.textContent = deltaState.prefix_text;
+        if (deltaState.prefix_text === '') {
+            this.prefixTextElement.style.display = 'none';
+            this.prefixTextWidth = 0;
+            this.makeLayoutDirty();
+        } else if (deltaState.prefix_text !== undefined) {
+            this.prefixTextElement.textContent = deltaState.prefix_text;
+            this.prefixTextElement.style.removeProperty('display');
 
             // Update the layout, if needed
             this.prefixTextWidth = getTextDimensions(
@@ -106,14 +149,16 @@ export class TextInputComponent extends ComponentBase {
             this.makeLayoutDirty();
         }
 
-        if (deltaState.suffix_text !== undefined) {
-            let suffixElement = this.element.querySelector(
-                '.rio-input-box-suffix-text'
-            ) as HTMLElement;
-            suffixElement.textContent = deltaState.suffix_text;
+        if (deltaState.suffix_text === '') {
+            this.suffixTextElement.style.display = 'none';
+            this.suffixTextWidth = 0;
+            this.makeLayoutDirty();
+        } else if (deltaState.suffix_text !== undefined) {
+            this.suffixTextElement.textContent = deltaState.suffix_text;
+            this.suffixTextElement.style.removeProperty('display');
 
             // Update the layout, if needed
-            this.prefixTextWidth = getTextDimensions(
+            this.suffixTextWidth = getTextDimensions(
                 deltaState.suffix_text,
                 'text'
             )[0];

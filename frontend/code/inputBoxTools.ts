@@ -9,7 +9,8 @@ export function updateInputBoxNaturalWidth(
     additionalSpace: number
 ): void {
     // Enforce a minimum width, common to all input boxes
-    let newWidth = Math.max(13, additionalSpace);
+    let padding = 0.6;
+    let newWidth = Math.max(8, additionalSpace + padding);
 
     // Dirty?
     if (newWidth !== component.naturalWidth) {

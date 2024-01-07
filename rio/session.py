@@ -948,7 +948,7 @@ window.scrollTo({{ top: 0, behavior: 'smooth' }});
         # Send the new state to the client
         await self._remote_update_component_states(delta_states, root_component_id)
 
-    async def _send_reconnect_message(self) -> None:
+    async def _send_all_components_on_reconnect(self) -> None:
         self._initialized_html_components.clear()
 
         # For why this lock is here see its creation in `__init__`

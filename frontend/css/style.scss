@@ -46,6 +46,9 @@ $infinite-corner-radius: 99999px;
 // Nonstandard transition timing function
 $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
+// Values common to all input boxes
+$input-box-padding-bottom: 0.4rem;
+
 // Theme Switcheroos
 .rio-switcheroo-background {
     // surface := primary
@@ -649,6 +652,30 @@ body {
     cursor: text;
 }
 
+.rio-text-input-hint-text {
+    display: flex;
+    align-items: end;
+
+    user-select: none;
+
+    padding-bottom: $input-box-padding-bottom;
+
+    color: var(--rio-local-text-color);
+
+    opacity: 0;
+    transition: all 0.13s linear;
+}
+
+input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
+.rio-input-box:focus-within > .rio-text-input-hint-text,
+.rio-input-box-focused > .rio-text-input-hint-text {
+    opacity: 0.5;
+}
+
+.rio-text-input > input {
+    height: calc(200% - 2.17rem);
+}
+
 // Input Box: This is a style common to multiple input components, such as
 // `TextInput` and `Dropdown`.
 .rio-input-box {
@@ -656,13 +683,13 @@ body {
 
     display: flex;
     flex-direction: row;
-    align-items: end;
+    align-items: stretch;
 
-    padding: 0.3rem;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
     box-sizing: border-box;
 
     background-color: var(--rio-local-plain-bg-variant);
-
     border-radius: var(--rio-global-corner-radius-small)
         var(--rio-global-corner-radius-small) 0 0;
 }
@@ -701,29 +728,6 @@ body {
 
 .rio-input-box > input:focus-visible {
     outline: none;
-}
-
-.rio-input-box-hint-text {
-    margin-bottom: 0.5rem;
-
-    color: var(--rio-local-text-color);
-
-    opacity: 0;
-    transition: all 0.13s linear;
-}
-
-.rio-input-box-prefix-text {
-    margin-left: 0.5rem;
-}
-
-.rio-input-box-suffix-text {
-    margin-right: 0.5rem;
-}
-
-input:not(:placeholder-shown) ~ .rio-input-box-hint-text,
-.rio-input-box:focus-within > .rio-input-box-hint-text,
-.rio-input-box-focused > .rio-input-box-hint-text {
-    opacity: 0.5;
 }
 
 .rio-input-box-label {
@@ -892,7 +896,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
     // Position the SVG
     display: flex;
-    align-items: end;
+    align-items: center;
 
     svg {
         width: 1.3rem;

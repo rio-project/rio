@@ -188,6 +188,9 @@ export class TableComponent extends ComponentBase {
         let reverse = clickedHeader.dataset.sort === 'asc';
 
         this.applySort(this.state.data, columnName, clickedHeader, reverse);
+
+        // Eat the event
+        event.stopPropagation();
     }
 
     private applySort(

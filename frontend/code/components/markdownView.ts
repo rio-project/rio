@@ -130,19 +130,23 @@ function convertMarkdown(
             '.rio-markdown-code-block-copy-button'
         ) as HTMLButtonElement;
 
-        copyButton.addEventListener('click', () => {
+        copyButton.addEventListener('click', (event) => {
             const codeToCopy =
                 (codeBlockInner as HTMLElement).textContent ?? '';
             const textArea = document.createElement('textarea');
             textArea.value = codeToCopy;
+
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
+
             copyButton.textContent = 'Copied ✓';
             setTimeout(() => {
                 copyButton.textContent = 'Copy code';
             }, 5000);
+
+            event.stopPropagation();
         });
     });
 

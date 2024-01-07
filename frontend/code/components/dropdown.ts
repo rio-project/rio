@@ -72,7 +72,7 @@ export class DropdownComponent extends ComponentBase {
         applyIcon(arrowElement, 'expand-more', 'var(--rio-local-text-color)');
 
         // Connect events
-        element.addEventListener('click', () => {
+        element.addEventListener('click', (event) => {
             let element = this.element;
 
             // Already open?
@@ -90,6 +90,9 @@ export class DropdownComponent extends ComponentBase {
 
             // Make the text input appear as active
             element.classList.add('rio-input-box-focused');
+
+            // Eat the event
+            event.stopPropagation();
         });
 
         // Bind events so they can be connected/disconnected at will
@@ -356,12 +359,14 @@ export class DropdownComponent extends ComponentBase {
             match.classList.add('rio-dropdown-option');
             this.optionsElement.appendChild(match);
 
-            match.addEventListener('click', () => {
+            match.addEventListener('click', (event) => {
                 this.state.selectedName = optionName;
                 this.hidePopup();
                 this.sendMessageToBackend({
                     name: optionName,
                 });
+
+                event.stopPropagation();
             });
 
             match.addEventListener('mouseenter', () => {
