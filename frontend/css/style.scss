@@ -1012,6 +1012,15 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 
 // Button
 .rio-button {
+    // Preserve the text color outside of the switcheroo application, as some
+    // styles depend on it.
+    --outer-text-color: var(--rio-local-text-color);
+}
+
+.rio-button > * {
+    width: 100%;
+    height: 100%;
+
     pointer-events: auto;
 
     overflow: hidden; // Needed for the ripple effect
@@ -1022,7 +1031,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
         border-color 0.1s ease-in-out;
 }
 
-.rio-button:not(.rio-switcheroo-disabled) {
+.rio-button:not(.rio-switcheroo-disabled) > * {
     @include ripple.surface;
     @include ripple.radius-bounded;
     @include ripple.states;
@@ -1051,6 +1060,10 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-buttonstyle-minor:hover:not(.rio-switcheroo-disabled) {
     background: var(--rio-local-plain-bg);
     cursor: pointer;
+}
+
+.rio-buttonstyle-plain {
+    --rio-local-text-color: var(--outer-text-color);
 }
 
 .rio-buttonstyle-plain:hover:not(.rio-switcheroo-disabled) {
