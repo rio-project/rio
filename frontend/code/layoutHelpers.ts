@@ -61,6 +61,7 @@ export function getTextDimensions(
     element.textContent = text;
     Object.assign(element.style, textStyleToCss(style));
     element.style.position = 'absolute';
+    element.style.whiteSpace = 'pre-wrap'; // Required for multi-line text
     document.body.appendChild(element);
 
     if (restrictWidth !== null) {
