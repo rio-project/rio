@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import base64
 import copy
+import io
 from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
@@ -8,19 +10,15 @@ from uniserde import JsonDoc
 
 import rio
 
+from .. import maybes
 from . import component_base
 
-try:
-    import plotly  # type: ignore
+if TYPE_CHECKING:
+    import matplotlib.figure  # type: ignore
     import plotly.graph_objects  # type: ignore
-except ImportError:
-    if TYPE_CHECKING:
-        import plotly  # type: ignore
 
 
-__all__ = [
-    "Plot",
-]
+__all__ = ["Plot"]
 
 
 class Plot(component_base.FundamentalComponent):
@@ -29,14 +27,14 @@ class Plot(component_base.FundamentalComponent):
 
 
     Attributes:
-        figure: The plotly figure to display.
+        figure: The `plotly` figure to display.
 
         style: Controls the appearance of the plot. The following attributes are supported:
             - `fill`
             - `corner_radius`
     """
 
-    figure: plotly.graph_objects.Figure
+    figure: matplotlib.figure.Figure | plotly.graph_objects.Figure
     _: KW_ONLY
     style: Optional[rio.BoxStyle] = None
 
@@ -51,18 +49,36 @@ class Plot(component_base.FundamentalComponent):
         else:
             box_style = self.style
 
-        # Make the plot transparent, so the background configured by JavaScript
-        # shines through.
-        figure = copy.copy(self.figure)
-        figure.update_layout(
-            {
-                "plot_bgcolor": "rgba(0,0,0,0)",
-                "paper_bgcolor": "rgba(0,0,0,0)",
+        figure = self.figure
+        plot: JsonDoc
+        if isinstance(figure, maybes.PLOTLY_GRAPH_TYPES):
+            # Make the plot transparent, so the background configured by
+            # JavaScript shines through.
+            figure = cast("plotly.graph_objects.Figure", copy.copy(figure))
+            figure.update_layout(
+                {
+                    "plot_bgcolor": "rgba(0,0,0,0)",
+                    "paper_bgcolor": "rgba(0,0,0,0)",
+                }
+            )
+
+            plot = {
+                "type": "plotly",
+                "json": figure.to_json(),
             }
-        )
+        else:
+            figure = cast("matplotlib.figure.Figure", figure)
+
+            file = io.BytesIO()
+            figure.savefig(file, format="png", transparent=True, bbox_inches="tight")
+
+            plot = {
+                "type": "matplotlib",
+                "image": base64.b64encode(file.getbuffer()).decode(),
+            }
 
         return {
-            "plotJson": figure.to_json(),
+            "plot": plot,
             "boxStyle": box_style._serialize(self.session),
         }
 
