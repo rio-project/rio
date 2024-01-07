@@ -19,6 +19,8 @@ export class ButtonComponent extends SingleContainer {
     state: Required<ButtonState>;
     private mdcRipple: MDCRipple;
 
+    private innerElement: HTMLElement;
+
     // In order to prevent a newly created button from being clicked on
     // accident, it starts out disabled and enables itself after a short delay.
     private isStillInitiallyDisabled: boolean = true;
@@ -28,11 +30,14 @@ export class ButtonComponent extends SingleContainer {
         let element = document.createElement('div');
         element.classList.add('rio-button', 'mdc-ripple-surface');
 
+        this.innerElement = document.createElement('div');
+        element.appendChild(this.innerElement);
+
         // Add a material ripple effect
-        this.mdcRipple = new MDCRipple(element);
+        this.mdcRipple = new MDCRipple(this.innerElement);
 
         // Detect button presses
-        element.onmouseup = (event) => {
+        this.innerElement.onmouseup = (event) => {
             event.stopPropagation();
 
             // Only react to left clicks
@@ -62,14 +67,16 @@ export class ButtonComponent extends SingleContainer {
         deltaState: ButtonState,
         latentComponents: Set<ComponentBase>
     ): void {
-        let element = this.element;
-
         // Update the child
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(
+            latentComponents,
+            deltaState.child,
+            this.innerElement
+        );
 
         // Set the shape
         if (deltaState.shape !== undefined) {
-            element.classList.remove(
+            this.innerElement.classList.remove(
                 'rio-shape-pill',
                 'rio-shape-rounded',
                 'rio-shape-rectangle',
@@ -77,19 +84,19 @@ export class ButtonComponent extends SingleContainer {
             );
 
             let className = 'rio-shape-' + deltaState.shape;
-            element.classList.add(className);
+            this.innerElement.classList.add(className);
         }
 
         // Set the style
         if (deltaState.style !== undefined) {
-            element.classList.remove(
+            this.innerElement.classList.remove(
                 'rio-buttonstyle-major',
                 'rio-buttonstyle-minor',
                 'rio-buttonstyle-plain'
             );
 
             let className = 'rio-buttonstyle-' + deltaState.style;
-            element.classList.add(className);
+            this.innerElement.classList.add(className);
         }
 
         // Apply the color
@@ -119,7 +126,7 @@ export class ButtonComponent extends SingleContainer {
                 colorSet = 'accent-to-plain';
             }
 
-            applyColorSet(element, colorSet);
+            applyColorSet(this.innerElement, colorSet);
         }
     }
 
