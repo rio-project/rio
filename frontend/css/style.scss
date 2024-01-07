@@ -1155,6 +1155,15 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     position: relative !important;
 }
 
+// Plot
+.rio-plot {
+    display: inline-block;
+    @include center-content();
+
+    // Force the corner radius to be applied to the plot as well
+    overflow: hidden;
+}
+
 // Icon
 .rio-icon {
     pointer-events: auto;

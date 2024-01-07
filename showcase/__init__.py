@@ -41,7 +41,8 @@ class KeyEventTester(rio.Component):
                 f"""Hardware key: {self.event.hardware_key}
 Software key: {self.event.software_key}
 Input text: {self.event.text}
-Modifiers: {self.event.modifiers}"""
+Modifiers: {self.event.modifiers}""",
+                multiline=True,
             ),
             on_key_down=self.on_key_down,
         )
@@ -474,6 +475,7 @@ if __name__ == "__main__":
         host="127.0.0.1",
         port=8001,
         quiet=False,
+        running_in_window=False,
         validator_factory=validator_factory,
         internal_on_app_start=None,
     )

@@ -15,11 +15,12 @@ from typing import *  # type: ignore
 import introspection
 
 if TYPE_CHECKING:
+    import matplotlib.figure  # type: ignore
     import pandas  # type: ignore
+    import plotly.graph_objects  # type: ignore
     import polars  # type: ignore
 
 _IS_INITIALIZED = False
-
 
 T = TypeVar("T")
 
@@ -31,6 +32,9 @@ STR_TYPES = ()
 
 PANDAS_DATAFRAME_TYPES: Tuple[Type[pandas.DataFrame], ...] = ()
 POLARS_DATAFRAME_TYPES: Tuple[Type[polars.DataFrame], ...] = ()
+
+PLOTLY_GRAPH_TYPES: Tuple[Type[plotly.graph_objects.Figure], ...] = ()
+MATPLOTLIB_GRAPH_TYPES: Tuple[Type[matplotlib.figure.Figure], ...] = ()
 
 # This is a mapping of "weird" types to the "canonical" type, like `{np.int8: int}`
 TYPE_NORMALIZERS: Mapping[Type[T], Callable[[T], T]] = {}  # type: ignore
@@ -46,6 +50,7 @@ def initialize(force: bool = False) -> None:
     global _IS_INITIALIZED
     global FLOAT_TYPES, INT_TYPES, BOOL_TYPES, STR_TYPES
     global PANDAS_DATAFRAME_TYPES, POLARS_DATAFRAME_TYPES
+    global PLOTLY_GRAPH_TYPES, MATPLOTLIB_GRAPH_TYPES
 
     # Already initialized?
     if _IS_INITIALIZED and not force:
@@ -81,6 +86,16 @@ def initialize(force: bool = False) -> None:
         import polars  # type: ignore
 
         POLARS_DATAFRAME_TYPES = (polars.DataFrame,)
+
+    if "plotly" in sys.modules:
+        import plotly.graph_objects  # type: ignore
+
+        PLOTLY_GRAPH_TYPES = (plotly.graph_objects.Figure,)
+
+    if "matplotlib" in sys.modules:
+        import matplotlib.figure  # type: ignore
+
+        MATPLOTLIB_GRAPH_TYPES = (matplotlib.figure.Figure,)
 
     # Populate our mapping of type normalizers
     for canonical_type, weird_types in (

@@ -670,8 +670,8 @@ class AppServer(fastapi.FastAPI):
                 print("Debug: Refreshing session")
                 init_coro = sess._refresh()
 
-            # This is done in a task because the server is not yet running, so the
-            # method would never receive a response, and thus would hang
+            # This is done in a task because the server is not yet running, so
+            # the method would never receive a response, and thus would hang
             # indefinitely.
             sess.create_task(init_coro, name=f"Session `{sess}` init")
 
@@ -679,15 +679,12 @@ class AppServer(fastapi.FastAPI):
             print("Debug: Serving session")
             await sess.serve()
 
-        # Don't throw an error just because a client disconnected.
-        #
-        # As far as I can tell, this error is raised regardless of whether the
-        # websocket was disconnected intentionally or not. If we were sure that
-        # the client intentionally disconnected, we could close the session. But
-        # we don't know, so the session has to remain open for now.
         except fastapi.WebSocketDisconnect as err:
             print(f'Debug: Closing connection to "{websocket.client}" because of {err}')
-            pass
+
+            # If the connection was closed on purpose, close the session
+            if err.code == 1001:
+                sess.close()
 
         else:
             print("Debug: Closing websocket without exception")
