@@ -327,6 +327,8 @@ class AppServer(fastapi.FastAPI):
             session_token,
         )
 
+        html = html.replace("{initial_url}", str(initial_page_url_absolute))
+
         html = html.replace(
             '"{child_attribute_names}"',
             json.dumps(
@@ -771,6 +773,7 @@ class AppServer(fastapi.FastAPI):
 
         # Trigger the `on_session_start` event.
         #
-        # Note: Since this event is often used for initialization, like adding
-        # attachments, we actually wait for it to finish before continuing.
+        # Since this event is often used for important initialization tasks like
+        # adding attachments, actually wait for it to finish before continuing.
+        print("DEBUG: Triggering on session start")
         await sess._call_event_handler(self.on_session_start, sess)
