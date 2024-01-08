@@ -268,6 +268,13 @@ class AppServer(fastapi.FastAPI):
         #     )
 
         # Prepare some URL constants
+        #
+        # These aren't final - the page guards still have to run, and may change
+        # the URL. The value here is merely stored in the session so the session
+        # can run the appropriate guards later on.
+        #
+        # The guards cannot run yet, because they receive the session as a
+        # parameter and the session is not yet fully initialized.
         base_url = rio.URL(str(request.base_url))
         assert base_url.is_absolute(), base_url
 
@@ -286,29 +293,10 @@ class AppServer(fastapi.FastAPI):
             app_server_=self,
             session_token=session_token,
             base_url=rio.URL(str(request.base_url)),
-            initial_page=initial_page_url_absolute,
+            initial_page_url=initial_page_url_absolute,
         )
 
         self._active_session_tokens[session_token] = sess
-
-        # Run any page guards for the initial page
-        try:
-            (
-                initial_page_instances,
-                initial_page_url_absolute,
-            ) = routing.check_page_guards(
-                sess,
-                initial_page_url_absolute,
-            )
-        except routing.NavigationFailed:
-            raise fastapi.HTTPException(
-                status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Navigation to initial page "{initial_page_url_absolute}" has failed.',
-            ) from None
-
-        # Update the session's active page
-        sess._active_page_url = initial_page_url_absolute
-        sess._active_page_instances = tuple(initial_page_instances)
 
         # Add any attachments, except for user settings. These are deserialized
         # later on, once the client has sent the initial message.
@@ -326,8 +314,6 @@ class AppServer(fastapi.FastAPI):
             "{session_token}",
             session_token,
         )
-
-        html = html.replace("{initial_url}", str(initial_page_url_absolute))
 
         html = html.replace(
             '"{child_attribute_names}"',
@@ -770,6 +756,67 @@ class AppServer(fastapi.FastAPI):
             )
         finally:
             global_state.currently_building_session = None
+
+        # Run any page guards for the initial page
+        try:
+            (
+                active_page_instances,
+                active_page_url_absolute,
+            ) = routing.check_page_guards(
+                sess,
+                sess._active_page_url,
+            )
+        except routing.NavigationFailed:
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f'Navigation to initial page "{sess._active_page_url}" has failed.',
+            ) from None
+
+        # Is this a page, or a full URL to another site?
+        try:
+            common.make_url_relative(
+                sess._base_url,
+                active_page_url_absolute,
+            )
+
+        # This is an external URL. Navigate to it
+        except ValueError:
+
+            async def history_worker() -> None:
+                await sess._evaluate_javascript(
+                    f"""
+window.location.href = {json.dumps(str(active_page_url_absolute))};
+""",
+                )
+
+            sess.create_task(history_worker(), name="navigate to external URL")
+
+            # TODO: End the session? Abort initialization?
+            return
+
+        # Set the initial page URL. When connecting to the server, all relevant
+        # page guards execute. These may change the URL of the page, so the
+        # client needs to take care to update the browser's URL to match the
+        # server's.
+        if active_page_url_absolute != sess._active_page_url:
+
+            async def update_url_worker():
+                js_page_url = json.dumps(str(active_page_url_absolute))
+                await sess._evaluate_javascript(
+                    f"""
+                    console.log("Updating browser URL to match the one modified by guards:", {js_page_url});
+                    window.history.replaceState(null, "", {js_page_url});
+                    """
+                )
+
+            sess.create_task(
+                update_url_worker(),
+                name="Update browser URL to match the one modified by guards",
+            )
+
+        # Update the session's active page and instances
+        sess._active_page_instances = tuple(active_page_instances)
+        sess._active_page_url = active_page_url_absolute
 
         # Trigger the `on_session_start` event.
         #

@@ -6,8 +6,12 @@ from .. import theme
 
 
 class NavigationBar(rio.Component):
+    @rio.event.on_page_change
+    async def _on_page_change(self) -> None:
+        await self.force_refresh()
+
     def _on_navigation_button_press(self, ev: rio.SwitcherBarChangeEvent[str]) -> None:
-        self.session.navigate_to("/" + ev.value)
+        self.session.navigate_to(f"/{ev.value}")
 
     def build(self) -> rio.Component:
         surface_color = theme.THEME.neutral_palette.background
