@@ -5,6 +5,7 @@ import {
 } from '../componentManagement';
 import { applyIcon } from '../designApplication';
 import { ComponentId } from '../models';
+import { commitCss, sleep } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 import { DebuggerConnectorComponent } from './debuggerConnector';
 import { ScrollContainerComponent } from './scrollContainer';
@@ -39,11 +40,12 @@ export class ComponentTreeComponent extends ComponentBase {
             this.buildTree();
         });
 
-        // Prepare the highlighter, but don't add it to the DOM yet
+        // Prepare & add the highlighter
         this.highlighterElement = document.createElement('div');
         this.highlighterElement.classList.add(
             'rio-debugger-component-highlighter'
         );
+        document.body.appendChild(this.highlighterElement);
 
         return element;
     }
@@ -85,8 +87,6 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Stores the currently selected component, without updating any UI. Also
     /// notifies the backend.
     setSelectedComponent(component: ComponentBase) {
-        console.debug(`setSelectedComponent ${this.selectedComponentId}`);
-
         this.selectedComponentId = component.id;
 
         this.sendMessageToBackend({
@@ -156,7 +156,6 @@ export class ComponentTreeComponent extends ComponentBase {
         // apparently because the browser needs to get control first. Any
         // further actions will happen with a delay.
 
-        console.debug(`Starting timeout to highlight selected component`);
         setTimeout(() => {
             // Don't start off with a fully collapsed tree
             if (!this.getNodeExpanded(rootComponent)) {
@@ -164,7 +163,6 @@ export class ComponentTreeComponent extends ComponentBase {
             }
 
             // Highlight the selected component
-            console.debug(`About to highlight selected component`);
             this.highlightSelectedComponent();
         }, 0);
     }
@@ -252,25 +250,45 @@ export class ComponentTreeComponent extends ComponentBase {
 
         // Highlight the actual component when the element is hovered
         header.addEventListener('mouseover', (event) => {
-            // Get the element for this instance
-            let componentElement = component.element;
-            let rect = componentElement.getBoundingClientRect();
-
-            // Highlight the component
-            this.highlighterElement.style.top = `${rect.top}px`;
-            this.highlighterElement.style.left = `${rect.left}px`;
-            this.highlighterElement.style.width = `${rect.width}px`;
-            this.highlighterElement.style.height = `${rect.height}px`;
-            document.body.appendChild(this.highlighterElement);
-
+            this.moveHighlighterTo(component);
             event.stopPropagation();
         });
 
         // Remove any highlighters when the element is unhovered
         element.addEventListener('mouseout', (event) => {
-            this.highlighterElement.remove();
+            this.moveHighlighterTo(null);
             event.stopPropagation();
         });
+    }
+
+    /// Transition the highlighter to the given component. If the component is
+    /// `null`, transition it out.
+    moveHighlighterTo(component: ComponentBase | null) {
+        // If no component is to be highlighted, make the highlighter the size
+        // of the window, effectively hiding it. Overshoot by a bit to make sure
+        // the highlighter's pulse animation doesn't make it visible by
+        // accident.
+        let left, top, width, height;
+
+        if (component === null) {
+            left = -10;
+            top = -10;
+            width = window.innerWidth + 20;
+            height = window.innerHeight + 20;
+        } else {
+            let componentElement = component.element;
+            let rect = componentElement.getBoundingClientRect();
+            left = rect.left;
+            top = rect.top;
+            width = rect.width;
+            height = rect.height;
+        }
+
+        // Move the highlighter
+        this.highlighterElement.style.top = `${top}px`;
+        this.highlighterElement.style.left = `${left}px`;
+        this.highlighterElement.style.width = `${width}px`;
+        this.highlighterElement.style.height = `${height}px`;
     }
 
     getNodeExpanded(instance: ComponentBase): boolean {
@@ -317,8 +335,6 @@ export class ComponentTreeComponent extends ComponentBase {
     }
 
     highlightSelectedComponent() {
-        console.debug(`highlightSelectedComponent ${this.selectedComponentId}`);
-
         // Unhighlight all previously highlighted items
         for (let element of Array.from(
             document.querySelectorAll(
@@ -333,7 +349,6 @@ export class ComponentTreeComponent extends ComponentBase {
 
         // Get the selected component
         let selectedComponent = this.getSelectedComponent();
-        console.debug(`Highlighting ${selectedComponent.id}`);
 
         // Find all tree items
         let treeItems: HTMLElement[] = [];

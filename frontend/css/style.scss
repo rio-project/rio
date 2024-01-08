@@ -2428,6 +2428,12 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     pointer-events: none;
     position: fixed;
     z-index: $z-index-debugger-highlighter;
+
+    transition:
+        left 0.3s ease-in-out,
+        top 0.3s ease-in-out,
+        width 0.3s ease-in-out,
+        height 0.3s ease-in-out;
 }
 
 @keyframes pulse {
