@@ -109,7 +109,11 @@ class ComponentDetails(rio.Component):
         # Which file/line was this component instantiated from?
         if target._creator_stackframe_ is not None:
             file, line = target._creator_stackframe_
-            file = file.relative_to(Path.cwd())
+
+            try:
+                file = file.relative_to(Path.cwd())
+            except ValueError:
+                pass
 
             result.add_child(
                 rio.Text(

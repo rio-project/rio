@@ -16,11 +16,11 @@ export type ComponentTreeState = ComponentState & {
 export class ComponentTreeComponent extends ComponentBase {
     state: Required<ComponentTreeState>;
 
-    private selectedComponentId: ComponentId | null = null;
-
     /// When a component should be highlighted to the user, this HTML element
     /// does the highlighting.
     private highlighterElement: HTMLElement;
+
+    private selectedComponentId: ComponentId | null = null;
 
     createElement(): HTMLElement {
         // Register this component with the global debugger, so it receives
@@ -85,9 +85,9 @@ export class ComponentTreeComponent extends ComponentBase {
     /// Stores the currently selected component, without updating any UI. Also
     /// notifies the backend.
     setSelectedComponent(component: ComponentBase) {
-        this.selectedComponentId = component.id;
+        console.debug(`setSelectedComponent ${this.selectedComponentId}`);
 
-        console.log(`DEBUG: Selected component ${this.selectedComponentId}`);
+        this.selectedComponentId = component.id;
 
         this.sendMessageToBackend({
             selectedComponentId: this.selectedComponentId,
@@ -156,6 +156,7 @@ export class ComponentTreeComponent extends ComponentBase {
         // apparently because the browser needs to get control first. Any
         // further actions will happen with a delay.
 
+        console.debug(`Starting timeout to highlight selected component`);
         setTimeout(() => {
             // Don't start off with a fully collapsed tree
             if (!this.getNodeExpanded(rootComponent)) {
@@ -163,6 +164,7 @@ export class ComponentTreeComponent extends ComponentBase {
             }
 
             // Highlight the selected component
+            console.debug(`About to highlight selected component`);
             this.highlightSelectedComponent();
         }, 0);
     }
@@ -174,7 +176,7 @@ export class ComponentTreeComponent extends ComponentBase {
     ) {
         // Create the element for this item
         let element = document.createElement('div');
-        element.id = `rio-debugger-component-tree-item-${component.element.id}`;
+        element.id = `rio-debugger-component-tree-item-${component.id}`;
         element.classList.add('rio-debugger-component-tree-item');
         parentElement.appendChild(element);
 
@@ -290,7 +292,7 @@ export class ComponentTreeComponent extends ComponentBase {
 
         // Get the node element for this instance
         let element = document.getElementById(
-            `rio-debugger-component-tree-item-${component.element.id}`
+            `rio-debugger-component-tree-item-${component.id}`
         );
 
         // Expand / collapse its children.
@@ -315,6 +317,8 @@ export class ComponentTreeComponent extends ComponentBase {
     }
 
     highlightSelectedComponent() {
+        console.debug(`highlightSelectedComponent ${this.selectedComponentId}`);
+
         // Unhighlight all previously highlighted items
         for (let element of Array.from(
             document.querySelectorAll(
@@ -329,12 +333,13 @@ export class ComponentTreeComponent extends ComponentBase {
 
         // Get the selected component
         let selectedComponent = this.getSelectedComponent();
+        console.debug(`Highlighting ${selectedComponent.id}`);
 
         // Find all tree items
         let treeItems: HTMLElement[] = [];
 
         let cur: HTMLElement | null = document.getElementById(
-            `rio-debugger-component-tree-item-${selectedComponent.element.id}`
+            `rio-debugger-component-tree-item-${selectedComponent.id}`
         ) as HTMLElement;
 
         while (

@@ -32,6 +32,8 @@ class Plot(component_base.FundamentalComponent):
         style: Controls the appearance of the plot. The following attributes are supported:
             - `fill`
             - `corner_radius`
+
+        Any other attributes are ignored at this time.
     """
 
     figure: matplotlib.figure.Figure | plotly.graph_objects.Figure
