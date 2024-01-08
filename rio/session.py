@@ -115,6 +115,14 @@ class SessionAttachments:
         - the session's user settings
         - any value that was previously attached using `Session.attach`
         """
+
+        print(f"Debug: Querying attachments in session {id(self._session)}")
+
+        for key, value in self._attachments.items():
+            print(f"- {key} -> {id(key)}")
+
+        print(f"Key: {typ} - {id(typ)}")
+
         try:
             return self._attachments[typ]  # type: ignore
         except KeyError:
@@ -630,8 +638,8 @@ window.location.href = {json.dumps(str(target_url))};
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
                 f"""
-window.history.{method}(null, null, {json.dumps(str(target_url))})
-window.scrollTo({{ top: 0, behavior: 'smooth' }});
+window.history.{method}(null, "", {json.dumps(str(target_url))})
+window.scrollTo({{ top: 0, behavior: "smooth" }});
 """,
             )
 

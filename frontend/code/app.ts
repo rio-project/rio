@@ -9,6 +9,7 @@ import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
 //
 // Assigning them to `globalThis` convinces the build tool to leave them alone.
 globalThis.SESSION_TOKEN = '{session_token}';
+globalThis.INITIAL_URL = '{initial_url}';
 globalThis.PING_PONG_INTERVAL_SECONDS = '{ping_pong_interval}';
 globalThis.RIO_DEBUG_MODE = '{debug_mode}';
 globalThis.CHILD_ATTRIBUTE_NAMES = '{child_attribute_names}';
@@ -74,6 +75,11 @@ function main(): void {
             newUrl: window.location.href.toString(),
         });
     });
+
+    // Set the initial page URL. When connecting to the server, all relevant
+    // page guards execute. These may change the URL of the page, so the client
+    // needs to take care to update the browser's URL to match the server's.
+    window.history.replaceState(null, '', globalThis.INITIAL_URL);
 
     // Listen for resize events
     window.addEventListener('resize', (event) => {

@@ -50,9 +50,9 @@ class TextInput(component_base.KeyboardFocusableFundamentalComponent):
 
         is_sensitive: Whether the text input should respond to user input.
 
-        is_valid: Whether the current text is valid for your application. You
-            can use this to signal to the user that their input needs to be
-            changed.
+        is_valid: Visually displays to the user whether the current text is
+            valid. You can use this to signal to the user that their input needs
+            to be changed.
 
         on_change: Triggered when the user changes the text.
 

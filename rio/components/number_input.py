@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import KW_ONLY, dataclass
 from typing import *  # type: ignore
 
-
 import rio
 
 from . import component_base
@@ -67,6 +66,12 @@ class NumberInput(component_base.Component):
             the input's `value` is guaranteed to be an integer, rather than
             float.
 
+        is_sensitive: Whether the text input should respond to user input.
+
+        is_valid: Visually displays to the user whether the current text is
+            valid. You can use this to signal to the user that their input needs
+            to be changed.
+
         on_change: Triggered when the user changes the number.
 
         on_confirm: Triggered when the user explicitly confirms their input,
@@ -80,6 +85,8 @@ class NumberInput(component_base.Component):
     minimum: Optional[float] = None
     maximum: Optional[float] = None
     decimals: int = 2
+    is_sensitive: bool = True
+    is_valid: bool = True
     on_change: rio.EventHandler[NumberInputChangeEvent] = None
     on_confirm: rio.EventHandler[NumberInputConfirmEvent] = None
 
@@ -191,6 +198,8 @@ class NumberInput(component_base.Component):
             label=self.label,
             prefix_text=self.prefix_text,
             suffix_text=self.suffix_text,
+            is_sensitive=self.is_sensitive,
+            is_valid=self.is_valid,
             on_change=self._on_change,
             on_confirm=self._on_confirm,
         )
