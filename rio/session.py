@@ -176,7 +176,7 @@ class Session(unicall.Unicall):
         app_server_: app_server.AppServer,
         session_token: str,
         base_url: rio.URL,
-        initial_page: rio.URL,
+        initial_page_url: rio.URL,
     ):
         super().__init__(
             send_message=dummy_send_message,
@@ -204,9 +204,9 @@ class Session(unicall.Unicall):
         # The current page. This is publicly accessible as property. This value
         # is **always lowercase**. This is to avoid casing issues when
         # comparing URLs, both in rio and user code.
-        assert initial_page.is_absolute(), initial_page
-        assert str(initial_page) == str(initial_page).lower(), initial_page
-        self._active_page_url: rio.URL = initial_page
+        assert initial_page_url.is_absolute(), initial_page_url
+        assert str(initial_page_url) == str(initial_page_url).lower(), initial_page_url
+        self._active_page_url: rio.URL = initial_page_url
 
         # Also the current page url, but as stack of the actual page instances
         self._active_page_instances: Tuple[rio.Page, ...] = ()
@@ -617,12 +617,14 @@ window.location.href = {json.dumps(str(target_url))};
             return
 
         # Is any guard opposed to this page?
-        active_page_instances, active_page = routing.check_page_guards(
+        active_page_instances, active_page_url = routing.check_page_guards(
             self, target_url_absolute
         )
 
+        del target_url, target_url_absolute
+
         # Update the current page
-        self._active_page_url = active_page
+        self._active_page_url = active_page_url
         self._active_page_instances = tuple(active_page_instances)
 
         # Dirty all PageViews to force a rebuild
@@ -638,12 +640,15 @@ window.location.href = {json.dumps(str(target_url))};
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
                 f"""
-window.history.{method}(null, "", {json.dumps(str(target_url))})
+window.history.{method}(null, "", {json.dumps(str(active_page_url))})
 window.scrollTo({{ top: 0, behavior: "smooth" }});
 """,
             )
 
-        self.create_task(history_worker())
+        self.create_task(
+            history_worker(),
+            name="Update browser history due to call to `navigate_to`",
+        )
 
         # Trigger the `on_page_change` event
         async def event_worker() -> None:
