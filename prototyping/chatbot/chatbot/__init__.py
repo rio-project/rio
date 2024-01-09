@@ -15,7 +15,7 @@ app = rio.App(
     pages=[
         rio.Page("", pages.ChatPage),
     ],
-    theme=rio.Theme.pair_from_color(
-        color_headings=True,
-    ),
+    # theme=rio.Theme.pair_from_color(
+    #     color_headings=True,
+    # ),
 )

@@ -80,7 +80,9 @@ class ChatMessage(rio.Component):
                 rio.Column(
                     rio.Row(
                         rio.Icon(
-                            "castle",
+                            "emoji-people"
+                            if self.message.is_user_message
+                            else "robot-2",
                             fill="secondary",
                         ),
                         rio.Text(
@@ -93,10 +95,10 @@ class ChatMessage(rio.Component):
                         ),
                         rio.Spacer(),
                         rio.Text(
-                            self.message.timestamp.strftime("%H:%M"),
+                            self.message.timestamp.astimezone().strftime("%H:%M"),
                             style="dim",
                         ),
-                        spacing=1,
+                        spacing=0.6,
                     ),
                     rio.MarkdownView(self.message.text),
                 ),

@@ -26,7 +26,7 @@ class ChatPage(rio.Component):
             models.ChatMessage(
                 timestamp=datetime.now(timezone.utc),
                 is_user_message=True,
-                text="Hello, I'm a human!",
+                text="Hello, I'm human!",
                 is_upvoted=False,
                 is_downvoted=False,
                 is_flagged_as_outdated=False,
@@ -67,7 +67,7 @@ class ChatPage(rio.Component):
             models.ChatMessage(
                 timestamp=datetime.now(timezone.utc),
                 is_user_message=False,
-                text="Totally legit, AI generated, perfect response.",
+                text="Totally legit, most definitely AI generated, perfect response.",
                 is_upvoted=False,
                 is_downvoted=False,
                 is_flagged_as_outdated=False,
@@ -85,7 +85,7 @@ class ChatPage(rio.Component):
             children.append(
                 comps.ChatMessage(
                     message,
-                    margin_bottom=4 if message.is_user_message else 3,
+                    margin_bottom=5 if message.is_user_message else 3,
                 )
             )
 
@@ -129,14 +129,12 @@ class ChatPage(rio.Component):
                 ),
             ),
             rio.Spacer(
-                width=27,
+                width=26,
             ),
             rio.Container(
                 rio.Column(
                     *children,
                     margin=1,
-                    width=90,
-                    align_x=0.5,
                 ),
                 width="grow",
             ),
