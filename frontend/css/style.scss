@@ -707,7 +707,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
 
 .rio-input-box > input,
 .rio-input-box > textarea {
-    order: 1;
     flex-grow: 1;
 
     font-family: Roboto, sans-serif;
@@ -720,7 +719,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
 }
 
 .rio-input-box > input {
-    order: 1;
     height: calc(200% - 2.17rem);
 }
 
@@ -731,6 +729,13 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     // long, and scrolling down, the text will be visible under the label, in
     // the element's padding.
     margin-top: 1.5rem;
+
+    // Make the textarea exactly fill the allocated space, so wraps the text
+    // rather than weirdly overflowing
+    width: 100%;
+
+    resize: none;
+    padding: 0;
 }
 
 .rio-input-box > input:active,

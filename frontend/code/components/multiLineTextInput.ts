@@ -30,9 +30,7 @@ export class MultiLineTextInputComponent extends ComponentBase {
         );
 
         element.innerHTML = `
-            <textarea style="order: 2" placeholder=""></textarea>
-            <div class="rio-text-input-hint-text" style="order: 1"></div>
-            <div class="rio-text-input-hint-text" style="order: 3"></div>
+            <textarea placeholder=""></textarea>
             <div class="rio-input-box-label"></div>
             <div class="rio-input-box-plain-bar"></div>
             <div class="rio-input-box-color-bar"></div>
