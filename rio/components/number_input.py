@@ -107,9 +107,17 @@ class NumberInput(component_base.Component):
         except KeyError:
             pass
 
-        # Try to parse the value
+        # If left empty, set the value to 0, if that's allowable
         if not raw_value:
-            return False
+            self.value = 0
+
+            if self.minimum is not None and self.minimum > 0:
+                self.value = self.minimum
+
+            if self.maximum is not None and self.maximum < 0:
+                self.value = self.maximum
+
+            return True
 
         # Check for a multiplier suffix
         suffix = raw_value[-1].lower()
