@@ -39,8 +39,6 @@ else:
 
 RIO_CACHE_DIR = USER_CACHE_DIR / "rio"
 
-RUNNING_IN_DEV_MODE = __debug__
-
 
 _READONLY = object()
 T = TypeVar("T")

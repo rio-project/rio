@@ -25,7 +25,7 @@ import rio.cli
 import rio.icon_registry
 import rio.snippets
 
-from .. import common
+from .. import common, debug
 from . import nice_traceback, project
 
 try:
@@ -179,21 +179,17 @@ class RunningApp:
 
         return f"http://{local_ip}:{self._port}"
 
-    def make_traceback_app(
-        self,
-        err: Union[str, BaseException],
-        project_directory: Path,
-    ) -> rio.App:
+    def make_error_message_app(self, err: Union[str, BaseException]) -> rio.App:
         """
         Creates an app that displays the given error message.
         """
-        html = make_traceback_html(err=err, project_directory=project_directory)
-
-        def build() -> rio.Component:
-            return rio.Html(html)
+        html = make_traceback_html(
+            err=err,
+            project_directory=self.proj.project_directory,
+        )
 
         return rio.App(
-            build=build,
+            build=lambda: rio.Html(html),
             theme=self._app_theme,
         )
 
@@ -255,6 +251,10 @@ class RunningApp:
         # handler.
         signal.signal(signal.SIGINT, self._on_sigint)
 
+        # If running in debug mode, install safeguards
+        if self.debug_mode:
+            debug.apply_monkeypatches()
+
         # The webview needs to be shown from the main thread. So, if running
         # inside of a window run the arbiter in a separate thread. Otherwise
         # just run it from this one.
@@ -315,9 +315,8 @@ class RunningApp:
 
         # Create the window
         self._webview_window = webview.create_window(
-            "Rio (debug)"
-            if self.debug_mode
-            else "Rio",  # TODO: Get the app's name, if possible
+            # TODO: Get the app's name, if possible
+            "Rio (debug)" if self.debug_mode else "Rio",
             f"http://{self._host}:{self._port}",
         )
         webview.start()
@@ -378,7 +377,16 @@ class RunningApp:
             last_reload_started_at = time.monotonic_ns()
 
             # Start the app for the first time
-            await self._start_or_restart_app()
+            await self._start_app()
+
+            # The app was just successfully started. Inform the user
+            if self.debug_mode:
+                print()
+                warning("Rio is running in DEBUG mode.")
+                warning(
+                    "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
+                )
+                warning("Run with `--release` to disable debug mode.")
 
             # Listen for events and react to them
             while True:
@@ -398,7 +406,7 @@ class RunningApp:
                     print(f"[bold]{rel_path}[/] has changed -> Reloading")
 
                     # Restart the app
-                    await self._start_or_restart_app()
+                    await self._restart_app()
 
                 # ???
                 else:
@@ -439,12 +447,11 @@ class RunningApp:
                 if not self._file_triggers_reload(path):
                     continue
 
-                await self._event_queue.put(
-                    FileChanged(
-                        time.monotonic_ns(),
-                        path,
-                    )
+                file_changed = FileChanged(
+                    time.monotonic_ns(),
+                    path,
                 )
+                await self._event_queue.put(file_changed)
 
     def _import_app_module(self) -> types.ModuleType:
         """
@@ -469,7 +476,7 @@ class RunningApp:
             # TODO: What if the user themselves appends to `sys.path`?
             del sys.path[-1]
 
-    def _load_app(self) -> Union[rio.App, BaseException, str]:
+    def _load_app(self) -> rio.App | str | BaseException:
         # Import the app module
         try:
             app_module = self._import_app_module()
@@ -539,37 +546,22 @@ window.setConnectionLostPopupVisible(true);
 """,
         )
 
-    async def _start_or_restart_app(self) -> None:
+    async def _start_app(self) -> None:
         """
-        Starts the app, or restarts it if it is already running. Returns only
-        once the app is ready or failed to start.
+        Starts uvicorn and the app. Returns only once the app is ready.
 
         If the user's code can't be imported, a dummy app displaying the error
         message will be created.
         """
         # Load the app
-        app = self._load_app()
-        app_loading_succeeded = isinstance(app, rio.App)
+        app_or_error = self._load_app()
 
-        if isinstance(app, (str, BaseException)):
-            print()
-            error("Couldn't load the app. Fix the issue above and try again.")
+        if isinstance(app_or_error, rio.App):
+            app = app_or_error
+        else:
+            app = self.make_error_message_app(app_or_error)
 
-            if self._uvicorn_server is not None:
-                self._spawn_traceback_popups(app)
-
-            app = self.make_traceback_app(app, self.proj.project_directory)
-
-        # Already running - restart it
-        if self._uvicorn_task is not None:
-            await self._restart_app(app)
-
-            if app_loading_succeeded:
-                success("Ready")
-
-            return
-
-        # Not running yet - start it
+        # Start uvicorn
         on_ready_event = asyncio.Event()
         self._uvicorn_task = self._create_worker(
             self._worker_uvicorn(
@@ -579,23 +571,12 @@ window.setConnectionLostPopupVisible(true);
         )
         await on_ready_event.wait()
 
-        # The app was just successfully started. Inform the user
-        if self.debug_mode:
-            warning("Rio is running in DEBUG mode.")
-            warning(
-                "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
-            )
-            warning("Run with `--release` to disable debug mode.")
-
+        print()
         if self.run_in_window:
             success("Ready")
             self._webview_task = self._create_worker(self._worker_webview())
         else:
-            print()
-            if app_loading_succeeded:
-                success(f"Your app is running at {self._url}")
-            else:
-                print(f"Rio is running at {self._url}")
+            success(f"Your app is running at {self._url}")
 
             if self.public:
                 warning(
@@ -608,8 +589,6 @@ window.setConnectionLostPopupVisible(true);
                 )
 
             webbrowser.open(self._url)
-
-        print()
 
     async def _worker_uvicorn(
         self,
@@ -680,10 +659,7 @@ window.setConnectionLostPopupVisible(true);
         finally:
             self._uvicorn_server.should_exit = True
 
-    async def _restart_app(
-        self,
-        app: rio.App,
-    ) -> None:
+    async def _restart_app(self) -> None:
         """
         This function expects that uvicorn is already running. It loads the app
         and injects it into the already running uvicorn server.
@@ -694,12 +670,26 @@ window.setConnectionLostPopupVisible(true);
             self._app_server is not None
         ), "Can't restart the app without it already running"
 
-        # Inject it into the server
+        # Reload the app
+        app_or_error = self._load_app()
+
+        if isinstance(app_or_error, rio.App):
+            app = app_or_error
+        else:
+            if self._uvicorn_server is not None:
+                self._spawn_traceback_popups(app_or_error)
+
+            app = self.make_error_message_app(app_or_error)
+
+        # Inject the app into the server
         self._app_server.app = app
+
+        # Re-run the `on_app_start` callback
+        await self._app_server._call_on_app_start()
 
         # Tell all sessions to reconnect, and close old sessions
         #
-        # This can't use `self._evaluate_javascript` it would race with closing
+        # This can't use `self._evaluate_javascript`, it would race with closing
         # the sessions.
         for sess in list(self._app_server._active_session_tokens.values()):
             # Tell the session to reload

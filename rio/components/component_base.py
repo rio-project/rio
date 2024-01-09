@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import asyncio
-import copy
 import dataclasses
 import inspect
 import json
@@ -593,16 +592,6 @@ class Component(metaclass=ComponentMeta):
         else:
             self._rio_internal_ = creator._rio_builtin_
 
-        # If debugging, keep track of who created this component
-        #
-        # TODO: Only do this if debugging
-        caller = inspect.stack()[3]
-
-        if caller is None:
-            self._creator_stackframe_ = None
-        else:
-            self._creator_stackframe_ = (Path(caller.filename), caller.lineno)
-
         # Call the `__init__` created by `@dataclass`
         original_init(self, *args, **kwargs)
 
@@ -802,27 +791,6 @@ class Component(metaclass=ComponentMeta):
 
             # Add it to the set of all state properties for rapid lookup
             cls._state_properties_[attr_name] = state_property
-
-    # When running in development mode, make sure that no component `__init__`
-    # tries to read a state property. This would be incorrect because state
-    # bindings are not yet initialized at that point.
-    if common.RUNNING_IN_DEV_MODE and not TYPE_CHECKING:
-
-        def __getattribute__(self, attr_name: str):
-            # fmt: off
-            if (
-                attr_name in type(self)._state_properties_ and
-                not super().__getattribute__("_state_bindings_initialized_")
-            ):
-                # fmt: on
-                raise Exception(
-                    "You have attempted to read a state property in a component's"
-                    " `__init__` method. This is not allowed because state"
-                    " bindings are not yet initialized at that point. Please"
-                    " move this code into the `__post_init__` method."
-                )
-
-            return super().__getattribute__(attr_name)
 
     @property
     def session(self) -> "rio.Session":

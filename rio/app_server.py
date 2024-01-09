@@ -159,6 +159,21 @@ class AppServer(fastapi.FastAPI):
             "/{initial_route_str:path}", self._serve_index, methods=["GET"]
         )
 
+    async def _call_on_app_start(self) -> None:
+        if self.app._on_app_start is None:
+            return
+
+        try:
+            result = self.app._on_app_start(self.app)
+
+            if inspect.isawaitable(result):
+                await result
+
+        # Display and discard exceptions
+        except Exception:
+            print("Exception in `on_app_start` event handler:")
+            traceback.print_exc()
+
     @contextlib.asynccontextmanager
     async def _lifespan(self):
         print("Debug: Start of the lifespan function")
@@ -176,17 +191,7 @@ class AppServer(fastapi.FastAPI):
         # This will be done blockingly, so the user can prepare any state before
         # connections are accepted. This is also why it's called before the
         # internal event.
-        if self.app._on_app_start is not None:
-            try:
-                result = self.app._on_app_start(self.app)
-
-                if inspect.isawaitable(result):
-                    await result
-
-            # Display and discard exceptions
-            except Exception:
-                print("Exception in `on_app_start` event handler:")
-                traceback.print_exc()
+        await self._call_on_app_start()
 
         # Trigger any internal startup event
         if self.internal_on_app_start is not None:
