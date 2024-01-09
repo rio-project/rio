@@ -99,9 +99,6 @@ class AppServer(fastapi.FastAPI):
         app_: app.App,
         debug_mode: bool,
         running_in_window: bool,
-        on_session_start: rio.EventHandler[rio.Session],
-        on_session_end: rio.EventHandler[rio.Session],
-        default_attachments: Tuple[Any, ...],
         validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
         internal_on_app_start: Optional[Callable[[], None]],
     ):
@@ -110,9 +107,6 @@ class AppServer(fastapi.FastAPI):
         self.app = app_
         self.debug_mode = debug_mode
         self.running_in_window = running_in_window
-        self.on_session_start = on_session_start
-        self.on_session_end = on_session_end
-        self.default_attachments = default_attachments
         self.validator_factory = validator_factory
         self.internal_on_app_start = internal_on_app_start
 
@@ -300,7 +294,7 @@ class AppServer(fastapi.FastAPI):
 
         # Add any attachments, except for user settings. These are deserialized
         # later on, once the client has sent the initial message.
-        for attachment in self.default_attachments:
+        for attachment in self.app._default_attachments:
             if isinstance(attachment, user_settings_module.UserSettings):
                 continue
 
@@ -757,19 +751,33 @@ class AppServer(fastapi.FastAPI):
         finally:
             global_state.currently_building_session = None
 
+        # Trigger the `on_session_start` event.
+        #
+        # Since this event is often used for important initialization tasks like
+        # adding attachments, actually wait for it to finish before continuing.
+        await sess._call_event_handler(self.app._on_session_start, sess)
+
         # Run any page guards for the initial page
+        #
+        # Guards have access to the session. Thus, it should be fully
+        # initialized, or at least pretend to be. Fill in any not yet final
+        # values with placeholders.
+        initial_url = sess._active_page_url
+
+        sess._active_page_instances = tuple()
+        sess._active_page_url = rio.URL()
+
+        # Then, run the guards
         try:
             (
                 active_page_instances,
                 active_page_url_absolute,
-            ) = routing.check_page_guards(
-                sess,
-                sess._active_page_url,
-            )
+            ) = routing.check_page_guards(sess, initial_url)
         except routing.NavigationFailed:
+            # TODO: Notify the client? Show an error?
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Navigation to initial page "{sess._active_page_url}" has failed.',
+                detail=f'Navigation to initial page "{initial_url}" has failed.',
             ) from None
 
         # Is this a page, or a full URL to another site?
@@ -817,10 +825,3 @@ window.location.href = {json.dumps(str(active_page_url_absolute))};
         # Update the session's active page and instances
         sess._active_page_instances = tuple(active_page_instances)
         sess._active_page_url = active_page_url_absolute
-
-        # Trigger the `on_session_start` event.
-        #
-        # Since this event is often used for important initialization tasks like
-        # adding attachments, actually wait for it to finish before continuing.
-        print("DEBUG: Triggering on session start")
-        await sess._call_event_handler(self.on_session_start, sess)

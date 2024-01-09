@@ -32,9 +32,6 @@ def enable_component_instantiation():
         app_=app,
         debug_mode=False,
         running_in_window=False,
-        on_session_start=None,
-        on_session_end=None,
-        default_attachments=tuple(),
         validator_factory=None,
         internal_on_app_start=None,
     )

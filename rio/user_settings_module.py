@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import *  # type: ignore
 
 import uniserde
-from typing_extensions import dataclass_transform
+from typing_extensions import Self, dataclass_transform
 
 from . import inspection, session
 

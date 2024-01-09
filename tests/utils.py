@@ -131,14 +131,15 @@ async def create_mockapp(
     user_settings: JsonDoc = {},
     default_attachments: Iterable[object] = (),
 ) -> AsyncGenerator[MockApp, None]:
-    app = rio.App(build=build, name=app_name)
+    app = rio.App(
+        build=build,
+        name=app_name,
+        default_attachments=tuple(default_attachments),
+    )
     app_server = AppServer(
         app,
         debug_mode=False,
         running_in_window=running_in_window,
-        on_session_start=None,
-        on_session_end=None,
-        default_attachments=tuple(default_attachments),
         validator_factory=None,
         internal_on_app_start=None,
     )
