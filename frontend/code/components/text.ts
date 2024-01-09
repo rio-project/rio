@@ -17,6 +17,7 @@ export class TextComponent extends ComponentBase {
     state: Required<TextState>;
 
     private inner: HTMLElement;
+    private cachedSingleLineTextDimensions: [number, number];
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -79,7 +80,21 @@ export class TextComponent extends ComponentBase {
             this.inner.style.textAlign = 'justify';
         }
 
-        this.makeLayoutDirty();
+        if (
+            deltaState.text !== undefined ||
+            deltaState.multiline !== undefined ||
+            deltaState.style !== undefined
+        ) {
+            this.makeLayoutDirty();
+
+            // If it's single-line, compute and cache the text dimensions
+            if (!(deltaState.multiline ?? this.state.multiline)) {
+                this.cachedSingleLineTextDimensions = getTextDimensions(
+                    this.element.textContent!,
+                    this.state.style
+                );
+            }
+        }
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
@@ -88,10 +103,8 @@ export class TextComponent extends ComponentBase {
             // much of an effect but slow everything down.
             this.naturalWidth = 0;
         } else {
-            [this.naturalWidth, this.naturalHeight] = getTextDimensions(
-                this.element.textContent!,
-                this.state.style
-            );
+            [this.naturalWidth, this.naturalHeight] =
+                this.cachedSingleLineTextDimensions;
         }
     }
 
