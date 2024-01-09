@@ -266,6 +266,7 @@ class Theme:
         corner_radius_small: float = 0.6,
         corner_radius_medium: float = 1.6,
         corner_radius_large: float = 2.6,
+        color_headings: bool | Literal["auto"] = "auto",
     ) -> Tuple[Self, Self]:
         func = functools.partial(
             cls.from_color,
@@ -277,6 +278,7 @@ class Theme:
             corner_radius_small=corner_radius_small,
             corner_radius_medium=corner_radius_medium,
             corner_radius_large=corner_radius_large,
+            color_headings=color_headings,
         )
         return (
             func(light=True),
