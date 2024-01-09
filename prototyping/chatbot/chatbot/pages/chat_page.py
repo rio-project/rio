@@ -82,11 +82,16 @@ class ChatPage(rio.Component):
 
         # Chat history
         for message in self.messages:
-            children.append(comps.ChatMessage(message))
+            children.append(
+                comps.ChatMessage(
+                    message,
+                    margin_bottom=4 if message.is_user_message else 3,
+                )
+            )
 
         # WIP Message
         if self.is_loading:
-            children.append(comps.ThinkingMessage())
+            children.append(comps.ThinkingMessage(margin_bottom=3))
 
         # Spacer
         children.append(rio.Spacer())
@@ -108,6 +113,7 @@ class ChatPage(rio.Component):
                     is_sensitive=not self.is_loading,
                 ),
                 spacing=1,
+                margin_top=2,
             )
         )
 
@@ -128,7 +134,6 @@ class ChatPage(rio.Component):
             rio.Container(
                 rio.Column(
                     *children,
-                    spacing=2.5,
                     margin=1,
                     width=90,
                     align_x=0.5,
