@@ -1,9 +1,10 @@
+import typing
+
 from . import component_tree, debugger_connector
 from .app_root import *
 from .auto_form import *
 from .banner import *
 from .button import *
-import typing
 from .card import *
 from .color_picker import *
 from .column import *
@@ -26,6 +27,7 @@ from .list_view import *
 from .markdown_view import *
 from .media_player import *
 from .mouse_event_listener import *
+from .multi_line_text_input import *
 from .number_input import *
 from .overlay import *
 from .page_view import *
@@ -50,7 +52,6 @@ from .table import *
 from .text import *
 from .text_input import *
 from .website import *
-
 
 assert (
     Container is not typing.Container

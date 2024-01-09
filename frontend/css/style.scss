@@ -705,13 +705,12 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     background-color: var(--rio-local-plain-bg-active);
 }
 
-.rio-input-box > input {
+.rio-input-box > input,
+.rio-input-box > textarea {
     order: 1;
-
-    min-width: 0;
     flex-grow: 1;
 
-    height: calc(200% - 2.17rem);
+    font-family: Roboto, sans-serif;
 
     background-color: transparent;
     color: var(--rio-local-text-color);
@@ -720,11 +719,27 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     font-size: 1rem;
 }
 
-.rio-input-box > input:active {
+.rio-input-box > input {
+    order: 1;
+    height: calc(200% - 2.17rem);
+}
+
+.rio-input-box > textarea {
+    // Don't overlap with the label
+    //
+    // Padding would be better, since it's clickable, but oddly when the text is
+    // long, and scrolling down, the text will be visible under the label, in
+    // the element's padding.
+    margin-top: 1.5rem;
+}
+
+.rio-input-box > input:active,
+.rio-input-box > textarea:active {
     background-color: transparent;
 }
 
-.rio-input-box > input:focus-visible {
+.rio-input-box > input:focus-visible,
+.rio-input-box > textarea:focus-visible {
     outline: none;
 }
 
@@ -742,6 +757,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
 }
 
 input:not(:placeholder-shown) ~ .rio-input-box-label,
+textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-input-box:focus-within > .rio-input-box-label,
 .rio-input-box-focused > .rio-input-box-label {
     opacity: 1;
@@ -1713,7 +1729,7 @@ input:not(:placeholder-shown) ~ .rio-input-box-label,
     width: 5rem;
 
     /* Text style */
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 0.9rem;
     text-align: center;
     font-weight: bold;
