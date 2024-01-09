@@ -25,6 +25,7 @@ import { MarginComponent } from './components/margin';
 import { MarkdownViewComponent } from './components/markdownView';
 import { MediaPlayerComponent } from './components/mediaPlayer';
 import { MouseEventListenerComponent } from './components/mouseEventListener';
+import { MultiLineTextInputComponent } from './components/multiLineTextInput';
 import { OverlayComponent } from './components/overlay';
 import { PlaceholderComponent } from './components/placeholder';
 import { PlotComponent } from './components/plot';
@@ -32,6 +33,7 @@ import { PopupComponent } from './components/popup';
 import { ProgressBarComponent } from './components/progressBar';
 import { ProgressCircleComponent } from './components/progressCircle';
 import { RectangleComponent } from './components/rectangle';
+import { reprElement } from './utils';
 import { RevealerComponent } from './components/revealer';
 import { ScrollContainerComponent } from './components/scrollContainer';
 import { ScrollTargetComponent } from './components/scrollTarget';
@@ -40,12 +42,11 @@ import { SlideshowComponent } from './components/slideshow';
 import { StackComponent } from './components/stack';
 import { SwitchComponent } from './components/switch';
 import { SwitcherBarComponent } from './components/switcherBar';
+import { SwitcherComponent } from './components/switcher';
 import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
 import { updateLayout } from './layouting';
-import { SwitcherComponent } from './components/switcher';
-import { reprElement } from './utils';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -73,6 +74,7 @@ const COMPONENT_CLASSES = {
     'MarkdownView-builtin': MarkdownViewComponent,
     'MediaPlayer-builtin': MediaPlayerComponent,
     'MouseEventListener-builtin': MouseEventListenerComponent,
+    'MultiLineTextInput-builtin': MultiLineTextInputComponent,
     'Overlay-builtin': OverlayComponent,
     'Plot-builtin': PlotComponent,
     'Popup-builtin': PopupComponent,
