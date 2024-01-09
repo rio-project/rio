@@ -107,7 +107,6 @@ all_pages = [
         # Just for debugging
         # TODO / REMOVEME
         # guard=lambda x: rio.URL("/documentation"),
-        guard=lambda x: "/documentation",
     ),
     rio.Page(
         "documentation",

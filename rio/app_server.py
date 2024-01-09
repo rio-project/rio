@@ -793,8 +793,8 @@ class AppServer(fastapi.FastAPI):
             async def history_worker() -> None:
                 await sess._evaluate_javascript(
                     f"""
-window.location.href = {json.dumps(str(active_page_url_absolute))};
-""",
+                    window.location.href = {json.dumps(str(active_page_url_absolute))};
+                    """
                 )
 
             sess.create_task(history_worker(), name="navigate to external URL")

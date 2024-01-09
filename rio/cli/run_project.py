@@ -1,6 +1,7 @@
 import asyncio
 import html
 import importlib
+import inspect
 import json
 import logging
 import signal
@@ -8,6 +9,7 @@ import socket
 import sys
 import threading
 import time
+import traceback
 import types
 import webbrowser
 from dataclasses import dataclass
@@ -711,6 +713,21 @@ window.setConnectionLostPopupVisible(true);
                 sess._close(close_remote_session=False),
                 name=f'Close session "{sess._session_token}"',
             )
+
+        # The app has changed, but the uvicorn server is still the same. Because
+        # of this, uvicorn won't call the `on_app_start` function - do it
+        # manually.
+        if app._on_app_start is not None:
+            try:
+                result = app._on_app_start(app)
+
+                if inspect.isawaitable(result):
+                    await result
+
+            # Display and discard exceptions
+            except Exception:
+                print("Exception in `on_app_start` event handler:")
+                traceback.print_exc()
 
     def _evaluate_javascript_in_all_sessions(self, javascript_source: str) -> None:
         """
