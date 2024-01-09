@@ -1,0 +1,3 @@
+[app]
+app_type = "website"
+main_module = "chatbot"
