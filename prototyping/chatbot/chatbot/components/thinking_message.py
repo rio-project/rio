@@ -20,7 +20,7 @@ class ThinkingMessage(rio.Component):
                                 fill=self.session.theme.secondary_color,
                             ),
                         ),
-                        spacing=1,
+                        spacing=0.6,
                         align_x=0,
                     ),
                     rio.Text(

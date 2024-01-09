@@ -29,15 +29,20 @@ class Outliner(rio.Component):
                 style="heading3",
                 margin_bottom=1,
             ),
-            rio.Column(
-                *children,
-                spacing=0.5,
-            ),
-            rio.IconButton(
-                "add",
+            *children,
+            rio.Button(
+                icon="add",
+                child="New Conversation",
                 color="primary",
-                style="minor",
-                size=2.5,
-                margin_top=1.5,
+                style="plain",
+                # margin_top=1.5,
             ),
+            # rio.IconButton(
+            #     "add",
+            #     color="primary",
+            #     style="minor",
+            #     size=2.5,
+            #     margin_top=1.5,
+            # ),
+            spacing=0.5,
         )
