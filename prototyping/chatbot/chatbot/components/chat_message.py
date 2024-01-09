@@ -102,8 +102,6 @@ class ChatMessage(rio.Component):
                 ),
             ),
             feedback_area,
-            # width=50,
-            # align_x=1 if self.message.is_user_message else 0,
             margin_left=10 if self.message.is_user_message else 0,
             margin_right=0 if self.message.is_user_message else 10,
         )

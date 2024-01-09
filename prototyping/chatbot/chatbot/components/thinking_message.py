@@ -34,7 +34,5 @@ class ThinkingMessage(rio.Component):
                 rio.ProgressCircle(progress=None, size=2.0),
                 spacing=1.5,
             ),
-            # width=30,
-            # align_x=0,
             margin_right=10,
         )
