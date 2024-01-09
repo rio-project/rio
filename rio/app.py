@@ -282,9 +282,6 @@ class App:
             self,
             debug_mode=debug_mode,
             running_in_window=running_in_window,
-            on_session_start=self._on_session_start,
-            on_session_end=self._on_session_end,
-            default_attachments=self._default_attachments,
             validator_factory=validator_factory,
             internal_on_app_start=internal_on_app_start,
         )

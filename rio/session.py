@@ -116,13 +116,6 @@ class SessionAttachments:
         - any value that was previously attached using `Session.attach`
         """
 
-        print(f"Debug: Querying attachments in session {id(self._session)}")
-
-        for key, value in self._attachments.items():
-            print(f"- {key} -> {id(key)}")
-
-        print(f"Key: {typ} - {id(typ)}")
-
         try:
             return self._attachments[typ]  # type: ignore
         except KeyError:
@@ -407,7 +400,7 @@ class Session(unicall.Unicall):
             return
 
         # Fire the session end event
-        await self._call_event_handler(self._app_server.on_session_end, self)
+        await self._call_event_handler(self._app_server.app._on_session_end, self)
 
         # Save the settings
         await self._save_settings_now()
@@ -1438,7 +1431,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     settings_json[key] = value
 
         # Instantiate and attach the settings
-        for default_settings in self._app_server.default_attachments:
+        for default_settings in self._app_server.app._default_attachments:
             if not isinstance(default_settings, user_settings_module.UserSettings):
                 continue
 

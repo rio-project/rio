@@ -464,6 +464,7 @@ class RunningApp:
         try:
             return importlib.import_module(app_main_module)
         finally:
+            # TODO: What if the user themselves appends to `sys.path`?
             del sys.path[-1]
 
     def _load_app(self) -> Union[rio.App, BaseException, str]:
@@ -525,7 +526,7 @@ class RunningApp:
             project_directory=self.proj.project_directory,
         )
 
-        self._evaluate_javascript(
+        self._evaluate_javascript_in_all_sessions(
             f"""
 // Override the popup with the traceback message
 let popup = document.querySelector(".rio-connection-lost-popup");
@@ -634,9 +635,7 @@ window.setConnectionLostPopupVisible(true);
             debug_mode=self.debug_mode,
             running_in_window=self.run_in_window,
             validator_factory=None,
-            internal_on_app_start=lambda: self._run_in_mainloop(
-                app_has_started_event.set
-            ),
+            internal_on_app_start=start_callback,
         )
         print("Debug: After as fastapi")
 
@@ -649,13 +648,12 @@ window.setConnectionLostPopupVisible(true);
             host=self._host,
             port=self._port,
             log_level="error" if self.quiet else "info",
-            timeout_graceful_shutdown=1,  # Without a timeout, sometimes the server just deadlocks
+            timeout_graceful_shutdown=1,  # Without a timeout the server sometimes deadlocks
         )
         self._uvicorn_server = uvicorn.Server(config)
 
         # Run uvicorn in a separate thread
         app_has_started_event: asyncio.Event = asyncio.Event()
-        app_has_finished_event: asyncio.Event = asyncio.Event()
 
         def run_uvicorn() -> None:
             assert self._uvicorn_server is not None
@@ -714,7 +712,7 @@ window.setConnectionLostPopupVisible(true);
                 name=f'Close session "{sess._session_token}"',
             )
 
-    def _evaluate_javascript(self, javascript_source: str) -> None:
+    def _evaluate_javascript_in_all_sessions(self, javascript_source: str) -> None:
         """
         Runs the given javascript source in all connected sessions. Does not
         wait for or return the result.

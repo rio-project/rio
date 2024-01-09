@@ -62,7 +62,10 @@ export class FundamentalRootComponent extends ComponentBase {
         }
 
         // Hide the connection lost popup by default
-        setConnectionLostPopupVisible(false);
+        //
+        // Looking up elements via selector is wonky if the element has only
+        // just been added. Give the browser time to update.
+        setTimeout(() => setConnectionLostPopupVisible(false), 0);
 
         // Not really needed since this component will never see an update, but
         // here for consistency
