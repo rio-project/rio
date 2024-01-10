@@ -259,7 +259,7 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Subscribe to other events and keep track of them
         this.bindHandler('mousemove', this.onHueWheelMouseMove);
-        this.bindHandler('mouseup', this.onSelectionFinished);
+        this.bindHandler('click', this.onSelectionFinished);
 
         // Eat the event
         event.stopPropagation();
@@ -277,7 +277,7 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Subscribe to other events and keep track of them
         this.bindHandler('mousemove', this.onHueBarMouseMove);
-        this.bindHandler('mouseup', this.onSelectionFinished);
+        this.bindHandler('click', this.onSelectionFinished);
 
         // Eat the event
         event.stopPropagation();
@@ -295,7 +295,7 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Subscribe to other events and keep track of them
         this.bindHandler('mousemove', this.onOpacityBarMouseMove);
-        this.bindHandler('mouseup', this.onSelectionFinished);
+        this.bindHandler('click', this.onSelectionFinished);
 
         // Eat the event
         event.stopPropagation();

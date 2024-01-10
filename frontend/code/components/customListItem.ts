@@ -44,7 +44,7 @@ export class CustomListItemComponent extends ComponentBase {
                 );
                 this.element.style.cursor = 'pointer';
 
-                this.element.onmouseup = this._on_press.bind(this);
+                this.element.onclick = this._on_press.bind(this);
             }
         } else if (deltaState.pressable === false) {
             if (this.mdcRipple !== null) {
@@ -57,7 +57,7 @@ export class CustomListItemComponent extends ComponentBase {
                 );
                 this.element.style.removeProperty('cursor');
 
-                this.element.onmouseup = null;
+                this.element.onclick = null;
             }
         }
     }

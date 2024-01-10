@@ -76,7 +76,7 @@ export class MultiLineTextInputComponent extends ComponentBase {
 
         // The input element doesn't take up the full height of the component.
         // Catch clicks above and also make them focus the input element.
-        element.addEventListener('mouseup', (event) => {
+        element.addEventListener('click', (event) => {
             this.inputElement.focus();
             event.stopPropagation();
         });

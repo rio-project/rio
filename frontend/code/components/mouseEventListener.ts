@@ -46,6 +46,7 @@ function findComponentUnderMouse(event: MouseEvent): ComponentId {
 export type MouseEventListenerState = ComponentState & {
     _type_: 'MouseEventListener-builtin';
     child?: ComponentId;
+    reportPress: boolean;
     reportMouseDown: boolean;
     reportMouseUp: boolean;
     reportMouseMove: boolean;
@@ -70,6 +71,18 @@ export class MouseEventListenerComponent extends SingleContainer {
         latentComponents: Set<ComponentBase>
     ): void {
         this.replaceOnlyChild(latentComponents, deltaState.child);
+
+        if (deltaState.reportPress) {
+            this.element.onclick = (e) => {
+                this.sendMessageToBackend({
+                    type: 'press',
+                    ...eventMouseButtonToString(e),
+                    ...eventMousePositionToString(e),
+                });
+            };
+        } else {
+            this.element.onclick = null;
+        }
 
         if (deltaState.reportMouseDown) {
             this.element.onmousedown = (e) => {
@@ -129,12 +142,11 @@ export class MouseEventListenerComponent extends SingleContainer {
         }
 
         if (deltaState.reportMouseDrag) {
-            this._dragHandler = this.addDragHandler(
-                this.element,
-                this._onDragStart.bind(this),
-                null,
-                this._onDragEnd.bind(this)
-            );
+            this._dragHandler = this.addDragHandler({
+                element: this.element,
+                onStart: this._onDragStart.bind(this),
+                onEnd: this._onDragEnd.bind(this),
+            });
         } else {
             if (this._dragHandler !== null) {
                 this._dragHandler.disconnect();

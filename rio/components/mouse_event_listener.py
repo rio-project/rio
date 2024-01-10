@@ -90,9 +90,8 @@ class MouseEventListener(component_base.FundamentalComponent):
     Attributes:
         child: The child component to display.
 
-        on_press: Triggered when the user presses/clicks/taps the component.
-            This is similar to `on_mouse_up`, but also verifies that the left
-            mouse button was pressed.
+        on_press: Similar to `on_mouse_up`, but performs additional subtle
+            checks, such as that the left mouse button was pressed.
 
         on_mouse_down: Triggered when a mouse button is pressed down while
             the mouse is placed over the child component.
@@ -102,6 +101,7 @@ class MouseEventListener(component_base.FundamentalComponent):
 
         on_mouse_move: Triggered when the mouse is moved while located over
             the child component.
+
 
         on_mouse_enter: Triggered when the mouse previously was not located
             over the child component, but now is.
@@ -122,8 +122,9 @@ class MouseEventListener(component_base.FundamentalComponent):
 
     def _custom_serialize(self) -> JsonDoc:
         return {
+            "reportPress": self.on_press is not None,
             "reportMouseDown": self.on_mouse_down is not None,
-            "reportMouseUp": self.on_mouse_up is not None or self.on_press is not None,
+            "reportMouseUp": self.on_mouse_up is not None,
             "reportMouseMove": self.on_mouse_move is not None,
             "reportMouseEnter": self.on_mouse_enter is not None,
             "reportMouseLeave": self.on_mouse_leave is not None,
@@ -138,7 +139,17 @@ class MouseEventListener(component_base.FundamentalComponent):
         assert isinstance(msg_type, str), msg_type
 
         # Dispatch the correct event
-        if msg_type == "mouseDown":
+        if msg_type == "press":
+            await self.call_event_handler(
+                self.on_press,
+                PressEvent(
+                    x=msg["x"],
+                    y=msg["y"],
+                    button=MouseButton(msg["button"]),
+                ),
+            )
+
+        elif msg_type == "mouseDown":
             await self.call_event_handler(
                 self.on_mouse_down,
                 MouseDownEvent(
@@ -149,24 +160,12 @@ class MouseEventListener(component_base.FundamentalComponent):
             )
 
         elif msg_type == "mouseUp":
-            button = MouseButton(msg["button"])
-
-            if button == MouseButton.LEFT:
-                await self.call_event_handler(
-                    self.on_press,
-                    PressEvent(
-                        x=msg["x"],
-                        y=msg["y"],
-                        button=button,
-                    ),
-                )
-
             await self.call_event_handler(
                 self.on_mouse_up,
                 MouseUpEvent(
                     x=msg["x"],
                     y=msg["y"],
-                    button=button,
+                    button=MouseButton(msg["button"]),
                 ),
             )
 
