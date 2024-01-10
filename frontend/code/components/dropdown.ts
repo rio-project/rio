@@ -18,6 +18,7 @@ export type DropdownState = ComponentState & {
     label?: string;
     selectedName?: string;
     is_sensitive?: boolean;
+    is_valid?: boolean;
 };
 
 export class DropdownComponent extends ComponentBase {
@@ -437,6 +438,15 @@ export class DropdownComponent extends ComponentBase {
             element.classList.remove('rio-input-box-disabled');
         } else if (deltaState.is_sensitive === false) {
             element.classList.add('rio-input-box-disabled');
+        }
+
+        if (deltaState.is_valid === false) {
+            this.element.style.setProperty(
+                '--rio-local-text-color',
+                'var(--rio-global-danger-bg)'
+            );
+        } else if (deltaState.is_valid === true) {
+            this.element.style.removeProperty('--rio-local-text-color');
         }
     }
 

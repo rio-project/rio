@@ -50,8 +50,9 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
     _: KW_ONLY
     label: str
     selected_value: T
+    is_sensitive: bool
+    is_valid: bool
     on_change: rio.EventHandler[DropdownChangeEvent[T]]
-    is_sensitive: bool = True
 
     def __init__(
         self,
@@ -61,6 +62,7 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         selected_value: Optional[T] = None,
         on_change: rio.EventHandler[DropdownChangeEvent[T]] = None,
         is_sensitive: bool = True,
+        is_valid: bool = True,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -99,6 +101,7 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         self.label = label
         self.on_change = on_change
         self.is_sensitive = is_sensitive
+        self.is_valid = is_valid
 
         # This is an unsafe assignment, because the value could be `None`. This
         # will be fixed in `__post_init__`, once the state bindings have been
