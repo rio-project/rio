@@ -56,8 +56,8 @@ def make_default_connection_lost_component() -> rio.Component:
                     rio.Icon(
                         "error",
                         fill="danger",
-                        width=1.5,
-                        height=1.5,
+                        width=1.6,
+                        height=1.6,
                     ),
                     rio.Text(
                         "Connection lost",

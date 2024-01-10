@@ -92,16 +92,16 @@ export class TextInputComponent extends ComponentBase {
             event.stopPropagation();
         });
 
-        // The `mouseup` events pass focus to the input and move the cursor.
+        // The `click` events pass focus to the input and move the cursor.
         // This has to be done in `mouseup`, rather than `mousedown`, because
         // otherwise the browser removes the focus again on mouseup.
-        this.prefixTextElement.addEventListener('mouseup', (event) => {
+        this.prefixTextElement.addEventListener('click', (event) => {
             this.inputElement.focus();
             this.inputElement.setSelectionRange(0, 0);
             event.stopPropagation();
         });
 
-        this.suffixTextElement.addEventListener('mouseup', (event) => {
+        this.suffixTextElement.addEventListener('click', (event) => {
             this.inputElement.focus();
             this.inputElement.setSelectionRange(
                 this.inputElement.value.length,

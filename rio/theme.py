@@ -160,7 +160,10 @@ class Theme:
                 neutral_palette = Palette._from_color(neutral_color, light)
 
             hud_palette = Palette._from_color(
-                rio.Color.from_grey(0.3, opacity=0.8),
+                rio.Color.from_grey(
+                    0.2,
+                    opacity=0.8,
+                ),
                 light,
             )
 
@@ -197,8 +200,8 @@ class Theme:
 
             hud_palette = Palette._from_color(
                 rio.Color.from_grey(
-                    0.15,
-                    opacity=1.0,
+                    0.1,
+                    opacity=0.8,
                 ),
                 light,
             )

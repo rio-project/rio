@@ -37,13 +37,8 @@ export class ButtonComponent extends SingleContainer {
         this.mdcRipple = new MDCRipple(this.innerElement);
 
         // Detect button presses
-        this.innerElement.onmouseup = (event) => {
+        this.innerElement.onclick = (event) => {
             event.stopPropagation();
-
-            // Only react to left clicks
-            if (event.button !== 0) {
-                return;
-            }
 
             // Do nothing if the button isn't sensitive
             if (!this.state['is_sensitive'] || this.isStillInitiallyDisabled) {

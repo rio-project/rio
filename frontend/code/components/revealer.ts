@@ -81,7 +81,7 @@ export class RevealerComponent extends ComponentBase {
         );
 
         // Listen for presses
-        this.headerElement.onmouseup = (e) => {
+        this.headerElement.onclick = (e) => {
             // Toggle the open state
             this.state.is_open = !this.state.is_open;
 

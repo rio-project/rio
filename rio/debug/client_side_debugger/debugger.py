@@ -2,7 +2,7 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import deploy_page, docs_page, icons_page, project_page, tree_page
+from . import ai_chat_page, deploy_page, docs_page, icons_page, project_page, tree_page
 
 
 class ClientSideDebugger(rio.Component):
@@ -42,6 +42,12 @@ class ClientSideDebugger(rio.Component):
         # Docs
         if self.selected_page == "docs":
             return docs_page.DocsPage(
+                width=PAGE_WIDTH,
+            )
+
+        # AI Chat
+        if self.selected_page == "ai-chat":
+            return ai_chat_page.AIChatPage(
                 width=PAGE_WIDTH,
             )
 
@@ -102,7 +108,7 @@ class ClientSideDebugger(rio.Component):
                     spacing=2,
                     color="primary",
                     selected_value=ClientSideDebugger.selected_page,
-                    margin_x=0.3,
+                    margin=0.3,
                 ),
                 rio.Spacer(),
                 rio.components.debugger_connector.DebuggerConnector(),

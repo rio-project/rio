@@ -50,8 +50,15 @@ class ComponentDetails(rio.Component):
         return result
 
     def build(self) -> rio.Component:
-        # Get the target component. For now just use a placeholder
-        target = self.session._weak_components_by_id[self.component_id]
+        # Get the target component
+        try:
+            target = self.session._weak_components_by_id[self.component_id]
+
+        # In rare cases components can't be found, because they're created
+        # client-side (e.g. injected margins). In this case, just don't display
+        # anything.
+        except KeyError:
+            return rio.Spacer(height=0)
 
         # Create a grid with all the details
         result = rio.Grid(row_spacing=0.5, column_spacing=0.5)
