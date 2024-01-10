@@ -91,6 +91,7 @@ class Theme:
 
     background_palette: Palette
     neutral_palette: Palette
+    hud_palette: Palette
     disabled_palette: Palette
 
     success_palette: Palette
@@ -116,6 +117,7 @@ class Theme:
         primary_color: Optional[rio.Color] = None,
         secondary_color: Optional[rio.Color] = None,
         neutral_color: Optional[rio.Color] = None,
+        hud_color: Optional[rio.Color] = None,
         success_color: Optional[rio.Color] = None,
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
@@ -158,6 +160,11 @@ class Theme:
             else:
                 neutral_palette = Palette._from_color(neutral_color, light)
 
+            if hud_color is None:
+                hud_color = rio.Color.from_grey(0.3)
+
+            hud_palette = Palette._from_color(hud_color, light)
+
             disabled_palette = Palette(
                 rio.Color.from_grey(0.7),
                 rio.Color.from_grey(0.75),
@@ -188,6 +195,11 @@ class Theme:
                 )
             else:
                 neutral_palette = Palette._from_color(neutral_color, light)
+
+            if hud_color is None:
+                hud_color = rio.Color.from_grey(0.15)
+
+            hud_palette = Palette._from_color(hud_color, light)
 
             disabled_palette = Palette(
                 rio.Color.from_grey(0.2),
@@ -240,6 +252,7 @@ class Theme:
             secondary_palette=secondary_palette,
             background_palette=background_palette,
             neutral_palette=neutral_palette,
+            hud_palette=hud_palette,
             disabled_palette=disabled_palette,
             success_palette=success_palette,
             warning_palette=warning_palette,

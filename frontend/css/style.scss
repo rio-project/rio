@@ -155,6 +155,53 @@ $input-box-padding-bottom: 0.4rem;
     color: var(--rio-global-text-color);
 }
 
+.rio-switcheroo-hud {
+    // surface := HUD
+    //
+    // -> All others follow.
+
+    // Rio locals
+    --rio-local-plain-bg: var(--rio-global-hud-bg);
+    --rio-local-plain-bg-variant: var(--rio-global-hud-bg-variant);
+    --rio-local-plain-bg-active: var(--rio-global-hud-bg-active);
+
+    --rio-local-accent-bg: var(--rio-global-primary-bg);
+    --rio-local-accent-fg: var(--rio-global-primary-fg);
+
+    // Text Styles
+    --rio-local-heading1-color: var(--rio-global-heading1-color);
+    --rio-local-heading1-background: var(--rio-global-heading1-background);
+    --rio-local-heading1-background-clip: var(
+        --rio-global-heading1-background-clip
+    );
+    --rio-local-heading1-fill-color: var(--rio-global-heading1-fill-color);
+
+    --rio-local-heading2-color: var(--rio-global-heading2-color);
+    --rio-local-heading2-background: var(--rio-global-heading2-background);
+    --rio-local-heading2-background-clip: var(
+        --rio-global-heading2-background-clip
+    );
+    --rio-local-heading2-fill-color: var(--rio-global-heading2-fill-color);
+
+    --rio-local-heading3-color: var(--rio-global-heading3-color);
+    --rio-local-heading3-background: var(--rio-global-heading3-background);
+    --rio-local-heading3-background-clip: var(
+        --rio-global-heading3-background-clip
+    );
+    --rio-local-heading3-fill-color: var(--rio-global-heading3-fill-color);
+
+    --rio-local-text-color: var(--rio-global-hud-fg);
+    --rio-local-text-background: var(--rio-global-text-background);
+    --rio-local-text-background-clip: var(--rio-global-text-background-clip);
+    --rio-local-text-fill-color: var(--rio-global-text-fill-color);
+
+    // Material Design Web
+    // TODO
+
+    // Regular HTML
+    color: var(--rio-global-hud-fg);
+}
+
 .rio-switcheroo-primary {
     // surface := primary
     //
