@@ -1764,6 +1764,7 @@ document.body.removeChild(a)
             "secondary",
             "background",
             "neutral",
+            "hud",
             "disabled",
             "success",
             "warning",
