@@ -2590,7 +2590,8 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     position: relative;
 }
 
-.rio-tooltip-anchor > * {
+.rio-tooltip-anchor > *,
+.rio-tooltip-label > * {
     position: relative !important;
 }
 
@@ -2601,8 +2602,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     padding: 0.5rem;
     border-radius: var(--rio-global-corner-radius-small);
 
-    background: #333;
-    color: #ddd;
+    background: var(--rio-global-hud-bg);
     box-shadow: 0 0.1rem 0.2rem var(--rio-global-shadow-color);
     opacity: 0;
 

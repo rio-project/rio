@@ -64,7 +64,7 @@ export class LinkComponent extends ComponentBase {
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            this.replaceOnlyChild(null);
+            this.replaceOnlyChild(latentComponents, null);
 
             // Add the new text
             let textElement = document.createElement('div');

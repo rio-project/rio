@@ -1,3 +1,4 @@
+import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
@@ -6,11 +7,11 @@ import { SingleContainer } from './singleContainer';
 export type TooltipState = ComponentState & {
     _type_: 'Tooltip-builtin';
     anchor?: ComponentId;
-    label?: string;
+    tip_component?: ComponentId | null;
     position?: 'left' | 'top' | 'right' | 'bottom';
 };
 
-export class TooltipComponent extends SingleContainer {
+export class TooltipComponent extends ComponentBase {
     state: Required<TooltipState>;
 
     private anchorContainer: HTMLElement;
@@ -23,7 +24,7 @@ export class TooltipComponent extends SingleContainer {
 
         element.innerHTML = `
             <div class="rio-tooltip-anchor"></div>
-            <div class="rio-tooltip-label"></div>
+            <div class="rio-tooltip-label rio-switcheroo-hud"></div>
         `;
 
         this.anchorContainer = element.querySelector(
@@ -36,7 +37,7 @@ export class TooltipComponent extends SingleContainer {
 
         // Listen for events
         this.anchorContainer.addEventListener('mouseover', () => {
-            this.labelElement.style.opacity = '0.8';
+            this.labelElement.style.opacity = '1';
         });
 
         this.anchorContainer.addEventListener('mouseout', () => {
@@ -50,7 +51,7 @@ export class TooltipComponent extends SingleContainer {
         deltaState: TooltipState,
         latentComponents: Set<ComponentBase>
     ): void {
-        // Update the child
+        // Update the anchor
         if (deltaState.anchor !== undefined) {
             this.replaceOnlyChild(
                 latentComponents,
@@ -59,16 +60,20 @@ export class TooltipComponent extends SingleContainer {
             );
         }
 
-        // Update the label
-        if (deltaState.label !== undefined) {
-            this.labelElement.textContent = deltaState.label;
+        // Update tip
+        if (deltaState.tip_component !== undefined) {
+            this.replaceOnlyChild(
+                latentComponents,
+                deltaState.tip_component,
+                this.labelElement
+            );
         }
 
         // Position
         if (deltaState.position !== undefined) {
             let left, top, right, bottom, transform;
 
-            const theOne = 'calc(100% + 1rem)';
+            const theOne = 'calc(100% + 0.7rem)';
 
             if (deltaState.position === 'left') {
                 left = 'unset';
@@ -102,5 +107,37 @@ export class TooltipComponent extends SingleContainer {
             this.labelElement.style.bottom = bottom;
             this.labelElement.style.transform = transform;
         }
+    }
+
+    updateNaturalWidth(ctx: LayoutContext): void {
+        this.naturalWidth = componentsById[this.state.anchor!]!.requestedWidth;
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        let anchor = componentsById[this.state.anchor!]!;
+        let tip = componentsById[this.state.tip_component!]!;
+
+        anchor.allocatedWidth = this.allocatedWidth;
+        tip.allocatedWidth = tip.naturalWidth;
+    }
+
+    updateNaturalHeight(ctx: LayoutContext): void {
+        this.naturalHeight =
+            componentsById[this.state.anchor!]!.requestedHeight;
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        let anchor = componentsById[this.state.anchor!]!;
+        let tip = componentsById[this.state.tip_component!]!;
+
+        anchor.allocatedHeight = this.allocatedHeight;
+        tip.allocatedHeight = tip.naturalHeight;
+
+        // Position the children
+        anchor.element.style.left = '0';
+        anchor.element.style.top = '0';
+
+        tip.element.style.left = '0';
+        tip.element.style.top = '0';
     }
 }
