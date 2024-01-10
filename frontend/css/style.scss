@@ -2531,3 +2531,33 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-switcher {
     overflow: hidden;
 }
+
+// Tooltip
+.rio-tooltip {
+    pointer-events: none;
+    position: relative;
+}
+
+.rio-tooltip-anchor {
+    pointer-events: auto;
+    position: relative;
+}
+
+.rio-tooltip-anchor > * {
+    position: relative !important;
+}
+
+.rio-tooltip-label {
+    position: absolute;
+
+    width: max-content;
+    padding: 0.5rem;
+    border-radius: var(--rio-global-corner-radius-small);
+
+    background: #333;
+    color: #ddd;
+    box-shadow: 0 0.1rem 0.2rem var(--rio-global-shadow-color);
+    opacity: 0;
+
+    transition: opacity 0.15s ease-in-out;
+}

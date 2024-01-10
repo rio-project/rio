@@ -767,22 +767,19 @@ class AppServer(fastapi.FastAPI):
         # Guards have access to the session. Thus, it should be fully
         # initialized, or at least pretend to be. Fill in any not yet final
         # values with placeholders.
-        initial_url = sess._active_page_url
-
         sess._active_page_instances = tuple()
-        sess._active_page_url = rio.URL()
 
         # Then, run the guards
         try:
             (
                 active_page_instances,
                 active_page_url_absolute,
-            ) = routing.check_page_guards(sess, initial_url)
+            ) = routing.check_page_guards(sess, sess._active_page_url)
         except routing.NavigationFailed:
             # TODO: Notify the client? Show an error?
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f'Navigation to initial page "{initial_url}" has failed.',
+                detail=f'Navigation to initial page "{sess._active_page_url}" has failed.',
             ) from None
 
         # Is this a page, or a full URL to another site?
