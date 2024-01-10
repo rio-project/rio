@@ -1,11 +1,6 @@
-import {
-    componentsById,
-    getRootComponent,
-    tryGetComponentByElement,
-} from '../componentManagement';
+import { componentsById, getRootComponent } from '../componentManagement';
 import { applyIcon } from '../designApplication';
 import { ComponentId } from '../models';
-import { commitCss, sleep } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 import { DebuggerConnectorComponent } from './debuggerConnector';
 import { ScrollContainerComponent } from './scrollContainer';
@@ -40,12 +35,14 @@ export class ComponentTreeComponent extends ComponentBase {
             this.buildTree();
         });
 
-        // Prepare & add the highlighter
+        // Add the highlighter and hide it
         this.highlighterElement = document.createElement('div');
         this.highlighterElement.classList.add(
             'rio-debugger-component-highlighter'
         );
         document.body.appendChild(this.highlighterElement);
+
+        this.moveHighlighterTo(null);
 
         return element;
     }

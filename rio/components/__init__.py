@@ -51,6 +51,7 @@ from .switcher_bar import *
 from .table import *
 from .text import *
 from .text_input import *
+from .tooltip import *
 from .website import *
 
 assert (

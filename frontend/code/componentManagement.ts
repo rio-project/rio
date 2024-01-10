@@ -47,6 +47,7 @@ import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
 import { updateLayout } from './layouting';
+import { TooltipComponent } from './components/tooltip';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -94,6 +95,7 @@ const COMPONENT_CLASSES = {
     'Table-builtin': TableComponent,
     'Text-builtin': TextComponent,
     'TextInput-builtin': TextInputComponent,
+    'Tooltip-builtin': TooltipComponent,
     Placeholder: PlaceholderComponent,
 };
 
