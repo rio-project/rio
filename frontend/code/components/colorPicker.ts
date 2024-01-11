@@ -2,6 +2,7 @@ import { Color } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from '../colorConversion';
 import { LayoutContext } from '../layouting';
+import { getElementDimensions } from '../layoutHelpers';
 
 export type ColorPickerState = ComponentState & {
     _type_: 'ColorPicker-builtin';
@@ -202,23 +203,19 @@ export class ColorPickerComponent extends ComponentBase {
         this.hueIndicator.style.background = `#${hueHex}`;
 
         // Place the saturation/brightness indicator
-        //
-        // FIXME: `getBoundingClientRect` only works if the element is visible.
-        // In other words, this is broken, e.g. inside a `rio.Popup`.
-        const boundingBox = this.colorSquare.getBoundingClientRect();
-        const saturationX = this.selectedHsv[1] * boundingBox.width;
-        const brightnessY = (1 - this.selectedHsv[2]) * boundingBox.height;
+        const saturationX = this.selectedHsv[1];
+        const brightnessY = 1 - this.selectedHsv[2];
 
-        this.squareKnob.style.left = `${saturationX}px`;
-        this.squareKnob.style.top = `${brightnessY}px`;
+        this.squareKnob.style.left = `${saturationX * 100}%`;
+        this.squareKnob.style.top = `${brightnessY * 100}%`;
 
         // Place the hue indicator
-        const hueX = (boundingBox.width * this.selectedHsv[0]) / 360;
-        this.hueIndicator.style.left = `${hueX}px`;
+        const hueX = this.selectedHsv[0] / 360;
+        this.hueIndicator.style.left = `${hueX * 100}%`;
 
         // Place the opacity indicator
-        const brightnessX = boundingBox.width * this.state.color[3];
-        this.opacityIndicator.style.left = `${brightnessX}px`;
+        const opacityX = this.state.color[3];
+        this.opacityIndicator.style.left = `${opacityX * 100}%`;
 
         // Update the output label
         this.selectedColorLabel.value = this.state.pick_opacity

@@ -34,7 +34,7 @@ __all__ = [
 # TODO: Consider really noticeable, memorable primary color: #e80265
 
 
-class TonalPalette:
+class MaterialPalette:
     def __init__(self, hue: int, chroma: int):
         self._material_palette = material_color_utilities_python.TonalPalette(
             hue, chroma
@@ -59,13 +59,13 @@ class Palette:
         is_light_theme: bool,
     ) -> Self:
         as_hct = material_color_utilities_python.Hct.fromInt(color._as_material_argb)
-        hct_palette = TonalPalette(as_hct.hue, as_hct.chroma)
+        hct_palette = MaterialPalette(as_hct.hue, as_hct.chroma)
 
         return cls(
             background=color,
             background_variant=hct_palette[as_hct.tone + 5],
             background_active=hct_palette[as_hct.tone + 15],
-            foreground=hct_palette[8 if as_hct.tone > 50 else 92],
+            foreground=hct_palette[8 if as_hct.tone > 60 else 92],
         )
 
     def replace(
@@ -326,7 +326,7 @@ class Theme:
         Given the color of a background, return which color should be used for
         text on top of it.
         """
-        if color.perceived_brightness > 0.5:
+        if color.perceived_brightness > 0.6:
             return rio.Color.from_grey(0.1)
         else:
             return rio.Color.from_grey(0.9)
