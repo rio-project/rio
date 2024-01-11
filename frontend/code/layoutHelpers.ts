@@ -88,10 +88,17 @@ export function getTextDimensions(
 /// This works even if the element is not visible, e.g. because a parent is
 /// hidden.
 export function getElementDimensions(element: HTMLElement): [number, number] {
-    // Make sure the element is attached to the DOM and visible
+    // Remember everything necessary to restore the original state
     let isInDom = element.isConnected;
     let originalDisplay = element.style.display;
 
+    let parentElement, nextSibling;
+    if (!isInDom) {
+        parentElement = element.parentElement;
+        nextSibling = element.nextSibling;
+    }
+
+    // Ensure the element is in the DOM
     if (!isInDom) {
         document.body.appendChild(element);
     } else {
@@ -105,10 +112,15 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
     ] as [number, number];
 
     // Restore the original parent and display mode
-    if (!isInDom) {
-        element.remove();
+    if (isInDom) {
+        element.style.display = originalDisplay;
+    } else {
+        if (nextSibling === null) {
+            parentElement.appendChild(element);
+        } else {
+            parentElement.insertBefore(element, nextSibling);
+        }
     }
-    element.style.display = originalDisplay;
 
     return result;
 }
