@@ -93,6 +93,8 @@ class Banner(component_base.Component):
                     margin=0.5,
                 ),
                 color=style_name,
+                corner_radius=self.session.theme.corner_radius_medium,
+                elevate_on_hover=False,
             )
 
         return rio.Card(
@@ -104,4 +106,5 @@ class Banner(component_base.Component):
             ),
             color=style_name,
             corner_radius=self.session.theme.corner_radius_small,
+            elevate_on_hover=False,
         )

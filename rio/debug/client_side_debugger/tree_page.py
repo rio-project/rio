@@ -21,11 +21,10 @@ class TreePage(rio.Component):
                 margin=margin,
                 align_x=0,
             ),
-            # TODO: Scrolling
             rio.components.component_tree.ComponentTree(
                 width=10,
                 height="grow",
-                margin=margin,
+                margin_left=margin,
                 on_select_component=self._on_select_component,
             ),
         ]

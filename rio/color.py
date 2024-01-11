@@ -639,6 +639,7 @@ ColorSet: TypeAlias = Union[
     Literal[
         "background",
         "neutral",
+        "hud",
         "primary",
         "secondary",
         "success",

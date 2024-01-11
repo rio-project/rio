@@ -10,6 +10,7 @@ export function applyColorSet(element: HTMLElement, colorSet: ColorSet): void {
         'rio-switcheroo-secondary',
         'rio-switcheroo-background',
         'rio-switcheroo-neutral',
+        'rio-switcheroo-hud',
         'rio-switcheroo-disabled',
         'rio-switcheroo-success',
         'rio-switcheroo-warning',
