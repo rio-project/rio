@@ -238,12 +238,12 @@ class ThemePickerPage(rio.Component):
         return rio.ScrollContainer(
             child=rio.Column(
                 # Main Colors
-                rio.Text(
-                    "Theme Colors",
-                    style="heading2",
-                    margin_bottom=1,
-                    align_x=0,
-                ),
+                # rio.Text(
+                #     "Theme Colors",
+                #     style="heading3",
+                #     margin_bottom=1,
+                #     align_x=0,
+                # ),
                 PalettePicker(
                     shared_open_key=ThemePickerPage.shared_open_key,
                     palette_nicename="Primary",
@@ -303,7 +303,7 @@ class ThemePickerPage(rio.Component):
                 # Corner radii
                 rio.Text(
                     "Corner Radii",
-                    style="heading2",
+                    style="heading3",
                     margin_top=1,
                     margin_bottom=1,
                     align_x=0,
@@ -312,7 +312,7 @@ class ThemePickerPage(rio.Component):
                 # Theme Variants
                 rio.Text(
                     "Theme Variants",
-                    style="heading2",
+                    style="heading3",
                     margin_top=1,
                     margin_bottom=1,
                     align_x=0,
@@ -335,7 +335,7 @@ class ThemePickerPage(rio.Component):
                 # Code Sample
                 rio.Text(
                     "Code Sample",
-                    style="heading2",
+                    style="heading3",
                     margin_top=1,
                     # margin_bottom=1,  Not used for now, since markdown has an oddly large margin anyway
                     align_x=0,
