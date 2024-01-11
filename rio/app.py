@@ -233,6 +233,9 @@ class App:
         if name is None:
             name = _get_default_app_name(main_file)
 
+        if icon is None:
+            icon = common.HOSTED_ASSETS_DIR / "rio-logo.ico"
+
         if build is None:
             build = rio.PageView
 
@@ -247,7 +250,7 @@ class App:
 
         self.name = name
         self._build = _validate_build_function(build)
-        self._icon = None if icon is None else assets.Asset.from_image(icon)
+        self._icon = assets.Asset.from_image(icon)
         self.pages = tuple(pages)
         self._on_app_start = on_app_start
         self._on_session_start = on_session_start
