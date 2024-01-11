@@ -94,6 +94,48 @@ class Icon(component_base.FundamentalComponent):
 
         registry.icon_set_archives[set_name] = icon_set_archive_path
 
+    @staticmethod
+    def register_single_icon(
+        icon_source: Path,
+        set_name: str,
+        icon_name: str,
+        variant_name: Optional[str] = None,
+    ) -> None:
+        """
+        Add a single icon to the global registry. This allows the icon to be
+        accessed as `icon_name`, `set_name/icon_name` or
+        `set_name/icon_name:variant`.
+
+        `icon_source` needs to be the path to a single SVG file. The SVG file
+        must have a `viewBox` attribute, but no height or width. It will be
+        colored by the `fill` property of the `Icon` component.
+
+        Args:
+            icon_source: The path to the SVG file containing the icon.
+
+            set_name: The name of the new icon set. This will be used to access
+                the icons.
+
+            icon_name: The name of the icon. This will be used to access the
+                icon.
+
+            variant_name: The name of the variant. This will be used to access
+                the icon. If not specified, the default variant will be used.
+        """
+
+        # Try to load the icon
+        with open(icon_source) as f:
+            svg_source = f.read()
+
+        # Add it to the icon registry's cache
+        if variant_name is None:
+            name = f"{set_name}/{icon_name}"
+        else:
+            name = f"{set_name}/{icon_name}:{variant_name}"
+
+        registry = Icon._get_registry()
+        registry.cached_icons[name] = svg_source
+
     def __init__(
         self,
         icon: str,

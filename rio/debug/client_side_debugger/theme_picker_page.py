@@ -1,4 +1,4 @@
-from uniserde import Jsonable
+from typing import *  # type: ignore
 
 import rio
 
@@ -14,11 +14,12 @@ class PalettePicker(rio.Component):
         return getattr(self.session.theme, self.palette_attribute_name)
 
     async def _on_color_change(self, event: rio.ColorChangeEvent) -> None:
-        vars(self.session.theme)[self.palette_attribute_name] = rio.Palette._from_color(
-            event.color, True
-        )
+        replace_kwargs: Any = {
+            self.palette_attribute_name: rio.Palette.from_color(event.color, True)
+        }
+        new_theme = self.session.theme.replace(**replace_kwargs)
 
-        await self.session._apply_theme(self.session.theme)
+        await self.session._apply_theme(new_theme)
         await self.force_refresh()
 
     def build(self) -> rio.Component:

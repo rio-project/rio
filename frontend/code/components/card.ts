@@ -7,7 +7,7 @@ import { LayoutContext } from '../layouting';
 export type CardState = ComponentState & {
     _type_: 'Card-builtin';
     child?: ComponentId;
-    corner_radius?: number | [number, number, number, number] | null;
+    corner_radius?: number | [number, number, number, number];
     reportPress?: boolean;
     elevate_on_hover?: boolean;
     colorize_on_hover?: boolean;
@@ -52,10 +52,7 @@ export class CardComponent extends ComponentBase {
 
         // Update the corner radius & inner margin
         if (deltaState.corner_radius !== undefined) {
-            if (deltaState.corner_radius === null) {
-                this.innerMarginIfEnabled = 1.5;
-                element.style.borderRadius = '1.5rem';
-            } else if (typeof deltaState.corner_radius === 'number') {
+            if (typeof deltaState.corner_radius === 'number') {
                 this.innerMarginIfEnabled = deltaState.corner_radius;
                 element.style.borderRadius = `${deltaState.corner_radius}rem`;
             } else {

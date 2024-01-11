@@ -7,6 +7,7 @@ export type ColorSet =
     | 'secondary'
     | 'background'
     | 'neutral'
+    | 'hud'
     | 'disabled'
     | 'success'
     | 'warning'

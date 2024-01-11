@@ -50,7 +50,7 @@ class Card(component_base.FundamentalComponent):
     _: KW_ONLY
     corner_radius: Union[None, float, Tuple[float, float, float, float]] = None
     on_press: rio.EventHandler[[]] = None
-    elevate_on_hover: Optional[bool] = None
+    elevate_on_hover: Optional[bool] = True
     colorize_on_hover: Optional[bool] = None
     inner_margin: bool = True
     color: rio.ColorSet = "neutral"
@@ -69,7 +69,9 @@ class Card(component_base.FundamentalComponent):
         report_press = self.on_press is not None
 
         return {
-            "corner_radius": self.corner_radius,
+            "corner_radius": thm.corner_radius_large
+            if self.corner_radius is None
+            else self.corner_radius,
             "reportPress": report_press,
             "elevate_on_hover": (
                 report_press if self.elevate_on_hover is None else self.elevate_on_hover

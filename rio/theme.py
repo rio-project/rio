@@ -53,7 +53,7 @@ class Palette:
     foreground: rio.Color
 
     @classmethod
-    def _from_color(
+    def from_color(
         cls,
         color: rio.Color,
         is_light_theme: bool,
@@ -66,6 +66,24 @@ class Palette:
             background_variant=hct_palette[as_hct.tone + 5],
             background_active=hct_palette[as_hct.tone + 15],
             foreground=hct_palette[8 if as_hct.tone > 50 else 92],
+        )
+
+    def replace(
+        self,
+        background: Optional[rio.Color] = None,
+        background_variant: Optional[rio.Color] = None,
+        background_active: Optional[rio.Color] = None,
+        foreground: Optional[rio.Color] = None,
+    ) -> Palette:
+        return Palette(
+            background=self.background if background is None else background,
+            background_variant=self.background_variant
+            if background_variant is None
+            else background_variant,
+            background_active=self.background_active
+            if background_active is None
+            else background_active,
+            foreground=self.foreground if foreground is None else foreground,
         )
 
 
@@ -134,8 +152,8 @@ class Theme:
             secondary_color = rio.Color.from_hex("329afc")
 
         # Extract palettes from the material theme
-        primary_palette = Palette._from_color(primary_color, light)
-        secondary_palette = Palette._from_color(secondary_color, light)
+        primary_palette = Palette.from_color(primary_color, light)
+        secondary_palette = Palette.from_color(secondary_color, light)
 
         if light:
             background_palette = Palette(
@@ -157,9 +175,9 @@ class Theme:
                     foreground=rio.Color.from_grey(0.1),
                 )
             else:
-                neutral_palette = Palette._from_color(neutral_color, light)
+                neutral_palette = Palette.from_color(neutral_color, light)
 
-            hud_palette = Palette._from_color(
+            hud_palette = Palette.from_color(
                 rio.Color.from_grey(
                     0.2,
                     opacity=0.8,
@@ -196,9 +214,9 @@ class Theme:
                     foreground=rio.Color.from_grey(0.5),
                 )
             else:
-                neutral_palette = Palette._from_color(neutral_color, light)
+                neutral_palette = Palette.from_color(neutral_color, light)
 
-            hud_palette = Palette._from_color(
+            hud_palette = Palette.from_color(
                 rio.Color.from_grey(
                     0.1,
                     opacity=0.8,
@@ -225,9 +243,9 @@ class Theme:
         if danger_color is None:
             danger_color = rio.Color.from_hex("B3261E")
 
-        success_palette = Palette._from_color(success_color, light)
-        warning_palette = Palette._from_color(warning_color, light)
-        danger_palette = Palette._from_color(danger_color, light)
+        success_palette = Palette.from_color(success_color, light)
+        warning_palette = Palette.from_color(warning_color, light)
+        danger_palette = Palette.from_color(danger_color, light)
 
         # Colorful headings can be a problem when the primary color is similar
         # to the background/neutral color. If the `color_headings` argument is
@@ -324,6 +342,74 @@ class Theme:
             "foreground": self.text_color_for(color).rgba,
         }
 
+    def replace(
+        self,
+        primary_palette: Optional[Palette] = None,
+        secondary_palette: Optional[Palette] = None,
+        background_palette: Optional[Palette] = None,
+        neutral_palette: Optional[Palette] = None,
+        hud_palette: Optional[Palette] = None,
+        disabled_palette: Optional[Palette] = None,
+        success_palette: Optional[Palette] = None,
+        warning_palette: Optional[Palette] = None,
+        danger_palette: Optional[Palette] = None,
+        corner_radius_small: Optional[float] = None,
+        corner_radius_medium: Optional[float] = None,
+        corner_radius_large: Optional[float] = None,
+        shadow_color: Optional[rio.Color] = None,
+        heading1_style: Optional[rio.TextStyle] = None,
+        heading2_style: Optional[rio.TextStyle] = None,
+        heading3_style: Optional[rio.TextStyle] = None,
+        text_style: Optional[rio.TextStyle] = None,
+    ) -> Theme:
+        return Theme(
+            primary_palette=self.primary_palette
+            if primary_palette is None
+            else primary_palette,
+            secondary_palette=self.secondary_palette
+            if secondary_palette is None
+            else secondary_palette,
+            background_palette=self.background_palette
+            if background_palette is None
+            else background_palette,
+            neutral_palette=self.neutral_palette
+            if neutral_palette is None
+            else neutral_palette,
+            hud_palette=self.hud_palette if hud_palette is None else hud_palette,
+            disabled_palette=self.disabled_palette
+            if disabled_palette is None
+            else disabled_palette,
+            success_palette=self.success_palette
+            if success_palette is None
+            else success_palette,
+            warning_palette=self.warning_palette
+            if warning_palette is None
+            else warning_palette,
+            danger_palette=self.danger_palette
+            if danger_palette is None
+            else danger_palette,
+            corner_radius_small=self.corner_radius_small
+            if corner_radius_small is None
+            else corner_radius_small,
+            corner_radius_medium=self.corner_radius_medium
+            if corner_radius_medium is None
+            else corner_radius_medium,
+            corner_radius_large=self.corner_radius_large
+            if corner_radius_large is None
+            else corner_radius_large,
+            shadow_color=self.shadow_color if shadow_color is None else shadow_color,
+            heading1_style=self.heading1_style
+            if heading1_style is None
+            else heading1_style,
+            heading2_style=self.heading2_style
+            if heading2_style is None
+            else heading2_style,
+            heading3_style=self.heading3_style
+            if heading3_style is None
+            else heading3_style,
+            text_style=self.text_style if text_style is None else text_style,
+        )
+
     @property
     def primary_color(self) -> rio.Color:
         return self.primary_palette.background
@@ -339,6 +425,10 @@ class Theme:
     @property
     def neutral_color(self) -> rio.Color:
         return self.neutral_palette.background
+
+    @property
+    def hud_color(self) -> rio.Color:
+        return self.hud_palette.background
 
     @property
     def success_color(self) -> rio.Color:
