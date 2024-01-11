@@ -1,3 +1,4 @@
+import { pixelsPerEm } from '../app';
 import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 import { MDCSlider } from '@material/slider';
@@ -109,6 +110,7 @@ export class SliderComponent extends ComponentBase {
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = 4;
+        // The MDC slider component is hardcoded at 48px height.
+        this.naturalHeight = 48 / pixelsPerEm;
     }
 }

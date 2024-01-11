@@ -38,10 +38,10 @@ class NavigationBar(rio.Component):
         return rio.Rectangle(
             child=rio.Row(
                 rio.Row(
-                    rio.Image(
-                        rio.common.RIO_LOGO_ASSET_PATH,
-                        width=1.8,
-                        height=1.8,
+                    rio.Icon(
+                        "rio/logo:color",
+                        width=3,
+                        height=3,
                         margin_left=2.5,
                     ),
                     rio.Text(
