@@ -34,8 +34,9 @@ class Icon(component_base.FundamentalComponent):
 
     Icon names are in the format `set_name/icon_name:variant`. Rio already ships
     with the `material` icon set, which contains icons in the style of Google's
-    Material Design. You can browse all available icons on [the Rio website](
-    https://todo.com/icons).  # TODO: Add actual link
+    Material Design. You can browse all available icons in Rio's debugger
+    sidebar. (The debugger sidebar is visible if you run your project using `rio
+    run`.)
 
     The set name and variant can be omitted. If no set name is specified, it
     defaults to `material`. If not variant is specified, the default version of
@@ -43,8 +44,8 @@ class Icon(component_base.FundamentalComponent):
 
     Attributes:
         icon: The name of the icon to display, in the format
-            `icon-set/name:variant`. You can browse all available icons on [the
-            Rio website](https://todo.com/icons).  # TODO: Add actual link
+            `icon-set/name:variant`. You can browse all available icons in Rio's
+            debugger sidebar.
 
         fill: The color scheme of the icon. The text color is used if no fill is
             specified.
@@ -70,14 +71,20 @@ class Icon(component_base.FundamentalComponent):
 
         There must not already be a set with the given name.
 
-        The icon set is a `.tar.xz` compressed archive containing SVG files. The
-        SVG files must have a `viewBox` attribute, but no height or width. They
-        will be colored by the `fill` property of the `Icon` component.
+        The icon set is a `.tar.xz` compressed archive and must contain exactly
+        one directory, which must be named identically to the icon set. Files
+        located in the root of that directory can be accessed as
+        `set_name/icon_name`. Files located in a subdirectory can be accessed as
+        `set_name/icon_name:variant`.
 
-        The archive must contain exactly one directory, which must be named
-        identically to the icon set. Files located in the root of that directory
-        can be accessed as `set_name/icon_name`. Files located in a subdirectory
-        can be accessed as `set_name/icon_name:variant`.
+        For SVG files to work as icons...
+
+        - They must have a `viewBox` attribute, but no height or width
+        - They must contain exactly one XML root node: `<svg>...</svg>`. This
+          also goes for comments!
+        - Rio colors paths by assigning a `fill` to the SVG root. This only
+          works as long as the SVG paths don't have a `<style>` assigned
+          already.
 
         Args:
             set_name: The name of the new icon set. This will be used to access
@@ -106,9 +113,15 @@ class Icon(component_base.FundamentalComponent):
         accessed as `icon_name`, `set_name/icon_name` or
         `set_name/icon_name:variant`.
 
-        `icon_source` needs to be the path to a single SVG file. The SVG file
-        must have a `viewBox` attribute, but no height or width. It will be
-        colored by the `fill` property of the `Icon` component.
+        `icon_source` needs to be the path to a single SVG file. For SVG files
+        to work as icons...
+
+        - They must have a `viewBox` attribute, but no height or width
+        - They must contain exactly one XML root node: `<svg>...</svg>`. This
+          also goes for comments!
+        - Rio colors paths by assigning a `fill` to the SVG root. This only
+          works as long as the SVG paths don't have a `<style>` assigned
+          already.
 
         Args:
             icon_source: The path to the SVG file containing the icon.

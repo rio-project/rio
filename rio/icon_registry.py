@@ -39,6 +39,10 @@ class IconRegistry:
             _icon_registry = IconRegistry(common.RIO_CACHE_DIR / "extracted-icon-sets")
 
             # Register built-in icon sets
+            _icon_registry.icon_set_archives["rio"] = (
+                common.RIO_ASSETS_DIR / "compressed-icon-sets" / "rio.tar.xz"
+            )
+
             _icon_registry.icon_set_archives["material"] = (
                 common.RIO_ASSETS_DIR / "compressed-icon-sets" / "material.tar.xz"
             )
