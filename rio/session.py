@@ -1746,8 +1746,9 @@ document.body.removeChild(a)
         """
         Updates the client's theme to match the given one.
         """
+        # Store the theme
         self.theme = thm
-        is_light_theme = thm.neutral_palette.background.perceived_brightness > 0.5
+
         # Build the set of all CSS variables that must be set
 
         # Miscellaneous
