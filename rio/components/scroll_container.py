@@ -25,12 +25,17 @@ class ScrollContainer(FundamentalComponent):
             means that a scroll bar will be displayed only if it is needed.
             `"always"` displays a scroll bar even if it isn't needed, and
             `"never"` disables vertical scrolling altogether.
+
+        sticky_bottom: If `True`, when the user has scrolled to the bottom and
+            the content of the `ScrollContainer` grows larger, the scroll bar
+            will automatically scroll to the bottom again.
     """
 
     child: Component
     _: KW_ONLY
     scroll_x: Literal["never", "auto", "always"] = "auto"
     scroll_y: Literal["never", "auto", "always"] = "auto"
+    sticky_bottom: bool = False
 
 
 ScrollContainer._unique_id = "ScrollContainer-builtin"

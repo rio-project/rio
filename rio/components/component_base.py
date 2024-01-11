@@ -5,6 +5,7 @@ import asyncio
 import dataclasses
 import inspect
 import json
+import sys
 import typing
 import weakref
 from abc import abstractmethod
@@ -170,11 +171,7 @@ class StateBinding:
             cur = to_do.pop()
             owning_component = cur.owning_component_weak()
 
-            # The component's session may be `None`, if this component has never
-            # entered the component tree. e.g. `build` returns a component, which
-            # doesn't make it through reconciliation and is thus never even
-            # marked as dirty -> No session is injected.
-            if owning_component is not None and owning_component._session_ is not None:
+            if owning_component is not None:
                 owning_component._session_._register_dirty_component(
                     owning_component,
                     include_children_recursively=False,
@@ -204,9 +201,17 @@ class StateProperty:
     ```
     """
 
-    def __init__(self, name: str, readonly: bool):
+    def __init__(
+        self,
+        name: str,
+        readonly: bool,
+        annotation: type | common.ForwardReference,
+    ):
         self.name = name
         self.readonly = readonly
+        self.annotation = annotation
+
+        self._evaluated_annotation: type
 
     def __get__(
         self,
@@ -262,20 +267,100 @@ class StateProperty:
         # Otherwise set the value directly and mark the component as dirty
         instance_vars[self.name] = value
 
-        if instance._session_ is not None:
-            instance._session_._register_dirty_component(
-                instance,
-                include_children_recursively=False,
-            )
+        instance._session_._register_dirty_component(
+            instance,
+            include_children_recursively=False,
+        )
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"
 
 
+C = typing.TypeVar("C", bound="Component")
+
+
 class ComponentMeta(abc.ABCMeta):
-    def __call__(cls, *args: object, **kwargs: object):
-        component = super().__call__(*args, **kwargs)
+    def __call__(cls: Type[C], *args: object, **kwargs: object) -> C:
+        component: C = object.__new__(cls)  # type: ignore[wtf]
+
+        # Inject the session before calling the constructor
+        # Fetch the session this component is part of
+        if global_state.currently_building_session is None:
+            raise RuntimeError(
+                "Components can only be created inside of `build` methods."
+            )
+
+        session = global_state.currently_building_session
+        component._session_ = session
+
+        # Create a unique ID for this component
+        component._id = session._next_free_component_id
+        session._next_free_component_id += 1
+
+        # Track whether this instance is internal to Rio. This is the case if
+        # this component's creator is defined in Rio.
+        creator = global_state.currently_building_component
+        if creator is None:
+            assert type(component).__qualname__ == "HighLevelRootComponent", type(
+                component
+            ).__qualname__
+            component._rio_internal_ = True
+        else:
+            component._rio_internal_ = creator._rio_builtin_
+
+        # Call `__init__`
+        component.__init__(*args, **kwargs)
+
+        # Initialize the margins. This has to happen after the dataclass
+        # `__init__`, because it would overwrite our values.
+        def elvis(*param_names: str) -> Any:
+            for param_name in param_names:
+                value = kwargs.get(param_name)
+
+                if value is not None:
+                    return value
+
+            return 0
+
+        component.margin_left = elvis("margin_left", "margin_x", "margin")
+        component.margin_top = elvis("margin_top", "margin_y", "margin")
+        component.margin_right = elvis("margin_right", "margin_x", "margin")
+        component.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
+
         component._create_state_bindings()
+
+        session._register_dirty_component(
+            component,
+            include_children_recursively=False,
+        )
+
+        # Keep track of this component's existence
+        #
+        # Components must be known by their id, so any messages addressed to
+        # them can be passed on correctly.
+        session._weak_components_by_id[component._id] = component
+
+        # Some events need attention right after the component is created
+        for event_tag, event_handlers in component._rio_event_handlers_.items():
+            # Don't register an empty list of handlers, since that would
+            # still slow down the session
+            if not event_handlers:
+                continue
+
+            # Page changes are handled by the session. Register the handler
+            if event_tag == event.EventTag.ON_PAGE_CHANGE:
+                callbacks = tuple(handler for handler, unused in event_handlers)
+                session._page_change_callbacks[component] = callbacks
+
+            # The `periodic` event needs a task to work in
+            elif event_tag == event.EventTag.PERIODIC:
+                for callback, period in event_handlers:
+                    session.create_task(
+                        _periodic_event_worker(
+                            weakref.ref(component), callback, period
+                        ),
+                        name=f"`rio.event.periodic` event worker for {component}",
+                    )
 
         # Call `_rio_post_init` for every class in the MRO
         for base in reversed(type(component).__mro__):
@@ -433,10 +518,7 @@ class Component(metaclass=ComponentMeta):
     # builder's COMPONENT DATA, the component is dead.
     _build_generation_: int = dataclasses.field(default=-1, init=False, repr=False)
 
-    # Injected by the session when the component is refreshed
-    _session_: Optional["rio.Session"] = dataclasses.field(
-        default=None, init=False, repr=False
-    )
+    _session_: rio.Session = dataclasses.field(init=False, repr=False)
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
@@ -458,7 +540,7 @@ class Component(metaclass=ComponentMeta):
     )
 
     # Cache for the set of all `StateProperty` instances in this class
-    _state_properties_: ClassVar[Dict[str, "StateProperty"]]
+    _state_properties_: ClassVar[Dict[str, StateProperty]]
 
     # Maps event tags to the methods that handle them. The methods aren't bound
     # to the instance yet, so make sure to pass `self` when calling them
@@ -529,87 +611,6 @@ class Component(metaclass=ComponentMeta):
         # Determine which properties were explicitly set
         bound_args = inspect.signature(original_init).bind(self, *args, **kwargs)
         self._explicitly_set_properties_.update(bound_args.arguments)
-
-    @staticmethod
-    def _init_component(
-        original_init: Callable[Concatenate[Component, P], None],
-        self: "Component",
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ):
-        # Fetch the session this component is part of
-        if global_state.currently_building_session is None:
-            raise RuntimeError(
-                "Components can only be created inside of `build` methods."
-            )
-
-        session = global_state.currently_building_session
-        self._session_ = session
-
-        # Create a unique ID for this component
-        self._id = session._next_free_component_id
-        session._next_free_component_id += 1
-
-        session._register_dirty_component(
-            self,
-            include_children_recursively=False,
-        )
-
-        # Keep track of this component's existence
-        #
-        # Components must be known by their id, so any messages addressed to
-        # them can be passed on correctly.
-        session._weak_components_by_id[self._id] = self
-
-        # Some events need attention right after the component is created
-        for event_tag, event_handlers in self._rio_event_handlers_.items():
-            # Don't register an empty list of handlers any, since that would
-            # still slow down the session
-            if not event_handlers:
-                continue
-
-            # Page changes are handled by the session. Register the handler
-            if event_tag == event.EventTag.ON_PAGE_CHANGE:
-                callbacks = tuple(handler for handler, unused in event_handlers)
-                session._page_change_callbacks[self] = callbacks
-
-            # The `periodic` event needs a task to work in
-            elif event_tag == event.EventTag.PERIODIC:
-                for callback, period in event_handlers:
-                    session.create_task(
-                        _periodic_event_worker(weakref.ref(self), callback, period),
-                        name=f"`rio.event.periodic` event worker for {self}",
-                    )
-
-        # Track whether this instance is internal to Rio. This is the case if
-        # this component's creator is defined in Rio.
-        creator = global_state.currently_building_component
-        if creator is None:
-            assert type(self).__qualname__ == "HighLevelRootComponent", type(
-                self
-            ).__qualname__
-            self._rio_internal_ = True
-        else:
-            self._rio_internal_ = creator._rio_builtin_
-
-        # Call the `__init__` created by `@dataclass`
-        original_init(self, *args, **kwargs)
-
-        # Initialize the margins. This has to happen after the dataclass
-        # `__init__`, because it would overwrite our values.
-        def elvis(*param_names: str) -> Any:
-            for param_name in param_names:
-                value = kwargs.get(param_name)
-
-                if value is not None:
-                    return value
-
-            return 0
-
-        self.margin_left = elvis("margin_left", "margin_x", "margin")
-        self.margin_top = elvis("margin_top", "margin_y", "margin")
-        self.margin_right = elvis("margin_right", "margin_x", "margin")
-        self.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
 
     def _create_state_bindings(self) -> None:
         self._state_bindings_initialized_ = True
@@ -689,17 +690,6 @@ class Component(metaclass=ComponentMeta):
             cls,
             "__init__",
         )
-
-        # Components need to run custom code in in `__init__`, but dataclass
-        # constructors don't chain up. So if this class's `__init__` was created
-        # by the `@dataclass` decorator, wrap it with a custom `__init__` that
-        # calls our initialization code.
-        if not has_custom_init:
-            introspection.wrap_method(
-                cls._init_component,
-                cls,
-                "__init__",
-            )
 
         # Replace all properties with custom state properties
         all_parent_state_properties: Dict[str, StateProperty] = {}
@@ -783,10 +773,15 @@ class Component(metaclass=ComponentMeta):
             ):
                 continue
 
-            # Create the `StateProperty`
+            # Create the StateProperty
             # readonly = introspection.typing.has_annotation(annotation, Readonly
             readonly = False  # FIXME
-            state_property = StateProperty(attr_name, readonly)
+
+            if isinstance(annotation, str):
+                module = sys.modules[cls.__module__]
+                annotation = common.ForwardReference(annotation, vars(module))
+
+            state_property = StateProperty(attr_name, readonly, annotation)
             setattr(cls, attr_name, state_property)
 
             # Add it to the set of all state properties for rapid lookup
@@ -796,16 +791,7 @@ class Component(metaclass=ComponentMeta):
     def session(self) -> "rio.Session":
         """
         Return the session this component is part of.
-
-        The session is accessible after the build method which constructed this
-        component has returned.
         """
-        if self._session_ is None:
-            raise RuntimeError(
-                "The session is only accessible once the build method which"
-                " constructed this component has returned."
-            )
-
         return self._session_
 
     def _custom_serialize(self) -> JsonDoc:
@@ -1012,11 +998,6 @@ class Component(metaclass=ComponentMeta):
 # `Component.__init_subclass__`. However, since `Component` isn't a subclass of
 # itself this needs to be done manually.
 Component._initialize_state_properties({})
-introspection.wrap_method(
-    Component._init_component,
-    Component,
-    "__init__",
-)
 
 
 class FundamentalComponent(Component):

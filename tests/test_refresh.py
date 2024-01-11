@@ -30,6 +30,12 @@ async def test_refresh_with_clean_root_component():
 
 
 async def test_rebuild_component_with_dead_parent():
+    class RootComponent(rio.Component):
+        child: rio.Component
+
+        def build(self) -> rio.Component:
+            return self.child
+
     class ComponentWithState(rio.Component):
         state: str
 
@@ -37,14 +43,19 @@ async def test_rebuild_component_with_dead_parent():
             return rio.Text(self.state)
 
     def build() -> rio.Component:
-        return rio.Container(rio.Row(ComponentWithState("Hello"), rio.ProgressCircle()))
+        return RootComponent(
+            rio.Row(
+                ComponentWithState("Hello"),
+                rio.ProgressCircle(),
+            )
+        )
 
     async with create_mockapp(build) as app:
-        # Change the component's state, but also remove its parent from the component
-        # tree
+        # Change the component's state, but also remove its parent from the
+        # component tree
+        root_component = app.get_component(RootComponent)
         component = app.get_component(ComponentWithState)
         progress_component = app.get_component(rio.ProgressCircle)
-        root_component = app.get_component(rio.Container)
 
         component.state = "Hi"
         root_component.child = progress_component
@@ -73,11 +84,16 @@ async def test_unmount_and_remount():
     async with create_mockapp(build) as app:
         root_component = app.get_component(DemoComponent)
         child_component = root_component.child
+        row_component = app.get_component(rio.Row)
 
         root_component.show_child = False
         await app.refresh()
+        assert app.last_updated_components == {root_component, row_component}
 
         root_component.show_child = True
         await app.refresh()
-
-        assert app.last_updated_components == {root_component, child_component}
+        assert app.last_updated_components == {
+            root_component,
+            row_component,
+            child_component,
+        }

@@ -401,13 +401,6 @@ class Validator:
                 f"Invalid component references detected: {invalid_references}"
             )
 
-        # Make sure all components in the session have had their session injected
-        for component in self.session._root_component._iter_component_tree():
-            if component._session_ is None:
-                raise ValidationError(
-                    f"Component `{component}` has not had its session injected"
-                )
-
         # Prune the component tree
         self.prune_components()
 
