@@ -126,7 +126,7 @@ class PalettePicker(rio.Component):
             content=rio.Column(
                 rio.Text(
                     f"{self.palette_nicename} Background",
-                    style="heading2",
+                    style="heading3",
                 ),
                 rio.ColorPicker(
                     color=palette.background,
@@ -148,6 +148,22 @@ class PalettePicker(rio.Component):
 class ThemePickerPage(rio.Component):
     shared_open_key: str = ""
 
+    theme_variants_are_initialized: bool = False
+    create_light_theme: bool = True
+    create_dark_theme: bool = False
+
+    @rio.event.on_populate
+    async def _on_populate(self) -> None:
+        if self.theme_variants_are_initialized:
+            return
+
+        current_theme_is_light = (
+            self.session.theme.background_color.perceived_brightness > 0.5
+        )
+
+        self.create_light_theme = current_theme_is_light
+        self.create_dark_theme = not current_theme_is_light
+
     async def _on_radius_change(
         self,
         radius_name: str,
@@ -159,6 +175,18 @@ class ThemePickerPage(rio.Component):
                 radius_name: event.value,
             },
         )
+
+    def _toggle_create_light_theme(self) -> None:
+        self.create_light_theme = not self.create_light_theme
+
+        if not self.create_light_theme and not self.create_dark_theme:
+            self.create_dark_theme = True
+
+    def _toggle_create_dark_theme(self) -> None:
+        self.create_dark_theme = not self.create_dark_theme
+
+        if not self.create_light_theme and not self.create_dark_theme:
+            self.create_light_theme = True
 
     def build(self) -> rio.Component:
         # Prepare the radius sliders
@@ -293,14 +321,32 @@ class ThemePickerPage(rio.Component):
                     rio.Spacer(),
                     rio.IconButton(
                         "light-mode",
-                        style="minor",
+                        style="minor" if self.create_light_theme else "plain",
+                        on_press=self._toggle_create_light_theme,
                     ),
                     rio.Spacer(),
                     rio.IconButton(
                         "dark-mode",
-                        style="plain",
+                        style="minor" if self.create_dark_theme else "plain",
+                        on_press=self._toggle_create_dark_theme,
                     ),
                     rio.Spacer(),
+                ),
+                # Code Sample
+                rio.Text(
+                    "Code Sample",
+                    style="heading2",
+                    margin_top=1,
+                    # margin_bottom=1,  Not used for now, since markdown has an oddly large margin anyway
+                    align_x=0,
+                ),
+                rio.MarkdownView(
+                    f"""
+```python
+Super cool, most definitely working
+Code sample
+```
+                    """,
                 ),
                 margin=1,
                 align_y=0,
