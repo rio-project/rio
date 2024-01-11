@@ -5,7 +5,7 @@ import { ComponentBase } from './components/componentBase';
 export class LayoutContext {
     _immediateReLayoutCallbacks: (() => void)[] = [];
 
-    private updateRequestedWidthRecursive(component: ComponentBase) {
+    private updateRequestedWidthRecursive(component: ComponentBase): void {
         if (!component.isLayoutDirty) return;
 
         for (let child of component.children) {
@@ -25,7 +25,7 @@ export class LayoutContext {
         );
     }
 
-    private updateAllocatedWidthRecursive(component: ComponentBase) {
+    private updateAllocatedWidthRecursive(component: ComponentBase): void {
         if (!component.isLayoutDirty) return;
 
         let children = Array.from(component.children);
@@ -34,6 +34,10 @@ export class LayoutContext {
         );
 
         component.updateAllocatedWidth(this);
+
+        // The FundamentalRootComponent always has a width of 100vw, so we don't
+        // want to assign the width here. We'll only assign the width of this
+        // component's children.
 
         for (let i = 0; i < children.length; i++) {
             let child = children[i];
@@ -51,7 +55,7 @@ export class LayoutContext {
         }
     }
 
-    private updateRequestedHeightRecursive(component: ComponentBase) {
+    private updateRequestedHeightRecursive(component: ComponentBase): void {
         if (!component.isLayoutDirty) return;
 
         for (let child of component.children) {
@@ -71,7 +75,7 @@ export class LayoutContext {
         );
     }
 
-    private updateAllocatedHeightRecursive(component: ComponentBase) {
+    private updateAllocatedHeightRecursive(component: ComponentBase): void {
         if (!component.isLayoutDirty) return;
 
         let children = Array.from(component.children);
@@ -80,6 +84,10 @@ export class LayoutContext {
         );
 
         component.updateAllocatedHeight(this);
+
+        // The FundamentalRootComponent always has a height of 100vh, so we
+        // don't want to assign the width here. We'll only assign the height of
+        // this component's children.
 
         for (let i = 0; i < children.length; i++) {
             let child = children[i];
@@ -99,7 +107,7 @@ export class LayoutContext {
         }
     }
 
-    public updateLayout() {
+    public updateLayout(): void {
         let rootComponent = getRootComponent();
 
         // Find out how large all components would like to be
@@ -125,12 +133,12 @@ export class LayoutContext {
     /// immediately after the current layout cycle finishes. The given function
     /// will be called before the re-layout happens, allowing the caller to
     /// dirty components or do other things.
-    public requestImmediateReLayout(callback: () => void) {
+    public requestImmediateReLayout(callback: () => void): void {
         this._immediateReLayoutCallbacks.push(callback);
     }
 }
 
-export function updateLayout() {
+export function updateLayout(): void {
     let context = new LayoutContext();
 
     while (true) {

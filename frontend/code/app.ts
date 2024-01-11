@@ -67,6 +67,10 @@ function main(): void {
     scrollBarSize = SCROLL_BAR_SIZE_IN_PIXELS / pixelsPerEm;
     document.body.removeChild(measure);
 
+    // TEMP, for debugging
+    globalThis.pixelsPerEm = pixelsPerEm;
+    globalThis.scrollBarSize = scrollBarSize;
+
     // Listen for URL changes, so the session can switch page
     window.addEventListener('popstate', (event) => {
         console.log(`URL changed to ${window.location.href}`);

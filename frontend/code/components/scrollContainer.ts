@@ -1,4 +1,4 @@
-import { scrollBarSize } from '../app';
+import { pixelsPerEm, scrollBarSize } from '../app';
 import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
@@ -9,12 +9,7 @@ export type ScrollContainerState = ComponentState & {
     child?: ComponentId;
     scroll_x?: 'never' | 'auto' | 'always';
     scroll_y?: 'never' | 'auto' | 'always';
-};
-
-const SCROLL_TO_OVERFLOW = {
-    never: 'hidden',
-    auto: 'auto',
-    always: 'scroll',
+    sticky_bottom?: boolean;
 };
 
 const NATURAL_SIZE = 1.0;
@@ -25,7 +20,7 @@ export class ScrollContainerComponent extends ComponentBase {
     private assumeVerticalScrollBarWillBeNeeded: boolean = true;
     private numSequentialIncorrectAssumptions: number = 0;
 
-    private get layoutWithVerticalScrollbar(): boolean {
+    private shouldLayoutWithVerticalScrollbar(): boolean {
         switch (this.state.scroll_y) {
             case 'always':
                 return true;
@@ -49,17 +44,6 @@ export class ScrollContainerComponent extends ComponentBase {
         latentComponents: Set<ComponentBase>
     ): void {
         this.replaceOnlyChild(latentComponents, deltaState.child);
-
-        if (deltaState.scroll_x !== undefined) {
-            this.element.style.overflowX =
-                SCROLL_TO_OVERFLOW[deltaState.scroll_x];
-        }
-
-        if (deltaState.scroll_y !== undefined) {
-            this.element.style.overflowY =
-                SCROLL_TO_OVERFLOW[deltaState.scroll_y];
-        }
-
         this.makeLayoutDirty();
     }
 
@@ -73,7 +57,7 @@ export class ScrollContainerComponent extends ComponentBase {
         this.naturalWidth = NATURAL_SIZE;
 
         // If there will be a vertical scroll bar, reserve space for it
-        if (this.layoutWithVerticalScrollbar) {
+        if (this.shouldLayoutWithVerticalScrollbar()) {
             this.naturalWidth += scrollBarSize;
         }
     }
@@ -81,36 +65,40 @@ export class ScrollContainerComponent extends ComponentBase {
     updateAllocatedWidth(ctx: LayoutContext): void {
         let child = componentsById[this.state.child]!;
 
-        // If the child needs more space than we have, we'll need to display a
-        // scroll bar. So just give the child the width it wants.
-        if (child.requestedWidth > this.allocatedWidth) {
-            child.allocatedWidth = child.requestedWidth;
-            return;
+        let availableWidth = this.allocatedWidth;
+        if (this.shouldLayoutWithVerticalScrollbar()) {
+            availableWidth -= scrollBarSize;
         }
 
-        // Otherwise, stretch the child to use up all the available width
-        if (this.layoutWithVerticalScrollbar) {
-            child.allocatedWidth = this.allocatedWidth - scrollBarSize;
+        // If the child needs more space than we have, we'll need to display a
+        // scroll bar. So just give the child the width it wants.
+        if (child.requestedWidth > availableWidth) {
+            child.allocatedWidth = child.requestedWidth;
+            this.element.style.overflowX = 'scroll';
         } else {
-            child.allocatedWidth = this.allocatedWidth;
+            // Otherwise, stretch the child to use up all the available width
+            if (this.shouldLayoutWithVerticalScrollbar()) {
+                child.allocatedWidth = this.allocatedWidth - scrollBarSize;
+            } else {
+                child.allocatedWidth = this.allocatedWidth;
+            }
+
+            this.element.style.overflowX =
+                this.state.scroll_x === 'always' ? 'scroll' : 'hidden';
         }
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
         if (this.state.scroll_y === 'never') {
             let child = componentsById[this.state.child]!;
-            this.naturalWidth = child.requestedWidth;
+            this.naturalHeight = child.requestedHeight;
             return;
         }
 
         this.naturalHeight = NATURAL_SIZE;
 
         // If there will be a horizontal scroll bar, reserve space for it
-        if (
-            this.state.scroll_x === 'always' ||
-            componentsById[this.state.child]!.allocatedWidth >
-                this.allocatedWidth
-        ) {
+        if (this.element.style.overflowX === 'scroll') {
             this.naturalHeight += scrollBarSize;
         }
     }
@@ -118,52 +106,97 @@ export class ScrollContainerComponent extends ComponentBase {
     updateAllocatedHeight(ctx: LayoutContext): void {
         let child = componentsById[this.state.child]!;
 
-        // First, check if our assumption for the vertical scroll bar was
-        // correct. If not, we have to immediately re-layout the child.
-        if (this.state.scroll_y === 'auto') {
-            let assumptionWasCorrect = this.assumeVerticalScrollBarWillBeNeeded
-                ? this.allocatedHeight < child.requestedHeight
-                : this.allocatedHeight >= child.requestedHeight;
+        let heightBefore = child.allocatedHeight;
 
-            if (!assumptionWasCorrect) {
-                // Theoretically, there could be a situation where our
-                // assumptions are always wrong and we re-layout endlessly.
-                //
-                // It's acceptable to have an unnecessary scroll bar, but it's
-                // not acceptable to be missing a scroll bar when one is
-                // required. So we will only re-layout if this is the first time
-                // our assumption was wrong, or if we don't currently have a
-                // scroll bar.
-                if (
-                    this.numSequentialIncorrectAssumptions == 0 ||
-                    !this.assumeVerticalScrollBarWillBeNeeded
-                ) {
-                    this.numSequentialIncorrectAssumptions++;
-                    this.assumeVerticalScrollBarWillBeNeeded =
-                        !this.assumeVerticalScrollBarWillBeNeeded;
+        let availableHeight = this.allocatedHeight;
+        if (this.element.style.overflowX === 'scroll') {
+            availableHeight -= scrollBarSize;
+        }
 
-                    ctx.requestImmediateReLayout(() => {
-                        this.makeLayoutDirty();
-                    });
-                    return;
-                }
+        // If the child needs more space than we have, we'll need to display a
+        // scroll bar. So just give the child the height it wants.
+        if (child.requestedHeight > availableHeight) {
+            child.allocatedHeight = child.requestedHeight;
+            this.element.style.overflowY = 'scroll';
+        } else {
+            // Otherwise, stretch the child to use up all the available height
+            if (this.state.scroll_y === 'always') {
+                child.allocatedHeight = this.allocatedHeight - scrollBarSize;
+                this.element.style.overflowY = 'scroll';
+            } else {
+                child.allocatedHeight = this.allocatedHeight;
+                this.element.style.overflowY = 'hidden';
+            }
+        }
+
+        // Now check if our assumption for the vertical scroll bar was correct.
+        // If not, we have to immediately re-layout the child.
+        let hasVerticalScrollbar = this.element.style.overflowY === 'scroll';
+        if (
+            this.state.scroll_y === 'auto' &&
+            this.assumeVerticalScrollBarWillBeNeeded !== hasVerticalScrollbar
+        ) {
+            // Theoretically, there could be a situation where our assumptions
+            // are always wrong and we re-layout endlessly.
+            //
+            // It's acceptable to have an unnecessary scroll bar, but it's not
+            // acceptable to be missing a scroll bar when one is required. So we
+            // will only re-layout if this is the first time our assumption was
+            // wrong, or if we don't currently have a scroll bar.
+            if (
+                this.numSequentialIncorrectAssumptions == 0 ||
+                !this.assumeVerticalScrollBarWillBeNeeded
+            ) {
+                this.numSequentialIncorrectAssumptions++;
+                this.assumeVerticalScrollBarWillBeNeeded =
+                    !this.assumeVerticalScrollBarWillBeNeeded;
+
+                ctx.requestImmediateReLayout(() => {
+                    this.makeLayoutDirty();
+                });
+                return;
             }
         }
 
         this.numSequentialIncorrectAssumptions = 0;
 
-        // If the child needs more space than we have, we'll need to display a
-        // scroll bar. So just give the child the height it wants.
-        if (child.requestedHeight > this.allocatedHeight) {
-            child.allocatedHeight = child.requestedHeight;
-            return;
-        }
+        // If `sticky_bottom` is enabled, check if we have to scroll down
+        console.debug('Child allocated height before:', heightBefore);
+        console.debug('Child allocated height after:', child.allocatedHeight);
+        if (this.state.sticky_bottom && child.allocatedHeight > heightBefore) {
+            // Calculate how much of the child is visible
+            let visibleHeight = this.allocatedHeight;
+            if (this.element.style.overflowX === 'scroll') {
+                visibleHeight -= scrollBarSize;
+            }
+            console.debug('visible height:', visibleHeight);
+            console.debug('scrollTop (px):', this.element.scrollTop);
+            console.debug(
+                'bounding height (px):',
+                child.element.getBoundingClientRect().height
+            );
 
-        // Otherwise, stretch the child to use up all the available height
-        if (this.state.scroll_x === 'always') {
-            child.allocatedHeight = this.allocatedHeight - scrollBarSize;
-        } else {
-            child.allocatedHeight = this.allocatedHeight;
+            // Check if the scrollbar is all the way at the bottom
+            if (
+                (this.element.scrollTop + 1) / pixelsPerEm + visibleHeight >=
+                heightBefore - 0.00001
+            ) {
+                console.debug('Scrolling to', child.allocatedHeight);
+                // Our CSS `height` hasn't been updated yet, so we can't scroll
+                // down any further. We must assign the `height` manually.
+                this.element.style.height = `${
+                    this.allocatedHeight * pixelsPerEm
+                }px`;
+                child.element.style.height = `${
+                    child.allocatedHeight * pixelsPerEm
+                }px`;
+
+                this.element.scroll({
+                    top: child.allocatedHeight,
+                    left: this.element.scrollLeft,
+                    behavior: 'smooth',
+                });
+            }
         }
     }
 }
