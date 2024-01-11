@@ -179,8 +179,8 @@ class Theme:
 
             hud_palette = Palette.from_color(
                 rio.Color.from_grey(
-                    0.2,
-                    opacity=0.8,
+                    0.06,
+                    opacity=0.9,
                 ),
                 light,
             )
@@ -218,7 +218,7 @@ class Theme:
 
             hud_palette = Palette.from_color(
                 rio.Color.from_grey(
-                    0.1,
+                    0.2,
                     opacity=0.8,
                 ),
                 light,

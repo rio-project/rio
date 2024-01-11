@@ -59,9 +59,10 @@ class Popup(component_base.FundamentalComponent):
     anchor: rio.Component
     content: rio.Component
     _: KW_ONLY
+    color: rio.ColorSet = "neutral"
     direction: Literal["left", "top", "right", "bottom", "center"] = "center"
     alignment: float = 0.5
-    gap: float = 0.0
+    gap: float = 0.8
     is_open: bool = False
     on_open_or_close: rio.EventHandler[PopupOpenOrCloseEvent] = None
 
@@ -83,6 +84,11 @@ class Popup(component_base.FundamentalComponent):
                 self.on_open_or_close,
                 PopupOpenOrCloseEvent(is_open),
             )
+
+    def _custom_serialize(self) -> JsonDoc:
+        return {
+            "color": self.session.theme._serialize_colorset(self.color),
+        }
 
 
 Popup._unique_id = "Popup-builtin"

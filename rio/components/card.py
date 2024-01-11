@@ -52,7 +52,6 @@ class Card(component_base.FundamentalComponent):
     on_press: rio.EventHandler[[]] = None
     elevate_on_hover: Optional[bool] = True
     colorize_on_hover: Optional[bool] = None
-    inner_margin: bool = True
     color: rio.ColorSet = "neutral"
 
     async def _on_message(self, msg: Any) -> None:

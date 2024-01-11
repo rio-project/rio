@@ -3,8 +3,6 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { hsvToRgb, rgbToHsv, rgbToHex, rgbaToHex } from '../colorConversion';
 import { LayoutContext } from '../layouting';
 
-// TODO
-
 export type ColorPickerState = ComponentState & {
     _type_: 'ColorPicker-builtin';
     color?: Color;
@@ -30,6 +28,8 @@ export class ColorPickerComponent extends ComponentBase {
     private selectedHsv: [number, number, number] = [0, 0, 0];
 
     private latentEventHandlers: any[] = [];
+
+    private isInitialized = false;
 
     createElement(): HTMLElement {
         // Create the elements
@@ -137,7 +137,7 @@ export class ColorPickerComponent extends ComponentBase {
                 deltaState.color[1] !== this.state.color[1] ||
                 deltaState.color[2] !== this.state.color[2];
 
-            if (rgbChanged) {
+            if (rgbChanged || !this.isInitialized) {
                 this.selectedHsv = rgbToHsv(
                     deltaState.color[0],
                     deltaState.color[1],
@@ -159,6 +159,9 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Apply the modified state
         this.matchComponentToSelectedHsv();
+
+        // The component has been initialized
+        this.isInitialized = true;
     }
 
     matchComponentToSelectedHsv(): void {
@@ -199,6 +202,9 @@ export class ColorPickerComponent extends ComponentBase {
         this.hueIndicator.style.background = `#${hueHex}`;
 
         // Place the saturation/brightness indicator
+        //
+        // FIXME: `getBoundingClientRect` only works if the element is visible.
+        // In other words, this is broken, e.g. inside a `rio.Popup`.
         const boundingBox = this.colorSquare.getBoundingClientRect();
         const saturationX = this.selectedHsv[1] * boundingBox.width;
         const brightnessY = (1 - this.selectedHsv[2]) * boundingBox.height;
@@ -419,5 +425,8 @@ export class ColorPickerComponent extends ComponentBase {
         this.naturalHeight = this.state.pick_opacity ? 16 : 12;
     }
 
-    updateAllocatedHeight(ctx: LayoutContext): void {}
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        // The knobs are positioned based on the component's size. Update them.
+        this.matchComponentToSelectedHsv();
+    }
 }

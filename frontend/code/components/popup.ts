@@ -1,7 +1,8 @@
 import { pixelsPerEm } from '../app';
 import { componentsById } from '../componentManagement';
+import { applyColorSet } from '../designApplication';
 import { LayoutContext } from '../layouting';
-import { ComponentId } from '../models';
+import { ColorSet, ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 // TODO
 
@@ -9,6 +10,7 @@ export type PopupState = ComponentState & {
     _type_: 'Popup-builtin';
     anchor?: ComponentId;
     content?: ComponentId;
+    color?: ColorSet;
     direction?: 'left' | 'top' | 'right' | 'bottom' | 'center';
     alignment?: number;
     gap?: number;
@@ -57,6 +59,11 @@ export class PopupComponent extends ComponentBase {
             this.open();
         } else {
             this.element.classList.remove('rio-popup-open');
+        }
+
+        // Colorize
+        if (deltaState.color !== undefined) {
+            applyColorSet(this.element, deltaState.color);
         }
     }
 
@@ -162,7 +169,11 @@ export class PopupComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        componentsById[this.state.anchor]!.allocatedWidth = this.allocatedWidth;
+        let anchorInst = componentsById[this.state.anchor]!;
+        anchorInst.allocatedWidth = this.allocatedWidth;
+
+        let contentInst = componentsById[this.state.content]!;
+        contentInst.allocatedWidth = contentInst.requestedWidth;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
@@ -175,8 +186,7 @@ export class PopupComponent extends ComponentBase {
         anchorInst.allocatedHeight = this.allocatedHeight;
 
         let contentInst = componentsById[this.state.content]!;
-        contentInst.allocatedWidth = this.allocatedWidth;
-        contentInst.allocatedHeight = this.allocatedHeight;
+        contentInst.allocatedHeight = contentInst.requestedHeight;
 
         // And position the children
         let anchorElem = anchorInst.element;
