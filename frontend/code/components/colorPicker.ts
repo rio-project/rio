@@ -416,7 +416,7 @@ export class ColorPickerComponent extends ComponentBase {
     updateAllocatedWidth(ctx: LayoutContext): void {}
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = 7;
+        this.naturalHeight = this.state.pick_opacity ? 16 : 12;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {}

@@ -2,7 +2,15 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import ai_chat_page, deploy_page, docs_page, icons_page, project_page, tree_page
+from . import (
+    ai_chat_page,
+    deploy_page,
+    docs_page,
+    icons_page,
+    project_page,
+    theme_picker_page,
+    tree_page,
+)
 
 
 class ClientSideDebugger(rio.Component):
@@ -36,6 +44,12 @@ class ClientSideDebugger(rio.Component):
         # Icons
         if self.selected_page == "icons":
             return icons_page.IconsPage(
+                width=PAGE_WIDTH,
+            )
+
+        # Theme
+        if self.selected_page == "theme":
+            return theme_picker_page.ThemePickerPage(
                 width=PAGE_WIDTH,
             )
 
@@ -83,6 +97,7 @@ class ClientSideDebugger(rio.Component):
                         "Project",
                         "Tree",
                         "Icons",
+                        "Theme",
                         "Docs",
                         "AI",
                         "Deploy",
@@ -91,6 +106,7 @@ class ClientSideDebugger(rio.Component):
                         "home",
                         "view-quilt",
                         "emoji-people",
+                        "palette",
                         "library-books",
                         "chat-bubble",
                         "rocket-launch",
@@ -99,6 +115,7 @@ class ClientSideDebugger(rio.Component):
                         "project",
                         "tree",
                         "icons",
+                        "theme",
                         "docs",
                         "ai-chat",
                         "deploy",
