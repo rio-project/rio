@@ -212,3 +212,12 @@ def ensure_valid_port(host: str, port: Optional[int]) -> int:
         return choose_free_port(host)
 
     return port
+
+
+@dataclass
+class ForwardReference:
+    code: str
+    scope: dict[str, object]
+
+    def evaluate(self) -> type:
+        return eval(self.code, self.scope)

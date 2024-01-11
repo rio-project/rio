@@ -41,6 +41,8 @@ class MockApp:
                 "windowWidth": 1920,
                 "windowHeight": 1080,
                 "timezone": "America/New_York",
+                "decimalSeparator": ".",
+                "thousandsSeparator": ",",
                 "prefersLightTheme": True,
             }
         )
@@ -156,13 +158,22 @@ async def create_mockapp(
     mock_app = MockApp(session, user_settings=user_settings)
 
     fake_websocket: Any = types.SimpleNamespace(
+        client="1.2.3.4",
         accept=lambda: _make_awaitable(),
         send_text=mock_app._send_message,
         receive_json=mock_app._receive_message,
     )
-    server_task = asyncio.create_task(
-        app_server._serve_websocket(fake_websocket, session_token)
-    )
+
+    test_task = asyncio.current_task()
+    assert test_task is not None
+
+    async def serve_websocket():
+        try:
+            await app_server._serve_websocket(fake_websocket, session_token)
+        except Exception as error:
+            test_task.cancel(f"Exception in AppServer._serve_websocket: {error}")
+
+    server_task = asyncio.create_task(serve_websocket())
 
     await mock_app._first_refresh_completed.wait()
     try:

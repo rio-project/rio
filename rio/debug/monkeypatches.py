@@ -1,8 +1,12 @@
 import functools
 import inspect
+import warnings
 from pathlib import Path
 
-from ..components.component_base import Component, ComponentMeta
+import introspection.typing
+
+from ..common import ForwardReference
+from ..components.component_base import Component, ComponentMeta, StateProperty
 
 __all__ = ["apply_monkeypatches"]
 
@@ -10,9 +14,13 @@ __all__ = ["apply_monkeypatches"]
 def apply_monkeypatches() -> None:
     ComponentMeta.__call__ = functools.partialmethod(
         ComponentMeta_call, ComponentMeta.__call__
-    )  # type: ignore
+    )  # type: ignore[wtf]
 
     Component.__getattribute__ = Component_getattribute
+
+    StateProperty.__set__ = functools.partialmethod(
+        StateProperty_set, StateProperty.__set__
+    )  # type: ignore[wtf]
 
 
 def ComponentMeta_call(cls, wrapped_method, *args, **kwargs):
@@ -44,3 +52,41 @@ def Component_getattribute(self, attr_name: str):
         )
 
     return object.__getattribute__(self, attr_name)
+
+
+def StateProperty_set(
+    self: StateProperty,
+    wrapped_method,
+    instance: Component,
+    value: object,
+):
+    # Type check the value
+    if not isinstance(value, StateProperty):
+        try:
+            evaluated_annotation = self._evaluated_annotation
+        except AttributeError:
+            if isinstance(self.annotation, ForwardReference):
+                evaluated_annotation = (
+                    self._evaluated_annotation
+                ) = self.annotation.evaluate()
+            else:
+                evaluated_annotation = self._evaluated_annotation = self.annotation
+
+        try:
+            valid = introspection.typing.is_instance(value, evaluated_annotation)
+        except NotImplementedError:
+            warnings.warn(
+                f"Unable to verify assignment to"
+                f" {type(instance).__qualname__}.{self.name} (annotated as"
+                f" {introspection.typing.annotation_to_string(evaluated_annotation)})"
+            )
+        else:
+            if not valid:
+                raise TypeError(
+                    f"The value {value!r} can't be assigned to"
+                    f" {type(instance).__qualname__}.{self.name}, which is"
+                    f" annotated as"
+                    f" {introspection.typing.annotation_to_string(evaluated_annotation)}"
+                )
+
+    wrapped_method(self, instance, value)

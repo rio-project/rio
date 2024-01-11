@@ -240,7 +240,7 @@ class Session(unicall.Unicall):
 
         # These are injected by the app server after the session has already
         # been created
-        self._root_component: "root_components.HighLevelRootComponent"
+        self._root_component: root_components.HighLevelRootComponent
         self.external_url: Optional[str]  # None if running in a window
         self.timezone: tzinfo
 

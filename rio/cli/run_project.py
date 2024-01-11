@@ -684,7 +684,9 @@ window.setConnectionLostPopupVisible(true);
         # Inject the app into the server
         self._app_server.app = app
 
-        # Re-run the `on_app_start` callback
+        # The app has changed, but the uvicorn server is still the same. Because
+        # of this, uvicorn won't call the `on_app_start` function - do it
+        # manually.
         await self._app_server._call_on_app_start()
 
         # Tell all sessions to reconnect, and close old sessions
@@ -703,21 +705,6 @@ window.setConnectionLostPopupVisible(true);
                 sess._close(close_remote_session=False),
                 name=f'Close session "{sess._session_token}"',
             )
-
-        # The app has changed, but the uvicorn server is still the same. Because
-        # of this, uvicorn won't call the `on_app_start` function - do it
-        # manually.
-        if app._on_app_start is not None:
-            try:
-                result = app._on_app_start(app)
-
-                if inspect.isawaitable(result):
-                    await result
-
-            # Display and discard exceptions
-            except Exception:
-                print("Exception in `on_app_start` event handler:")
-                traceback.print_exc()
 
     def _evaluate_javascript_in_all_sessions(self, javascript_source: str) -> None:
         """
