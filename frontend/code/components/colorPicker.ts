@@ -97,7 +97,7 @@ export class ColorPickerComponent extends ComponentBase {
         // to only once needed.
         this.colorSquare.addEventListener(
             'mousedown',
-            this.onHueWheelMouseDown.bind(this)
+            this.onSquareMouseDown.bind(this)
         );
         this.hueBarOuter.addEventListener(
             'mousedown',
@@ -257,22 +257,24 @@ export class ColorPickerComponent extends ComponentBase {
         this.latentEventHandlers.push([eventName, boundHandler]);
     }
 
-    onHueWheelMouseDown(event) {
+    onSquareMouseDown(event) {
         this.updateSaturationBrightness(event.clientX, event.clientY);
 
         // Subscribe to other events and keep track of them
-        this.bindHandler('mousemove', this.onHueWheelMouseMove);
+        this.bindHandler('mousemove', this.onSquareMouseMove);
         this.bindHandler('click', this.onSelectionFinished);
 
         // Eat the event
         event.stopPropagation();
+        event.preventDefault();
     }
 
-    onHueWheelMouseMove(event) {
+    onSquareMouseMove(event) {
         this.updateSaturationBrightness(event.clientX, event.clientY);
 
         // Eat the event
         event.stopPropagation();
+        event.preventDefault();
     }
 
     onHueBarMouseDown(event) {
@@ -291,6 +293,7 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Eat the event
         event.stopPropagation();
+        event.preventDefault();
     }
 
     onOpacityBarMouseDown(event) {
@@ -309,6 +312,7 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Eat the event
         event.stopPropagation();
+        event.preventDefault();
     }
 
     onSelectionFinished(event) {
