@@ -8,18 +8,24 @@ from .. import models
 
 class FeedbackButton(rio.Component):
     icon: str
+    label: str
     is_active: bool
     color: rio.ColorSet
     _: KW_ONLY
     on_press: rio.EventHandler[[]] = None
 
     def build(self) -> rio.Component:
-        return rio.IconButton(
-            self.icon,
-            style="major" if self.is_active else "plain",
-            size=1.6,
-            color="keep" if self.is_active else self.color,
-            on_press=self.on_press,
+        return rio.Tooltip(
+            anchor=rio.IconButton(
+                self.icon,
+                style="major" if self.is_active else "plain",
+                # color="keep" if self.is_active else self.color,
+                color=self.color,
+                size=1.6,
+                on_press=self.on_press,
+            ),
+            tip=self.label,
+            position="bottom",
         )
 
 
@@ -53,18 +59,21 @@ class ChatMessage(rio.Component):
             feedback_area = rio.Row(
                 FeedbackButton(
                     "thumb-up",
+                    "Like",
                     self.message.is_upvoted,
                     "success",
                     on_press=self._on_upvote,
                 ),
                 FeedbackButton(
                     "thumb-down",
+                    "Dislike",
                     self.message.is_downvoted,
                     "danger",
                     on_press=self._on_downvote,
                 ),
                 FeedbackButton(
                     "nest-clock-farsight-analog",
+                    "Flag as outdated",
                     self.message.is_flagged_as_outdated,
                     "warning",
                     on_press=self._on_flag_as_outdated,
@@ -101,6 +110,7 @@ class ChatMessage(rio.Component):
                         spacing=0.6,
                     ),
                     rio.MarkdownView(self.message.text),
+                    margin=2,
                 ),
             ),
             feedback_area,

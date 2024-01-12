@@ -204,7 +204,12 @@ export class MarkdownViewComponent extends ComponentBase {
             convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
 
             // Update the width request
+            //
+            // For some reason the elmeent takes up the whole parent's width
+            // without explicitly setting its with
+            contentDiv.style.width = 'min-content';
             this.naturalWidth = getElementWidth(contentDiv);
+            contentDiv.style.removeProperty('width');
 
             // Any previously calculated height request is no longer valid
             this.heightRequestAssumesWidth = -1;

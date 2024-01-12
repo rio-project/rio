@@ -50,7 +50,7 @@ class ClientSideDebugger(rio.Component):
         # Theme
         if self.selected_page == "theme":
             return theme_picker_page.ThemePickerPage(
-                width=PAGE_WIDTH,
+                width=35,
             )
 
         # Docs

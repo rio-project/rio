@@ -134,7 +134,10 @@ class Theme:
         cls,
         primary_color: Optional[rio.Color] = None,
         secondary_color: Optional[rio.Color] = None,
+        background_color: Optional[rio.Color] = None,
         neutral_color: Optional[rio.Color] = None,
+        hud_color: Optional[rio.Color] = None,
+        disabled_color: Optional[rio.Color] = None,
         success_color: Optional[rio.Color] = None,
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
@@ -156,12 +159,19 @@ class Theme:
         secondary_palette = Palette.from_color(secondary_color, light)
 
         if light:
-            background_palette = Palette(
-                background=rio.Color.WHITE,
-                background_variant=rio.Color.from_grey(0.96).blend(primary_color, 0.04),
-                background_active=rio.Color.from_grey(0.96).blend(primary_color, 0.15),
-                foreground=rio.Color.from_grey(0.15),
-            )
+            if background_color is None:
+                background_palette = Palette(
+                    background=rio.Color.WHITE,
+                    background_variant=rio.Color.from_grey(0.96).blend(
+                        primary_color, 0.04
+                    ),
+                    background_active=rio.Color.from_grey(0.96).blend(
+                        primary_color, 0.15
+                    ),
+                    foreground=rio.Color.from_grey(0.15),
+                )
+            else:
+                background_palette = Palette.from_color(background_color, light)
 
             if neutral_color is None:
                 neutral_palette = Palette(
@@ -177,30 +187,43 @@ class Theme:
             else:
                 neutral_palette = Palette.from_color(neutral_color, light)
 
-            hud_palette = Palette.from_color(
-                rio.Color.from_grey(
-                    0.06,
-                    opacity=0.9,
-                ),
-                light,
-            )
+            if hud_color is None:
+                hud_palette = Palette.from_color(
+                    rio.Color.from_grey(
+                        0.06,
+                        opacity=0.9,
+                    ),
+                    light,
+                )
+            else:
+                hud_palette = Palette.from_color(hud_color, light)
 
-            disabled_palette = Palette(
-                rio.Color.from_grey(0.7),
-                rio.Color.from_grey(0.75),
-                rio.Color.from_grey(0.80),
-                rio.Color.from_grey(0.4),
-            )
+            if disabled_color is None:
+                disabled_palette = Palette(
+                    rio.Color.from_grey(0.7),
+                    rio.Color.from_grey(0.75),
+                    rio.Color.from_grey(0.80),
+                    rio.Color.from_grey(0.4),
+                )
+            else:
+                disabled_palette = Palette.from_color(disabled_color, light)
 
             shadow_color = rio.Color.from_rgb(0.1, 0.1, 0.4, 0.3)
 
         else:
-            background_palette = Palette(
-                background=rio.Color.from_grey(0.08).blend(primary_color, 0.02),
-                background_variant=rio.Color.from_grey(0.14).blend(primary_color, 0.04),
-                background_active=rio.Color.from_grey(0.14).blend(primary_color, 0.10),
-                foreground=rio.Color.from_grey(0.9),
-            )
+            if background_color is None:
+                background_palette = Palette(
+                    background=rio.Color.from_grey(0.08).blend(primary_color, 0.02),
+                    background_variant=rio.Color.from_grey(0.14).blend(
+                        primary_color, 0.04
+                    ),
+                    background_active=rio.Color.from_grey(0.14).blend(
+                        primary_color, 0.10
+                    ),
+                    foreground=rio.Color.from_grey(0.9),
+                )
+            else:
+                background_palette = Palette.from_color(background_color, light)
 
             if neutral_color is None:
                 neutral_palette = Palette(
@@ -216,20 +239,26 @@ class Theme:
             else:
                 neutral_palette = Palette.from_color(neutral_color, light)
 
-            hud_palette = Palette.from_color(
-                rio.Color.from_grey(
-                    0.2,
-                    opacity=0.8,
-                ),
-                light,
-            )
+            if hud_color is None:
+                hud_palette = Palette.from_color(
+                    rio.Color.from_grey(
+                        0.2,
+                        opacity=0.8,
+                    ),
+                    light,
+                )
+            else:
+                hud_palette = Palette.from_color(hud_color, light)
 
-            disabled_palette = Palette(
-                rio.Color.from_grey(0.2),
-                rio.Color.from_grey(0.15),
-                rio.Color.from_grey(0.10),
-                rio.Color.from_grey(0.6),
-            )
+            if disabled_color is None:
+                disabled_palette = Palette(
+                    rio.Color.from_grey(0.2),
+                    rio.Color.from_grey(0.15),
+                    rio.Color.from_grey(0.10),
+                    rio.Color.from_grey(0.6),
+                )
+            else:
+                disabled_palette = Palette.from_color(disabled_color, light)
 
             shadow_color = rio.Color.from_rgb(0.0, 0.0, 0.1, 0.35)
 
@@ -296,6 +325,10 @@ class Theme:
         *,
         primary_color: Optional[rio.Color] = None,
         secondary_color: Optional[rio.Color] = None,
+        background_color: Optional[rio.Color] = None,
+        neutral_color: Optional[rio.Color] = None,
+        hud_color: Optional[rio.Color] = None,
+        disabled_color: Optional[rio.Color] = None,
         success_color: Optional[rio.Color] = None,
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
@@ -308,6 +341,10 @@ class Theme:
             cls.from_color,
             primary_color=primary_color,
             secondary_color=secondary_color,
+            background_color=background_color,
+            neutral_color=neutral_color,
+            hud_color=hud_color,
+            disabled_color=disabled_color,
             success_color=success_color,
             warning_color=warning_color,
             danger_color=danger_color,
@@ -429,6 +466,10 @@ class Theme:
     @property
     def hud_color(self) -> rio.Color:
         return self.hud_palette.background
+
+    @property
+    def disabled_color(self) -> rio.Color:
+        return self.disabled_palette.background
 
     @property
     def success_color(self) -> rio.Color:

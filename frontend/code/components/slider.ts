@@ -93,16 +93,6 @@ export class SliderComponent extends ComponentBase {
         if (deltaState.is_sensitive !== undefined) {
             this.mdcSlider.setDisabled(!deltaState.is_sensitive);
         }
-
-        // The slider stores the coordinates of its rectangle. Since rio
-        // likes to resize and move around components, the rectangle must be
-        // updated appropriately.
-        //
-        // Really, this should be done when the component is resized or moved, but
-        // there is no hook for that. Update seems to work fine for now.
-        requestAnimationFrame(() => {
-            this.mdcSlider.layout();
-        });
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
@@ -112,5 +102,15 @@ export class SliderComponent extends ComponentBase {
     updateNaturalHeight(ctx: LayoutContext): void {
         // The MDC slider component is hardcoded at 48px height.
         this.naturalHeight = 48 / pixelsPerEm;
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        // The slider stores the coordinates of its rectangle. Since rio
+        // likes to resize and move around components, the rectangle must be
+        // updated appropriately.
+        //
+        // Really, this should be done when the component is resized or moved, but
+        // there is no hook for that. Update seems to work fine for now.
+        this.mdcSlider.layout();
     }
 }
