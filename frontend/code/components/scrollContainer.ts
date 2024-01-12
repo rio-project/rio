@@ -44,7 +44,6 @@ export class ScrollContainerComponent extends ComponentBase {
         latentComponents: Set<ComponentBase>
     ): void {
         this.replaceOnlyChild(latentComponents, deltaState.child);
-        this.makeLayoutDirty();
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
@@ -77,11 +76,7 @@ export class ScrollContainerComponent extends ComponentBase {
             this.element.style.overflowX = 'scroll';
         } else {
             // Otherwise, stretch the child to use up all the available width
-            if (this.shouldLayoutWithVerticalScrollbar()) {
-                child.allocatedWidth = this.allocatedWidth - scrollBarSize;
-            } else {
-                child.allocatedWidth = this.allocatedWidth;
-            }
+            child.allocatedWidth = availableWidth;
 
             this.element.style.overflowX =
                 this.state.scroll_x === 'always' ? 'scroll' : 'hidden';
@@ -120,11 +115,11 @@ export class ScrollContainerComponent extends ComponentBase {
             this.element.style.overflowY = 'scroll';
         } else {
             // Otherwise, stretch the child to use up all the available height
+            child.allocatedHeight = availableHeight;
+
             if (this.state.scroll_y === 'always') {
-                child.allocatedHeight = this.allocatedHeight - scrollBarSize;
                 this.element.style.overflowY = 'scroll';
             } else {
-                child.allocatedHeight = this.allocatedHeight;
                 this.element.style.overflowY = 'hidden';
             }
         }
@@ -192,9 +187,9 @@ export class ScrollContainerComponent extends ComponentBase {
                 }px`;
 
                 this.element.scroll({
-                    top: child.allocatedHeight,
+                    top: child.allocatedHeight * pixelsPerEm + 1000,
                     left: this.element.scrollLeft,
-                    behavior: 'smooth',
+                    behavior: 'instant',
                 });
             }
         }

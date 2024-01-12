@@ -50,7 +50,7 @@ class Card(component_base.FundamentalComponent):
     _: KW_ONLY
     corner_radius: Union[None, float, Tuple[float, float, float, float]] = None
     on_press: rio.EventHandler[[]] = None
-    elevate_on_hover: Optional[bool] = True
+    elevate_on_hover: Optional[bool] = None
     colorize_on_hover: Optional[bool] = None
     color: rio.ColorSet = "neutral"
 

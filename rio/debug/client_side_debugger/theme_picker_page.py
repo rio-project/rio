@@ -1,4 +1,5 @@
 import functools
+import io
 from typing import *  # type: ignore
 
 import rio
@@ -14,22 +15,31 @@ async def update_and_apply_theme(
     """
 
     # Build the new theme
-    new_theme = session.theme.replace(**theme_replacements)
+    updated_theme = session.theme.replace(**theme_replacements)
 
     # The theme theme itself can preserve some values. For example, the primary
     # color is encoded in the heading text style, so just replacing the primary
     # palette won't make it go away.
     #
+    # When passing the values, make sure to only change those that have been
+    # changed relative to the default,
+    #
     # Take care of that.
-    recreated_theme = rio.Theme.from_color(
-        new_theme.primary_color,
-        light=new_theme.background_color.perceived_brightness > 0.5,
-    )
-
-    new_theme = new_theme.replace(
-        heading1_style=recreated_theme.heading1_style,
-        heading2_style=recreated_theme.heading2_style,
-        heading3_style=recreated_theme.heading3_style,
+    new_theme = rio.Theme.from_color(
+        primary_color=updated_theme.primary_color,
+        secondary_color=updated_theme.secondary_color,
+        background_color=updated_theme.background_color,
+        neutral_color=updated_theme.neutral_color,
+        hud_color=updated_theme.hud_color,
+        disabled_color=updated_theme.disabled_color,
+        success_color=updated_theme.success_color,
+        warning_color=updated_theme.warning_color,
+        danger_color=updated_theme.danger_color,
+        corner_radius_small=updated_theme.corner_radius_small,
+        corner_radius_medium=updated_theme.corner_radius_medium,
+        corner_radius_large=updated_theme.corner_radius_large,
+        color_headings="auto",  # TODO: How to decide this?
+        light=updated_theme.background_color.perceived_brightness > 0.5,
     )
 
     # Apply the theme
@@ -43,12 +53,102 @@ async def update_and_apply_theme(
             component,
             include_children_recursively=False,
         )
+    print(f"Soiled {len(session._dirty_components)} components")
 
     # Refresh
     await session._refresh()
 
 
-class PalettePicker(rio.Component):
+def get_source_for_theme(theme: rio.Theme, *, create_theme_pair: bool) -> str:
+    """
+    Given a theme, returns a string that can be used to recreate it.
+    """
+    # Find all values that differ from the defaults
+    default_theme = rio.Theme.from_color()
+    changed_kwargs = {}
+
+    if theme.primary_color != default_theme.primary_color:
+        changed_kwargs["primary_color"] = theme.primary_color
+
+    if theme.secondary_color != default_theme.secondary_color:
+        changed_kwargs["secondary_color"] = theme.secondary_color
+
+    if theme.background_color != default_theme.background_color:
+        changed_kwargs["background_color"] = theme.background_color
+
+    if theme.neutral_color != default_theme.neutral_color:
+        changed_kwargs["neutral_color"] = theme.neutral_color
+
+    if theme.hud_color != default_theme.hud_color:
+        changed_kwargs["hud_color"] = theme.hud_color
+
+    if theme.disabled_color != default_theme.disabled_color:
+        changed_kwargs["disabled_color"] = theme.disabled_color
+
+    if theme.success_color != default_theme.success_color:
+        changed_kwargs["success_color"] = theme.success_color
+
+    if theme.warning_color != default_theme.warning_color:
+        changed_kwargs["warning_color"] = theme.warning_color
+
+    if theme.danger_color != default_theme.danger_color:
+        changed_kwargs["danger_color"] = theme.danger_color
+
+    if theme.corner_radius_small != default_theme.corner_radius_small:
+        changed_kwargs["corner_radius_small"] = round(theme.corner_radius_small, 1)
+
+    if theme.corner_radius_medium != default_theme.corner_radius_medium:
+        changed_kwargs["corner_radius_medium"] = round(theme.corner_radius_medium, 1)
+
+    if theme.corner_radius_large != default_theme.corner_radius_large:
+        changed_kwargs["corner_radius_large"] = round(theme.corner_radius_large, 1)
+
+    if theme.neutral_color.perceived_brightness < 0.5:
+        changed_kwargs["light"] = False
+
+    # Build the source
+    theme_or_themes = "themes" if create_theme_pair else "theme"
+    result = io.StringIO()
+    result.write(f"# Create the {theme_or_themes}\n")
+
+    if create_theme_pair:
+        result.write("themes = rio.Theme.pair_from_color(")
+    else:
+        result.write("theme = rio.Theme.from_color(")
+
+    if changed_kwargs:
+        result.write("\n")
+
+        for key, value in changed_kwargs.items():
+            result.write(f"    {key}=")
+
+            if isinstance(value, rio.Color):
+                hex_value = value.hex
+                if len(hex_value) == 8 and hex_value.endswith("ff"):
+                    hex_value = hex_value[:-2]
+
+                result.write(f"rio.Color.from_hex({hex_value!r})")
+            elif isinstance(value, (int, float)):
+                result.write(repr(value))
+            else:
+                raise NotImplementedError(f"Unsupported type: {type(value)}")
+
+            result.write(",\n")
+
+    result.write(")\n")
+    result.write("\n")
+    result.write(f"# Apply the {theme_or_themes}\n")
+    result.write("app = rio.App(\n")
+    result.write("    ...\n")
+    result.write(f"    theme={theme_or_themes},\n")
+    result.write("    ...\n")
+    result.write(")")
+
+    # Done
+    return result.getvalue()
+
+
+class PalettePicker(rio.Component):  #
     shared_open_key: str
 
     palette_nicename: str
@@ -125,7 +225,7 @@ class PalettePicker(rio.Component):
             ),
             content=rio.Column(
                 rio.Text(
-                    f"{self.palette_nicename} Background",
+                    f"{self.palette_nicename} Color",
                     style="heading3",
                 ),
                 rio.ColorPicker(
@@ -343,13 +443,12 @@ class ThemePickerPage(rio.Component):
                 rio.MarkdownView(
                     f"""
 ```python
-Super cool, most definitely working
-Code sample
+{get_source_for_theme(self.session.theme, create_theme_pair=self.create_light_theme and self.create_dark_theme)}
 ```
                     """,
                 ),
                 margin=1,
                 align_y=0,
             ),
-            height="grow",
+            scroll_x="never",
         )

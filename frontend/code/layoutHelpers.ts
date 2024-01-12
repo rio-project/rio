@@ -126,29 +126,15 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
 }
 
 export function getElementWidth(element: HTMLElement): number {
-    // Make sure the element is visible
-    let originalDisplay = element.style.display;
-    element.style.display = 'fixed';
-
-    // Get its dimensions
-    let result = element.scrollWidth / pixelsPerEm;
-
-    // Restore the original display mode
-    element.style.display = originalDisplay;
-
-    return result;
+    // TODO: Don't request both height and width - that's the whole point of
+    // this function
+    let dimensions = getElementDimensions(element);
+    return dimensions[0];
 }
 
 export function getElementHeight(element: HTMLElement): number {
-    // Make sure the element is visible
-    let originalDisplay = element.style.display;
-    element.style.display = 'fixed';
-
-    // Get its dimensions
-    let result = element.scrollHeight / pixelsPerEm;
-
-    // Restore the original display mode
-    element.style.display = originalDisplay;
-
-    return result;
+    // TODO: Don't request both height and width - that's the whole point of
+    // this function
+    let dimensions = getElementDimensions(element);
+    return dimensions[1];
 }

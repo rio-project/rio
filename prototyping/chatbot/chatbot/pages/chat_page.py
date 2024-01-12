@@ -99,7 +99,7 @@ class ChatPage(rio.Component):
         # User Input
         children.append(
             rio.Row(
-                rio.TextInput(
+                rio.MultiLineTextInput(
                     label="Type a message...",
                     text=ChatPage.question_text,
                     on_confirm=self._on_user_message,
@@ -121,6 +121,7 @@ class ChatPage(rio.Component):
             rio.Overlay(
                 rio.Card(
                     comps.Outliner(
+                        margin=2,
                         align_y=0,
                     ),
                     margin=1,

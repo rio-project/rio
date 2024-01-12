@@ -1,10 +1,10 @@
 import hashlib
-import inspect
 import os
 import re
 import secrets
 import socket
 from dataclasses import dataclass
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
@@ -88,7 +88,8 @@ class FileInfo:
 
         size_in_bytes: The size of the file, in bytes.
 
-        media_type: The MIMe type of the file, such as `text/plain` or `image/png`.
+        media_type: The MIMe type of the file, for example `text/plain` or
+            `image/png`.
     """
 
     name: str
@@ -121,6 +122,40 @@ class FileInfo:
                 `encoding`.
         """
         return self._contents.decode(encoding)
+
+    @overload
+    async def open(self, type: Literal["r"]) -> StringIO:
+        ...
+
+    @overload
+    async def open(self, type: Literal["rb"]) -> BytesIO:
+        ...
+
+    async def open(self, type: Literal["r", "rb"] = "r") -> Union[StringIO, BytesIO]:
+        """
+        Asynchronously opens the file, as though it were a regular file on this
+        device.
+
+        Opens and returns the file as a file-like object. If 'r' is specified,
+        the file is opened as text. If 'rb' is specified, the file is opened as
+        bytes.
+
+        Args:
+            type: The mode to open the file in. 'r' for text, 'rb' for bytes.
+
+        Returns:
+            A file-like object containing the file's contents.
+        """
+        # Bytes
+        if type == "rb":
+            return BytesIO(await self.read_bytes())
+
+        # UTF
+        if type == "r":
+            return StringIO(await self.read_text())
+
+        # Invalid
+        raise ValueError("Invalid type. Expected 'r' or 'rb'.")
 
 
 T = TypeVar("T")
