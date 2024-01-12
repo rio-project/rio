@@ -1,7 +1,6 @@
 import asyncio
 import html
 import importlib
-import inspect
 import json
 import logging
 import signal
@@ -9,7 +8,6 @@ import socket
 import sys
 import threading
 import time
-import traceback
 import types
 import webbrowser
 from dataclasses import dataclass
@@ -147,6 +145,11 @@ class RunningApp:
         # If the app is running, this is the `rio.AppServer` instance
         self._app_server: Optional[rio.app_server.AppServer] = None
 
+        # Monotonic timestamp of when the last command was given to restart the
+        # app. Any further events which would trigger a reload up to this time
+        # can be safely ignored.
+        self.last_reload_started_at = time.monotonic_ns()
+
         # If a webview is being displayed, this is the window
         self._webview_window: Optional["webview.Window"] = None  # type: ignore
 
@@ -154,7 +157,7 @@ class RunningApp:
         # for-example the user's app crashes and then a mock-app is injected.
         self._app_theme: Union[
             rio.Theme, Tuple[rio.Theme, rio.Theme]
-        ] = rio.Theme.from_color()
+        ] = rio.Theme.pair_from_color()
 
         # A list of worker tasks that must shut down gracefully. That means the
         # asyncio event loop mustn't stop running until these tasks are done.
@@ -371,11 +374,6 @@ class RunningApp:
             if self.debug_mode:
                 self._create_worker(self._worker_watch_files())
 
-            # Monotonic timestamp of when the last command was given to restart the
-            # app. Any further events which would trigger a reload up to this time
-            # can be safely ignored.
-            last_reload_started_at = time.monotonic_ns()
-
             # Start the app for the first time
             await self._start_app()
 
@@ -395,7 +393,7 @@ class RunningApp:
                 # A file has changed
                 if isinstance(event, FileChanged):
                     # Ignore events that happened before the last reload started
-                    if event.timestamp < last_reload_started_at:
+                    if event.timestamp < self.last_reload_started_at:
                         continue
 
                     # Display to the user that a reload is happening
@@ -638,7 +636,16 @@ window.setConnectionLostPopupVisible(true);
 
         def run_uvicorn() -> None:
             assert self._uvicorn_server is not None
-            self._uvicorn_server.run()
+
+            try:
+                self._uvicorn_server.run()
+            except BaseException:
+                import traceback
+
+                error("UVICORN CRASHED:")
+                traceback.print_exc()
+                self.stop(keyboard_interrupt=False)  # TEMP / FIXME
+
             # Nothing to do here. If the server stops running, it's because we
             # told it to - that means the program is already shutting down.
 
@@ -669,6 +676,8 @@ window.setConnectionLostPopupVisible(true);
         assert (
             self._app_server is not None
         ), "Can't restart the app without it already running"
+
+        self.last_reload_started_at = time.monotonic_ns()
 
         # Reload the app
         app_or_error = self._load_app()

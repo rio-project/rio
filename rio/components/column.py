@@ -88,7 +88,5 @@ class Column(component_base.FundamentalComponent):
         self.children = list(children)
         self.spacing = spacing
 
-        self._explicitly_set_properties_.add("children")
-
 
 Column._unique_id = "Column-builtin"

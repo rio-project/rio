@@ -90,7 +90,5 @@ class Row(component_base.FundamentalComponent):
         self.children = list(children)
         self.spacing = spacing
 
-        self._explicitly_set_properties_.add("children")
-
 
 Row._unique_id = "Row-builtin"
