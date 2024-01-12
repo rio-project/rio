@@ -92,7 +92,8 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
     let isInDom = element.isConnected;
     let originalDisplay = element.style.display;
 
-    let parentElement, nextSibling;
+    let parentElement: HTMLElement | null = null;
+    let nextSibling: Node | null = null;
     if (!isInDom) {
         parentElement = element.parentElement;
         nextSibling = element.nextSibling;
@@ -114,12 +115,12 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
     // Restore the original parent and display mode
     if (isInDom) {
         element.style.display = originalDisplay;
+    } else if (parentElement === null) {
+        element.remove();
+    } else if (nextSibling === null) {
+        parentElement.appendChild(element);
     } else {
-        if (nextSibling === null) {
-            parentElement.appendChild(element);
-        } else {
-            parentElement.insertBefore(element, nextSibling);
-        }
+        parentElement.insertBefore(element, nextSibling);
     }
 
     return result;
