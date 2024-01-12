@@ -14,7 +14,6 @@ from dataclasses import KW_ONLY, dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import introspection
 from typing_extensions import dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
@@ -329,9 +328,16 @@ class ComponentMeta(abc.ABCMeta):
 
         component._create_state_bindings()
 
-        session._register_dirty_component(
-            component,
-            include_children_recursively=False,
+        # Determine which properties were explicitly set. This includes
+        # parameters that received an argument, and also varargs (`*args`)
+        signature = inspect.signature(component.__init__)
+        bound_args = signature.bind(*args, **kwargs)
+
+        component._explicitly_set_properties_ = set(bound_args.arguments)
+        component._explicitly_set_properties_.update(
+            param.name
+            for param in signature.parameters.values()
+            if param.kind is inspect.Parameter.VAR_POSITIONAL
         )
 
         # Keep track of this component's existence
@@ -339,6 +345,11 @@ class ComponentMeta(abc.ABCMeta):
         # Components must be known by their id, so any messages addressed to
         # them can be passed on correctly.
         session._weak_components_by_id[component._id] = component
+
+        session._register_dirty_component(
+            component,
+            include_children_recursively=False,
+        )
 
         # Some events need attention right after the component is created
         for event_tag, event_handlers in component._rio_event_handlers_.items():
@@ -503,8 +514,8 @@ class Component(metaclass=ComponentMeta):
 
     _id: int = dataclasses.field(init=False)
 
-    # Weak reference to the component's builder. Used to check if the component is
-    # still part of the component tree.
+    # Weak reference to the component's builder. Used to check if the component
+    # is still part of the component tree.
     _weak_builder_: Callable[[], Optional[Component]] = dataclasses.field(
         # Dataclasses seem to unintentionally turn this function into a method.
         # Make sure it works whether or not `self` is passed.
@@ -513,9 +524,9 @@ class Component(metaclass=ComponentMeta):
         repr=False,
     )
 
-    # Each time a component is built the build generation in that component's COMPONENT
-    # DATA is incremented. If this value no longer matches the value in its
-    # builder's COMPONENT DATA, the component is dead.
+    # Each time a component is built the build generation in that component's
+    # COMPONENT DATA is incremented. If this value no longer matches the value
+    # in its builder's COMPONENT DATA, the component is dead.
     _build_generation_: int = dataclasses.field(default=-1, init=False, repr=False)
 
     _session_: rio.Session = dataclasses.field(init=False, repr=False)
@@ -598,20 +609,6 @@ class Component(metaclass=ComponentMeta):
             field.default_factory = make_default_factory_for_value(field.default)
             field.default = dataclasses.MISSING
 
-    @staticmethod
-    def _determine_explicitly_set_properties(
-        original_init: Callable[Concatenate[Component, P], None],
-        self: "Component",
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ):
-        # Chain up to the original `__init__`
-        original_init(self, *args, **kwargs)
-
-        # Determine which properties were explicitly set
-        bound_args = inspect.signature(original_init).bind(self, *args, **kwargs)
-        self._explicitly_set_properties_.update(bound_args.arguments)
-
     def _create_state_bindings(self) -> None:
         self._state_bindings_initialized_ = True
 
@@ -683,13 +680,6 @@ class Component(metaclass=ComponentMeta):
         # Apply the dataclass transform
         cls._preprocess_dataclass_fields()
         dataclasses.dataclass(eq=False, repr=False)(cls)
-
-        # Keep track of which properties were explicitly set in the constructor.
-        introspection.wrap_method(
-            cls._determine_explicitly_set_properties,
-            cls,
-            "__init__",
-        )
 
         # Replace all properties with custom state properties
         all_parent_state_properties: Dict[str, StateProperty] = {}

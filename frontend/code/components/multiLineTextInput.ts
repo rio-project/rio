@@ -1,5 +1,4 @@
 import { ComponentBase, ComponentState } from './componentBase';
-import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import {
     updateInputBoxNaturalHeight,

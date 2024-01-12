@@ -57,7 +57,5 @@ class FlowContainer(component_base.FundamentalComponent):
         self.spacing_x = spacing_x
         self.spacing_y = spacing_y
 
-        self._explicitly_set_properties_.add("children")
-
 
 FlowContainer._unique_id = "FlowContainer-builtin"
