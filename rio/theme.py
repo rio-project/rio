@@ -154,6 +154,15 @@ class Theme:
         if secondary_color is None:
             secondary_color = rio.Color.from_hex("329afc")
 
+        if success_color is None:
+            success_color = rio.Color.from_hex("1E8E3E")
+
+        if warning_color is None:
+            warning_color = rio.Color.from_hex("F9A825")
+
+        if danger_color is None:
+            danger_color = rio.Color.from_hex("B3261E")
+
         # Extract palettes from the material theme
         primary_palette = Palette.from_color(primary_color, light)
         secondary_palette = Palette.from_color(secondary_color, light)
@@ -263,15 +272,6 @@ class Theme:
             shadow_color = rio.Color.from_rgb(0.0, 0.0, 0.1, 0.35)
 
         # Semantic colors
-        if success_color is None:
-            success_color = rio.Color.from_hex("1E8E3E")
-
-        if warning_color is None:
-            warning_color = rio.Color.from_hex("F9A825")
-
-        if danger_color is None:
-            danger_color = rio.Color.from_hex("B3261E")
-
         success_palette = Palette.from_color(success_color, light)
         warning_palette = Palette.from_color(warning_color, light)
         danger_palette = Palette.from_color(danger_color, light)
@@ -280,10 +280,10 @@ class Theme:
         # to the background/neutral color. If the `color_headings` argument is
         # set to `auto`, disable coloring if the colors are close.
         if color_headings == "auto":
-            brightess1 = primary_palette.background.perceived_brightness
-            brightess2 = background_palette.background.perceived_brightness
+            brightness1 = primary_palette.background.perceived_brightness
+            brightness2 = background_palette.background.perceived_brightness
 
-            color_headings = abs(brightess1 - brightess2) > 0.3
+            color_headings = abs(brightness1 - brightness2) > 0.3
 
         # Text styles
         text_color = rio.Color.from_grey(0.1 if light else 0.9)
@@ -446,6 +446,10 @@ class Theme:
             else heading3_style,
             text_style=self.text_style if text_style is None else text_style,
         )
+
+    @property
+    def is_light_theme(self) -> bool:
+        return self.primary_palette.background.perceived_brightness >= 0.5
 
     @property
     def primary_color(self) -> rio.Color:

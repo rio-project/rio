@@ -82,6 +82,6 @@ class Footer(rio.Component):
                 margin_bottom=7,
             ),
             style=rio.BoxStyle(
-                fill=theme.THEME.neutral_palette.background.darker(0.8),
+                fill=self.session.theme.hud_color,
             ),
         )

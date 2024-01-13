@@ -6,22 +6,17 @@ from . import common
 
 THEME = rio.Theme.from_color(
     # primary_color=rio.Color.from_rgb(0.9, 0.7, 0),
-    # neutral_color=rio.Color.from_hex("0f052f"),
-    # neutral_color=rio.Color.from_hex("0f052f"),
+    hud_color=rio.Color.from_hex("0f052f"),
     # light=False,
 )
 
 
-# On desktop, most of the website is located in a centered column. This function
-# returns the width of that column.
-def get_center_column_width(sess: rio.Session) -> float:
-    if sess.window_height > 120:
-        return 116
-
-    if sess.window_width > 60:
-        return sess.window_height - 4
-
-    return 40
+# Text on the landing page is unusually large. These constants control the
+# landing page styles for it (and other things).
+SUBPAGE_HEIGHT = 60
+TITLE_HEIGHT = 4
+ACTION_TEXT_HEIGHT = 1.5
+COLUMN_WIDTH = 40
 
 
 # Random material-styled images placed around the website

@@ -14,15 +14,36 @@ PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
 
 
+rio.Icon.register_single_icon(
+    ASSETS_DIR / "hero-background-logo.svg",
+    "self",
+    "hero-shape",
+)
+
+rio.Icon.register_single_icon(
+    ASSETS_DIR / "brands" / "discord-logo.svg",
+    "thirdparty",
+    "discord-logo",
+)
+
+rio.Icon.register_single_icon(
+    ASSETS_DIR / "brands" / "github-logo.svg",
+    "thirdparty",
+    "github-logo",
+)
+
+
 class AppRoot(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
             # Navigation Bar
             rio.Overlay(
-                comps.NavigationBar(height=4, width="grow", margin_top=1.0, align_y=0),
+                comps.NavigationBar(
+                    height=3.5, width="grow", margin_top=1.0, align_y=0
+                ),
             ),
             # Spacer for the navigation bar
-            rio.Spacer(height=5.1),
+            # rio.Spacer(height=5.1),
             # PageView
             rio.PageView(
                 width="grow",
@@ -104,9 +125,6 @@ all_pages = [
     rio.Page(
         "",
         pages.HomePage,
-        # Just for debugging
-        # TODO / REMOVEME
-        # guard=lambda x: rio.URL("/documentation"),
     ),
     rio.Page(
         "documentation",

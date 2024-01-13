@@ -17,13 +17,13 @@ class NavigationBar(rio.Component):
         surface_color = theme.THEME.neutral_palette.background
         text_color = theme.THEME.text_color_for(surface_color)
 
+        print(self.session.window_width)
+
         # If the page is narrow, fill most of the width with the navigation bar.
         # Otherwise fall back to a fixed width.
-        center_column_width = theme.get_center_column_width(self.session)
-        width_trip = center_column_width + 25
-
-        if self.session.window_width > width_trip:
-            bar_width = center_column_width + 20
+        if self.session.window_width > 100:
+            print("wide mode")
+            bar_width = 96
             bar_align_x = 0.5
         else:
             bar_width = "grow"
@@ -37,43 +37,71 @@ class NavigationBar(rio.Component):
 
         return rio.Rectangle(
             child=rio.Row(
-                rio.Row(
-                    rio.Icon(
-                        "rio/logo:color",
-                        width=3,
-                        height=3,
-                        margin_left=2.5,
+                rio.Icon(
+                    "rio/logo:color",
+                    width=2.7,
+                    height=2.7,
+                    margin_left=2.5,
+                ),
+                rio.Text(
+                    "Rio",
+                    style=rio.TextStyle(
+                        font_size=1.5,
+                        font_weight="bold",
+                        fill=text_color,
                     ),
-                    rio.Text(
-                        "Rio",
-                        style=rio.TextStyle(
-                            font_size=1.5,
-                            font_weight="bold",
-                            fill=text_color,
-                        ),
-                    ),
-                    spacing=0.8,
+                    margin_left=0.3,
                 ),
                 rio.Spacer(),
                 rio.SwitcherBar(
                     names=[
                         "Home",
-                        "Docs",
-                        "Tools",
+                        "Learn",
+                        "Documentation",
                         "About Us",
                     ],
                     values=[
                         "",
+                        "learn",
                         "documentation",
-                        "tools",
                         "about",
                     ],
                     selected_value=active_url_fragment,
                     color="primary",
                     spacing=1,
                     on_change=self._on_navigation_button_press,
-                    margin_right=4.0,
+                    margin_right=0.5,
                     align_y=0.5,
+                ),
+                rio.Tooltip(
+                    rio.Link(
+                        rio.IconButton(
+                            "thirdparty/github-logo",
+                            color="primary",
+                            style="plain",
+                            size=2.2,
+                            margin_right=1.0,
+                        ),
+                        target_url="https://github.com/rio-project/rio",
+                        # TODO: Open in new tab
+                    ),
+                    "Github",
+                    position="bottom",
+                ),
+                rio.Link(
+                    rio.Tooltip(
+                        rio.IconButton(
+                            "thirdparty/discord-logo",
+                            color="primary",
+                            style="plain",
+                            size=2.2,
+                            margin_right=2.0,
+                        ),
+                        "Discord",
+                        position="bottom",
+                    ),
+                    # TODO: Open in new tab
+                    target_url="https://discord.com/todo",
                 ),
             ),
             style=rio.BoxStyle(
@@ -83,9 +111,9 @@ class NavigationBar(rio.Component):
                 shadow_radius=0.4,
                 shadow_offset_y=0.1,
             ),
+            margin_x=2.0,
             width=bar_width,
             align_x=bar_align_x,
-            margin_x=2.0,
         )
 
 
