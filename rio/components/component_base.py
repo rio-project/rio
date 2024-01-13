@@ -307,6 +307,18 @@ class ComponentMeta(abc.ABCMeta):
         else:
             component._rio_internal_ = creator._rio_builtin_
 
+        # Determine which properties were explicitly set. This includes
+        # parameters that received an argument, and also varargs (`*args`)
+        signature = inspect.signature(component.__init__)
+        bound_args = signature.bind(*args, **kwargs)
+
+        component._explicitly_set_properties_ = set(bound_args.arguments)
+        component._explicitly_set_properties_.update(
+            param.name
+            for param in signature.parameters.values()
+            if param.kind is inspect.Parameter.VAR_POSITIONAL
+        )
+
         # Call `__init__`
         component.__init__(*args, **kwargs)
 
@@ -327,18 +339,6 @@ class ComponentMeta(abc.ABCMeta):
         component.margin_bottom = elvis("margin_bottom", "margin_y", "margin")
 
         component._create_state_bindings()
-
-        # Determine which properties were explicitly set. This includes
-        # parameters that received an argument, and also varargs (`*args`)
-        signature = inspect.signature(component.__init__)
-        bound_args = signature.bind(*args, **kwargs)
-
-        component._explicitly_set_properties_ = set(bound_args.arguments)
-        component._explicitly_set_properties_.update(
-            param.name
-            for param in signature.parameters.values()
-            if param.kind is inspect.Parameter.VAR_POSITIONAL
-        )
 
         # Keep track of this component's existence
         #
