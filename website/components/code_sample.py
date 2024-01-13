@@ -22,6 +22,7 @@ class CodeSample(rio.Component):
                 width=theme.COLUMN_WIDTH,
                 align_x=0.5,
             ),
+            comps.CodeExplorer(self.code),
             rio.Container(
                 rio.Text(
                     self.text,
@@ -34,6 +35,5 @@ class CodeSample(rio.Component):
                 width=theme.COLUMN_WIDTH,
                 align_x=0.5,
             ),
-            comps.CodeExplorer(self.code),
             spacing=2,
         )

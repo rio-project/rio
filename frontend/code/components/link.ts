@@ -8,6 +8,7 @@ export type LinkState = ComponentState & {
     _type_: 'Link-builtin';
     child_text?: string | null;
     child_component?: ComponentId | null;
+    open_in_new_tab?: boolean;
     targetUrl: string;
     isPage: boolean;
 };
@@ -87,6 +88,13 @@ export class LinkComponent extends ComponentBase {
         // Target URL?
         if (deltaState.targetUrl !== undefined) {
             element.href = deltaState.targetUrl;
+        }
+
+        // Open in new tab?
+        if (deltaState.open_in_new_tab === true) {
+            element.target = '_blank';
+        } else if (deltaState.open_in_new_tab === false) {
+            element.target = '';
         }
     }
 

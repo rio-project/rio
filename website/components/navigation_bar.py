@@ -17,12 +17,9 @@ class NavigationBar(rio.Component):
         surface_color = theme.THEME.neutral_palette.background
         text_color = theme.THEME.text_color_for(surface_color)
 
-        print(self.session.window_width)
-
         # If the page is narrow, fill most of the width with the navigation bar.
         # Otherwise fall back to a fixed width.
         if self.session.window_width > 100:
-            print("wide mode")
             bar_width = 96
             bar_align_x = 0.5
         else:
@@ -80,13 +77,13 @@ class NavigationBar(rio.Component):
                             color="primary",
                             style="plain",
                             size=2.2,
-                            margin_right=1.0,
                         ),
                         target_url="https://github.com/rio-project/rio",
-                        # TODO: Open in new tab
+                        open_in_new_tab=True,
                     ),
                     "Github",
                     position="bottom",
+                    margin_right=1.0,
                 ),
                 rio.Link(
                     rio.Tooltip(
@@ -95,13 +92,13 @@ class NavigationBar(rio.Component):
                             color="primary",
                             style="plain",
                             size=2.2,
-                            margin_right=2.0,
                         ),
                         "Discord",
                         position="bottom",
+                        margin_right=2.0,
                     ),
-                    # TODO: Open in new tab
                     target_url="https://discord.com/todo",
+                    open_in_new_tab=True,
                 ),
             ),
             style=rio.BoxStyle(

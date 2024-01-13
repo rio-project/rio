@@ -141,7 +141,7 @@ class Theme:
         success_color: Optional[rio.Color] = None,
         warning_color: Optional[rio.Color] = None,
         danger_color: Optional[rio.Color] = None,
-        corner_radius_small: float = 0.3,
+        corner_radius_small: float = 0.5,
         corner_radius_medium: float = 1.4,
         corner_radius_large: float = 2.4,
         color_headings: bool | Literal["auto"] = "auto",

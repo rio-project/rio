@@ -8,19 +8,7 @@ class Hero(rio.Component):
         logo_height = 42
         aspect = 1282.2842 / 1154.8138
 
-        return rio.Stack(
-            rio.Icon(
-                "self/hero-shape",
-                width=logo_height * aspect,
-                height=logo_height,
-                align_x=1,
-                align_y=0,
-                fill=rio.LinearGradientFill(
-                    (self.session.theme.primary_color, 0),
-                    (self.session.theme.secondary_color, 1),
-                    angle_degrees=90,
-                ),
-            ),
+        return rio.Row(
             rio.Column(
                 rio.Row(
                     rio.Icon(
@@ -31,8 +19,7 @@ class Hero(rio.Component):
                     rio.Text(
                         "Rio",
                         style=rio.TextStyle(
-                            # fill=rio.Color.WHITE,
-                            font_size=5,
+                            font_size=theme.TITLE_HEIGHT,
                             font_weight="bold",
                         ),
                     ),
@@ -42,8 +29,7 @@ class Hero(rio.Component):
                 rio.Text(
                     "Blabla, we're the coolest. Super easy to use and deploys in seconds.",
                     style=rio.TextStyle(
-                        # fill=rio.Color.WHITE,
-                        font_size=1.5,
+                        font_size=theme.ACTION_TEXT_HEIGHT,
                     ),
                     multiline=True,
                     width=30,
@@ -60,7 +46,17 @@ class Hero(rio.Component):
                     margin_top=2,
                     align_x=0.5,
                 ),
-                align_x=0.25,
+                width="grow",
                 align_y=0.5,
+            ),
+            rio.Icon(
+                "self/hero-shape",
+                width="grow",
+                height="grow",
+                fill=rio.LinearGradientFill(
+                    (self.session.theme.primary_color, 0),
+                    (self.session.theme.secondary_color, 1),
+                    angle_degrees=90,
+                ),
             ),
         )

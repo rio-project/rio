@@ -79,10 +79,10 @@ export class ListViewComponent extends ColumnComponent {
             // Round the corners
             let topRadius = prevIsGrouped
                 ? '0'
-                : 'var(--rio-global-corner-radius-small)';
+                : 'var(--rio-global-corner-radius-medium)';
             let bottomRadius = nextIsGrouped
                 ? '0'
-                : 'var(--rio-global-corner-radius-small)';
+                : 'var(--rio-global-corner-radius-medium)';
 
             curChild.style.borderTopLeftRadius = topRadius;
             curChild.style.borderTopRightRadius = topRadius;

@@ -649,12 +649,8 @@ body {
         shadow-color, shadow-radius, shadow-offset;
     transition-timing-function: ease;
 
-    overflow: hidden;
-
-    /*
-    The following attributes are controlled via variables, to allow JavaScript
-    to change them, even on pseudo-classes.
-    */
+    // The following attributes are controlled via variables, to allow
+    // JavaScript to change them, even on pseudo-classes.
     background: var(--rectangle-background);
     border-color: var(--rectangle-stroke-color);
     border-width: var(--rectangle-stroke-width);
@@ -1631,6 +1627,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 // Link
 .rio-link {
     pointer-events: auto;
+    display: block;
 }
 
 .rio-text-link {

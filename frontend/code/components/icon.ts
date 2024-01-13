@@ -2,6 +2,7 @@ import { ColorSet, Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyFillToSVG } from '../designApplication';
 import { pixelsPerEm } from '../app';
+import { LayoutContext } from '../layouting';
 
 export type IconState = ComponentState & {
     _type_: 'Icon-builtin';
@@ -78,24 +79,25 @@ export class IconComponent extends ComponentBase {
         // Add the SVG
         createSVGPath(element, deltaState.svgSource, deltaState.fill);
 
-        // Size
-        //
-        // The SVG has no size on its own. This is so it scales up, rather than
-        // staying a fixed size. However, this removes its "size request". If a
-        // size was provided by the backend, apply that explicitly.
-        if (deltaState._size_ !== undefined) {
-            let [width, height] = deltaState._size_;
-            let svgElement = element.firstElementChild as SVGSVGElement;
+        // Update the SVG's size
+        requestAnimationFrame(() => {
+            // The SVG has no size on its own. This is so it scales up, rather than
+            // staying a fixed size. However, this removes its "size request". If a
+            // size was provided by the backend, apply that explicitly.
 
             // SVG can't handle `rem`, but needs `px`. Convert.
-            svgElement.setAttribute(
-                'width',
-                width === null ? '100%' : `${width * pixelsPerEm}px`
-            );
-            svgElement.setAttribute(
-                'height',
-                height === null ? '100%' : `${height * pixelsPerEm}px`
-            );
-        }
+            let cssWidth = this.state._grow_[0]
+                ? '100%'
+                : `${this.state._size_[0] * pixelsPerEm}px`;
+
+            let cssHeight = this.state._grow_[1]
+                ? '100%'
+                : `${this.state._size_[1] * pixelsPerEm}px`;
+
+            let svgElement = this.element.querySelector('svg') as SVGSVGElement;
+
+            svgElement.setAttribute('width', cssWidth);
+            svgElement.setAttribute('height', cssHeight);
+        });
     }
 }
