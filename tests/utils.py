@@ -99,14 +99,18 @@ class MockApp:
 
         return scroll_container.child
 
-    def get_component(self, component_type: Type[C]) -> C:
+    def get_components(self, component_type: Type[C]) -> Iterator[C]:
         root_component = self.get_root_component()
 
         for component in root_component._iter_component_tree():
             if type(component) is component_type:
-                return component  # type: ignore
+                yield component  # type: ignore
 
-        raise AssertionError(f"No component of type {component_type} found")
+    def get_component(self, component_type: Type[C]) -> C:
+        try:
+            return next(self.get_components(component_type))
+        except StopIteration:
+            raise AssertionError(f"No component of type {component_type} found")
 
     def get_build_output(
         self,
