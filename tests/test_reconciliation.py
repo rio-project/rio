@@ -3,6 +3,7 @@ from typing import Tuple
 from utils import create_mockapp
 
 import rio
+from rio.components import Component
 
 
 async def test_default_values_arent_considered_explicitly_set():
@@ -263,3 +264,22 @@ async def test_same_key_on_different_component_type():
         await app.refresh()
 
         assert text.text == "Hello"
+
+
+async def test_grid_reconciliation():
+    class RootComponent(rio.Component):
+        num_rows: int = 1
+
+        def build(self) -> Component:
+            rows = [[rio.Text(f"Row {n}")] for n in range(self.num_rows)]
+            return rio.Grid(*rows)
+
+    async with create_mockapp(RootComponent) as app:
+        root = app.get_component(RootComponent)
+        grid = app.get_component(rio.Grid)
+
+        root.num_rows += 1
+        await app.refresh()
+
+        assert {root, grid} < app.last_updated_components
+        assert len(grid._children) == root.num_rows
