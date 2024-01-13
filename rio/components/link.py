@@ -25,8 +25,8 @@ class Link(component_base.FundamentalComponent):
     # Exactly one of these will be set, the other `None`
     child_text: Optional[str]
     child_component: Optional[component_base.Component]
-
     target_url: Union[rio.URL, str]
+    open_in_new_tab: bool
 
     # The serializer can't handle Union types. Override the constructor, so it
     # splits the child into two values
@@ -35,6 +35,7 @@ class Link(component_base.FundamentalComponent):
         child: Union[str, rio.Component],
         target_url: Union[str, rio.URL],
         *,
+        open_in_new_tab: bool = False,
         key: Optional[str] = None,
         margin: Optional[float] = None,
         margin_x: Optional[float] = None,
@@ -77,6 +78,7 @@ class Link(component_base.FundamentalComponent):
             self.child_component = child
 
         self.target_url = target_url
+        self.open_in_new_tab = open_in_new_tab
 
         self._explicitly_set_properties_.update(("child_text", "child_component"))
 

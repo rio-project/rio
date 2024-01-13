@@ -93,6 +93,6 @@ here to simplify things for you.
             ),
             LargeNavigationButtons(),
             rio.Spacer(),
-            width=theme.get_center_column_width(self.session),
+            width=90,  # TODO
             align_x=0.5,
         )

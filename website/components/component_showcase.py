@@ -3,15 +3,6 @@ import rio
 from .. import theme
 
 
-def make_slide(icon: str, color: rio.Color) -> rio.Component:
-    return rio.Rectangle(
-        child=rio.Icon(icon, width=2, height=2),
-        style=rio.BoxStyle(
-            fill=color,
-        ),
-    )
-
-
 class ComponentSample(rio.Component):
     component: rio.Component
     code: str
@@ -38,6 +29,19 @@ class ComponentSample(rio.Component):
 
 
 class ComponentShowcase(rio.Component):
+    def make_slide(self, icon: str, color: rio.Color) -> rio.Component:
+        return rio.Rectangle(
+            child=rio.Icon(
+                icon,
+                fill=self.session.theme.text_color_for(color),
+                width=2,
+                height=2,
+            ),
+            style=rio.BoxStyle(
+                fill=color,
+            ),
+        )
+
     def build(self) -> rio.Component:
         result_grid = rio.Grid(
             row_spacing=4,
@@ -100,9 +104,18 @@ class ComponentShowcase(rio.Component):
             ),
             ComponentSample(
                 rio.Slideshow(
-                    make_slide("home", rio.Color.RED),
-                    make_slide("palette", rio.Color.GREEN),
-                    make_slide("build", rio.Color.BLUE),
+                    self.make_slide(
+                        "home",
+                        rio.Color.from_hex("b70074"),
+                    ),
+                    self.make_slide(
+                        "palette",
+                        rio.Color.from_hex("508eff"),
+                    ),
+                    self.make_slide(
+                        "build",
+                        rio.Color.from_hex("00bf63"),
+                    ),
                     linger_time=1,
                     height=5,
                 ),

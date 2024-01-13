@@ -1,5 +1,7 @@
 import rio
 
+from .. import theme
+
 
 class GettingStarted(rio.Component):
     def build(self) -> rio.Component:
@@ -19,8 +21,7 @@ $ rio run
 
 That's it!
 """,
-                    width=50,
-                    margin_y=12,
+                    width=theme.COLUMN_WIDTH,
                     align_y=0.5,
                 ),
                 style=rio.BoxStyle(

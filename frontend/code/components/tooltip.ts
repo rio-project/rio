@@ -73,7 +73,7 @@ export class TooltipComponent extends ComponentBase {
         if (deltaState.position !== undefined) {
             let left, top, right, bottom, transform;
 
-            const theOne = 'calc(100% + 0.7rem)';
+            const theOne = 'calc(100% + 0.5rem)';
 
             if (deltaState.position === 'left') {
                 left = 'unset';

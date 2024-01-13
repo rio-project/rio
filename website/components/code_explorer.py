@@ -14,6 +14,7 @@ class CodeExplorer(rio.Component):
 {rio.escape_markdown_code(self.code)}
 ```
 """,
+                width=40,
                 align_y=0.5,
             ),
             rio.Spacer(),
