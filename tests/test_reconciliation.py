@@ -266,6 +266,23 @@ async def test_same_key_on_different_component_type():
         assert text.text == "Hello"
 
 
+async def test_text_reconciliation():
+    class RootComponent(rio.Component):
+        text: str = "foo"
+
+        def build(self) -> Component:
+            return rio.Text(self.text)
+
+    async with create_mockapp(RootComponent) as app:
+        root = app.get_component(RootComponent)
+        text = app.get_component(rio.Text)
+
+        root.text = "bar"
+        await app.refresh()
+
+        assert text.text == root.text
+
+
 async def test_grid_reconciliation():
     class RootComponent(rio.Component):
         num_rows: int = 1

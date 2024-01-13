@@ -316,7 +316,11 @@ class ComponentMeta(abc.ABCMeta):
         component._explicitly_set_properties_.update(
             param.name
             for param in signature.parameters.values()
-            if param.kind is inspect.Parameter.VAR_POSITIONAL
+            if param.kind
+            in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            )
         )
 
         # Call `__init__`
@@ -533,9 +537,7 @@ class Component(metaclass=ComponentMeta):
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
-    _explicitly_set_properties_: Set[str] = dataclasses.field(
-        init=False, default_factory=set, repr=False
-    )
+    _explicitly_set_properties_: Set[str] = dataclasses.field(init=False, repr=False)
 
     # Whether the `on_populate` event has already been triggered for this
     # component
