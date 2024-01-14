@@ -3,6 +3,7 @@ from typing import Any  # type: ignore
 
 import rio
 
+from .. import components as comps
 from .. import structure, theme
 
 
@@ -130,15 +131,19 @@ class DocumentationPage(rio.Component):
         except KeyError:
             section_name = None
 
-        return rio.Row(
-            Outliner(
-                margin_left=1,
-                align_y=0.5,
+        return rio.Column(
+            comps.TopEnd(),
+            rio.Row(
+                Outliner(
+                    margin_left=1,
+                    align_y=0.5,
+                ),
+                rio.PageView(
+                    width="grow",
+                    height="grow",
+                ),
+                spacing=2,
+                margin_top=3,
             ),
-            rio.PageView(
-                width="grow",
-                height="grow",
-            ),
-            spacing=2,
-            margin_top=3,
+            comps.BottomEnd(),
         )

@@ -6,6 +6,7 @@ import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyIcon } from '../designApplication';
 import { commitCss, disableTransitions, enableTransitions } from '../utils';
+import { pixelsPerEm } from '../app';
 
 // Layouting variables needed by both JS and CSS
 const MAIN_GAP = 1;
@@ -27,7 +28,8 @@ export class CodeExplorerComponent extends ComponentBase {
     private arrowElement: HTMLElement;
     private buildResultElement: HTMLElement;
 
-    private highlighterElement: HTMLElement;
+    private sourceHighlighterElement: HTMLElement;
+    private resultHighlighterElement: HTMLElement;
 
     private sourceCodeDimensions: [number, number];
 
@@ -42,8 +44,15 @@ export class CodeExplorerComponent extends ComponentBase {
             <div class="rio-code-explorer-build-result"></div>
         `;
 
-        this.highlighterElement = document.createElement('div');
-        this.highlighterElement.classList.add('rio-code-explorer-highlighter');
+        this.sourceHighlighterElement = document.createElement('div');
+        this.sourceHighlighterElement.classList.add(
+            'rio-code-explorer-highlighter'
+        );
+
+        this.resultHighlighterElement = document.createElement('div');
+        this.resultHighlighterElement.classList.add(
+            'rio-code-explorer-highlighter'
+        );
 
         // Expose the elements
         [this.sourceCodeElement, this.arrowElement, this.buildResultElement] =
@@ -85,13 +94,16 @@ export class CodeExplorerComponent extends ComponentBase {
 
             // Connect event handlers
             this._connectHighlightEventListeners();
+
+            // Re-add the highlighter
+            this.sourceCodeElement.appendChild(this.sourceHighlighterElement);
         }
 
         // Update the child
         if (deltaState.build_result !== undefined) {
             // Remove the highlighter prior to removing the child, as
             // `replaceOnlyChild` expects there to be at most one element
-            this.highlighterElement.remove();
+            this.resultHighlighterElement.remove();
 
             // Update the child
             this.replaceOnlyChild(
@@ -106,7 +118,7 @@ export class CodeExplorerComponent extends ComponentBase {
             buildResultElement.element.style.removeProperty('top');
 
             // (Re-)Add the highlighter
-            this.buildResultElement.appendChild(this.highlighterElement);
+            this.buildResultElement.appendChild(this.resultHighlighterElement);
         }
     }
 
@@ -151,25 +163,56 @@ export class CodeExplorerComponent extends ComponentBase {
                 // Add the event listeners
                 ((currentLineIndex) => {
                     singleSpan.addEventListener('mouseenter', () => {
-                        this._onEnterLine(currentLineIndex);
+                        this.onLineEntered(currentLineIndex);
                     });
                 })(lineIndex);
 
                 singleSpan.addEventListener('mouseleave', () => {
-                    this._onEnterLine(null);
+                    this.onLineEntered(null);
                 });
+
+                // Indicate to the user that the element is interactive
+                singleSpan.style.cursor = 'crosshair';
             }
         }
     }
 
-    private _onEnterLine(line: number | null): void {
+    private onLineEntered(lineIndex: number | null): void {
         let key: string | null = null;
 
         // Which key should be highlighted?
-        if (line !== null) {
-            key = this.state.line_indices_to_component_keys[line];
+        if (lineIndex !== null) {
+            key = this.state.line_indices_to_component_keys[lineIndex];
         }
 
+        // Pass control to the highlight functions
+        this._highlightLine(key === null ? null : lineIndex);
+        this._highlightKey(key);
+    }
+
+    private _highlightLine(lineIndex: number | null): void {
+        console.debug('highlighting line index', lineIndex);
+        // Nothing to highlight
+        if (lineIndex === null) {
+            this.sourceHighlighterElement.style.opacity = '0';
+            return;
+        }
+
+        // Determine the line position
+        //
+        // FIXME: Just guessed for now
+        let lineHeight = pixelsPerEm;
+
+        this.sourceHighlighterElement.style.left = `0`;
+        this.sourceHighlighterElement.style.top = `${lineHeight * lineIndex}px`;
+        this.sourceHighlighterElement.style.right = `0`;
+        this.sourceHighlighterElement.style.height = `${lineHeight}px`;
+
+        // Show the highlighter
+        this.sourceHighlighterElement.style.opacity = '1';
+    }
+
+    private _highlightKey(key: string | null): void {
         // Find the component to highlight
         let targetComponent;
         if (key !== null) {
@@ -188,7 +231,7 @@ export class CodeExplorerComponent extends ComponentBase {
 
         // Nothing to highlight
         if (key === null) {
-            this.highlighterElement.style.opacity = '0';
+            this.resultHighlighterElement.style.opacity = '0';
             return;
         }
 
@@ -198,7 +241,8 @@ export class CodeExplorerComponent extends ComponentBase {
 
         // If the highlighter is currently completely invisible, teleport it.
         // Make sure to check the computed, current opacity, since it's animated
-        let teleport = getComputedStyle(this.highlighterElement).opacity == '0'; // Note the == instead of ===
+        let teleport =
+            getComputedStyle(this.resultHighlighterElement).opacity == '0'; // Note the == instead of ===
 
         // FIXME: Teleport isn't working
         // if (teleport) {
@@ -206,18 +250,18 @@ export class CodeExplorerComponent extends ComponentBase {
         //     commitCss(this.highlighterElement);
         // }
 
-        this.highlighterElement.style.left = `${
+        this.resultHighlighterElement.style.left = `${
             targetRect.left - rootRect.left
         }px`;
-        this.highlighterElement.style.top = `${
+        this.resultHighlighterElement.style.top = `${
             targetRect.top - rootRect.top
         }px`;
-        this.highlighterElement.style.width = `${targetRect.width}px`;
-        this.highlighterElement.style.height = `${targetRect.height}px`;
+        this.resultHighlighterElement.style.width = `${targetRect.width}px`;
+        this.resultHighlighterElement.style.height = `${targetRect.height}px`;
 
         // enableTransitions(this.highlighterElement);
 
-        this.highlighterElement.style.opacity = '1';
+        this.resultHighlighterElement.style.opacity = '1';
     }
 
     private findComponentByKey(
@@ -265,10 +309,7 @@ export class CodeExplorerComponent extends ComponentBase {
 
     updateAllocatedHeight(ctx: LayoutContext): void {
         let buildResultElement = componentsById[this.state.build_result]!;
-        buildResultElement.allocatedHeight = Math.max(
-            buildResultElement.requestedHeight,
-            this.allocatedHeight
-        );
+        buildResultElement.allocatedHeight = buildResultElement.requestedHeight;
 
         // Positioning the child is already done in `updateElement`
     }

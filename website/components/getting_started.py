@@ -29,4 +29,5 @@ That's it!
                 ),
             ),
             color="hud",
+            height=theme.get_subpage_height(self.session),
         )
