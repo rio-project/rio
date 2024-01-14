@@ -19,7 +19,7 @@ export class ListViewComponent extends ColumnComponent {
         latentComponents: Set<ComponentBase>
     ): void {
         // Columns don't wrap their children in divs, but ListView does. Hence
-        // the overridden createElement.
+        // the overridden updateElement.
         this.replaceChildren(
             latentComponents,
             deltaState.children,

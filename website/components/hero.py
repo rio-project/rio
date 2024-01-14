@@ -1,5 +1,6 @@
 import rio
 
+from .. import components as comps
 from .. import theme
 
 
@@ -33,6 +34,20 @@ class Hero(rio.Component):
                     ),
                     multiline=True,
                     width=30,
+                ),
+                comps.Bully(
+                    "Rio is ",
+                    "!",
+                    [
+                        "da best",
+                        "super cool",
+                        "sweet",
+                        "more better than u",
+                    ],
+                    font_size=theme.ACTION_TEXT_HEIGHT,
+                    linger_time=1,
+                    width=30,
+                    height=2,
                 ),
                 rio.Row(
                     rio.Button(
