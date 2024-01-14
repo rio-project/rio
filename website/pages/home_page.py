@@ -22,58 +22,68 @@ class CodeExplorer(rio.Component):
     code: str
 
     def build(self) -> rio.Component:
-        return rio.Row(
-            rio.MarkdownView(
-                align_y=0.5,
-            ),
+        return rio.Column(
+            rio.Text("Line 1"),
+            rio.Text("Line 2"),
             rio.Spacer(),
-            rio.Card(
-                rio.Text("Placeholder"),
-                width=40,
-                height=20,
-                align_y=0.5,
-            ),
         )
-""",
+""".strip(),
                     rio.Column(
-                        rio.Text("Line 1"),
-                        rio.Text("Line 2"),
-                        rio.Spacer(),
-                        width=10,
+                        rio.Text("Line 1", key="text1"),
+                        rio.Text("Line 2", key="text2"),
+                        rio.Spacer(key="spacer1"),
+                        key="column1",
+                        width=20,
                         height=16,
                     ),
+                    line_indices_to_component_keys=[
+                        None,
+                        None,
+                        None,
+                        None,
+                        "column1",
+                        "text1",
+                        "text2",
+                        "spacer1",
+                        "column1",
+                    ],
                 ),
                 color="neutral",
             ),
             comps.Subpage(
                 comps.CodeSample(
-                    "Combine your own components to create fancy apps",
+                    "Create your own components",
                     "React lets you build user interfaces out of individual pieces called components. Create your own React components like Thumbnail, LikeButton, and Video. Then combine them into entire screens, pages, and apps.",
                     """
 class CodeExplorer(rio.Component):
     code: str
 
     def build(self) -> rio.Component:
-        return rio.Row(
-            rio.MarkdownView(
-                align_y=0.5,
-            ),
+        return rio.Column(
+            rio.Text("Line 1"),
+            rio.Text("Line 2"),
             rio.Spacer(),
-            rio.Card(
-                rio.Text("Placeholder"),
-                width=40,
-                height=20,
-                align_y=0.5,
-            ),
         )
-""",
+""".strip(),
                     rio.Column(
-                        rio.Text("Line 1"),
-                        rio.Text("Line 2"),
-                        rio.Spacer(),
-                        width=10,
+                        rio.Text("Line 1", key="text1"),
+                        rio.Text("Line 2", key="text2"),
+                        rio.Spacer(key="spacer1"),
+                        key="column1",
+                        width=20,
                         height=16,
                     ),
+                    line_indices_to_component_keys=[
+                        None,
+                        None,
+                        None,
+                        None,
+                        "column1",
+                        "text1",
+                        "text2",
+                        "spacer1",
+                        "column1",
+                    ],
                 ),
                 color="background",
             ),

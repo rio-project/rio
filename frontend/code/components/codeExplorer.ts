@@ -5,17 +5,19 @@ import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyIcon } from '../designApplication';
+import { commitCss, disableTransitions, enableTransitions } from '../utils';
 
 // Layouting variables needed by both JS and CSS
-const CODE_VIEW_WIDTH = 50;
 const MAIN_GAP = 1;
+const BOX_PADDING = 1;
 const ARROW_SIZE = 3;
-const MAIN_SPACING = MAIN_GAP * 2 + ARROW_SIZE;
+const ADDITIONAL_SPACE = (BOX_PADDING * 2 + MAIN_GAP) * 2 + ARROW_SIZE;
 
 export type CodeExplorerState = ComponentState & {
     _type_: 'CodeExplorer-builtin';
     source_code?: string;
     build_result?: ComponentId;
+    line_indices_to_component_keys: (string | null)[];
 };
 
 export class CodeExplorerComponent extends ComponentBase {
@@ -25,7 +27,7 @@ export class CodeExplorerComponent extends ComponentBase {
     private arrowElement: HTMLElement;
     private buildResultElement: HTMLElement;
 
-    private highlighter: HTMLElement;
+    private highlighterElement: HTMLElement;
 
     private sourceCodeDimensions: [number, number];
 
@@ -40,17 +42,16 @@ export class CodeExplorerComponent extends ComponentBase {
             <div class="rio-code-explorer-build-result"></div>
         `;
 
-        this.highlighter = document.createElement('div');
-        this.highlighter.classList.add(
-            'rio-debugger-component-highlighter',
-            'rio-code-explorer-highlighter'
-        );
+        this.highlighterElement = document.createElement('div');
+        this.highlighterElement.classList.add('rio-code-explorer-highlighter');
 
         // Expose the elements
         [this.sourceCodeElement, this.arrowElement, this.buildResultElement] =
             Array.from(element.children) as HTMLElement[];
 
         // Finish initialization
+        this.sourceCodeElement.style.padding = `${BOX_PADDING}rem`;
+
         element.style.gap = `${MAIN_GAP}rem`;
 
         this.arrowElement.style.width = `${ARROW_SIZE}rem`;
@@ -60,12 +61,6 @@ export class CodeExplorerComponent extends ComponentBase {
             this.arrowElement,
             'arrow-right-alt:fill',
             'var(--rio-local-text-color)'
-        );
-
-        // Highlight the source code when hovered
-        this.sourceCodeElement.addEventListener(
-            'mousemove',
-            this._onMouseMove.bind(this)
         );
 
         return element;
@@ -83,13 +78,22 @@ export class CodeExplorerComponent extends ComponentBase {
             });
             this.sourceCodeElement.innerHTML = hlResult.value;
 
+            // Remember the dimensions now, for faster layouting
             this.sourceCodeDimensions = getElementDimensions(
                 this.sourceCodeElement
             );
+
+            // Connect event handlers
+            this._connectHighlightEventListeners();
         }
 
         // Update the child
         if (deltaState.build_result !== undefined) {
+            // Remove the highlighter prior to removing the child, as
+            // `replaceOnlyChild` expects there to be at most one element
+            this.highlighterElement.remove();
+
+            // Update the child
             this.replaceOnlyChild(
                 latentComponents,
                 deltaState.build_result,
@@ -100,51 +104,149 @@ export class CodeExplorerComponent extends ComponentBase {
             let buildResultElement = componentsById[deltaState.build_result]!;
             buildResultElement.element.style.removeProperty('left');
             buildResultElement.element.style.removeProperty('top');
+
+            // (Re-)Add the highlighter
+            this.buildResultElement.appendChild(this.highlighterElement);
         }
     }
 
-    private _findLine(event: MouseEvent): number {
-        let line = 0;
+    private _connectHighlightEventListeners(): void {
+        // The text is a mix of spans and raw text. Some of them may extend over
+        // multiple lines. Split them up, and use this opportunity to wrap all
+        // text in spans as well.
+        let lineIndex = 0;
 
-        let lineElement = this.sourceCodeElement.firstElementChild;
-        while (lineElement) {
-            let rect = lineElement.getBoundingClientRect();
-            if (event.clientY < rect.bottom) {
-                break;
+        let elementsBefore = Array.from(this.sourceCodeElement.childNodes);
+        this.sourceCodeElement.innerHTML = '';
+
+        for (let element of elementsBefore) {
+            // If this is just a plain text element, wrap it in a span
+            let multiSpan: HTMLSpanElement;
+
+            if (element instanceof Text) {
+                let span = document.createElement('span');
+                span.textContent = element.textContent!;
+                multiSpan = span;
+            } else {
+                console.assert(element instanceof HTMLSpanElement);
+                multiSpan = element as HTMLSpanElement;
             }
 
-            line++;
-            lineElement = lineElement.nextElementSibling;
-        }
+            // Re-add the spans, keeping track of the line
+            let lines = multiSpan.textContent!.split('\n');
 
-        return line;
+            for (let ii = 0; ii < lines.length; ii++) {
+                if (ii !== 0) {
+                    lineIndex += 1;
+                    this.sourceCodeElement.appendChild(
+                        document.createTextNode('\n')
+                    );
+                }
+
+                let singleSpan = multiSpan.cloneNode() as HTMLSpanElement;
+                singleSpan.innerText = lines[ii];
+                singleSpan.dataset.lineIndex = lineIndex.toString();
+                this.sourceCodeElement.appendChild(singleSpan);
+
+                // Add the event listeners
+                ((currentLineIndex) => {
+                    singleSpan.addEventListener('mouseenter', () => {
+                        this._onEnterLine(currentLineIndex);
+                    });
+                })(lineIndex);
+
+                singleSpan.addEventListener('mouseleave', () => {
+                    this._onEnterLine(null);
+                });
+            }
+        }
     }
 
-    private _onMouseMove(event: MouseEvent): void {
-        // Find the line that's being hovered
-        let line = this._findLine(event);
+    private _onEnterLine(line: number | null): void {
+        let key: string | null = null;
 
-        console.debug(`You're in line ${line}`);
-
-        // Add the highlighter if it's not in the document yet
-        if (!this.highlighter.parentElement) {
-            document.body.appendChild(this.highlighter);
+        // Which key should be highlighted?
+        if (line !== null) {
+            key = this.state.line_indices_to_component_keys[line];
         }
 
-        // Move the highlighter
-        let targetRect = this.buildResultElement.getBoundingClientRect();
+        // Find the component to highlight
+        let targetComponent;
+        if (key !== null) {
+            targetComponent = this.findComponentByKey(
+                componentsById[this.state.build_result]!,
+                key
+            );
 
-        this.highlighter.style.left = `${targetRect.left}px`;
-        this.highlighter.style.top = `${targetRect.top + line * 16}px`;
-        this.highlighter.style.width = `${targetRect.width}px`;
-        this.highlighter.style.height = '16px';
+            if (targetComponent === null) {
+                console.error(
+                    `CodeExplorer could not find component with key ${key}`
+                );
+                key = null;
+            }
+        }
+
+        // Nothing to highlight
+        if (key === null) {
+            this.highlighterElement.style.opacity = '0';
+            return;
+        }
+
+        // Highlight the target
+        let rootRect = this.buildResultElement.getBoundingClientRect();
+        let targetRect = targetComponent.element.getBoundingClientRect();
+
+        // If the highlighter is currently completely invisible, teleport it.
+        // Make sure to check the computed, current opacity, since it's animated
+        let teleport = getComputedStyle(this.highlighterElement).opacity == '0'; // Note the == instead of ===
+
+        // FIXME: Teleport isn't working
+        // if (teleport) {
+        //     disableTransitions(this.highlighterElement);
+        //     commitCss(this.highlighterElement);
+        // }
+
+        this.highlighterElement.style.left = `${
+            targetRect.left - rootRect.left
+        }px`;
+        this.highlighterElement.style.top = `${
+            targetRect.top - rootRect.top
+        }px`;
+        this.highlighterElement.style.width = `${targetRect.width}px`;
+        this.highlighterElement.style.height = `${targetRect.height}px`;
+
+        // enableTransitions(this.highlighterElement);
+
+        this.highlighterElement.style.opacity = '1';
+    }
+
+    private findComponentByKey(
+        currentComponent: ComponentBase,
+        key: string
+    ): ComponentBase | null {
+        // Found it?
+        if (currentComponent.state._key_ === key) {
+            return currentComponent;
+        }
+
+        // Nope, recurse
+        for (let child of currentComponent.children) {
+            let result = this.findComponentByKey(child, key);
+
+            if (result !== null) {
+                return result;
+            }
+        }
+
+        // Exhausted all children
+        return null;
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
         let buildResultElement = componentsById[this.state.build_result]!;
         this.naturalWidth =
             this.sourceCodeDimensions[0] +
-            MAIN_SPACING +
+            ADDITIONAL_SPACE +
             buildResultElement.requestedWidth;
     }
 

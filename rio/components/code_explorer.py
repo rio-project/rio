@@ -18,5 +18,7 @@ class CodeExplorer(component_base.FundamentalComponent):
     source_code: str
     build_result: rio.Component
 
+    line_indices_to_component_keys: List[Optional[str]]
+
 
 CodeExplorer._unique_id = "CodeExplorer-builtin"

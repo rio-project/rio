@@ -1,3 +1,5 @@
+from typing import *  # type: ignore
+
 import rio
 
 from .. import components as comps
@@ -9,6 +11,7 @@ class CodeSample(rio.Component):
     text: str
     source_code: str
     build_result: rio.Component
+    line_indices_to_component_keys: List[Optional[str]]
 
     def build(self) -> rio.Component:
         return rio.Column(
@@ -25,6 +28,7 @@ class CodeSample(rio.Component):
             rio.CodeExplorer(
                 self.source_code,
                 self.build_result,
+                self.line_indices_to_component_keys,
                 align_x=0.5,
             ),
             rio.Container(
