@@ -1,5 +1,4 @@
 from .bully import Bully
-from .code_explorer import CodeExplorer
 from .code_sample import CodeSample
 from .community import Community
 from .component_showcase import ComponentShowcase
