@@ -2624,16 +2624,16 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     font-size: 1rem;
     font-family: 'Roboto Mono', monospace;
 
+    position: relative;
     min-width: 25rem;
     width: min-content;
-}
-
-.rio-code-explorer-source-code,
-.rio-code-explorer-build-result {
-    position: relative;
 
     background: var(--rio-local-plain-bg-variant);
     border-radius: var(--rio-global-corner-radius-medium);
+}
+
+.rio-code-explorer-build-result {
+    position: relative;
 }
 
 .rio-code-explorer-build-result > *:not(.rio-code-explorer-highlighter) {
@@ -2668,9 +2668,9 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     border-width: 0.2rem !important;
     border-color: var(--rio-global-primary-bg);
 
-    box-shadow: 0 0 5rem 1rem var(--rio-global-primary-bg) !important;
+    box-shadow: 0 0 4rem 1rem var(--rio-global-primary-bg) !important;
 
-    opacity: 0.5;
+    opacity: 0.4;
 
     animation: pulse 1.4s infinite;
 }

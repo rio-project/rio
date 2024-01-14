@@ -112,27 +112,3 @@ class NavigationBar(rio.Component):
             width=bar_width,
             align_x=bar_align_x,
         )
-
-
-class NavigationBarDeadSpace(rio.Component):
-    """
-    The Navigation Bar hovers above other content, necessitating a spacer to
-    prevent real content from being obscured.
-
-    This component is that spacer. it fills itself with a random background image
-    to provide visual interest.
-    """
-
-    height: float = 8
-
-    def build(self) -> rio.Component:
-        return rio.Rectangle(
-            style=rio.BoxStyle(
-                fill=rio.ImageFill(
-                    random.choice(theme.GENERIC_MATERIAL_IMAGES),
-                    fill_mode="zoom",
-                ),
-            ),
-            height=self.height,
-            width="grow",
-        )

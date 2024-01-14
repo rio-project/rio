@@ -46,7 +46,9 @@ class ComponentShowcase(rio.Component):
         result_grid = rio.Grid(
             row_spacing=4,
             column_spacing=4,
+            height="grow",
             align_x=0.5,
+            align_y=0.5,
         )
 
         samples = [
@@ -149,5 +151,6 @@ class ComponentShowcase(rio.Component):
             ),
             result_grid,
             spacing=3,
+            height=theme.get_subpage_height(self.session),
             margin_y=3,
         )

@@ -50,22 +50,55 @@ class SocialButton(rio.Component):
 
 class Community(rio.Component):
     def build(self) -> rio.Component:
-        return rio.Column(
-            rio.Text(
-                "Join the Rio Community",
-                style=theme.ACTION_TITLE_STYLE,
+        return rio.Stack(
+            rio.Icon(
+                "self/accent-shape-corner-bottom-right",
+                fill=theme.THEME_COLORS_GRADIENT_90,
+                width=25,
+                height=30,
+                align_x=1,
+                align_y=1,
             ),
-            SocialButton(
-                icon="thirdparty/discord-logo",
-                title="Join our Discord",
-                text="Talk to fellow Rio users, the Rio developer team, or get help.",
-                url="https://discord.com/todo",
+            rio.Icon(
+                "styling/rounded-corner-bottom-right",
+                fill=self.session.theme.hud_color,
+                width=4,
+                height=4,
+                align_x=1,
+                align_y=1,
             ),
-            SocialButton(
-                icon="thirdparty/github-logo",
-                title="View the Source",
-                text="See our github repository.",
-                url="https://github.com/rio-project/rio",
+            rio.Icon(
+                "styling/rounded-corner-bottom-left",
+                fill=self.session.theme.hud_color,
+                width=4,
+                height=4,
+                align_x=0,
+                align_y=1,
             ),
-            spacing=2,
+            rio.Column(
+                rio.Text(
+                    "Join the Rio Community",
+                    style=theme.ACTION_TITLE_STYLE,
+                    margin_top=5,
+                ),
+                rio.Column(
+                    SocialButton(
+                        icon="thirdparty/discord-logo",
+                        title="Join our Discord",
+                        text="Talk to fellow Rio users, the Rio developer team, or get help.",
+                        url="https://discord.com/todo",
+                    ),
+                    SocialButton(
+                        icon="thirdparty/github-logo",
+                        title="View the Source",
+                        text="See our github repository.",
+                        url="https://github.com/rio-project/rio",
+                    ),
+                    spacing=2,
+                    height="grow",
+                    align_x=0.2,
+                    align_y=0.4,
+                ),
+            ),
+            height=theme.get_subpage_height(self.session),
         )

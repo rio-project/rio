@@ -53,10 +53,12 @@ class Hero(rio.Component):
                     rio.Button(
                         "Get Started",
                         icon="rocket-launch",
+                        color="primary",
                     ),
                     rio.Button(
                         "API Reference",
                         # icon="library-books",
+                        color="primary",
                         style="minor",
                     ),
                     spacing=2,
@@ -67,13 +69,10 @@ class Hero(rio.Component):
                 align_y=0.5,
             ),
             rio.Icon(
-                "self/hero-shape",
+                "self/accent-shape-logo",
                 width="grow",
                 height="grow",
-                fill=rio.LinearGradientFill(
-                    (self.session.theme.primary_color, 0),
-                    (self.session.theme.secondary_color, 1),
-                    angle_degrees=90,
-                ),
+                fill=theme.THEME_COLORS_GRADIENT_90,
             ),
+            height=theme.get_subpage_height(self.session),
         )

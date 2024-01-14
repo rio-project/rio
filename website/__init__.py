@@ -15,9 +15,16 @@ ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
 
 
 rio.Icon.register_single_icon(
-    ASSETS_DIR / "hero-background-logo.svg",
+    ASSETS_DIR / "accent-shape-logo.svg",
     "self",
-    "hero-shape",
+    "accent-shape-logo",
+)
+
+
+rio.Icon.register_single_icon(
+    ASSETS_DIR / "accent-shape-corner-bottom-right.svg",
+    "self",
+    "accent-shape-corner-bottom-right",
 )
 
 rio.Icon.register_single_icon(
@@ -30,6 +37,20 @@ rio.Icon.register_single_icon(
     ASSETS_DIR / "brands" / "github-logo.svg",
     "thirdparty",
     "github-logo",
+)
+
+
+# TODO: Temporary, until included in the rio package
+rio.Icon.register_single_icon(
+    rio.common.PROJECT_ROOT_DIR / "raw-icons/styling/corner-round-bottom-right.svg",
+    "styling",
+    "rounded-corner-bottom-right",
+)
+
+rio.Icon.register_single_icon(
+    rio.common.PROJECT_ROOT_DIR / "raw-icons/styling/corner-round-bottom-left.svg",
+    "styling",
+    "rounded-corner-bottom-left",
 )
 
 
@@ -51,7 +72,7 @@ class AppRoot(rio.Component):
             ),
             # Footer
             comps.Footer(
-                margin_top=2,
+                # margin_top=2,
             ),
         )
 
