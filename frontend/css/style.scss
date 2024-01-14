@@ -564,7 +564,7 @@ body {
     position: relative !important;
 }
 
-.rio-list-view > .rio-linear-child-container > div > * {
+.rio-list-view > .rio-linear-child-container > div > *:first-child {
     position: relative !important;
 }
 
@@ -2163,10 +2163,13 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     background-color: var(--rio-local-plain-bg-active);
 }
 
-// Not actually a separate component, only used by ListViews at the moment
-.rio-separator {
-    width: 100%;
+.rio-listview-separator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 1px;
+
     background-color: var(--rio-local-text-color);
     opacity: 0.2;
 }
