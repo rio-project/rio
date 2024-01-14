@@ -6,6 +6,7 @@ from .auto_form import *
 from .banner import *
 from .button import *
 from .card import *
+from .code_explorer import *
 from .color_picker import *
 from .column import *
 from .component_base import *

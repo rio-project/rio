@@ -19,8 +19,8 @@ class NavigationBar(rio.Component):
 
         # If the page is narrow, fill most of the width with the navigation bar.
         # Otherwise fall back to a fixed width.
-        if self.session.window_width > 100:
-            bar_width = 96
+        if self.session.window_width > 110:
+            bar_width = 106  # width - 2 * margin
             bar_align_x = 0.5
         else:
             bar_width = "grow"

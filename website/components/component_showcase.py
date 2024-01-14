@@ -141,8 +141,11 @@ class ComponentShowcase(rio.Component):
 
         return rio.Column(
             rio.Text(
-                "50+ Material Design Components",
+                "Batteries Included:\n50+ Material Design Components",
                 style=theme.ACTION_TITLE_STYLE,
+                multiline=True,
+                width=30,
+                align_x=0.5,
             ),
             result_grid,
             spacing=3,

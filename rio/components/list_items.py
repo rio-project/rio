@@ -28,7 +28,7 @@ class SimpleListItem(component_base.Component):
     _: KW_ONLY
     secondary_text: str = ""
     left_child: Optional[component_base.Component] = None
-    right_child: Optional[List[component_base.Component]] = None
+    right_child: Optional[component_base.Component] = None
     on_press: rio.EventHandler[[]] = None
 
     def build(self) -> component_base.Component:
