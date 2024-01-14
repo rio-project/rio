@@ -43,7 +43,7 @@ JAVASCRIPT_SOURCE_TEMPLATE = """
     class %(js_wrapper_class_name)s extends window.RIO_COMPONENT_BASE {
         createElement() {
             this.userInstance = new %(js_user_class_name)s();
-            this.userInstance.rioWrapper = this;
+            this.userInstance.__rioWrapper__ = this;
             let element = this.userInstance.createElement();
             this.userInstance.element = element;
             return element;
@@ -55,8 +55,8 @@ JAVASCRIPT_SOURCE_TEMPLATE = """
     }
 
     // Expose additional functionality to the user
-    %(js_user_class_name)s.prototype.element = function () {
-        return this.rioWrapper.element;
+    %(js_user_class_name)s.prototype.state = function () {
+        return this.__rioWrapper__.state;
     }
 
     // Register the component
