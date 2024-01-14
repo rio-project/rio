@@ -142,10 +142,9 @@ class ComponentShowcase(rio.Component):
         return rio.Column(
             rio.Text(
                 "50+ Material Design Components",
-                style=rio.TextStyle(
-                    font_size=5,
-                ),
+                style=theme.ACTION_TITLE_STYLE,
             ),
             result_grid,
             spacing=3,
+            margin_y=3,
         )

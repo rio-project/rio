@@ -5,7 +5,7 @@ from .. import theme
 
 class GettingStarted(rio.Component):
     def build(self) -> rio.Component:
-        return rio.Card(
+        return rio.ThemeContextSwitcher(
             rio.Rectangle(
                 child=rio.MarkdownView(
                     """
@@ -29,5 +29,4 @@ That's it!
                 ),
             ),
             color="hud",
-            corner_radius=0,
         )
