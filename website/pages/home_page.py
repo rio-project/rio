@@ -15,7 +15,7 @@ class HomePage(rio.Component):
             ),
             comps.Subpage(
                 comps.CodeSample(
-                    "Create user interfaces from components",
+                    "Create your own components",
                     "React lets you build user interfaces out of individual pieces called components. Create your own React components like Thumbnail, LikeButton, and Video. Then combine them into entire screens, pages, and apps.",
                     """
 class CodeExplorer(rio.Component):
@@ -24,7 +24,6 @@ class CodeExplorer(rio.Component):
     def build(self) -> rio.Component:
         return rio.Row(
             rio.MarkdownView(
-{rio.escape_markdown_code(self.code)}
                 align_y=0.5,
             ),
             rio.Spacer(),
@@ -36,12 +35,19 @@ class CodeExplorer(rio.Component):
             ),
         )
 """,
+                    rio.Column(
+                        rio.Text("Line 1"),
+                        rio.Text("Line 2"),
+                        rio.Spacer(),
+                        width=10,
+                        height=16,
+                    ),
                 ),
                 color="neutral",
             ),
             comps.Subpage(
                 comps.CodeSample(
-                    "Combine your own components into fancy apps",
+                    "Combine your own components to create fancy apps",
                     "React lets you build user interfaces out of individual pieces called components. Create your own React components like Thumbnail, LikeButton, and Video. Then combine them into entire screens, pages, and apps.",
                     """
 class CodeExplorer(rio.Component):
@@ -50,7 +56,6 @@ class CodeExplorer(rio.Component):
     def build(self) -> rio.Component:
         return rio.Row(
             rio.MarkdownView(
-{rio.escape_markdown_code(self.code)}
                 align_y=0.5,
             ),
             rio.Spacer(),
@@ -62,6 +67,13 @@ class CodeExplorer(rio.Component):
             ),
         )
 """,
+                    rio.Column(
+                        rio.Text("Line 1"),
+                        rio.Text("Line 2"),
+                        rio.Spacer(),
+                        width=10,
+                        height=16,
+                    ),
                 ),
                 color="background",
             ),

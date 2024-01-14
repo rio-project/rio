@@ -2,6 +2,7 @@ import { AlignComponent } from './components/align';
 import { ButtonComponent } from './components/button';
 import { CardComponent } from './components/card';
 import { ClassContainerComponent } from './components/classContainer';
+import { CodeExplorerComponent } from './components/codeExplorer';
 import { ColorPickerComponent } from './components/colorPicker';
 import { ColumnComponent, RowComponent } from './components/linearContainers';
 import { ComponentBase, ComponentState } from './components/componentBase';
@@ -55,6 +56,7 @@ const COMPONENT_CLASSES = {
     'Button-builtin': ButtonComponent,
     'Card-builtin': CardComponent,
     'ClassContainer-builtin': ClassContainerComponent,
+    'CodeExplorer-builtin': CodeExplorerComponent,
     'ColorPicker-builtin': ColorPickerComponent,
     'Column-builtin': ColumnComponent,
     'ComponentTree-builtin': ComponentTreeComponent,

@@ -2606,3 +2606,37 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
     transition: opacity 0.15s ease-in-out;
 }
+
+// Code Explorer
+.rio-code-explorer {
+    // pointer-events: none;
+    pointer-events: auto; // REMOVE just for debugging
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rio-code-explorer-source-code {
+    display: block;
+    cursor: text;
+    white-space: pre;
+    font-size: 1rem;
+    font-family: 'Roboto Mono', monospace;
+
+    width: min-content;
+}
+
+.rio-code-explorer-source-code,
+.rio-code-explorer-build-result {
+    background: var(--rio-local-plain-bg-variant);
+    border-radius: var(--rio-global-corner-radius-small);
+}
+
+.rio-code-explorer-build-result > * {
+    position: relative !important;
+}
+
+.rio-code-explorer-highlighter {
+    position: absolute;
+}

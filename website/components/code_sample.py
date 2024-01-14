@@ -7,7 +7,8 @@ from .. import theme
 class CodeSample(rio.Component):
     title: str
     text: str
-    code: str
+    source_code: str
+    build_result: rio.Component
 
     def build(self) -> rio.Component:
         return rio.Column(
@@ -20,7 +21,12 @@ class CodeSample(rio.Component):
                 width=theme.COLUMN_WIDTH,
                 align_x=0.5,
             ),
-            comps.CodeExplorer(self.code),
+            # comps.CodeExplorer(self.source_code),
+            rio.CodeExplorer(
+                self.source_code,
+                self.build_result,
+                align_x=0.5,
+            ),
             rio.Container(
                 rio.Text(
                     self.text,

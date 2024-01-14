@@ -205,7 +205,7 @@ export class MarkdownViewComponent extends ComponentBase {
 
             // Update the width request
             //
-            // For some reason the elmeent takes up the whole parent's width
+            // For some reason the element takes up the whole parent's width
             // without explicitly setting its with
             contentDiv.style.width = 'min-content';
             this.naturalWidth = getElementWidth(contentDiv);
