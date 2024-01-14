@@ -46,8 +46,9 @@ import { SwitcherComponent } from './components/switcher';
 import { TableComponent } from './components/table';
 import { TextComponent } from './components/text';
 import { TextInputComponent } from './components/textInput';
-import { updateLayout } from './layouting';
+import { ThemeContextSwitcherComponent } from './components/themeContextSwitcher';
 import { TooltipComponent } from './components/tooltip';
+import { updateLayout } from './layouting';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -95,6 +96,7 @@ const COMPONENT_CLASSES = {
     'Table-builtin': TableComponent,
     'Text-builtin': TextComponent,
     'TextInput-builtin': TextInputComponent,
+    'ThemeContextSwitcher-builtin': ThemeContextSwitcherComponent,
     'Tooltip-builtin': TooltipComponent,
     Placeholder: PlaceholderComponent,
 };

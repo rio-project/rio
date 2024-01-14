@@ -41,7 +41,7 @@ class CodeExplorer(rio.Component):
             ),
             comps.Subpage(
                 comps.CodeSample(
-                    "Create user interfaces from components",
+                    "Combine your own components into fancy apps",
                     "React lets you build user interfaces out of individual pieces called components. Create your own React components like Thumbnail, LikeButton, and Video. Then combine them into entire screens, pages, and apps.",
                     """
 class CodeExplorer(rio.Component):

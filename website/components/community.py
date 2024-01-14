@@ -53,10 +53,7 @@ class Community(rio.Component):
         return rio.Column(
             rio.Text(
                 "Join the Rio Community",
-                style=rio.TextStyle(
-                    font_size=theme.TITLE_HEIGHT,
-                    font_weight="bold",
-                ),
+                style=theme.ACTION_TITLE_STYLE,
             ),
             SocialButton(
                 icon="thirdparty/discord-logo",

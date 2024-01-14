@@ -20,7 +20,7 @@ class Hero(rio.Component):
                     rio.Text(
                         "Rio",
                         style=rio.TextStyle(
-                            font_size=theme.TITLE_HEIGHT,
+                            font_size=theme.ACTION_TITLE_HEIGHT,
                             font_weight="bold",
                         ),
                     ),
@@ -52,9 +52,11 @@ class Hero(rio.Component):
                 rio.Row(
                     rio.Button(
                         "Get Started",
+                        icon="rocket-launch",
                     ),
                     rio.Button(
                         "API Reference",
+                        # icon="library-books",
                         style="minor",
                     ),
                     spacing=2,

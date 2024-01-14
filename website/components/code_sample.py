@@ -15,9 +15,7 @@ class CodeSample(rio.Component):
                 rio.Text(
                     self.title,
                     multiline=True,
-                    style=rio.TextStyle(
-                        font_size=theme.TITLE_HEIGHT,
-                    ),
+                    style=theme.ACTION_TITLE_STYLE,
                 ),
                 width=theme.COLUMN_WIDTH,
                 align_x=0.5,
