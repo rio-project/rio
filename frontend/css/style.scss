@@ -2666,9 +2666,9 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     border-radius: 1rem;
     border-style: solid;
     border-width: 0.2rem !important;
-    border-color: var(--rio-global-primary-bg);
+    border-color: var(--rio-global-secondary-bg);
 
-    box-shadow: 0 0 4rem 1rem var(--rio-global-primary-bg) !important;
+    box-shadow: 0 0 4rem 1rem var(--rio-global-secondary-bg);
 
     opacity: 0.4;
 

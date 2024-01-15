@@ -1,6 +1,6 @@
 import hljs from 'highlight.js/lib/common';
-import { componentsById } from '../componentManagement';
-import { getElementDimensions } from '../layoutHelpers';
+import { componentsByElement, componentsById } from '../componentManagement';
+import { getElementDimensions, getElementHeight } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
@@ -71,6 +71,19 @@ export class CodeExplorerComponent extends ComponentBase {
             'arrow-right-alt:fill',
             'var(--rio-local-text-color)'
         );
+
+        this.arrowElement.style.opacity = '0.3';
+
+        // Listen for mouse events
+        this.buildResultElement.addEventListener(
+            'mousemove',
+            this.onResultMouseMove.bind(this),
+            { capture: true }
+        );
+
+        this.buildResultElement.addEventListener('mouseleave', () => {
+            this._highlightComponentByKey(null);
+        });
 
         return element;
     }
@@ -186,33 +199,107 @@ export class CodeExplorerComponent extends ComponentBase {
         }
 
         // Pass control to the highlight functions
-        this._highlightLine(key === null ? null : lineIndex);
-        this._highlightKey(key);
+        this._highlightComponentByKey(key);
     }
 
-    private _highlightLine(lineIndex: number | null): void {
-        console.debug('highlighting line index', lineIndex);
-        // Nothing to highlight
-        if (lineIndex === null) {
+    private onResultMouseMove(event: MouseEvent): void {
+        // Find the element that's being hovered over
+        let curElement = event.target as HTMLElement;
+
+        // Find the component which owns this element
+        let targetComponent: ComponentBase | undefined = undefined;
+
+        while (true) {
+            // Is this a component's root element?
+            targetComponent = componentsByElement.get(curElement);
+
+            // If a component was found, make sure it also has a key
+            if (
+                targetComponent !== undefined &&
+                targetComponent.state._key_ !== null
+            ) {
+                break;
+            }
+
+            // Nope, keep going
+            curElement = curElement.parentElement!;
+        }
+
+        // Highlight the target
+        this._highlightComponentByKey(targetComponent.state._key_);
+    }
+
+    private _highlightComponentByKey(key: string | null): void {
+        // Nothing to highlight?
+        if (key === null) {
             this.sourceHighlighterElement.style.opacity = '0';
+            this.resultHighlighterElement.style.opacity = '0';
             return;
         }
 
-        // Determine the line position
-        //
-        // FIXME: Just guessed for now
-        let lineHeight = pixelsPerEm;
+        // Find the lines corresponding to this component
+        let firstLineIndex = 999999,
+            lastLineIndex = -1;
 
+        for (
+            let ii = 0;
+            ii < this.state.line_indices_to_component_keys.length;
+            ii++
+        ) {
+            if (this.state.line_indices_to_component_keys[ii] === key) {
+                firstLineIndex = Math.min(firstLineIndex, ii);
+                lastLineIndex = Math.max(lastLineIndex, ii);
+            }
+        }
+
+        // Highlight those lines
+        this._highlightLines(firstLineIndex, lastLineIndex);
+
+        // Highlight the result component
+        this._highlightKey(key);
+    }
+
+    private _highlightLines(
+        firstLineIndex: number,
+        lastLineIndex: number
+    ): void {
+        // Determine the area to highlight
+        let top = 99999,
+            bottom = -1;
+
+        for (let child of this.sourceCodeElement.children) {
+            // Is this child relevant?
+            if (!(child instanceof HTMLSpanElement)) {
+                continue;
+            }
+
+            let lineIndex = parseInt(child.dataset.lineIndex!);
+            if (lineIndex < firstLineIndex || lineIndex > lastLineIndex) {
+                continue;
+            }
+
+            // Yes, update the area
+            let childRect = child.getBoundingClientRect();
+            top = Math.min(top, childRect.top);
+            bottom = Math.max(bottom, childRect.bottom);
+        }
+
+        // Convert the coordinates to be relative to source code area
+        let sourceCodeRect = this.sourceCodeElement.getBoundingClientRect();
+        top -= sourceCodeRect.top;
+        bottom -= sourceCodeRect.top;
+
+        // Highlight that area
         this.sourceHighlighterElement.style.left = `0`;
-        this.sourceHighlighterElement.style.top = `${lineHeight * lineIndex}px`;
+        this.sourceHighlighterElement.style.top = `${top}px`;
         this.sourceHighlighterElement.style.right = `0`;
-        this.sourceHighlighterElement.style.height = `${lineHeight}px`;
+        this.sourceHighlighterElement.style.height = `${bottom - top}px`;
 
         // Show the highlighter
         this.sourceHighlighterElement.style.opacity = '1';
     }
 
-    private _highlightKey(key: string | null): void {
+    private _highlightKey(key: string): void {
         // Find the component to highlight
         let targetComponent;
         if (key !== null) {
@@ -225,14 +312,8 @@ export class CodeExplorerComponent extends ComponentBase {
                 console.error(
                     `CodeExplorer could not find component with key ${key}`
                 );
-                key = null;
+                return;
             }
-        }
-
-        // Nothing to highlight
-        if (key === null) {
-            this.resultHighlighterElement.style.opacity = '0';
-            return;
         }
 
         // Highlight the target
