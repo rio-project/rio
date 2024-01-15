@@ -11,11 +11,16 @@ from uniserde import JsonDoc
 import rio
 
 from .. import maybes
+from ..debug import ModuleProxy
 from . import component_base
 
 if TYPE_CHECKING:
     import matplotlib.figure  # type: ignore
     import plotly.graph_objects  # type: ignore
+else:
+    # Required for runtime type checking
+    matplotlib = ModuleProxy("matplotlib.figure")
+    plotly = ModuleProxy("plotly.graph_objects")
 
 
 __all__ = ["Plot"]

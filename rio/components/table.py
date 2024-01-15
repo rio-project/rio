@@ -6,16 +6,19 @@ from typing import *  # type: ignore
 from uniserde import JsonDoc  # type: ignore
 
 from .. import maybes
+from ..debug import ModuleProxy
 from .component_base import FundamentalComponent
 
 if TYPE_CHECKING:
     import pandas
     import polars
+else:
+    # Required for runtime type checking
+    pandas = ModuleProxy("pandas")
+    polars = ModuleProxy("polars")
 
 
-__all__ = [
-    "Table",
-]
+__all__ = ["Table"]
 
 
 TableValue = Union[int, float, str]

@@ -156,7 +156,8 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
         module_path = proj.module_path
         if not module_path.is_dir():
             error(
-                f"Cannot add {what}s to a single-file project. Please convert your project into a package."
+                f"Cannot add {what}s to a single-file project. Please convert"
+                f" your project into a package."
             )
             return
 
@@ -165,6 +166,7 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
         folder_path.mkdir(exist_ok=True)
 
         # Create the new file
+        name = name.strip().replace(" ", "_")
         file_name = introspection.convert_case(name, "snake")
         class_name = introspection.convert_case(name, "pascal")
 
@@ -175,7 +177,14 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
 
         file_path.write_text(
             f"""
+from typing import *  # type: ignore
+
 import rio
+
+from .. import components as comps
+
+
+__all__ = ['{class_name}']
 
 
 class {class_name}(rio.Component):
@@ -189,13 +198,11 @@ class {class_name}(rio.Component):
         # Import the module in the __init__.py
         init_py_path = file_path.with_name("__init__.py")
         try:
-            init_py_code = init_py_path.read_text()
+            init_py_code = init_py_path.read_text(encoding="utf8")
         except FileNotFoundError:
             init_py_code = ""
-        init_py_code = (
-            init_py_code.rstrip() + f"\nfrom .{file_name} import {class_name}\n"
-        )
-        init_py_path.write_text(init_py_code)
+        init_py_code = init_py_code.rstrip() + f"\nfrom .{file_name} import *\n"
+        init_py_path.write_text(init_py_code, encoding="utf8")
 
         success(
             f"New {what} created at {file_path.relative_to(proj.project_directory)}"
