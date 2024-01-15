@@ -81,7 +81,9 @@ class Page:
     icon: Optional[str] = None
     show_in_navigation = True
     children: List["Page"] = field(default_factory=list)
-    guard: Optional[Callable[[rio.Session], Union[None, rio.URL, str]]] = None
+    guard: Optional[
+        Callable[[rio.Session, Tuple[rio.Page, ...]], Union[None, rio.URL, str]]
+    ] = None
 
     def __post_init__(self) -> None:
         # URLs are case insensitive. An easy way to enforce this, and also
@@ -93,20 +95,38 @@ class Page:
             )
 
 
-class PageRedirect(Exception):
+def _get_active_page_instances(
+    available_pages: Iterable[rio.Page],
+    remaining_segments: Tuple[str, ...],
+) -> List[rio.Page]:
     """
-    Internal exception solely used internally by `_check_page_guards`. You
-    should never see this exception pop up anywhere outside of that function.
+    Given a list of available pages, and a URL, return the list of pages that
+    would be active if navigating to that URL.
     """
+    # Get the page responsible for this segment
+    try:
+        page_segment = remaining_segments[0]
+    except IndexError:
+        page_segment = ""
 
-    def __init__(self, redirect: rio.URL):
-        self.redirect = redirect
+    for page in available_pages:
+        if page.page_url == page_segment:
+            break
+    else:
+        return []
+
+    # Recurse into the children
+    sub_pages = _get_active_page_instances(
+        page.children,
+        remaining_segments[1:],
+    )
+    return [page] + sub_pages
 
 
 def check_page_guards(
     sess: rio.Session,
     target_url_absolute: rio.URL,
-) -> Tuple[List[Page], rio.URL]:
+) -> Tuple[Tuple[Page, ...], rio.URL]:
     """
     Check whether navigation to the given target URL is possible.
 
@@ -132,43 +152,6 @@ def check_page_guards(
     visited_redirects = {target_url_absolute}
     past_redirects = [target_url_absolute]
 
-    def check_guard(
-        pages: Iterable[rio.Page],
-        remaining_segments: Tuple[str, ...],
-    ) -> List[Page]:
-        # Get the page responsible for this segment
-        try:
-            page_segment = remaining_segments[0]
-        except IndexError:
-            page_segment = ""
-
-        for page in pages:
-            if page.page_url == page_segment:
-                break
-        else:
-            return []
-
-        # Run the guard
-        if page.guard is not None:
-            try:
-                redirect_page = page.guard(sess)
-            except Exception as err:
-                raise NavigationFailed("Uncaught exception in page guard") from err
-
-            # If a redirect was requested stop recursing
-            if isinstance(redirect_page, str):
-                redirect_page = rio.URL(redirect_page)
-
-            if isinstance(redirect_page, rio.URL):
-                redirect_page = sess.active_page_url.join(redirect_page)
-
-            if redirect_page is not None and redirect_page != target_url_absolute:
-                raise PageRedirect(redirect_page)
-
-        # Recurse into the children
-        sub_pages = check_guard(page.children, remaining_segments[1:])
-        return [page] + sub_pages
-
     while True:
         # TODO: What if the URL is not a child of the base URL? i.e. redirecting
         #   to a completely different site
@@ -176,18 +159,36 @@ def check_page_guards(
             sess._base_url, target_url_absolute
         )
 
-        # Find all pages which would by activated by this navigation, and
-        # check their guards
-        try:
-            page_stack = check_guard(sess.app.pages, target_url_relative.parts)
+        # Find all pages which would by activated by this navigation
+        active_page_instances = tuple(
+            _get_active_page_instances(sess.app.pages, target_url_relative.parts)
+        )
 
-        # Redirect
-        except PageRedirect as err:
-            redirect = err.redirect
+        # Check the guards for each activated page
+        redirect = None
+        for page in active_page_instances:
+            if page.guard is None:
+                continue
 
-        # Done
-        else:
-            return page_stack, target_url_absolute
+            try:
+                redirect = page.guard(sess, active_page_instances)
+            except Exception as err:
+                message = f"Rejecting navigation to `{initial_target_url}` because of an error in a page guard of `{page.page_url}`: {err}"
+                logging.exception(message)
+                raise NavigationFailed(message)
+
+            if redirect is not None:
+                break
+
+        # All guards are satisfied - done
+        if redirect is None:
+            return active_page_instances, target_url_absolute
+
+        # A guard wants to redirect to a different page
+        if isinstance(redirect, str):
+            redirect = rio.URL(redirect)
+
+        redirect = sess._active_page_url.join(redirect)
 
         assert redirect.is_absolute(), redirect
 
