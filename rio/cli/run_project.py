@@ -679,19 +679,24 @@ window.setConnectionLostPopupVisible(true);
 
         self.last_reload_started_at = time.monotonic_ns()
 
-        # Reload the app
+        # Reload the app and inject the app into the server
         app_or_error = self._load_app()
 
         if isinstance(app_or_error, rio.App):
-            app = app_or_error
+            self._app_server.app = app_or_error
         else:
+            self._app_server.app = self.make_error_message_app(app_or_error)
+
+            # There is a subtlety here. Sessions which have requested their
+            # index.html, but aren't yet connected to the websocket cannot
+            # receive messages. So `_spawn_traceback_popups` will skip them.
+            # This is fine as long as `self._app_server.app` has already been
+            # assigned, since this ensures that any new websocket connections
+            # will receive the new app anyway.
+            #
+            # -> This MUST happen after the new app has already been injected
             if self._uvicorn_server is not None:
                 self._spawn_traceback_popups(app_or_error)
-
-            app = self.make_error_message_app(app_or_error)
-
-        # Inject the app into the server
-        self._app_server.app = app
 
         # The app has changed, but the uvicorn server is still the same. Because
         # of this, uvicorn won't call the `on_app_start` function - do it

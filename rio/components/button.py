@@ -13,6 +13,7 @@ __all__ = [
 ]
 
 
+CHILD_MARGIN = 0.3
 INITIALLY_DISABLED_FOR = 0.25
 
 
@@ -79,41 +80,47 @@ class Button(component_base.Component):
             child = progress_circle.ProgressCircle(
                 size=1.5,
                 align_x=0.5,
-                margin=0.3,
+                margin=CHILD_MARGIN,
                 color=progress_color,
             )
         elif isinstance(self.child, component_base.Component):
             child = rio.Container(
                 self.child,
+                margin=CHILD_MARGIN,
                 align_x=0.5,
-            )
-        elif self.icon is None:
-            child = rio.Text(
-                self.child.strip(),
-                # Make sure there's no popping when switching between Text & ProgressCircle
-                height=1.6,
-                margin_x=0.7,
-                margin_y=0.3,
             )
         else:
-            child = rio.Row(
-                rio.Icon(
-                    self.icon,
-                    height=1.4,
-                    width=1.4,
-                ),
-                rio.Text(
-                    self.child.strip(),
-                    height=1.5,
-                    width="grow",
-                ),
-                spacing=0.6,
-                align_x=0.5,
-                # Make sure there's no popping when switching between Text & ProgressCircle
-                height=1.6,
-                margin_x=0.7,
-                margin_y=0.3,
-            )
+            children = []
+            text = self.child.strip()
+            n_children = (self.icon is not None) + bool(text)
+
+            if self.icon is not None:
+                children.append(
+                    rio.Icon(
+                        self.icon,
+                        width=1.4,
+                        height=1.4,
+                        margin=CHILD_MARGIN if n_children == 1 else None,
+                    )
+                )
+
+            if text:
+                children.append(
+                    rio.Text(
+                        text,
+                        margin=CHILD_MARGIN if n_children == 1 else None,
+                    )
+                )
+
+            if len(children) == 1:
+                child = children[0]
+            else:
+                child = rio.Row(
+                    *children,
+                    spacing=0.6,
+                    margin=CHILD_MARGIN,
+                    align_x=0.5,
+                )
 
         # Delegate to a HTML Component
         return _ButtonInternal(
@@ -124,8 +131,9 @@ class Button(component_base.Component):
             color=self.color,
             is_sensitive=self.is_sensitive,
             is_loading=self.is_loading,
-            width=8,
             initially_disabled_for=self.initially_disabled_for,
+            width=8,
+            height=2.2,
         )
 
     def __str__(self) -> str:

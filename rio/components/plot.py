@@ -77,11 +77,11 @@ class Plot(component_base.FundamentalComponent):
             figure = cast("matplotlib.figure.Figure", figure)
 
             file = io.BytesIO()
-            figure.savefig(file, format="png", transparent=True, bbox_inches="tight")
+            figure.savefig(file, format="svg", transparent=True, bbox_inches="tight")
 
             plot = {
                 "type": "matplotlib",
-                "image": base64.b64encode(file.getbuffer()).decode(),
+                "svg": bytes(file.getbuffer()).decode("utf-8"),
             }
 
         return {

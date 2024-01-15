@@ -8,7 +8,7 @@ type PlotlyPlot = {
 
 type MatplotlibPlot = {
     type: 'matplotlib';
-    image: string;
+    svg: string;
 };
 
 type PlotState = ComponentState & {
@@ -76,12 +76,14 @@ export class PlotComponent extends ComponentBase {
                     plotElement.style.height = '100%';
                 });
             } else {
-                let imgElement = document.createElement('img');
-                imgElement.src =
-                    'data:image/png;base64,' + deltaState.plot.image;
-                imgElement.style.maxWidth = '100%';
-                imgElement.style.maxHeight = '100%';
-                this.element.appendChild(imgElement);
+                this.element.innerHTML = deltaState.plot.svg;
+
+                let svgElement = this.element.querySelector(
+                    'svg'
+                ) as SVGElement;
+
+                svgElement.style.width = '100%';
+                svgElement.style.height = '100%';
             }
         }
 
