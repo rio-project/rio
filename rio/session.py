@@ -16,10 +16,8 @@ from datetime import tzinfo
 from pathlib import Path
 from typing import *  # type: ignore
 
-if TYPE_CHECKING:
-    import fastapi
-
 import aiofiles
+import fastapi
 import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc

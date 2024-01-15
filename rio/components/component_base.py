@@ -312,16 +312,17 @@ class ComponentMeta(abc.ABCMeta):
         signature = inspect.signature(component.__init__)
         bound_args = signature.bind(*args, **kwargs)
 
+        # fmt: off
         component._explicitly_set_properties_ = set(bound_args.arguments)
         component._explicitly_set_properties_.update(
             param.name
             for param in signature.parameters.values()
-            if param.kind
-            in (
+            if param.kind in (
                 inspect.Parameter.VAR_POSITIONAL,
                 inspect.Parameter.VAR_KEYWORD,
             )
         )
+        # fmt: on
 
         # Call `__init__`
         component.__init__(*args, **kwargs)
