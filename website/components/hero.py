@@ -6,8 +6,8 @@ from .. import theme
 
 class Hero(rio.Component):
     def build(self) -> rio.Component:
-        logo_height = 42
-        aspect = 1282.2842 / 1154.8138
+        page_height = theme.get_subpage_height(self.session)
+        aspect = 1232.8981 / 1152.2929
 
         return rio.Row(
             rio.Column(
@@ -53,12 +53,12 @@ class Hero(rio.Component):
                     rio.Button(
                         "Get Started",
                         icon="rocket-launch",
-                        color="primary",
+                        # color="primary",
                     ),
                     rio.Button(
                         "API Reference",
                         # icon="library-books",
-                        color="primary",
+                        # color="primary",
                         style="minor",
                     ),
                     spacing=2,
@@ -70,9 +70,9 @@ class Hero(rio.Component):
             ),
             rio.Icon(
                 "self/accent-shape-logo",
-                width="grow",
-                height="grow",
+                width=page_height * aspect,
+                height=page_height,
                 fill=theme.THEME_COLORS_GRADIENT_90,
             ),
-            height=theme.get_subpage_height(self.session),
+            height=page_height,
         )
