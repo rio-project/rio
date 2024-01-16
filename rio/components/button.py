@@ -13,7 +13,8 @@ __all__ = [
 ]
 
 
-CHILD_MARGIN = 0.3
+CHILD_MARGIN_X = 1.0
+CHILD_MARGIN_Y = 0.3
 INITIALLY_DISABLED_FOR = 0.25
 
 
@@ -80,13 +81,15 @@ class Button(component_base.Component):
             child = progress_circle.ProgressCircle(
                 size=1.5,
                 align_x=0.5,
-                margin=CHILD_MARGIN,
+                margin_x=CHILD_MARGIN_Y,
+                margin_y=CHILD_MARGIN_Y,
                 color=progress_color,
             )
         elif isinstance(self.child, component_base.Component):
             child = rio.Container(
                 self.child,
-                margin=CHILD_MARGIN,
+                margin_x=CHILD_MARGIN_Y,
+                margin_y=CHILD_MARGIN_Y,
                 align_x=0.5,
             )
         else:
@@ -100,7 +103,8 @@ class Button(component_base.Component):
                         self.icon,
                         width=1.4,
                         height=1.4,
-                        margin=CHILD_MARGIN if n_children == 1 else None,
+                        margin_x=CHILD_MARGIN_X if n_children == 1 else None,
+                        margin_y=CHILD_MARGIN_Y if n_children == 1 else None,
                     )
                 )
 
@@ -108,7 +112,8 @@ class Button(component_base.Component):
                 children.append(
                     rio.Text(
                         text,
-                        margin=CHILD_MARGIN if n_children == 1 else None,
+                        margin_x=CHILD_MARGIN_X if n_children == 1 else None,
+                        margin_y=CHILD_MARGIN_Y if n_children == 1 else None,
                     )
                 )
 
@@ -118,7 +123,8 @@ class Button(component_base.Component):
                 child = rio.Row(
                     *children,
                     spacing=0.6,
-                    margin=CHILD_MARGIN,
+                    margin_x=CHILD_MARGIN_X,
+                    margin_y=CHILD_MARGIN_Y,
                     align_x=0.5,
                 )
 
