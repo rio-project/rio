@@ -1,4 +1,5 @@
 import { fillToCss } from '../cssUtils';
+import { LayoutContext } from '../layouting';
 import { ComponentBase, ComponentState } from './componentBase';
 
 type PlotlyPlot = {
@@ -43,6 +44,8 @@ function applyStyle(element: HTMLElement, style: any) {
 export class PlotComponent extends ComponentBase {
     state: Required<PlotState>;
 
+    private plotlyPlot: any = null;
+
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-plot');
@@ -61,13 +64,13 @@ export class PlotComponent extends ComponentBase {
 
                 loadPlotly(() => {
                     let plotJson = JSON.parse(plot.json);
-                    window['Plotly'].newPlot(
+                    this.plotlyPlot = window['Plotly'].newPlot(
                         this.element,
                         plotJson.data,
-                        plotJson.layout,
-                        {
-                            responsive: true,
-                        }
+                        plotJson.layout
+                        // {
+                        //     responsive: true,
+                        // }
                     );
 
                     let plotElement = this.element
@@ -76,6 +79,8 @@ export class PlotComponent extends ComponentBase {
                     plotElement.style.height = '100%';
                 });
             } else {
+                this.plotlyPlot = null;
+
                 this.element.innerHTML = deltaState.plot.svg;
 
                 let svgElement = this.element.querySelector(
@@ -89,6 +94,14 @@ export class PlotComponent extends ComponentBase {
 
         if (deltaState.boxStyle !== undefined) {
             applyStyle(this.element, deltaState.boxStyle);
+        }
+    }
+
+    updateAllocatedHeight(ctx: LayoutContext): void {
+        // Plotly is too dumb to layout itself. Help them out.
+        if (this.plotlyPlot !== null) {
+            window['Plotly'].Plots.resize(this.plotlyPlot);
+            console.debug('Resized plotly plot');
         }
     }
 }

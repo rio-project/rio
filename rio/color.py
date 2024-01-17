@@ -154,12 +154,15 @@ class Color(SelfSerializing):
         # Split the string into the individual components
         if len(hex_color) == 3:
             rh, gh, bh = hex_color
-            ah = "ff"
+            ah = "f"
+            max = 15
         elif len(hex_color) == 4:
             rh, gh, bh, ah = hex_color
+            max = 15
         elif len(hex_color) == 6:
             rh, gh, bh = hex_color[0:2], hex_color[2:4], hex_color[4:6]
             ah = "ff"
+            max = 255
         else:
             rh, gh, bh, ah = (
                 hex_color[0:2],
@@ -167,13 +170,14 @@ class Color(SelfSerializing):
                 hex_color[4:6],
                 hex_color[6:8],
             )
+            max = 255
 
         # Parse it
         return cls.from_rgb(
-            red=int(rh, 16) / 255,
-            green=int(gh, 16) / 255,
-            blue=int(bh, 16) / 255,
-            opacity=int(ah, 16) / 255,
+            red=int(rh, 16) / max,
+            green=int(gh, 16) / max,
+            blue=int(bh, 16) / max,
+            opacity=int(ah, 16) / max,
         )
 
     @classmethod
