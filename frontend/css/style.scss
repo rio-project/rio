@@ -745,6 +745,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
 .rio-input-box > input,
 .rio-input-box > textarea {
     flex-grow: 1;
+    min-width: 0;
 
     font-family: Roboto, sans-serif;
 

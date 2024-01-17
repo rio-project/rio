@@ -7,7 +7,7 @@ import { LayoutContext, updateLayout } from '../layouting';
 import { ComponentId, TextStyle } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
-let HEADER_PADDING: number = 0.8;
+let HEADER_PADDING: number = 0.6;
 
 export type RevealerState = ComponentState & {
     _type_: 'Revealer-builtin';
@@ -73,12 +73,7 @@ export class RevealerComponent extends ComponentBase {
         ) as HTMLElement;
 
         // Initialize them
-        applyIcon(
-            this.arrowElement,
-            'expand-more',
-            // 'var(--rio-local-text-color)'
-            'currentColor'
-        );
+        applyIcon(this.arrowElement, 'expand-more', 'currentColor');
 
         // Listen for presses
         this.headerElement.onclick = (e) => {
@@ -145,9 +140,10 @@ export class RevealerComponent extends ComponentBase {
             }
 
             // Adapt the header's padding
-            this.headerElement.style.padding = `${
-                HEADER_PADDING * this.headerScale
-            }rem`;
+            let cssPadding = `${HEADER_PADDING * this.headerScale}rem`;
+            this.headerElement.style.paddingLeft = cssPadding;
+            this.headerElement.style.paddingRight = cssPadding;
+            this.headerElement.style.paddingBottom = cssPadding;
 
             // Make the arrow match
             let arrowSize = this.headerScale * 1.0;
@@ -232,10 +228,8 @@ export class RevealerComponent extends ComponentBase {
         updateLayout();
 
         // If the animation is not yet finished, continue it.
-        if (
-            this.openFractionBeforeEase === 0 ||
-            this.openFractionBeforeEase === 1
-        ) {
+        let target = this.state.is_open ? 1 : 0;
+        if (this.openFractionBeforeEase === target) {
             this.animationIsRunning = false;
         } else {
             requestAnimationFrame(() => this.animationWorker());
@@ -257,7 +251,7 @@ export class RevealerComponent extends ComponentBase {
     updateAllocatedWidth(ctx: LayoutContext): void {
         // Pass on space to the child, but only if the revealer is open. If not,
         // avoid forcing a re-layout of the child.
-        if (this.state.is_open) {
+        if (this.openFractionBeforeEase > 0) {
             componentsById[this.state.content]!.allocatedWidth =
                 this.allocatedWidth;
         }
@@ -269,7 +263,7 @@ export class RevealerComponent extends ComponentBase {
         // Account for the header, if present
         if (this.state.header !== null) {
             this.naturalHeight +=
-                this.labelHeight + 2 * HEADER_PADDING * this.headerScale;
+                this.labelHeight + 1 * HEADER_PADDING * this.headerScale;
         }
 
         // Account for the content
@@ -291,7 +285,7 @@ export class RevealerComponent extends ComponentBase {
         let headerHeight =
             this.state.header === null
                 ? 0
-                : this.labelHeight + 2 * HEADER_PADDING * this.headerScale;
+                : this.labelHeight + 1 * HEADER_PADDING * this.headerScale;
 
         let child = componentsById[this.state.content]!;
         child.allocatedHeight = Math.max(
