@@ -143,7 +143,6 @@ export class RevealerComponent extends ComponentBase {
             let cssPadding = `${HEADER_PADDING * this.headerScale}rem`;
             this.headerElement.style.paddingLeft = cssPadding;
             this.headerElement.style.paddingRight = cssPadding;
-            this.headerElement.style.paddingBottom = cssPadding;
 
             // Make the arrow match
             let arrowSize = this.headerScale * 1.0;
@@ -262,8 +261,7 @@ export class RevealerComponent extends ComponentBase {
 
         // Account for the header, if present
         if (this.state.header !== null) {
-            this.naturalHeight +=
-                this.labelHeight + 1 * HEADER_PADDING * this.headerScale;
+            this.naturalHeight += this.labelHeight;
         }
 
         // Account for the content
@@ -282,10 +280,7 @@ export class RevealerComponent extends ComponentBase {
         }
 
         // Pass on space to the child
-        let headerHeight =
-            this.state.header === null
-                ? 0
-                : this.labelHeight + 1 * HEADER_PADDING * this.headerScale;
+        let headerHeight = this.state.header === null ? 0 : this.labelHeight;
 
         let child = componentsById[this.state.content]!;
         child.allocatedHeight = Math.max(
