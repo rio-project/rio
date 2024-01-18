@@ -1,5 +1,7 @@
+import { pixelsPerEm } from '../app';
 import { fillToCss } from '../cssUtils';
 import { LayoutContext } from '../layouting';
+import { Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 type PlotlyPlot = {
@@ -15,7 +17,8 @@ type MatplotlibPlot = {
 type PlotState = ComponentState & {
     _type_: 'Plot-builtin';
     plot: PlotlyPlot | MatplotlibPlot;
-    boxStyle: object;
+    background: Fill | null;
+    corner_radius?: [number, number, number, number];
 };
 
 function loadPlotly(callback: () => void): void {
@@ -31,20 +34,8 @@ function loadPlotly(callback: () => void): void {
     document.head.appendChild(script);
 }
 
-function applyStyle(element: HTMLElement, style: any) {
-    // Fill
-    Object.assign(element.style, fillToCss(style.fill));
-
-    // Corner radius
-    element.style.borderRadius = `${style.cornerRadius[0]}em ${style.cornerRadius[1]}em ${style.cornerRadius[2]}em ${style.cornerRadius[3]}em`;
-
-    // The remaining values are currently not supported.
-}
-
 export class PlotComponent extends ComponentBase {
     state: Required<PlotState>;
-
-    private plotlyPlot: any = null;
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -59,28 +50,23 @@ export class PlotComponent extends ComponentBase {
         if (deltaState.plot !== undefined) {
             this.element.innerHTML = '';
 
+            // Plotly
             if (deltaState.plot.type === 'plotly') {
                 let plot = deltaState.plot;
 
                 loadPlotly(() => {
                     let plotJson = JSON.parse(plot.json);
-                    this.plotlyPlot = window['Plotly'].newPlot(
+                    window['Plotly'].newPlot(
                         this.element,
                         plotJson.data,
                         plotJson.layout
-                        // {
-                        //     responsive: true,
-                        // }
                     );
 
-                    let plotElement = this.element
-                        .firstElementChild as HTMLElement;
-                    plotElement.style.width = '100%';
-                    plotElement.style.height = '100%';
+                    this.updatePlotlyLayout();
                 });
-            } else {
-                this.plotlyPlot = null;
-
+            }
+            // Matplotlib (Just a SVG)
+            else {
                 this.element.innerHTML = deltaState.plot.svg;
 
                 let svgElement = this.element.querySelector(
@@ -92,16 +78,38 @@ export class PlotComponent extends ComponentBase {
             }
         }
 
-        if (deltaState.boxStyle !== undefined) {
-            applyStyle(this.element, deltaState.boxStyle);
+        if (deltaState.background === null) {
+            this.element.style.background = 'var(--rio-local-plain-bg-variant)';
+        } else if (deltaState.background !== undefined) {
+            Object.assign(this.element.style, fillToCss(deltaState.background));
+        }
+
+        if (deltaState.corner_radius !== undefined) {
+            let [topLeft, topRight, bottomRight, bottomLeft] =
+                deltaState.corner_radius;
+
+            this.element.style.borderRadius = `${topLeft}rem ${topRight}rem ${bottomRight}rem ${bottomLeft}rem`;
         }
     }
 
+    updatePlotlyLayout(): void {
+        window['Plotly'].update(
+            this.element,
+            {},
+            {
+                width: this.allocatedWidth * pixelsPerEm,
+                height: this.allocatedHeight * pixelsPerEm,
+            }
+        );
+    }
+
     updateAllocatedHeight(ctx: LayoutContext): void {
-        // Plotly is too dumb to layout itself. Help them out.
-        if (this.plotlyPlot !== null) {
-            window['Plotly'].Plots.resize(this.plotlyPlot);
-            console.debug('Resized plotly plot');
+        // Plotly is too dumb to layout itself. Help out.
+        if (
+            this.state.plot.type === 'plotly' &&
+            window['Plotly'] !== undefined
+        ) {
+            this.updatePlotlyLayout();
         }
     }
 }

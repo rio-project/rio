@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import base64
 import copy
 import io
-from dataclasses import KW_ONLY
 from typing import *  # type: ignore
 
 from uniserde import JsonDoc
@@ -42,25 +40,53 @@ class Plot(component_base.FundamentalComponent):
     """
 
     figure: matplotlib.figure.Figure | plotly.graph_objects.Figure
-    _: KW_ONLY
-    style: Optional[rio.BoxStyle] = None
+    background: Optional[rio.Fill]
+    corner_radius: Union[float, Tuple[float, float, float, float]]
+
+    def __init__(
+        self,
+        figure: matplotlib.figure.Figure | plotly.graph_objects.Figure,
+        *,
+        background: Optional[rio.FillLike] = None,
+        corner_radius: Union[float, Tuple[float, float, float, float]] = 0,
+        key: Optional[str] = None,
+        margin: Optional[float] = None,
+        margin_x: Optional[float] = None,
+        margin_y: Optional[float] = None,
+        margin_left: Optional[float] = None,
+        margin_top: Optional[float] = None,
+        margin_right: Optional[float] = None,
+        margin_bottom: Optional[float] = None,
+        width: Union[Literal["natural", "grow"], float] = "natural",
+        height: Union[Literal["natural", "grow"], float] = "natural",
+        align_x: Optional[float] = None,
+        align_y: Optional[float] = None,
+    ):
+        super().__init__(
+            key=key,
+            margin=margin,
+            margin_x=margin_x,
+            margin_y=margin_y,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            width=width,
+            height=height,
+            align_x=align_x,
+            align_y=align_y,
+        )
+
+        self.figure = figure
+        self.background = None if background is None else rio.Fill._try_from(background)
+        self.corner_radius = corner_radius
 
     def _custom_serialize(self) -> JsonDoc:
-        # Determine a style
-        if self.style is None:
-            thm = self.session.theme
-            box_style = rio.BoxStyle(
-                fill=thm.neutral_palette.background_variant,
-                corner_radius=thm.corner_radius_small,
-            )
-        else:
-            box_style = self.style
-
+        # Figure
         figure = self.figure
         plot: JsonDoc
         if isinstance(figure, maybes.PLOTLY_GRAPH_TYPES):
-            # Make the plot transparent, so the background configured by
-            # JavaScript shines through.
+            # Make the plot transparent, so `self.background` shines through.
             figure = cast("plotly.graph_objects.Figure", copy.copy(figure))
             figure.update_layout(
                 {
@@ -84,9 +110,16 @@ class Plot(component_base.FundamentalComponent):
                 "svg": bytes(file.getbuffer()).decode("utf-8"),
             }
 
+        # Corner radius
+        if isinstance(self.corner_radius, (int, float)):
+            corner_radius = (self.corner_radius,) * 4
+        else:
+            corner_radius = self.corner_radius
+
+        # Combine everything
         return {
             "plot": plot,
-            "boxStyle": box_style._serialize(self.session),
+            "corner_radius": corner_radius,
         }
 
 
