@@ -136,7 +136,7 @@ export class DrawerComponent extends ComponentBase {
         let closedFraction = 1 - this.openFraction;
         this.contentOuterContainer.style.transform = `translate${axis}(calc(0rem ${negate} ${
             closedFraction * 100
-        }% ${negate} ${closedFraction * 1}em))`;
+        }% ${negate} ${closedFraction * 1}rem))`;
 
         // Throw some shade, if modal
         if (this.state.is_modal) {
