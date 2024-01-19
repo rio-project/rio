@@ -31,6 +31,21 @@ def format_exception_raw(
     # Get the traceback as a list of frames
     tb_list = traceback.extract_tb(err.__traceback__)
 
+    # Syntax errors are special snowflakes and need separte treatment
+    if isinstance(err, SyntaxError):
+        tb_list.append(
+            traceback.FrameSummary(
+                filename=err.filename,
+                lineno=err.lineno,
+                end_lineno=err.end_lineno,
+                colno=err.offset,
+                end_colno=err.end_offset,
+                name="<module>",
+                line=err.text,
+                locals=None,
+            )
+        )
+
     # Lead-in
     chunks = []
     chunks.append(f"{dim}Traceback (most recent call last):{nodim}\n")

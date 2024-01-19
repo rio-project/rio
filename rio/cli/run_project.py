@@ -470,10 +470,16 @@ class RunningApp:
         sys.path.append(str(self.proj.module_path.parent))
 
         try:
-            return importlib.import_module(app_main_module)
+            return __import__(app_main_module)
         finally:
             # TODO: What if the user themselves appends to `sys.path`?
             del sys.path[-1]
+
+        # try:
+        #     return importlib.import_module(app_main_module)
+        # finally:
+        #     # TODO: What if the user themselves appends to `sys.path`?
+        #     del sys.path[-1]
 
     def _load_app(self) -> rio.App | str | BaseException:
         # Import the app module
