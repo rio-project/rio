@@ -15,6 +15,7 @@ from typing import *  # type: ignore
 import introspection
 
 if TYPE_CHECKING:
+    import matplotlib.axes  # type: ignore
     import matplotlib.figure  # type: ignore
     import pandas  # type: ignore
     import plotly.graph_objects  # type: ignore
@@ -34,7 +35,8 @@ PANDAS_DATAFRAME_TYPES: tuple[Type[pandas.DataFrame], ...] = ()
 POLARS_DATAFRAME_TYPES: tuple[Type[polars.DataFrame], ...] = ()
 
 PLOTLY_GRAPH_TYPES: tuple[Type[plotly.graph_objects.Figure], ...] = ()
-MATPLOTLIB_GRAPH_TYPES: tuple[Type[matplotlib.figure.Figure], ...] = ()
+MATPLOTLIB_GRAPH_TYPES: tuple[Type, ...] = ()
+MATPLOTLIB_AXES_TYPES: tuple[Type[matplotlib.axes.Axes], ...] = ()
 
 # This is a mapping of "weird" types to the "canonical" type, like `{np.int8: int}`
 TYPE_NORMALIZERS: Mapping[Type[T], Callable[[T], T]] = {}  # type: ignore
@@ -93,9 +95,11 @@ def initialize(force: bool = False) -> None:
         PLOTLY_GRAPH_TYPES = (plotly.graph_objects.Figure,)
 
     if "matplotlib" in sys.modules:
+        import matplotlib.axes  # type: ignore
         import matplotlib.figure  # type: ignore
 
-        MATPLOTLIB_GRAPH_TYPES = (matplotlib.figure.Figure,)
+        MATPLOTLIB_AXES_TYPES = (matplotlib.axes.Axes,)
+        MATPLOTLIB_GRAPH_TYPES = (matplotlib.figure.Figure,) + MATPLOTLIB_AXES_TYPES
 
     # Populate our mapping of type normalizers
     for canonical_type, weird_types in (
