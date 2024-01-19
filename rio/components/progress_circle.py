@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-from typing import *  # type: ignore
+from typing import Literal
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "ProgressCircle",
 ]
 
 
-class ProgressCircle(component_base.FundamentalComponent):
+class ProgressCircle(FundamentalComponent):
     """
     A progress indicator in the shape of a circle.
 
@@ -32,25 +31,25 @@ class ProgressCircle(component_base.FundamentalComponent):
                 case the default is hard to perceive on your background.
     """
 
-    progress: Optional[float]
+    progress: float | None
     color: rio.ColorSet
 
     def __init__(
         self,
         *,
-        progress: Optional[float] = None,
+        progress: float | None = None,
         color: rio.ColorSet = "keep",
-        size: Union[Literal["grow"], float] = 3.5,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        size: float | Literal["grow"] = 3.5,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         """
         Args:

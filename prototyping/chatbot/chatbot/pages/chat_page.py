@@ -13,7 +13,7 @@ class ChatPage(rio.Component):
     is_loading: bool = False
     question_text: str = ""
 
-    messages: List[models.ChatMessage] = field(
+    messages: list[models.ChatMessage] = field(
         default_factory=lambda: [
             models.ChatMessage(
                 timestamp=datetime.now(timezone.utc),

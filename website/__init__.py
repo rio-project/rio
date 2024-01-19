@@ -106,7 +106,7 @@ def get_docs(component_class: Type) -> rio.Component:
 
 
 # Prepare the list of all documentation pages
-def _make_documentation_pages() -> List[rio.Page]:
+def _make_documentation_pages() -> list[rio.Page]:
     result = []
 
     for (

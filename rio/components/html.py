@@ -1,6 +1,4 @@
-from typing import *  # type: ignore
-
-from .component_base import FundamentalComponent
+from .fundamental_component import FundamentalComponent
 
 __all__ = ["Html"]
 

@@ -1,98 +1,79 @@
 from __future__ import annotations
 
+import collections
 import functools
 import sys
-import types
-from dataclasses import dataclass
-from typing import *  # type: ignore
+from collections.abc import Collection, Iterator, Mapping
 
-from introspection import iter_subclasses
+import introspection.typing
 
-from . import serialization
-from .components import component_base
+import rio
 
 __all__ = [
-    "UnevaluatedAnnotation",
-    "get_type_annotations_raw",
-    "get_type_annotations",
+    "get_local_annotations",
+    "get_resolved_type_annotations",
     "get_child_component_containing_attribute_names",
     "get_child_component_containing_attribute_names_for_builtin_components",
 ]
 
 
-@dataclass(frozen=True)
-class UnevaluatedAnnotation:
-    annotation_as_text: str
-    error: BaseException
+# Note: This function purposely isn't cached because calling it at different
+# times can give different outputs. For example, if called immediately after the
+# input class has been created, some forward references may not be evaluatable
+# yet.
+class get_local_annotations(Mapping[str, introspection.types.TypeAnnotation]):
+    def __init__(self, cls: type, *, strict: bool = False):
+        # Note: Don't use `typing.get_type_hints` because it has a stupid bug in
+        # python 3.10 where it dies if something is annotated as
+        # `dataclasses.KW_ONLY`.
+        self._annotations: dict = vars(cls).get("__annotations__", {})
+        self._module = sys.modules[cls.__module__]
+        self._strict = strict
+
+    def __getitem__(self, name: str) -> introspection.types.TypeAnnotation:
+        return introspection.typing.resolve_forward_refs(
+            self._annotations[name],
+            self._module,
+            mode="ast",
+            strict=self._strict,
+            treat_name_errors_as_imports=True,
+        )
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._annotations)
+
+    def __len__(self) -> int:
+        return len(self._annotations)
 
 
-@functools.lru_cache(maxsize=None)
-def get_type_annotations_raw(
+def get_resolved_type_annotations(
     cls: type,
-) -> Mapping[str, Union[type, UnevaluatedAnnotation]]:
-    """
-    Reimplementation of `typing.get_type_hints` because it has a stupid bug in
-    python 3.10 where it dies if something is annotated as `dataclasses.KW_ONLY`.
-    """
-    type_hints: Dict[str, Union[type, UnevaluatedAnnotation]] = {}
-
-    for cls in cls.__mro__:
-        for attr_name, annotation in vars(cls).get("__annotations__", {}).items():
-            if attr_name in type_hints:
-                continue
-
-            if isinstance(annotation, ForwardRef):
-                annotation = annotation.__forward_arg__
-
-            if isinstance(annotation, (str, types.CodeType)):
-                globs = vars(sys.modules[cls.__module__])
-                try:
-                    annotation = eval(annotation, globs)
-                except Exception as error:
-                    annotation = UnevaluatedAnnotation(annotation, error)
-
-            type_hints[attr_name] = annotation
-
-    return type_hints
-
-
-@functools.lru_cache(maxsize=None)
-def get_type_annotations(cls: type) -> Mapping[str, type]:
-    """
-    Returns a dictionary of attribute names to their types for the given class.
-    """
-    annotations = get_type_annotations_raw(cls)
-
-    for attr_name, annotation in annotations.items():
-        if isinstance(annotation, UnevaluatedAnnotation):
-            raise ValueError(
-                f"Failed to eval annotation for attribute {attr_name!r}:"
-                f" {annotation.annotation_as_text}\n"
-                f" {annotation.error}"
-            )
-
-    return annotations  # type: ignore
+) -> Mapping[str, type]:
+    maps = [get_local_annotations(c, strict=True) for c in cls.__mro__]
+    return collections.ChainMap(*maps)  # type: ignore
 
 
 @functools.lru_cache(maxsize=None)
 def get_child_component_containing_attribute_names(
-    cls: Type[component_base.Component],
+    cls: type[rio.Component],
 ) -> Collection[str]:
-    attr_names: List[str] = []
+    from . import serialization
+
+    attr_names: list[str] = []
 
     for attr_name, serializer in serialization.get_attribute_serializers(cls).items():
         # : Component
         if serializer is serialization._serialize_child_component:
             attr_names.append(attr_name)
         elif isinstance(serializer, functools.partial):
-            # : Optional[Component]
+            # : Component | None
             if (
                 serializer.func is serialization._serialize_optional
                 and serializer.keywords["serializer"]
                 is serialization._serialize_child_component
             ):
                 attr_names.append(attr_name)
-            # : List[Component]
+            # : list[Component]
             elif (
                 serializer.func is serialization._serialize_list
                 and serializer.keywords["item_serializer"]
@@ -107,9 +88,11 @@ def get_child_component_containing_attribute_names(
 def get_child_component_containing_attribute_names_for_builtin_components() -> (
     Mapping[str, Collection[str]]
 ):
+    from .components.fundamental_component import FundamentalComponent
+
     result = {
         cls._unique_id: get_child_component_containing_attribute_names(cls)
-        for cls in iter_subclasses(component_base.FundamentalComponent)
+        for cls in introspection.iter_subclasses(FundamentalComponent)
         if cls._unique_id.endswith("-builtin")
     }
 

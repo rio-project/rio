@@ -61,11 +61,11 @@ def read_frontend_template(template_name: str) -> str:
 
 class InitialClientMessage(uniserde.Serde):
     website_url: str
-    preferred_languages: List[str]
+    preferred_languages: list[str]
     timezone: str
     decimal_separator: str
     thousands_separator: str
-    user_settings: Dict[str, Any]
+    user_settings: dict[str, Any]
     prefers_light_theme: bool
 
     window_width: float
@@ -99,8 +99,8 @@ class AppServer(fastapi.FastAPI):
         app_: app.App,
         debug_mode: bool,
         running_in_window: bool,
-        validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        internal_on_app_start: Optional[Callable[[], None]],
+        validator_factory: Callable[[rio.Session], debug.Validator] | None,
+        internal_on_app_start: Callable[[], None] | None,
     ):
         super().__init__(lifespan=__class__._lifespan)
 
@@ -111,12 +111,12 @@ class AppServer(fastapi.FastAPI):
         self.internal_on_app_start = internal_on_app_start
 
         # Initialized lazily, when the favicon is first requested.
-        self._icon_as_ico_blob: Optional[bytes] = None
+        self._icon_as_ico_blob: bytes | None = None
 
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
         # connection.
-        self._active_session_tokens: Dict[str, rio.Session] = {}
+        self._active_session_tokens: dict[str, rio.Session] = {}
 
         # All assets that have been registered with this session. They are held
         # weakly, meaning the session will host assets for as long as their
@@ -133,7 +133,7 @@ class AppServer(fastapi.FastAPI):
         # All pending file uploads. These are stored in memory for a limited
         # time. When a file is uploaded the corresponding future is set.
         self._pending_file_uploads: timer_dict.TimerDict[
-            str, asyncio.Future[List[common.FileInfo]]
+            str, asyncio.Future[list[common.FileInfo]]
         ] = timer_dict.TimerDict(default_duration=timedelta(minutes=15))
 
         # FastAPI
@@ -482,15 +482,15 @@ class AppServer(fastapi.FastAPI):
     async def _serve_file_upload(
         self,
         upload_token: str,
-        file_names: List[str],
-        file_types: List[str],
-        file_sizes: List[str],
+        file_names: list[str],
+        file_types: list[str],
+        file_sizes: list[str],
         # If no files are uploaded `files` isn't present in the form data at
         # all. Using a default value ensures that those requests don't fail
         # because of "missing parameters".
         #
         # Lists are mutable, make sure not to modify this value!
-        file_streams: List[fastapi.UploadFile] = [],
+        file_streams: list[fastapi.UploadFile] = [],
     ):
         # Try to find the future for this token
         try:
@@ -514,7 +514,7 @@ class AppServer(fastapi.FastAPI):
             )
 
         # Parse the file sizes
-        parsed_file_sizes: List[int] = []
+        parsed_file_sizes: list[int] = []
         for file_size in file_sizes:
             try:
                 parsed = int(file_size)
@@ -749,12 +749,11 @@ class AppServer(fastapi.FastAPI):
         global_state.currently_building_component = None
         global_state.currently_building_session = sess
 
-        try:
-            sess._root_component = HighLevelRootComponent(
-                self.app._build, self.app._build_connection_lost_message
-            )
-        finally:
-            global_state.currently_building_session = None
+        sess._root_component = HighLevelRootComponent(
+            self.app._build, self.app._build_connection_lost_message
+        )
+
+        global_state.currently_building_session = None
 
         # Trigger the `on_session_start` event.
         #

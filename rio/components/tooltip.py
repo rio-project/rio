@@ -1,41 +1,41 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+from typing import Literal
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Tooltip",
 ]
 
 
-class Tooltip(component_base.FundamentalComponent):
-    anchor: component_base.Component
-    tip_text: Optional[str]
-    tip_component: Optional[component_base.Component]
+class Tooltip(FundamentalComponent):
+    anchor: rio.Component
+    tip_text: str | None
+    tip_component: rio.Component | None
     position: Literal["left", "top", "right", "bottom"]
 
     # Impute a Text instance if a string is passed in as the tip
     def __init__(
         self,
-        anchor: component_base.Component,
-        tip: Union[str, component_base.Component],
+        anchor: rio.Component,
+        tip: str | rio.Component,
         position: Literal["left", "top", "right", "bottom"],
         *,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,

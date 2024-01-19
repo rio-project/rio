@@ -5,8 +5,8 @@ from pathlib import Path
 
 import introspection.typing
 
-from ..common import ForwardReference
-from ..components.component_base import Component, ComponentMeta, StateProperty
+from .. import global_state
+from ..components.component import Component, ComponentMeta, StateProperty
 
 __all__ = ["apply_monkeypatches"]
 
@@ -29,6 +29,17 @@ def ComponentMeta_call(cls, wrapped_method, *args, **kwargs):
     # Keep track of who created this component
     caller = inspect.stack()[1]
     component._creator_stackframe_ = (Path(caller.filename), caller.lineno)
+
+    # Track whether this instance is internal to Rio. This is the case if
+    # this component's creator is defined in Rio.
+    creator = global_state.currently_building_component
+    if creator is None:
+        assert type(component).__qualname__ == "HighLevelRootComponent", type(
+            component
+        ).__qualname__
+        component._rio_internal_ = True
+    else:
+        component._rio_internal_ = creator._rio_builtin_
 
     return component
 
@@ -63,30 +74,34 @@ def StateProperty_set(
     # Type check the value
     if not isinstance(value, StateProperty):
         try:
-            evaluated_annotation = self._evaluated_annotation
+            annotation = self._resolved_annotation
         except AttributeError:
-            if isinstance(self.annotation, ForwardReference):
-                evaluated_annotation = (
-                    self._evaluated_annotation
-                ) = self.annotation.evaluate()
-            else:
-                evaluated_annotation = self._evaluated_annotation = self.annotation
+            annotation = introspection.typing.resolve_forward_refs(
+                self._raw_annotation,
+                self._module,
+                mode="ast",
+                strict=False,
+                treat_name_errors_as_imports=True,
+            )
+            self._resolved_annotation = annotation
 
         try:
-            valid = introspection.typing.is_instance(value, evaluated_annotation)
-        except NotImplementedError:
+            valid = introspection.typing.is_instance(
+                value, annotation, forward_ref_context=self._module
+            )
+        # except NotImplementedError:
+        except ZeroDivisionError:
             warnings.warn(
                 f"Unable to verify assignment to"
                 f" {type(instance).__qualname__}.{self.name} (annotated as"
-                f" {introspection.typing.annotation_to_string(evaluated_annotation)})"
+                f" {self._annotation_as_string()})"
             )
         else:
             if not valid:
                 raise TypeError(
                     f"The value {value!r} can't be assigned to"
                     f" {type(instance).__qualname__}.{self.name}, which is"
-                    f" annotated as"
-                    f" {introspection.typing.annotation_to_string(evaluated_annotation)}"
+                    f" annotated as {self._annotation_as_string()}"
                 )
 
     wrapped_method(self, instance, value)

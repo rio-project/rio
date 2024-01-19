@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import tarfile
 from pathlib import Path
@@ -6,7 +8,7 @@ from typing import *  # type: ignore
 from . import common
 from .errors import AssetError
 
-_icon_registry: Optional["IconRegistry"] = None
+_icon_registry: IconRegistry | None = None
 
 
 class IconRegistry:
@@ -22,13 +24,13 @@ class IconRegistry:
 
         # Maps icon names (set/icon:variant) to the icon's SVG string. The icon
         # names are canonical form.
-        self.cached_icons: Dict[str, str] = {}
+        self.cached_icons: dict[str, str] = {}
 
         # Maps icon set names to the path of the archive file containing the icons
-        self.icon_set_archives: Dict[str, Path] = {}
+        self.icon_set_archives: dict[str, Path] = {}
 
     @classmethod
-    def get_singleton(cls) -> "IconRegistry":
+    def get_singleton(cls) -> IconRegistry:
         """
         Return the singleton instance of this class.
         """
@@ -51,7 +53,7 @@ class IconRegistry:
         return _icon_registry
 
     @staticmethod
-    def parse_icon_name(icon_name: str) -> Tuple[str, str, Optional[str]]:
+    def parse_icon_name(icon_name: str) -> tuple[str, str, str | None]:
         """
         Given a name for an icon, return the three parts of the name: set, icon,
         variant. If the name is syntactically invalid (e.g. too many slashes),
@@ -199,7 +201,7 @@ class IconRegistry:
 
     def _get_variant_directories(
         self, icon_set: str
-    ) -> Iterable[Tuple[Optional[str], Path]]:
+    ) -> Iterable[tuple[str | None, Path]]:
         """
         Given the name of an icon set, list the names of all variants in that
         set along with the directory they are stored in.
@@ -229,7 +231,7 @@ class IconRegistry:
         """
         return self.icon_set_archives.keys()
 
-    def all_variants_in_set(self, icon_set: str) -> Iterable[Optional[str]]:
+    def all_variants_in_set(self, icon_set: str) -> Iterable[str | None]:
         """
         Given the name of an icon set, list the names of all variants in that
         set.
@@ -241,8 +243,8 @@ class IconRegistry:
         self,
         icon_set: str,
         *,
-        variant: Optional[str] = None,
-    ) -> Iterable[Tuple[str, Optional[str]]]:
+        variant: str | None = None,
+    ) -> Iterable[tuple[str, str | None]]:
         """
         Given the name of an icon set, list all icon names and variants in that
         set. If `variant` is given, only return icons with that variant.

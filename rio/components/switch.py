@@ -7,7 +7,7 @@ from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Switch",
@@ -20,7 +20,7 @@ class SwitchChangeEvent:
     is_on: bool
 
 
-class Switch(component_base.FundamentalComponent):
+class Switch(FundamentalComponent):
     """
     An input for `True` / `False` values.
 

@@ -4,9 +4,10 @@ import os
 import sys
 import threading
 import webbrowser
+from collections.abc import Callable, Iterable
 from datetime import timedelta
 from pathlib import Path
-from typing import *  # type: ignore
+from typing import Any
 
 import __main__
 import fastapi
@@ -143,23 +144,23 @@ class App:
 
     # Type hints so the documentation generator knows which fields exist
     name: str
-    pages: Tuple[rio.Page, ...]
+    pages: tuple[rio.Page, ...]
     assets_dir: Path
 
     def __init__(
         self,
         *,
-        name: Optional[str] = None,
-        build: Optional[Callable[[], rio.Component]] = None,
-        icon: Optional[ImageLike] = None,
+        name: str | None = None,
+        build: Callable[[], rio.Component] | None = None,
+        icon: ImageLike | None = None,
         pages: Iterable[rio.Page] = tuple(),
         on_app_start: rio.EventHandler[App] = None,
         on_session_start: rio.EventHandler[rio.Session] = None,
         on_session_end: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
-        ping_pong_interval: Union[int, float, timedelta] = timedelta(seconds=50),
-        assets_dir: Union[str, os.PathLike] = "assets",
-        theme: Union[rio.Theme, Tuple[rio.Theme, rio.Theme], None] = None,
+        ping_pong_interval: int | float | timedelta = timedelta(seconds=50),
+        assets_dir: str | os.PathLike = "assets",
+        theme: rio.Theme | tuple[rio.Theme, rio.Theme] | None = None,
         build_connection_lost_message: Callable[
             [], rio.Component
         ] = make_default_connection_lost_component,
@@ -269,8 +270,8 @@ class App:
         *,
         debug_mode: bool,
         running_in_window: bool,
-        validator_factory: Optional[Callable[[rio.Session], debug.Validator]],
-        internal_on_app_start: Optional[Callable[[], None]],
+        validator_factory: Callable[[rio.Session], debug.Validator] | None,
+        internal_on_app_start: Callable[[], None] | None,
     ) -> fastapi.FastAPI:
         """
         Internal equivalent of `as_fastapi` that takes additional arguments.
@@ -329,9 +330,9 @@ class App:
         quiet: bool,
         running_in_window: bool,
         debug_mode: bool = False,
-        validator_factory: Optional[Callable[[rio.Session], debug.Validator]] = None,
-        internal_on_app_start: Optional[Callable[[], None]] = None,
-        internal_on_server_created: Optional[Callable[[uvicorn.Server], None]] = None,
+        validator_factory: Callable[[rio.Session], debug.Validator] | None = None,
+        internal_on_app_start: Callable[[], None] | None = None,
+        internal_on_server_created: Callable[[uvicorn.Server], None] | None = None,
     ) -> None:
         """
         Internal equivalent of `run_as_web_server` that takes additional
@@ -423,7 +424,7 @@ class App:
         self,
         *,
         host: str = "localhost",
-        port: Optional[int] = None,
+        port: int | None = None,
         quiet: bool = False,
         debug_mode: bool = False,
     ) -> None:
@@ -550,7 +551,7 @@ class App:
                 self.name,
                 url,
             )
-            webview.start()
+            webview.start(debug=True)
 
         finally:
             assert isinstance(server, uvicorn.Server)

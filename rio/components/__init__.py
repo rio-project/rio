@@ -9,7 +9,7 @@ from .card import *
 from .code_explorer import *
 from .color_picker import *
 from .column import *
-from .component_base import *
+from .component import *
 from .container import *
 from .custom_button import *
 from .devel_component import *

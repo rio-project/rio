@@ -7,7 +7,7 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import banner, component_base, number_input, switch, text
+from . import banner, component, number_input, switch, text
 
 __all__ = ["AutoForm"]
 
@@ -23,7 +23,7 @@ class AutoFormChangeEvent:
     value: Any
 
 
-class AutoForm(component_base.Component):
+class AutoForm(component.Component):
     value: Any
     _: KW_ONLY
     on_change: rio.EventHandler[[AutoFormChangeEvent]] = None

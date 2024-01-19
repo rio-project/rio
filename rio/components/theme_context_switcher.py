@@ -1,22 +1,19 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
-
 from uniserde import JsonDoc
 
 import rio
 
-from .. import color
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "ThemeContextSwitcher",
 ]
 
 
-class ThemeContextSwitcher(component_base.FundamentalComponent):
+class ThemeContextSwitcher(FundamentalComponent):
     child: rio.Component
-    color: color.ColorSet
+    color: rio.ColorSet
 
     def _custom_serialize(self) -> JsonDoc:
         return {

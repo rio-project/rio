@@ -20,7 +20,7 @@ class RioIgnore:
 
     def __init__(self, base_dir: Path):
         self._base_dir = base_dir.resolve()
-        self._rules: List[gitignore_parser.IgnoreRule] = []
+        self._rules: list[gitignore_parser.IgnoreRule] = []
 
     def add_pattern(self, line: str) -> None:
         """

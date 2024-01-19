@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Any
 
 from uniserde import JsonDoc
 
 import rio
 
 from .. import color
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "ColorPicker",
@@ -21,7 +21,7 @@ class ColorChangeEvent:
     color: color.Color
 
 
-class ColorPicker(component_base.FundamentalComponent):
+class ColorPicker(FundamentalComponent):
     """
     Allows the user to pick a RGB(A) color.
 

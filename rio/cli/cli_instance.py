@@ -19,7 +19,7 @@ class CliInstance:
 
     _instance = None
     _config: tomlkit.TOMLDocument
-    _api_client: Optional[rio_api.RioApi]
+    _api_client: rio_api.RioApi | None
 
     def __new__(cls):
         # Already initialized?
@@ -51,7 +51,7 @@ class CliInstance:
             await self._api_client.close()
 
     @property
-    def auth_token(self) -> Optional[str]:
+    def auth_token(self) -> str | None:
         """
         Tries to get the auth token from the keyring. Returns `None` if no token
         was stored in the keyring yet.

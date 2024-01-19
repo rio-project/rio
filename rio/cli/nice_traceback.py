@@ -26,7 +26,7 @@ def format_exception_raw(
     noyellow: str,
     red: str,
     nored: str,
-    relpath: Optional[Path] = None,
+    relpath: Path | None = None,
 ) -> str:
     # Get the traceback as a list of frames
     tb_list = traceback.extract_tb(err.__traceback__)
@@ -94,7 +94,7 @@ def format_exception_raw(
 def format_exception_revel(
     err: BaseException,
     *,
-    relpath: Optional[Path] = None,
+    relpath: Path | None = None,
 ) -> str:
     return format_exception_raw(
         err,
@@ -114,7 +114,7 @@ def format_exception_revel(
 def format_exception_html(
     err: BaseException,
     *,
-    relpath: Optional[Path] = None,
+    relpath: Path | None = None,
 ) -> str:
     result = format_exception_raw(
         err,

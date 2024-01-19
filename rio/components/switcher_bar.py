@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any, Generic, Literal, TypeVar
 
 from uniserde import JsonDoc
 
 import rio
 
 from .. import icon_registry
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "SwitcherBarChangeEvent",
@@ -21,44 +21,44 @@ T = TypeVar("T")
 
 @dataclass
 class SwitcherBarChangeEvent(Generic[T]):
-    value: Optional[T]
+    value: T | None
 
 
-class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
-    names: List[str]
-    values: List[T]
-    icon_svg_sources: List[Optional[str]]
+class SwitcherBar(FundamentalComponent, Generic[T]):
+    names: list[str]
+    values: list[T]
+    icon_svg_sources: list[str | None]
     color: rio.ColorSet
     orientation: Literal["horizontal", "vertical"]
     spacing: float
-    selected_value: Optional[T]
+    selected_value: T | None
     allow_none: bool
     on_change: rio.EventHandler[SwitcherBarChangeEvent[T]]
 
     def __init__(
         self,
-        values: List[T],
+        values: list[T],
         *,
-        names: Optional[List[str]] = None,
-        icons: Optional[Sequence[Optional[str]]] = None,
+        names: list[str] | None = None,
+        icons: Sequence[str | None] | None = None,
         color: rio.ColorSet = "keep",
         orientation: Literal["horizontal", "vertical"] = "horizontal",
         spacing: float = 1.0,
         allow_none: bool = False,
-        selected_value: Optional[T] = None,
+        selected_value: T | None = None,
         on_change: rio.EventHandler[SwitcherBarChangeEvent[T]] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         if not values:
             raise ValueError("`SwitcherBar` must have at least one option.")
@@ -114,7 +114,7 @@ class SwitcherBar(component_base.FundamentalComponent, Generic[T]):
         if self.selected_value is None and not self.allow_none:
             self.selected_value = self.values[0]
 
-    def _fetch_selected_name(self) -> Optional[str]:
+    def _fetch_selected_name(self) -> str | None:
         # None is fine
         if self.selected_value is None:
             assert self.allow_none

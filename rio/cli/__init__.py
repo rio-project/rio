@@ -55,7 +55,7 @@ def new(
     nicename: str,
     *,
     type: Literal["app", "website"],
-    template: Optional[project_setup.TemplatesLiteral] = None,
+    template: project_setup.TemplatesLiteral | None = None,
 ) -> None:
     project_setup.create_project(
         nicename=nicename,
@@ -100,7 +100,7 @@ they only make sense for websites.
 def run(
     *,
     release: bool = False,
-    port: Optional[int] = None,
+    port: int | None = None,
     public: bool = False,
     quiet: bool = True,
 ) -> None:
@@ -177,6 +177,8 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
 
         file_path.write_text(
             f"""
+from __future__ import annotations
+
 from typing import *  # type: ignore
 
 import rio

@@ -49,7 +49,7 @@ LIMIT = None
 # optionally variant.
 #
 # If `None` is returned the file is skipped.
-def name_from_icon_path(path: Path) -> Optional[Tuple[str, Optional[str]]]:
+def name_from_icon_path(path: Path) -> tuple[str, str | None | None]:
     # Normalize the name
     name = path.stem
     name = name.replace("_", "-")
@@ -80,7 +80,7 @@ def main() -> None:
     if not INPUT_DIR.exists():
         fatal(f"The input directory [bold]{INPUT_DIR}[/bold] does not exist")
 
-    in_files: List[Path] = []
+    in_files: list[Path] = []
     for path in INPUT_DIR.glob("**/*"):
         if path.is_file() and re.fullmatch(INPUT_NAME_PATTERN, path.name):
             in_files.append(path)

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+from typing import Literal
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Row",
 ]
 
 
-class Row(component_base.FundamentalComponent):
+class Row(FundamentalComponent):
     """
     A container that lays out its children horizontally.
 
@@ -48,30 +48,26 @@ class Row(component_base.FundamentalComponent):
             spacing is added before the first child or after the last child.
     """
 
-    children: List[rio.Component]
+    children: list[rio.Component]
     spacing: float = 0.0
 
     def __init__(
         self,
         *children: rio.Component,
         spacing: float = 0.0,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
-        assert isinstance(children, tuple), children
-        for child in children:
-            assert isinstance(child, component_base.Component), child
-
         super().__init__(
             key=key,
             margin=margin,

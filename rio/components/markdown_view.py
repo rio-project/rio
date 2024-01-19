@@ -1,18 +1,13 @@
-from __future__ import annotations
-
 from dataclasses import KW_ONLY
-from typing import *  # type: ignore
 
-import rio
-
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "MarkdownView",
 ]
 
 
-class MarkdownView(component_base.FundamentalComponent):
+class MarkdownView(FundamentalComponent):
     """
     Displays Markdown-formatted text.
 
@@ -38,7 +33,7 @@ class MarkdownView(component_base.FundamentalComponent):
 
     text: str
     _: KW_ONLY
-    default_language: Optional[str] = None
+    default_language: str | None = None
 
 
 MarkdownView._unique_id = "MarkdownView-builtin"

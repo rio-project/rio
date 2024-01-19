@@ -8,7 +8,7 @@ class Contact(rio.Component):
     text: str
     icon_name_or_url: Union[str, rio.URL]
     _: KW_ONLY
-    link: Optional[rio.URL] = None
+    link: rio.URL | None = None
 
     def build(self) -> rio.Component:
         # Prepare the image. This varies depending on whether an icon or an

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Iterable
 from dataclasses import KW_ONLY, dataclass, field
-from typing import *  # type: ignore
 
 import rio
 
 from . import common
 from .errors import NavigationFailed
+
+__all__ = ["Page"]
 
 
 @dataclass(frozen=True)
@@ -77,13 +79,13 @@ class Page:
     page_url: str
     build: Callable[[], rio.Component]
     _: KW_ONLY
-    name: Optional[str] = None
-    icon: Optional[str] = None
+    name: str | None = None
+    icon: str | None = None
     show_in_navigation = True
-    children: List["Page"] = field(default_factory=list)
-    guard: Optional[
-        Callable[[rio.Session, Tuple[rio.Page, ...]], Union[None, rio.URL, str]]
-    ] = None
+    children: list[Page] = field(default_factory=list)
+    guard: Callable[
+        [rio.Session, tuple[rio.Page, ...]], None | rio.URL | str
+    ] | None = None
 
     def __post_init__(self) -> None:
         # URLs are case insensitive. An easy way to enforce this, and also
@@ -97,8 +99,8 @@ class Page:
 
 def _get_active_page_instances(
     available_pages: Iterable[rio.Page],
-    remaining_segments: Tuple[str, ...],
-) -> List[rio.Page]:
+    remaining_segments: tuple[str, ...],
+) -> list[rio.Page]:
     """
     Given a list of available pages, and a URL, return the list of pages that
     would be active if navigating to that URL.
@@ -126,7 +128,7 @@ def _get_active_page_instances(
 def check_page_guards(
     sess: rio.Session,
     target_url_absolute: rio.URL,
-) -> Tuple[Tuple[Page, ...], rio.URL]:
+) -> tuple[tuple[Page, ...], rio.URL]:
     """
     Check whether navigation to the given target URL is possible.
 

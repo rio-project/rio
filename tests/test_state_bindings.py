@@ -4,8 +4,8 @@ from utils import create_mockapp
 
 import rio
 
-StateBinding = rio.component_base.StateBinding
-StateProperty = rio.component_base.StateProperty
+StateBinding = rio.component.StateBinding
+StateProperty = rio.component.StateProperty
 
 
 class Parent(rio.Component):

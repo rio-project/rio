@@ -8,7 +8,7 @@ from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "MouseEventListener",
@@ -79,7 +79,7 @@ class MouseDragEvent:
     end_component: rio.Component
 
 
-class MouseEventListener(component_base.FundamentalComponent):
+class MouseEventListener(FundamentalComponent):
     """
     Allows you to listen for mouse events on a component.
 
@@ -110,7 +110,7 @@ class MouseEventListener(component_base.FundamentalComponent):
             the child component, but now is not.
     """
 
-    child: component_base.Component
+    child: rio.Component
     _: KW_ONLY
     on_press: rio.EventHandler[PressEvent] = None
     on_mouse_down: rio.EventHandler[MouseDownEvent] = None

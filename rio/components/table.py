@@ -1,46 +1,41 @@
 from __future__ import annotations
 
-import collections.abc
-from typing import *  # type: ignore
+from collections.abc import Iterable, Mapping
+from typing import TYPE_CHECKING, cast
 
-from uniserde import JsonDoc  # type: ignore
+from uniserde import JsonDoc
 
 from .. import maybes
-from ..debug import ModuleProxy
-from .component_base import FundamentalComponent
+from .fundamental_component import FundamentalComponent
 
 if TYPE_CHECKING:
     import pandas
     import polars
-else:
-    # Required for runtime type checking
-    pandas = ModuleProxy("pandas")
-    polars = ModuleProxy("polars")
 
 
 __all__ = ["Table"]
 
 
-TableValue = Union[int, float, str]
+TableValue = int | float | str
 
 
 class Table(FundamentalComponent):
-    data: Union[
-        pandas.DataFrame,
-        polars.DataFrame,
-        Mapping[str, Iterable[TableValue]],
-        Iterable[Iterable[TableValue]],
-    ]
+    data: (
+        pandas.DataFrame
+        | polars.DataFrame
+        | Mapping[str, Iterable[TableValue]]
+        | Iterable[Iterable[TableValue]]
+    )
     show_row_numbers: bool = True
 
     def _custom_serialize(self) -> JsonDoc:
         data = self.data
-        jsonable_data: Dict[str, List[TableValue]]
+        jsonable_data: dict[str, list[TableValue]]
 
         maybes.initialize()
 
         # Convert the data to a dict of lists so it can be serialized as json
-        if isinstance(data, collections.abc.Mapping):
+        if isinstance(data, Mapping):
             # For some reason Pyright infers that `data` can be a
             # `Mapping[Iterable[TableValue], Unknown]`. WTF.
             data = cast(Mapping[str, Iterable[TableValue]], data)

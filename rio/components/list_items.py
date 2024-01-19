@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY, field
-from typing import *  # type: ignore
+from dataclasses import KW_ONLY
+from typing import Any
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .component import Component
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "CustomListItem",
@@ -16,22 +17,22 @@ __all__ = [
 ]
 
 
-class HeadingListItem(component_base.FundamentalComponent):
+class HeadingListItem(FundamentalComponent):
     text: str
 
 
 HeadingListItem._unique_id = "HeadingListItem-builtin"
 
 
-class SimpleListItem(component_base.Component):
+class SimpleListItem(Component):
     text: str
     _: KW_ONLY
     secondary_text: str = ""
-    left_child: Optional[component_base.Component] = None
-    right_child: Optional[component_base.Component] = None
+    left_child: rio.Component | None = None
+    right_child: rio.Component | None = None
     on_press: rio.EventHandler[[]] = None
 
-    def build(self) -> component_base.Component:
+    def build(self) -> rio.Component:
         children = []
 
         # Left child
@@ -80,8 +81,8 @@ class SimpleListItem(component_base.Component):
         )
 
 
-class CustomListItem(component_base.FundamentalComponent):
-    child: component_base.Component
+class CustomListItem(FundamentalComponent):
+    child: rio.Component
     _: KW_ONLY
     on_press: rio.EventHandler[[]] = None
 

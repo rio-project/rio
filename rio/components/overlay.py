@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
-
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Overlay",
 ]
 
 
-class Overlay(component_base.FundamentalComponent):
+class Overlay(FundamentalComponent):
     """
     Displays its child above all other components.
 
@@ -35,15 +33,13 @@ class Overlay(component_base.FundamentalComponent):
         self,
         child: rio.Component,
         *,
-        key: Optional[str] = None,
+        key: str | None = None,
     ):
         # This component intentionally doesn't accept the typical layouting
         # parameters, as the underlying HTML `Overlay` element will force itself
         # to span the entire screen, ignoring them.
 
-        super().__init__(
-            key=key,
-        )
+        super().__init__(key=key)
 
         self.child = child
 

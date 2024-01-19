@@ -23,13 +23,17 @@ import rio.cli
 import rio.icon_registry
 import rio.snippets
 
-from .. import common, debug
+from .. import common
+from ..debug.monkeypatches import apply_monkeypatches
 from . import nice_traceback, project
 
 try:
     import webview  # type: ignore
 except ImportError:
-    webview = None
+    if TYPE_CHECKING:
+        import webview
+    else:
+        webview = None
 
 
 # There is a hillarious problem with `watchfiles`: When a change occurs,
@@ -105,7 +109,7 @@ class RunningApp:
         self,
         *,
         proj: project.RioProject,
-        port: Optional[int],
+        port: int | None,
         public: bool,
         quiet: bool,
         debug_mode: bool,
@@ -126,24 +130,20 @@ class RunningApp:
         self._event_queue: asyncio.Queue[Event] = asyncio.Queue()
 
         # If running, the asyncio mainloop
-        self._mainloop: Optional[asyncio.AbstractEventLoop] = None
+        self._mainloop: asyncio.AbstractEventLoop | None = None
 
         # If the app is currently running, this is the task for it
-        self._uvicorn_task: Optional[asyncio.Task] = None
-
-        # If the webview is running, this is the task responsible for shutting
-        # it down
-        self._webview_task: Optional[asyncio.Task] = None
+        self._uvicorn_task: asyncio.Task | None = None
 
         # Released when the app is loaded for the first time, and thus the
         # window should be displayed
         self._show_webview_event = threading.Event()
 
         # If the uvicorn server is running, this is it
-        self._uvicorn_server: Optional[uvicorn.Server] = None
+        self._uvicorn_server: uvicorn.Server | None = None
 
         # If the app is running, this is the `rio.AppServer` instance
-        self._app_server: Optional[rio.app_server.AppServer] = None
+        self._app_server: rio.app_server.AppServer | None = None
 
         # Monotonic timestamp of when the last command was given to restart the
         # app. Any further events which would trigger a reload up to this time
@@ -151,17 +151,23 @@ class RunningApp:
         self.last_reload_started_at = time.monotonic_ns()
 
         # If a webview is being displayed, this is the window
-        self._webview_window: Optional["webview.Window"] = None  # type: ignore
+        self._webview_window: "webview.Window" | None = None  # type: ignore
 
         # The app to use for creating apps. This keeps the theme consistent if
         # for-example the user's app crashes and then a mock-app is injected.
         self._app_theme: Union[
-            rio.Theme, Tuple[rio.Theme, rio.Theme]
+            rio.Theme, tuple[rio.Theme, rio.Theme]
         ] = rio.Theme.pair_from_color()
 
         # A list of worker tasks that must shut down gracefully. That means the
         # asyncio event loop mustn't stop running until these tasks are done.
         self._workers: list[asyncio.Task] = []
+
+        # A `threading.Lock` indicating whether the app is currently shutting
+        # down. Needs to be thread-safe since we can have multiple threads: 1
+        # thread executing the asyncio event loop and 1 thread executing
+        # `webview`.
+        self._stopping = threading.Lock()
 
     @property
     def _host(self) -> str:
@@ -225,8 +231,12 @@ class RunningApp:
 
     def stop(self, *, keyboard_interrupt: bool) -> None:
         """
-        Stops the app.
+        Stops the app. This function can safely be called more than once.
         """
+
+        # Already shutting down? Then do nothing
+        if not self._stopping.acquire(blocking=False):
+            return
 
         if keyboard_interrupt:
             print()
@@ -240,6 +250,18 @@ class RunningApp:
     def _cancel_all_tasks(self) -> None:
         for task in asyncio.all_tasks():
             task.cancel()
+
+        if self._webview_window is not None:
+            asyncio.create_task(self._close_webview_window(self._webview_window))
+
+    async def _close_webview_window(self, window: "webview.Window") -> None:
+        # This can fail if the window hasn't entirely opened yet. In that case
+        # we'll simply try again later.
+        while True:
+            try:
+                window.destroy()
+            except KeyError:
+                await asyncio.sleep(0.05)
 
     def run(self) -> None:
         # Before we do anything else, ensure that the `rio.toml` contains all
@@ -256,7 +278,7 @@ class RunningApp:
 
         # If running in debug mode, install safeguards
         if self.debug_mode:
-            debug.apply_monkeypatches()
+            apply_monkeypatches()
 
         # The webview needs to be shown from the main thread. So, if running
         # inside of a window run the arbiter in a separate thread. Otherwise
@@ -270,42 +292,23 @@ class RunningApp:
                 )
 
             # Do the thing
-            threading.Thread(target=self.arbiter_sync, name="rio run arbiter").start()
+            arbiter_thread = threading.Thread(
+                target=self.arbiter_sync, name="rio run arbiter"
+            )
+            arbiter_thread.start()
+
             self._show_webview()
+
+            # I have no idea why this sleep() is necessary, but it is. If the
+            # main thread shuts down too quickly, `asyncio.run` throws an error:
+            # RuntimeError: can't create new thread at interpreter shutdown
+            time.sleep(0.2)
+            arbiter_thread.join()
         else:
             self.arbiter_sync()
 
     def _cache_data_from_rio_toml(self) -> None:
         _ = self.proj.app_main_module
-
-    async def _worker_webview(self) -> None:
-        """
-        Shows the webview when called. Closes it when canceled.
-
-        Since webview requires the webview to be shown from the main thread, it
-        is already running in a separate thread. This function just controls it,
-        making it appear async.
-        """
-        assert not self._show_webview_event.is_set(), "This was already called!?"
-        assert webview is not None
-
-        # Show the webview
-        self._show_webview_event.set()
-
-        # Wait until this task is canceled
-        wait_forever_event = asyncio.Event()
-
-        try:
-            await wait_forever_event.wait()
-
-        # Clean up
-        #
-        # Wait for the window to actually be created first
-        finally:
-            while self._webview_window is None:
-                await asyncio.sleep(0.1)
-
-            self._webview_window.destroy()
 
     def _show_webview(self) -> None:
         """
@@ -326,13 +329,11 @@ class RunningApp:
 
         # If the webview window is closed, shut down.
         #
-        # One problem: We don't know if the webview stopped because the user
-        # closed the window or because the webview worker was cancelled and
-        # called `window.close()`. If the user closed the webview window, then
-        # we're responsible for shutting down all the workers.
-        assert self._webview_task is not None
-        if not self._webview_task.cancelled():
-            self.stop(keyboard_interrupt=False)
+        # We don't know if the window was closed by the user or by another part
+        # of the code, but it doesn't matter. `self.stop()` is idempotent, so
+        # there's no harm in calling it even if the app is already shutting
+        # down.
+        self.stop(keyboard_interrupt=False)
 
     def arbiter_sync(self) -> None:
         # Print some initial messages
@@ -489,7 +490,7 @@ class RunningApp:
             return err
 
         # Find the variable holding the Rio app
-        apps: List[Tuple[str, rio.App]] = []
+        apps: list[tuple[str, rio.App]] = []
         for var_name, var in app_module.__dict__.items():
             if isinstance(var, rio.App):
                 apps.append((var_name, var))
@@ -572,7 +573,9 @@ window.setConnectionLostPopupVisible(true);
         print()
         if self.run_in_window:
             success("Ready")
-            self._webview_task = self._create_worker(self._worker_webview())
+
+            # Notify the webview that everything is ready for it to open
+            self._show_webview_event.set()
         else:
             success(f"Your app is running at {self._url}")
 

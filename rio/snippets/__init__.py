@@ -9,7 +9,7 @@ from .. import common
 
 SECTION_PATTERN = re.compile(r"#\s*<(\/?[\w-]+)>")
 
-_ALL_SNIPPET_PATHS: Optional[Dict[str, Path]] = None
+_ALL_SNIPPET_PATHS: dict[str, Path | None] = None
 
 
 @dataclass
@@ -24,7 +24,7 @@ class Snippet:
     target_directory: Literal["components", "pages", "other"]
 
     # Read from the snippet's metadata file
-    dependencies: Set[str]
+    dependencies: set[str]
 
     def get_section(self, section_name: str) -> str:
         # Find the target section
@@ -162,7 +162,7 @@ def get_raw_snippet(name: str) -> Snippet:
 def get_snippet_section(
     snippet_name: str,
     *,
-    section: Optional[str] = None,
+    section: str | None = None,
 ) -> str:
     """
     Returns the contents of the specified section in the given snippet. Raises a

@@ -5,14 +5,14 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import class_container, component_base
+from . import class_container, component
 
 __all__ = [
     "AppRoot",
 ]
 
 
-class AppTopBar(component_base.Component):
+class AppTopBar(component.Component):
     on_press_open: rio.EventHandler[[]] = None
 
     def build(self) -> rio.Component:
@@ -53,7 +53,7 @@ class AppTopBar(component_base.Component):
         )
 
 
-class Sidebar(component_base.Component):
+class Sidebar(component.Component):
     on_press_close: rio.EventHandler[[]] = None
 
     def build(self) -> rio.Component:
@@ -103,9 +103,9 @@ class Sidebar(component_base.Component):
         )
 
 
-class AppRoot(component_base.Component):
+class AppRoot(component.Component):
     _: KW_ONLY
-    fallback_build: Optional[Callable[[], rio.Component]] = None
+    fallback_build: Callable[[], rio.Component] | None = None
 
     _sidebar_is_open: bool = False
 

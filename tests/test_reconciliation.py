@@ -3,7 +3,6 @@ from typing import Tuple
 from utils import create_mockapp
 
 import rio
-from rio.components import Component
 
 
 async def test_default_values_arent_considered_explicitly_set():
@@ -112,7 +111,7 @@ async def test_reconcile_unusual_types():
     class CustomComponent(rio.Component):
         integer: int
         text: str
-        tuple: Tuple[float, rio.Component]
+        tuple: tuple[float, rio.Component]
         byte_array: bytearray
 
         def build(self):
@@ -270,7 +269,7 @@ async def test_text_reconciliation():
     class RootComponent(rio.Component):
         text: str = "foo"
 
-        def build(self) -> Component:
+        def build(self) -> rio.Component:
             return rio.Text(self.text)
 
     async with create_mockapp(RootComponent) as app:
@@ -287,7 +286,7 @@ async def test_grid_reconciliation():
     class RootComponent(rio.Component):
         num_rows: int = 1
 
-        def build(self) -> Component:
+        def build(self) -> rio.Component:
             rows = [[rio.Text(f"Row {n}")] for n in range(self.num_rows)]
             return rio.Grid(*rows)
 
@@ -300,3 +299,44 @@ async def test_grid_reconciliation():
 
         assert {root, grid} < app.last_updated_components
         assert len(grid._children) == root.num_rows
+
+
+async def test_margin_reconciliation():
+    class RootComponent(rio.Component):
+        switch: bool = True
+
+        def build(self) -> rio.Component:
+            if self.switch:
+                return rio.Column(*[rio.Text("hi") for _ in range(7)])
+            else:
+                return rio.Column(
+                    rio.Text("hi", margin_left=1),
+                    rio.Text("hi", margin_right=1),
+                    rio.Text("hi", margin_top=1),
+                    rio.Text("hi", margin_bottom=1),
+                    rio.Text("hi", margin_x=1),
+                    rio.Text("hi", margin_y=1),
+                    rio.Text("hi", margin=1),
+                )
+
+    async with create_mockapp(RootComponent) as app:
+        root = app.get_component(RootComponent)
+        texts = list(app.get_components(rio.Text))
+
+        root.switch = False
+        await app.refresh()
+
+        assert texts[0].margin_left == 1
+        assert texts[1].margin_right == 1
+        assert texts[2].margin_top == 1
+        assert texts[3].margin_bottom == 1
+
+        assert texts[4].margin_left == texts[4].margin_right == 1
+        assert texts[5].margin_top == texts[5].margin_bottom == 1
+        assert (
+            texts[6].margin_left
+            == texts[6].margin_right
+            == texts[6].margin_top
+            == texts[6].margin_bottom
+            == 1
+        )

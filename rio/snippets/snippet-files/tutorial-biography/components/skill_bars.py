@@ -4,7 +4,7 @@ import rio
 
 
 class SkillBars(rio.Component):
-    skills: Dict[str, int]
+    skills: dict[str, int]
 
     def build(self) -> rio.Component:
         rows = []

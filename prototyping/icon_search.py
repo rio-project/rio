@@ -6,7 +6,7 @@ import sentence_transformers.util
 from sentence_transformers import SentenceTransformer
 
 
-def scan_for_icons(path: Path) -> List[str]:
+def scan_for_icons(path: Path) -> list[str]:
     result = []
 
     for fpath in path.glob("**/*.svg"):

@@ -7,7 +7,7 @@ import rio
 class ComponentDetails(rio.Component):
     component_id: int
 
-    def _get_component_details(self, target: rio.Component) -> Dict[str, Any]:
+    def _get_component_details(self, target: rio.Component) -> dict[str, Any]:
         """
         Given a component, return a set of keys/values of all the details which
         should be displayed to the user.
@@ -114,25 +114,24 @@ class ComponentDetails(rio.Component):
         row_index += 1
 
         # Which file/line was this component instantiated from?
-        if target._creator_stackframe_ is not None:
-            file, line = target._creator_stackframe_
+        file, line = target._creator_stackframe_
 
-            try:
-                file = file.relative_to(Path.cwd())
-            except ValueError:
-                pass
+        try:
+            file = file.relative_to(Path.cwd())
+        except ValueError:
+            pass
 
-            result.add_child(
-                rio.Text(
-                    f"{file} line {line}",
-                    style="dim",
-                    align_x=0,
-                ),
-                row_index,
-                0,
-                width=4,
-            )
-            row_index += 1
+        result.add_child(
+            rio.Text(
+                f"{file} line {line}",
+                style="dim",
+                align_x=0,
+            ),
+            row_index,
+            0,
+            width=4,
+        )
+        row_index += 1
 
         # Custom properties
         #

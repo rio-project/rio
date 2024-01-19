@@ -98,7 +98,7 @@ FREQUENCY = Dimension(("frequency",), second=-1)
 class Unit:
     dimension: Dimension
     base_multiple: float
-    prefixes: Sequence[Tuple[int, str, str]]
+    prefixes: Sequence[tuple[int, str, str]]
 
 
 AMPERE = Unit(ELECTRICAL_CURRENT, 1, SI_PREFIXES)

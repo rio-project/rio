@@ -35,7 +35,7 @@ class RioApi:
 
     def __init__(
         self,
-        access_token: Optional[str] = None,
+        access_token: str | None = None,
     ):
         self._access_token = access_token
         self._http_client = httpx.AsyncClient()
@@ -67,8 +67,8 @@ class RioApi:
         endpoint: str,
         *,
         method: Literal["get", "post", "delete"] = "get",
-        json: Optional[Dict[str, Any]] = None,
-        file: Optional[BinaryIO] = None,
+        json: dict[str, Any] | None = None,
+        file: BinaryIO | None = None,
     ) -> Any:
         """
         Make a request to the Rio API.
@@ -138,7 +138,7 @@ class RioApi:
 
         await self.request("/auth/expireToken", method="post")
 
-    async def get_user(self) -> Dict[str, Any]:
+    async def get_user(self) -> dict[str, Any]:
         """
         Return the user's information, if logged in.
         """

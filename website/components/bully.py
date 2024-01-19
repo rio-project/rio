@@ -3,13 +3,13 @@ from typing import *  # type: ignore
 
 import rio
 
-from .. import components as comps
+__all__ = ["Bully"]
 
 
-class Bully(rio.component_base.FundamentalComponent):
+class Bully(rio.components.fundamental_component.FundamentalComponent):
     prefix: str
     suffix: str
-    entries: List[str]
+    entries: list[str]
     _: KW_ONLY
     linger_time: float = 1.0
     font_size: float = 1.0

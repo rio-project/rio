@@ -10,28 +10,28 @@ from . import parsers
 @dataclass
 class FunctionParameter(uniserde.Serde):
     name: str
-    type: Optional[str]
-    default: Optional[str]
+    type: str | None
+    default: str | None
 
     kw_only: bool
 
     collect_positional: bool
     collect_keyword: bool
 
-    description: Optional[str]
+    description: str | None
 
 
 @dataclass
 class FunctionDocs(uniserde.Serde):
     name: str
-    parameters: List[FunctionParameter]
-    return_type: Optional[str]
+    parameters: list[FunctionParameter]
+    return_type: str | None
     synchronous: bool
 
-    short_description: Optional[str]
-    long_description: Optional[str]
+    short_description: str | None
+    long_description: str | None
 
-    raises: List[Tuple[str, str]]  # type, description
+    raises: list[tuple[str, str]]  # type, description
 
     @classmethod
     def parse(cls, func: Callable) -> "FunctionDocs":
@@ -42,19 +42,19 @@ class FunctionDocs(uniserde.Serde):
 class ClassField(uniserde.Serde):
     name: str
     type: str
-    default: Optional[str]
+    default: str | None
 
-    description: Optional[str]
+    description: str | None
 
 
 @dataclass
 class ClassDocs(uniserde.Serde):
     name: str
-    attributes: List[ClassField]  # name, type
-    functions: List[FunctionDocs]
+    attributes: list[ClassField]  # name, type
+    functions: list[FunctionDocs]
 
-    short_description: Optional[str]
-    long_description: Optional[str]
+    short_description: str | None
+    long_description: str | None
 
     @classmethod
     def parse(cls, typ: Type) -> "ClassDocs":

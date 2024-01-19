@@ -5,7 +5,9 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import component_base, progress_circle
+from .component import Component
+from .fundamental_component import FundamentalComponent
+from .progress_circle import ProgressCircle
 
 __all__ = [
     "Button",
@@ -18,7 +20,7 @@ CHILD_MARGIN_Y = 0.3
 INITIALLY_DISABLED_FOR = 0.25
 
 
-class Button(component_base.Component):
+class Button(Component):
     """
     A clickable button.
 
@@ -61,7 +63,7 @@ class Button(component_base.Component):
 
     child: Union[rio.Component, str] = ""
     _: KW_ONLY
-    icon: Optional[str] = None
+    icon: str | None = None
     shape: Literal["pill", "rounded", "rectangle"] = "pill"
     style: Literal["major", "minor", "plain"] = "major"
     color: rio.ColorSet = "keep"
@@ -78,14 +80,14 @@ class Button(component_base.Component):
             else:
                 progress_color = "secondary"
 
-            child = progress_circle.ProgressCircle(
+            child = ProgressCircle(
                 size=1.5,
                 align_x=0.5,
                 margin_x=CHILD_MARGIN_Y,
                 margin_y=CHILD_MARGIN_Y,
                 color=progress_color,
             )
-        elif isinstance(self.child, component_base.Component):
+        elif isinstance(self.child, Component):
             child = rio.Container(
                 self.child,
                 margin_x=CHILD_MARGIN_Y,
@@ -151,7 +153,7 @@ class Button(component_base.Component):
         return f"<Button id:{self._id} {text_or_child}>"
 
 
-class IconButton(component_base.Component):
+class IconButton(Component):
     """
     A round, clickable button with shadow.
 
@@ -184,17 +186,17 @@ class IconButton(component_base.Component):
         color: rio.ColorSet = "keep",
         is_sensitive: bool = True,
         on_press: rio.EventHandler[[]] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
         size: float = 3.7,
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,
@@ -243,7 +245,7 @@ class IconButton(component_base.Component):
         )
 
 
-class _ButtonInternal(component_base.FundamentalComponent):
+class _ButtonInternal(FundamentalComponent):
     _: KW_ONLY
     on_press: rio.EventHandler[[]]
     child: rio.Component

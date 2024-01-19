@@ -21,7 +21,7 @@ class BoxStyle(SelfSerializing):
     fill: rio.Fill
     stroke_color: rio.Color
     stroke_width: float
-    corner_radius: Tuple[float, float, float, float]
+    corner_radius: tuple[float, float, float, float]
     shadow_color: rio.Color
     shadow_radius: float
     shadow_offset_x: float
@@ -33,7 +33,7 @@ class BoxStyle(SelfSerializing):
         fill: rio.FillLike,
         stroke_color: rio.Color = color.Color.BLACK,
         stroke_width: float = 0.0,
-        corner_radius: Union[float, Tuple[float, float, float, float]] = 0.0,
+        corner_radius: Union[float, tuple[float, float, float, float]] = 0.0,
         shadow_color: rio.Color = color.Color.BLACK,
         shadow_radius: float = 0.0,
         shadow_offset_x: float = 0.0,
@@ -63,14 +63,14 @@ class BoxStyle(SelfSerializing):
     def replace(
         self,
         *,
-        fill: Optional[rio.FillLike] = None,
-        stroke_color: Optional[rio.Color] = None,
-        stroke_width: Optional[float] = None,
-        corner_radius: Optional[Union[float, Tuple[float, float, float, float]]] = None,
-        shadow_color: Optional[rio.Color] = None,
-        shadow_radius: Optional[float] = None,
-        shadow_offset_x: Optional[float] = None,
-        shadow_offset_y: Optional[float] = None,
+        fill: rio.FillLike | None = None,
+        stroke_color: rio.Color | None = None,
+        stroke_width: float | None = None,
+        corner_radius: None | float | tuple[float, float, float, float] = None,
+        shadow_color: rio.Color | None = None,
+        shadow_radius: float | None = None,
+        shadow_offset_x: float | None = None,
+        shadow_offset_y: float | None = None,
     ) -> Self:
         if fill is not None:
             fill = rio.Fill._try_from(fill)

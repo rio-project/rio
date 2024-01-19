@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Slider",
@@ -20,7 +20,7 @@ class SliderChangeEvent:
     value: float
 
 
-class Slider(component_base.FundamentalComponent):
+class Slider(FundamentalComponent):
     """
     A component for selecting a single value from a range.
 
@@ -51,21 +51,21 @@ class Slider(component_base.FundamentalComponent):
         minimum: float = 0,
         maximum: float = 1,
         step_size: float = 0,
-        value: Optional[float] = None,
+        value: float | None = None,
         is_sensitive: bool = True,
         on_change: rio.EventHandler[SliderChangeEvent] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["grow"], float] = 1.3,
-        height: Union[Literal["grow"], float] = 1.3,
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["grow"] = 1.3,
+        height: float | Literal["grow"] = 1.3,
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,

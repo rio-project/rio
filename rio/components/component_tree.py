@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import *  # type: ignore
+from typing import Any
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
+
+__all__ = ["ComponentTree"]
 
 
-class ComponentTree(component_base.FundamentalComponent):
+class ComponentTree(FundamentalComponent):
     """
     Note: This component makes not attempt to request the correct amount of
     space. Specify a width/height manually, or make sure it's in a properly

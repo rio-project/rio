@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Any, Literal
 
 from uniserde import Jsonable
 
 import rio
 
-from . import component_base
+from .fundamental_component import KeyboardFocusableFundamentalComponent
 
 __all__ = [
     "KeyEventListener",
@@ -570,12 +570,12 @@ _MODIFIERS = ("control", "shift", "alt", "meta")
 @dataclass(frozen=True)
 class _KeyUpDownEvent:
     hardware_key: HardwareKey
-    software_key: Union[SoftwareKey, str]
+    software_key: SoftwareKey | str
     text: str
-    modifiers: FrozenSet[ModifierKey]
+    modifiers: frozenset[ModifierKey]
 
     @classmethod
-    def _from_json(cls, json_data: Dict[str, Any]):
+    def _from_json(cls, json_data: dict[str, Any]):
         return cls(
             hardware_key=json_data["hardwareKey"],
             software_key=json_data["softwareKey"],
@@ -602,7 +602,7 @@ class KeyPressEvent(_KeyUpDownEvent):
     pass
 
 
-class KeyEventListener(component_base.KeyboardFocusableFundamentalComponent):
+class KeyEventListener(KeyboardFocusableFundamentalComponent):
     """
     Calls an event handler when a key is pressed or released.
 
@@ -623,13 +623,13 @@ class KeyEventListener(component_base.KeyboardFocusableFundamentalComponent):
         on_key_press: A function to call repeatedly while a key is held down.
     """
 
-    child: component_base.Component
+    child: rio.Component
     _: KW_ONLY
     on_key_down: rio.EventHandler[KeyDownEvent] = None
     on_key_up: rio.EventHandler[KeyUpEvent] = None
     on_key_press: rio.EventHandler[KeyPressEvent] = None
 
-    def _custom_serialize(self) -> Dict[str, Jsonable]:
+    def _custom_serialize(self) -> dict[str, Jsonable]:
         return {
             "reportKeyDown": self.on_key_down is not None,
             "reportKeyUp": self.on_key_up is not None,

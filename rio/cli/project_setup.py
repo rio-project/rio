@@ -17,13 +17,13 @@ __all__ = [
 TemplatesLiteral: TypeAlias = Literal["biography"]
 
 # The available templates, as runtime accessible set
-AVAILABLE_TEMPLATES: Set[str] = set(get_args(TemplatesLiteral))
+AVAILABLE_TEMPLATES: set[str] = set(get_args(TemplatesLiteral))
 
 # Which snippets must be included for each project template
 #
 # The first page will be used as the main page, i.e. it will be located at `/`.
 # The URLs of other pages are derived from the snippet name.
-TEMPLATE_DEPENDENCIES: Dict[Optional[TemplatesLiteral], Set[str]] = {
+TEMPLATE_DEPENDENCIES: dict[TemplatesLiteral | None, set[str]] = {
     None: {
         # Components
         "common-templates/sample_component.py",
@@ -79,15 +79,15 @@ def write_init_file(fil: IO, snippets: Iterable[rio.snippets.Snippet]) -> None:
 
 def find_all_dependency_snippets(
     base_snippets: Iterable[str],
-) -> List[rio.snippets.Snippet]:
+) -> list[rio.snippets.Snippet]:
     """
     Given a set of snippet names, determine the full set of all snippets that
     must be included to satisfy all dependencies. This includes the base
     snippets as well.
     """
-    dependencies: List[rio.snippets.Snippet] = []
-    visited_names: Set[str] = set(base_snippets)
-    to_do: List[str] = list(visited_names)
+    dependencies: list[rio.snippets.Snippet] = []
+    visited_names: set[str] = set(base_snippets)
+    to_do: list[str] = list(visited_names)
 
     while to_do:
         # Fetch the snippet
@@ -196,7 +196,7 @@ def create_project(
     *,
     nicename: str,
     type: Literal["app", "website"],
-    template: Optional[TemplatesLiteral] = None,
+    template: TemplatesLiteral | None = None,
 ) -> None:
     """
     Create a new project with the given name. This will directly interact with
@@ -245,7 +245,7 @@ def create_project(
     (main_module_dir / "assets").mkdir()
 
     # Determine all components and pages that should be copied over
-    dependencies: List[rio.snippets.Snippet] = find_all_dependency_snippets(
+    dependencies: list[rio.snippets.Snippet] = find_all_dependency_snippets(
         TEMPLATE_DEPENDENCIES[template]
     )
 

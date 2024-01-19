@@ -7,14 +7,14 @@ from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Card",
 ]
 
 
-class Card(component_base.FundamentalComponent):
+class Card(FundamentalComponent):
     """
     A container that visually encompasses its child components.
 
@@ -48,10 +48,10 @@ class Card(component_base.FundamentalComponent):
 
     child: rio.Component
     _: KW_ONLY
-    corner_radius: Union[None, float, Tuple[float, float, float, float]] = None
+    corner_radius: Union[None, float, tuple[float, float, float, float]] = None
     on_press: rio.EventHandler[[]] = None
-    elevate_on_hover: Optional[bool] = None
-    colorize_on_hover: Optional[bool] = None
+    elevate_on_hover: bool | None = None
+    colorize_on_hover: bool | None = None
     color: rio.ColorSet = "neutral"
 
     async def _on_message(self, msg: Any) -> None:

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Any
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import KeyboardFocusableFundamentalComponent
 
 __all__ = [
     "TextInput",
@@ -26,7 +26,7 @@ class TextInputConfirmEvent:
     text: str
 
 
-class TextInput(component_base.KeyboardFocusableFundamentalComponent):
+class TextInput(KeyboardFocusableFundamentalComponent):
     """
     A user-editable text field.
 

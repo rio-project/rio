@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+from collections.abc import Callable
 
-from .component_base import Component, FundamentalComponent
+from .component import Component
+from .fundamental_component import FundamentalComponent
 from .scroll_container import ScrollContainer
+
+__all__ = ["HighLevelRootComponent"]
 
 
 # The HighLevelRootComponent is the top-most element. It's a high-level element
@@ -42,7 +45,7 @@ class HighLevelRootComponent(Component):
 class FundamentalRootComponent(FundamentalComponent):
     child: Component
     connection_lost_component: Component
-    debugger: Optional[Component]
+    debugger: Component | None
 
 
 FundamentalRootComponent._unique_id = "FundamentalRootComponent-builtin"

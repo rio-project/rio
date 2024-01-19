@@ -36,7 +36,7 @@ def _securely_hash_bytes_changes_between_runs(data: bytes) -> bytes:
     return hasher.digest()
 
 
-_ASSETS: Dict[Tuple[Union[bytes, Path, URL], Optional[str]], Asset] = {}
+_ASSETS: dict[tuple[Union[bytes, Path, URL], str | None], Asset] = {}
 
 
 class Asset(SelfSerializing):
@@ -57,7 +57,7 @@ class Asset(SelfSerializing):
 
     def __init__(
         self,
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
     ):
         if type(self) is __class__:
             raise Exception(
@@ -69,24 +69,24 @@ class Asset(SelfSerializing):
 
     @overload
     @classmethod
-    def new(cls, data: bytes, media_type: Optional[str] = None) -> BytesAsset:
+    def new(cls, data: bytes, media_type: str | None = None) -> BytesAsset:
         ...
 
     @overload
     @classmethod
-    def new(cls, data: Path, media_type: Optional[str] = None) -> PathAsset:
+    def new(cls, data: Path, media_type: str | None = None) -> PathAsset:
         ...
 
     @overload
     @classmethod
-    def new(cls, data: URL, media_type: Optional[str] = None) -> UrlAsset:
+    def new(cls, data: URL, media_type: str | None = None) -> UrlAsset:
         ...
 
     @classmethod
     def new(
         cls,
         data: Union[bytes, Path, URL],
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
     ) -> Asset:
         key = (data, media_type)
         try:
@@ -115,7 +115,7 @@ class Asset(SelfSerializing):
     def from_image(
         cls,
         image: ImageLike,
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
     ) -> Asset:
         if isinstance(image, Image):
             file = io.BytesIO()
@@ -126,7 +126,7 @@ class Asset(SelfSerializing):
         return Asset.new(image, media_type)
 
     @abc.abstractmethod
-    async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
+    async def try_fetch_as_blob(self) -> tuple[bytes, str | None]:
         """
         Try to fetch the image as blob & media type. Raises a `ValueError` if
         fetching fails.
@@ -206,7 +206,7 @@ class BytesAsset(HostedAsset):
     def __init__(
         self,
         data: Union[bytes, bytearray],
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
     ):
         super().__init__(media_type)
 
@@ -215,7 +215,7 @@ class BytesAsset(HostedAsset):
     def _eq(self, other: BytesAsset) -> bool:
         return self.data == other.data
 
-    async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
+    async def try_fetch_as_blob(self) -> tuple[bytes, str | None]:
         return self.data, self.media_type
 
     def _get_secret_id(self) -> str:
@@ -238,7 +238,7 @@ class PathAsset(HostedAsset):
     def __init__(
         self,
         path: Union[os.PathLike, str],
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
     ):
         super().__init__(media_type)
 
@@ -248,7 +248,7 @@ class PathAsset(HostedAsset):
     def _eq(self, other: PathAsset) -> bool:
         return self.path == other.path
 
-    async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
+    async def try_fetch_as_blob(self) -> tuple[bytes, str | None]:
         try:
             return self.path.read_bytes(), self.media_type
         except IOError:
@@ -267,7 +267,7 @@ class UrlAsset(Asset):
     def __init__(
         self,
         url: URL,
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
     ):
         super().__init__(media_type)
 
@@ -276,7 +276,7 @@ class UrlAsset(Asset):
     def _eq(self, other: UrlAsset) -> bool:
         return self.url == other.url
 
-    async def try_fetch_as_blob(self) -> Tuple[bytes, Optional[str]]:
+    async def try_fetch_as_blob(self) -> tuple[bytes, str | None]:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(str(self._url))

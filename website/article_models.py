@@ -21,12 +21,12 @@ class BuiltArticle:
     def __init__(
         self,
         *,
-        default_language: Optional[str] = "python",
+        default_language: str | None = "python",
     ):
         self.default_language = default_language
 
-        self._parts: List[rio.Component] = []
-        self._current_section: Optional[List[rio.Component]] = None
+        self._parts: list[rio.Component] = []
+        self._current_section: list[rio.Component | None] = None
 
     def begin_section(self) -> None:
         if self._current_section is not None:
@@ -98,7 +98,7 @@ class BuiltArticle:
         self,
         snippet: str,
         *,
-        section: Optional[str] = None,
+        section: str | None = None,
     ) -> None:
         # Get the snippet
         code = rio.snippets.get_snippet_section(snippet, section=section)
@@ -137,9 +137,9 @@ What we've learned this lesson:
     def navigation(
         self,
         prev_title: str,
-        prev_link: Optional[rio.URL],
+        prev_link: rio.URL | None,
         next_title: str,
-        next_link: Optional[rio.URL],
+        next_link: rio.URL | None,
     ) -> None:
         # Navigation to the previous article
         if prev_link is None:
@@ -203,7 +203,7 @@ def _str_parameter(param: docmodels.FunctionParameter) -> str:
 def _str_function_signature(
     docs: docmodels.FunctionDocs,
     *,
-    owning_class_name: Optional[str] = None,
+    owning_class_name: str | None = None,
 ) -> str:
     parts = []
 
@@ -345,7 +345,7 @@ def _append_field_docs_to_article(
 def _append_heading_and_short_description(
     art: BuiltArticle,
     heading: str,
-    short_description: Optional[str],
+    short_description: str | None,
 ) -> None:
     art.component(
         rio.Row(
@@ -407,7 +407,7 @@ def create_class_api_docs(docs: docmodels.ClassDocs) -> BuiltArticle:
 
 def create_component_api_docs(
     docs: docmodels.ClassDocs,
-    interactive_example: Optional[Callable[[], rio.Component]],
+    interactive_example: Callable[[], rio.Component] | None,
 ) -> BuiltArticle:
     art = BuiltArticle()
 

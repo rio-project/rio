@@ -11,15 +11,15 @@ __all__ = [
 
 
 ArticleType: TypeAlias = Union[
-    Tuple[str, str, Callable[[], article_models.BuiltArticle]], Type
+    tuple[str, str, Callable[[], article_models.BuiltArticle]], Type
 ]
-SectionType: TypeAlias = Union[Tuple[str, Tuple[ArticleType, ...]], None]
+SectionType: TypeAlias = Union[tuple[str, tuple[ArticleType, ...]], None]
 
 
 # This acts as the source for anything that needs to know about the structure of
 # the documentation. Other variables expose related information, but those
 # variables derive from this one.
-DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
+DOCUMENTATION_STRUCTURE: tuple[SectionType, ...] = (
     # Introduction
     (
         "Introduction",
@@ -201,8 +201,8 @@ DOCUMENTATION_STRUCTURE: Tuple[SectionType, ...] = (
 # - Article Name
 # - Article generation function, or `Component` class
 def _compute_linear() -> (
-    Tuple[
-        Tuple[
+    tuple[
+        tuple[
             str,
             str,
             str,
@@ -240,7 +240,7 @@ DOCUMENTATION_STRUCTURE_LINEAR = _compute_linear()
 
 
 # Maps URL segments to the sections they're in
-def _compute_url_segment_to_section() -> Dict[str, str]:
+def _compute_url_segment_to_section() -> dict[str, str]:
     result = {}
 
     for url_segment, section_name, _, __ in DOCUMENTATION_STRUCTURE_LINEAR:

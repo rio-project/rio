@@ -25,7 +25,7 @@ CARD_STYLE_HOVER = CARD_STYLE.replace(
 class SomeData:
     a: int = 1
     b: str = "foo"
-    c: List[int] = dataclasses.field(default_factory=list)
+    c: list[int] = dataclasses.field(default_factory=list)
     foo_bar: bool = False
 
 
@@ -64,7 +64,7 @@ class ExtendoItem(rio.Component):
 
 
 class ExtensibleList(rio.Component):
-    child_names: List[str] = field(
+    child_names: list[str] = field(
         default_factory=lambda: ["Perma 1", "Perma 2"],
     )
 

@@ -5,16 +5,17 @@ import collections
 import inspect
 import json
 import logging
+import pathlib
 import secrets
 import shutil
 import time
 import traceback
 import typing
 import weakref
+from collections.abc import Callable, Coroutine, Iterable, Iterator
 from dataclasses import dataclass
 from datetime import tzinfo
-from pathlib import Path
-from typing import *  # type: ignore
+from typing import Any, Literal, cast, overload
 
 import aiofiles
 import fastapi
@@ -38,7 +39,8 @@ from . import (
     theme,
     user_settings_module,
 )
-from .components import component_base, root_components
+from .components import fundamental_component, root_components
+from .state_properties import StateBinding
 
 __all__ = ["Session"]
 
@@ -50,7 +52,7 @@ T = typing.TypeVar("T")
 class ComponentData:
     build_result: rio.Component
 
-    all_children_in_build_boundary: Set[component_base.Component]
+    all_children_in_build_boundary: set[rio.Component]
 
     # Keep track of how often this component has been built. This is used by
     # components to determine whether they are still part of their parent's current
@@ -72,8 +74,8 @@ async def dummy_receive_message() -> JsonDoc:
 
 def _host_and_get_fill_as_css_variables(
     fill: rio.FillLike,
-    sess: "Session",
-) -> Dict[str, str]:
+    sess: Session,
+) -> dict[str, str]:
     # Convert the fill
     fill = rio.Fill._try_from(fill)
 
@@ -97,7 +99,7 @@ def _host_and_get_fill_as_css_variables(
 class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
-        self._attachments: Dict[type, object] = {}
+        self._attachments: dict[type, object] = {}
 
     def __iter__(self) -> Iterator[object]:
         return iter(self._attachments.values())
@@ -105,7 +107,7 @@ class SessionAttachments:
     def __contains__(self, typ: type) -> bool:
         return typ in self._attachments
 
-    def __getitem__(self, typ: Type[T]) -> T:
+    def __getitem__(self, typ: type[T]) -> T:
         """
         Retrieves an attachment from this session.
 
@@ -200,17 +202,17 @@ class Session(unicall.Unicall):
         self._active_page_url: rio.URL = initial_page_url
 
         # Also the current page url, but as stack of the actual page instances
-        self._active_page_instances: Tuple[rio.Page, ...] = ()
+        self._active_page_instances: tuple[rio.Page, ...] = ()
 
         # Keeps track of running asyncio tasks. This is used to make sure that
         # the tasks are cancelled when the session is closed.
-        self._running_tasks: Set[asyncio.Task[object]] = set()
+        self._running_tasks: set[asyncio.Task[object]] = set()
 
         # Maps all PageViews to the id of the PageView one higher up in the
         # component tree. Root PageViews are mapped to None. This map is kept up
         # to date by PageViews themselves.
         self._page_views: weakref.WeakKeyDictionary[
-            rio.PageView, Optional[int]
+            rio.PageView, int | None
         ] = weakref.WeakKeyDictionary()
 
         # All components / methods which should be called when the session's
@@ -219,7 +221,7 @@ class Session(unicall.Unicall):
         # The methods don't have the component bound yet, so they don't unduly
         # prevent the component from being garbage collected.
         self._page_change_callbacks: weakref.WeakKeyDictionary[
-            rio.Component, Tuple[Callable[[rio.Component], None], ...]
+            rio.Component, tuple[Callable[[rio.Component], None], ...]
         ] = weakref.WeakKeyDictionary()
 
         # All components / methods which should be called when the session's
@@ -231,7 +233,7 @@ class Session(unicall.Unicall):
         # All fonts which have been registered with the session. This maps the
         # name of the font to the font's assets, which ensures that the assets
         # are kept alive until the session is closed.
-        self._registered_font_assets: Dict[str, List[assets.Asset]] = {
+        self._registered_font_assets: dict[str, list[assets.Asset]] = {
             font.ROBOTO.name: [],
             font.ROBOTO_MONO.name: [],
         }
@@ -239,7 +241,7 @@ class Session(unicall.Unicall):
         # These are injected by the app server after the session has already
         # been created
         self._root_component: root_components.HighLevelRootComponent
-        self.external_url: Optional[str]  # None if running in a window
+        self.external_url: str | None  # None if running in a window
         self.timezone: tzinfo
 
         self._decimal_separator: str  # == 1 character
@@ -251,7 +253,7 @@ class Session(unicall.Unicall):
         self.theme: theme.Theme
 
         # The currently connected websocket, if any
-        self._websocket: Optional[fastapi.WebSocket] = None
+        self._websocket: fastapi.WebSocket | None = None
 
         # Event indicating whether there is currently a connected websocket
         self._is_active_event = asyncio.Event()
@@ -261,17 +263,17 @@ class Session(unicall.Unicall):
 
         # Modifying a setting starts this task that waits a little while and
         # then saves the settings
-        self._settings_save_task: Optional[asyncio.Task] = None
+        self._settings_save_task: asyncio.Task | None = None
 
         # If `running_in_window`, this contains all the settings loaded from the
         # json file. We need to keep this around so that we can update the
         # settings that have changed and write everything back to the file.
-        self._settings_json: Dict[str, object] = {}
+        self._settings_json: dict[str, object] = {}
 
         # If `running_in_window`, this is the current content of the settings
         # file. This is used to avoid needlessly re-writing the file if nothing
         # changed.
-        self._settings_json_string: Optional[str] = None
+        self._settings_json_string: str | None = None
 
         # If `running_in_window`, this is the timestamp of when the settings
         # were last saved.
@@ -305,7 +307,7 @@ class Session(unicall.Unicall):
         # HTML components have source code which must be evaluated by the client
         # exactly once. Keep track of which components have already sent their
         # source code.
-        self._initialized_html_components: Set[str] = set(
+        self._initialized_html_components: set[str] = set(
             inspection.get_child_component_containing_attribute_names_for_builtin_components()
         )
 
@@ -371,7 +373,7 @@ class Session(unicall.Unicall):
         return self._active_page_url
 
     @property
-    def active_page_instances(self) -> Tuple[rio.Page, ...]:
+    def active_page_instances(self) -> tuple[rio.Page, ...]:
         """
         Returns the current page as a tuple of `Page` instances.
 
@@ -532,7 +534,7 @@ class Session(unicall.Unicall):
         self,
         coro: Coroutine[Any, None, T],
         *,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> asyncio.Task[T]:
         """
         Creates an `asyncio.Task` that is cancelled when the session is closed.
@@ -556,7 +558,7 @@ class Session(unicall.Unicall):
 
     def navigate_to(
         self,
-        target_url: Union[rio.URL, str],
+        target_url: rio.URL | str,
         *,
         replace: bool = False,
     ) -> None:
@@ -671,7 +673,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         self._dirty_components.add(component)
 
         if not include_children_recursively or not isinstance(
-            component, component_base.FundamentalComponent
+            component, fundamental_component.FundamentalComponent
         ):
             return
 
@@ -683,7 +685,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
     def _refresh_sync(
         self,
-    ) -> Tuple[Set[rio.Component], Set[rio.Component], Set[rio.Component],]:
+    ) -> tuple[set[rio.Component], set[rio.Component], set[rio.Component]]:
         """
         See `refresh` for details on what this function does.
 
@@ -719,7 +721,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                 )
 
             # Fundamental components require no further treatment
-            if isinstance(component, component_base.FundamentalComponent):
+            if isinstance(component, fundamental_component.FundamentalComponent):
                 continue
 
             # Trigger the `on_populate` event, if it hasn't already. Since the
@@ -778,7 +780,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             # - Update the component data with the build output resulting from
             #   the operations above
             else:
-                self._reconcile_tree(component, component_data, build_result)
+                self._reconcile_tree(component_data, build_result)
 
                 # Increment the build generation
                 component_data.build_generation = global_state.build_generation
@@ -809,11 +811,11 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         # Determine which components are alive, to avoid sending references to
         # dead components to the frontend.
-        is_in_component_tree_cache: Dict[rio.Component, bool] = {
+        is_in_component_tree_cache: dict[rio.Component, bool] = {
             self._root_component: True,
         }
 
-        visited_and_live_components: Set[component_base.Component] = {
+        visited_and_live_components: set[rio.Component] = {
             component
             for component in visited_components
             if component._is_in_component_tree(is_in_component_tree_cache)
@@ -824,7 +826,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         for component in visited_and_live_components:
             # Fundamental components aren't tracked, since they are never built
-            if isinstance(component, component_base.FundamentalComponent):
+            if isinstance(component, fundamental_component.FundamentalComponent):
                 continue
 
             all_children_old.update(
@@ -879,7 +881,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                 return
 
             # Serialize all components which have been visited
-            delta_states: Dict[int, JsonDoc] = {
+            delta_states: dict[int, JsonDoc] = {
                 component._id: serialization.serialize_and_host_component(component)
                 for component in visited_components
             }
@@ -921,12 +923,12 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     )
 
     async def _update_component_states(
-        self, visited_components: Set[rio.Component], delta_states: Dict[int, JsonDoc]
+        self, visited_components: set[rio.Component], delta_states: dict[int, JsonDoc]
     ) -> None:
         # Initialize all new FundamentalComponents
         for component in visited_components:
             if (
-                not isinstance(component, component_base.FundamentalComponent)
+                not isinstance(component, fundamental_component.FundamentalComponent)
                 or component._unique_id in self._initialized_html_components
             ):
                 continue
@@ -943,7 +945,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             root_build = self._weak_component_data_by_component[self._root_component]
             fundamental_root_component = root_build.build_result
             assert isinstance(
-                fundamental_root_component, component_base.FundamentalComponent
+                fundamental_root_component, fundamental_component.FundamentalComponent
             ), fundamental_root_component
             root_component_id = fundamental_root_component._id
         else:
@@ -957,7 +959,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
-            visited_components: Set[component_base.Component] = set()
+            visited_components: set[rio.Component] = set()
             delta_states = {}
 
             for component in self._root_component._iter_component_tree():
@@ -970,7 +972,6 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
     def _reconcile_tree(
         self,
-        builder: rio.Component,
         old_build_data: ComponentData,
         new_build: rio.Component,
     ) -> None:
@@ -985,7 +986,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         # components are being reconciled.
         #
         # -> Collect them into a set first.
-        reconciled_components_new_to_old: Dict[rio.Component, rio.Component] = {
+        reconciled_components_new_to_old: dict[rio.Component, rio.Component] = {
             new_component: old_component
             for old_component, new_component in matched_pairs
         }
@@ -1028,7 +1029,9 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     except KeyError:
                         # Make sure that any components which are now in the tree
                         # have their builder properly set.
-                        if isinstance(parent, component_base.FundamentalComponent):
+                        if isinstance(
+                            parent, fundamental_component.FundamentalComponent
+                        ):
                             attr_value._weak_builder_ = parent._weak_builder_
                             attr_value._build_generation_ = parent._build_generation_
                     else:
@@ -1038,7 +1041,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
                 # List / Collection
                 elif isinstance(attr_value, list):
-                    attr_value = cast(List[object], attr_value)
+                    attr_value = cast(list[object], attr_value)
 
                     for ii, item in enumerate(attr_value):
                         if isinstance(item, rio.Component):
@@ -1048,7 +1051,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                                 # Make sure that any components which are now in
                                 # the tree have their builder properly set.
                                 if isinstance(
-                                    parent, component_base.FundamentalComponent
+                                    parent, fundamental_component.FundamentalComponent
                                 ):
                                     item._weak_builder_ = parent._weak_builder_
                                     item._build_generation_ = parent._build_generation_
@@ -1063,7 +1066,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         self,
         old_component: rio.Component,
         new_component: rio.Component,
-        reconciled_components_new_to_old: Dict[rio.Component, rio.Component],
+        reconciled_components_new_to_old: dict[rio.Component, rio.Component],
     ) -> None:
         """
         Given two components of the same type, reconcile them. Specifically:
@@ -1091,7 +1094,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             return
 
         # Determine which properties will be taken from the new component
-        overridden_values: Dict[str, object] = {}
+        overridden_values: dict[str, object] = {}
         old_component_dict = vars(old_component)
         new_component_dict = vars(new_component)
 
@@ -1103,8 +1106,8 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             # Take care to keep state bindings up to date
             old_value = old_component_dict[prop_name]
             new_value = new_component_dict[prop_name]
-            old_is_binding = isinstance(old_value, component_base.StateBinding)
-            new_is_binding = isinstance(new_value, component_base.StateBinding)
+            old_is_binding = isinstance(old_value, StateBinding)
+            new_is_binding = isinstance(new_value, StateBinding)
 
             # If the old value was a binding, and the new one isn't, split the
             # tree of bindings. All children are now roots.
@@ -1154,8 +1157,8 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                 if not isinstance(old, list):
                     return False
 
-                old = cast(List[object], old)
-                new = cast(List[object], new)
+                old = cast(list[object], old)
+                new = cast(list[object], new)
 
                 if len(old) != len(new):
                     return False
@@ -1199,7 +1202,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         self,
         old_build: rio.Component,
         new_build: rio.Component,
-    ) -> Iterable[Tuple[rio.Component, rio.Component]]:
+    ) -> Iterable[tuple[rio.Component, rio.Component]]:
         """
         Given two component trees, find pairs of components which can be
         reconciled, i.e. which represent the "same" component. When exactly
@@ -1211,15 +1214,15 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         in the old tree.
         """
 
-        old_components_by_key: Dict[str, rio.Component] = {}
-        new_components_by_key: Dict[str, rio.Component] = {}
+        old_components_by_key: dict[str, rio.Component] = {}
+        new_components_by_key: dict[str, rio.Component] = {}
 
-        matches_by_topology: List[Tuple[rio.Component, rio.Component]] = []
+        matches_by_topology: list[tuple[rio.Component, rio.Component]] = []
 
         # First scan all components for topological matches, and also keep track
         # of each component by its key
         def register_component_by_key(
-            components_by_key: Dict[str, rio.Component],
+            components_by_key: dict[str, rio.Component],
             component: rio.Component,
         ) -> None:
             if component.key is None:
@@ -1239,7 +1242,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             components_by_key[component.key] = component
 
         def key_scan(
-            components_by_key: Dict[str, rio.Component],
+            components_by_key: dict[str, rio.Component],
             component: rio.Component,
             include_self: bool = True,
         ) -> None:
@@ -1255,12 +1258,12 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             old_component: rio.Component,
             new_component: rio.Component,
         ) -> None:
-            def _extract_components(attr: object) -> List[rio.Component]:
+            def _extract_components(attr: object) -> list[rio.Component]:
                 if isinstance(attr, rio.Component):
                     return [attr]
 
                 if isinstance(attr, list):
-                    attr = cast(List[object], attr)
+                    attr = cast(list[object], attr)
 
                     return [item for item in attr if isinstance(item, rio.Component)]
 
@@ -1354,8 +1357,8 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             return
 
         # It's a new font, register it
-        font_assets: List[assets.Asset] = []
-        urls: List[Optional[str]] = [None] * 4
+        font_assets: list[assets.Asset] = []
+        urls: list[str | None] = [None] * 4
 
         for i, location in enumerate(
             (font.regular, font.bold, font.italic, font.bold_italic)
@@ -1373,14 +1376,14 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         self._registered_font_assets[font.name] = font_assets
 
-    def _get_settings_file_path(self) -> Path:
+    def _get_settings_file_path(self) -> pathlib.Path:
         """
         The path to the settings file. Only used if `running_in_window`.
         """
         import platformdirs
 
         return (
-            Path(
+            pathlib.Path(
                 platformdirs.user_data_dir(
                     appname=self._app_server.app.name,
                     roaming=True,
@@ -1391,7 +1394,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         )
 
     async def _load_user_settings(
-        self, settings_sent_by_client: Dict[str, object]
+        self, settings_sent_by_client: dict[str, object]
     ) -> None:
         # If `running_in_window`, load the settings from the config file.
         # Otherwise, parse the settings sent by the browser.
@@ -1399,7 +1402,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         # Keys in this dict can be attributes of the "root" section or names of
         # sections. To prevent name clashes, section names are prefixed with
         # "section:".
-        settings_json: Dict[str, object]
+        settings_json: dict[str, object]
 
         if self.running_in_window:
             try:
@@ -1444,8 +1447,8 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
     async def _save_settings_now(self) -> None:
         async with self._settings_sync_lock:
             # Find the unsaved settings attachments
-            unsaved_settings: List[
-                Tuple[user_settings_module.UserSettings, Set[str]]
+            unsaved_settings: list[
+                tuple[user_settings_module.UserSettings, set[str]]
             ] = []
 
             for settings in self.attachments:
@@ -1473,13 +1476,13 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
     async def _save_settings_now_in_window(
         self,
         settings_to_save: Iterable[
-            Tuple[user_settings_module.UserSettings, Iterable[str]]
+            tuple[user_settings_module.UserSettings, Iterable[str]]
         ],
     ) -> None:
         for settings, dirty_attributes in settings_to_save:
             if settings.section_name:
                 section = cast(
-                    Dict[str, object],
+                    dict[str, object],
                     self._settings_json.setdefault(
                         "section:" + settings.section_name, {}
                     ),
@@ -1487,10 +1490,12 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             else:
                 section = self._settings_json
 
+            annotations = inspection.get_resolved_type_annotations(type(settings))
+
             for attr_name in dirty_attributes:
                 section[attr_name] = uniserde.as_json(
                     getattr(settings, attr_name),
-                    as_type=settings._rio_type_hints_cache_[attr_name],
+                    as_type=annotations[attr_name],
                 )
 
         json_data = json.dumps(self._settings_json, indent="\t")
@@ -1508,19 +1513,21 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
     async def _save_settings_now_in_browser(
         self,
         settings_to_save: Iterable[
-            Tuple[user_settings_module.UserSettings, Iterable[str]]
+            tuple[user_settings_module.UserSettings, Iterable[str]]
         ],
     ) -> None:
-        delta_settings: Dict[str, Any] = {}
+        delta_settings: dict[str, Any] = {}
 
         for settings, dirty_attributes in settings_to_save:
             prefix = f"{settings.section_name}:" if settings.section_name else ""
+
+            annotations = inspection.get_resolved_type_annotations(type(settings))
 
             # Get the dirty attributes
             for attr_name in dirty_attributes:
                 delta_settings[f"{prefix}{attr_name}"] = uniserde.as_json(
                     getattr(settings, attr_name),
-                    as_type=settings._rio_type_hints_cache_[attr_name],
+                    as_type=annotations[attr_name],
                 )
 
         # Sync them with the client
@@ -1560,7 +1567,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
     async def file_chooser(
         self,
         *,
-        file_extensions: Optional[Iterable[str]] = None,
+        file_extensions: Iterable[str] | None = None,
         multiple: Literal[False] = False,
     ) -> common.FileInfo:
         ...
@@ -1569,17 +1576,17 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
     async def file_chooser(
         self,
         *,
-        file_extensions: Optional[Iterable[str]] = None,
+        file_extensions: Iterable[str] | None = None,
         multiple: Literal[True],
-    ) -> Tuple[common.FileInfo]:
+    ) -> tuple[common.FileInfo, ...]:
         ...
 
     async def file_chooser(
         self,
         *,
-        file_extensions: Optional[Iterable[str]] = None,
+        file_extensions: Iterable[str] | None = None,
         multiple: bool = False,
-    ) -> Union[common.FileInfo, Tuple[common.FileInfo]]:
+    ) -> common.FileInfo | tuple[common.FileInfo, ...]:
         """
         Open a file chooser dialog.
 
@@ -1601,7 +1608,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         """
         # Create a secret id and register the file upload with the app server
         upload_id = secrets.token_urlsafe()
-        future = asyncio.Future[List[common.FileInfo]]()
+        future = asyncio.Future[list[common.FileInfo]]()
 
         self._app_server._pending_file_uploads[upload_id] = future
 
@@ -1640,11 +1647,11 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
     async def save_file(
         self,
-        file_contents: Union[Path, str, bytes],
+        file_contents: pathlib.Path | str | bytes,
         file_name: str = "Unnamed File",
         *,
-        media_type: Optional[str] = None,
-        directory: Optional[Path] = None,
+        media_type: str | None = None,
+        directory: pathlib.Path | None = None,
     ) -> None:
         """
         Save a file to the user's device.
@@ -1684,7 +1691,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
             destination = destinations[0]
 
-            if isinstance(file_contents, Path):
+            if isinstance(file_contents, pathlib.Path):
                 await asyncio.to_thread(shutil.copy, file_contents, destination)
 
             elif isinstance(file_contents, str):
@@ -1703,7 +1710,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             return
 
         # Create an asset for the file
-        if isinstance(file_contents, Path):
+        if isinstance(file_contents, pathlib.Path):
             as_asset = assets.PathAsset(file_contents, media_type)
 
         elif isinstance(file_contents, str):
@@ -1750,7 +1757,7 @@ document.body.removeChild(a)
         # Build the set of all CSS variables that must be set
 
         # Miscellaneous
-        variables: Dict[str, str] = {
+        variables: dict[str, str] = {
             "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
             "--rio-global-corner-radius-medium": f"{thm.corner_radius_medium}rem",
             "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",
@@ -1828,7 +1835,7 @@ document.body.removeChild(a)
     )
     async def _remote_apply_theme(
         self,
-        css_variables: Dict[str, str],
+        css_variables: dict[str, str],
         theme_variant: Literal["light", "dark"],
     ) -> None:
         raise NotImplementedError
@@ -1858,9 +1865,9 @@ document.body.removeChild(a)
         self,
         # Maps component ids to serialized components. The components may be partial,
         # i.e. any property may be missing.
-        delta_states: Dict[int, Any],
+        delta_states: dict[int, Any],
         # Tells the client to make the given component the new root component.
-        root_component_id: Optional[int],
+        root_component_id: int | None,
     ) -> None:
         """
         Replace all components in the UI with the given one.
@@ -1886,7 +1893,7 @@ document.body.removeChild(a)
     async def _request_file_upload(
         self,
         upload_url: str,
-        file_extensions: Optional[List[str]],
+        file_extensions: list[str] | None,
         multiple: bool,
     ) -> None:
         """
@@ -1895,7 +1902,7 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(name="setUserSettings", await_response=False)
-    async def _set_user_settings(self, delta_settings: Dict[str, Any]) -> None:
+    async def _set_user_settings(self, delta_settings: dict[str, Any]) -> None:
         """
         Persistently store the given key-value pairs at the user. The values
         have to be jsonable.
@@ -1906,7 +1913,7 @@ document.body.removeChild(a)
         raise NotImplementedError
 
     @unicall.remote(name="registerFont", await_response=False)
-    async def _remote_register_font(self, name: str, urls: List[Optional[str]]) -> None:
+    async def _remote_register_font(self, name: str, urls: list[str | None]) -> None:
         raise NotImplementedError
 
     @unicall.remote(
@@ -1916,9 +1923,7 @@ document.body.removeChild(a)
     async def _remote_close_session(self) -> None:
         raise NotImplementedError
 
-    def _try_get_component_for_message(
-        self, component_id: int
-    ) -> Optional[rio.Component]:
+    def _try_get_component_for_message(self, component_id: int) -> rio.Component | None:
         """
         Attempts to get the component referenced by `component_id`. Returns `None` if
         there is no such component. This can happen during normal opration, e.g.
@@ -1945,7 +1950,9 @@ document.body.removeChild(a)
         if component is None:
             return
 
-        assert isinstance(component, component_base.FundamentalComponent), component
+        assert isinstance(
+            component, fundamental_component.FundamentalComponent
+        ), component
 
         # Update the component's state
         component._validate_delta_state_from_frontend(delta_state)

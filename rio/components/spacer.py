@@ -27,7 +27,7 @@ class Spacer(class_container.ClassContainer):
         *,
         width: Union[Literal["grow"], float] = "grow",
         height: Union[Literal["grow"], float] = "grow",
-        key: Optional[str] = None,
+        key: str | None = None,
     ):
         """
         Args:

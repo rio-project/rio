@@ -3,43 +3,44 @@ from __future__ import annotations
 import concurrent.futures
 import subprocess
 import tempfile
+from collections.abc import Iterable
 from dataclasses import field
 from pathlib import Path
-from typing import *  # type: ignore
+from typing import Literal
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "DevelComponent",
 ]
 
-_SOURCE_DIRECTORY: Optional[Path] = None
+_SOURCE_DIRECTORY: Path | None = None
 
 _CSS_SOURCE: str = ""
 _JS_SOURCE: str = ""
 
 
-class DevelComponent(component_base.FundamentalComponent):
-    children: List[rio.Component] = field(default_factory=list)
+class DevelComponent(FundamentalComponent):
+    children: list[rio.Component] = field(default_factory=list)
 
     def __init__(
         self,
         *,
         children: Iterable[rio.Component],
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,

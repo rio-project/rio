@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Popup",
@@ -20,7 +20,7 @@ class PopupOpenOrCloseEvent:
     is_open: bool
 
 
-class Popup(component_base.FundamentalComponent):
+class Popup(FundamentalComponent):
     """
     A container which floats above other components.
 

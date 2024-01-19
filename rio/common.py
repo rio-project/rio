@@ -161,7 +161,7 @@ class FileInfo:
 T = TypeVar("T")
 P = ParamSpec("P")
 
-EventHandler = Optional[Callable[P, Union[Any, Awaitable[Any]]]]
+EventHandler = Callable[P, Union[Any, Awaitable[Any]]] | None
 
 
 def make_url_relative(base: URL, other: URL) -> URL:
@@ -242,17 +242,8 @@ def port_is_free(host: str, port: int) -> bool:
             return False
 
 
-def ensure_valid_port(host: str, port: Optional[int]) -> int:
+def ensure_valid_port(host: str, port: int | None) -> int:
     if port is None:
         return choose_free_port(host)
 
     return port
-
-
-@dataclass
-class ForwardReference:
-    code: str
-    scope: dict[str, object]
-
-    def evaluate(self) -> type:
-        return eval(self.code, self.scope)
