@@ -47,6 +47,9 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
+        if (this.state.sticky_bottom)
+            console.debug('scrollTop NW (px):', this.element.scrollTop);
+
         if (this.state.scroll_x === 'never') {
             let child = componentsById[this.state.child]!;
             this.naturalWidth = child.requestedWidth;
@@ -62,6 +65,8 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
+        if (this.state.sticky_bottom)
+            console.debug('scrollTop AW (px):', this.element.scrollTop);
         let child = componentsById[this.state.child]!;
 
         let availableWidth = this.allocatedWidth;
@@ -84,6 +89,8 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
+        if (this.state.sticky_bottom)
+            console.debug('scrollTop NH (px):', this.element.scrollTop);
         if (this.state.scroll_y === 'never') {
             let child = componentsById[this.state.child]!;
             this.naturalHeight = child.requestedHeight;
@@ -99,6 +106,8 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
+        if (this.state.sticky_bottom)
+            console.debug('scrollTop AH (px):', this.element.scrollTop);
         let child = componentsById[this.state.child]!;
 
         let heightBefore = child.allocatedHeight;
@@ -110,12 +119,13 @@ export class ScrollContainerComponent extends ComponentBase {
 
         // If the child needs more space than we have, we'll need to display a
         // scroll bar. So just give the child the height it wants.
+        let newAllocatedHeight: number;
         if (child.requestedHeight > availableHeight) {
-            child.allocatedHeight = child.requestedHeight;
+            newAllocatedHeight = child.requestedHeight;
             this.element.style.overflowY = 'scroll';
         } else {
             // Otherwise, stretch the child to use up all the available height
-            child.allocatedHeight = availableHeight;
+            newAllocatedHeight = availableHeight;
 
             if (this.state.scroll_y === 'always') {
                 this.element.style.overflowY = 'scroll';
@@ -155,6 +165,10 @@ export class ScrollContainerComponent extends ComponentBase {
 
         this.numSequentialIncorrectAssumptions = 0;
 
+        // Only change the allocatedHeight once we're sure that we won't be
+        // re-layouting again
+        child.allocatedHeight = newAllocatedHeight;
+
         // If `sticky_bottom` is enabled, check if we have to scroll down
         console.debug('Child allocated height before:', heightBefore);
         console.debug('Child allocated height after:', child.allocatedHeight);
@@ -169,6 +183,10 @@ export class ScrollContainerComponent extends ComponentBase {
             console.debug(
                 'bounding height (px):',
                 child.element.getBoundingClientRect().height
+            );
+            console.debug(
+                'child.element.style.height:',
+                child.element.style.height
             );
 
             // Check if the scrollbar is all the way at the bottom

@@ -22,7 +22,7 @@ class ClientSideDebugger(rio.Component):
         "deploy",
     ] | None = None
 
-    def get_selected_page(self) -> Optional[rio.Component]:
+    def get_selected_page(self) -> rio.Component | None:
         PAGE_WIDTH = 22
 
         # Nothing selected

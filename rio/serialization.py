@@ -4,15 +4,18 @@ import enum
 import functools
 import inspect
 import json
+import types
 from typing import *  # type: ignore
 
+import introspection.types
 import uniserde
 from uniserde import Jsonable, JsonDoc
 
 import rio
 
 from . import color, inspection, maybes, session
-from .components import component_base
+from .components.fundamental_component import FundamentalComponent
+from .dataclass import class_local_fields
 from .self_serializing import SelfSerializing
 
 __all__ = ["serialize_json", "serialize_and_host_component"]
@@ -38,6 +41,14 @@ def _serialize_special_types(obj: object) -> Jsonable:
         ) from None
 
     return func(obj)  # type: ignore
+
+
+def _get_margin(*margins: float | None) -> float:
+    for margin in margins:
+        if margin is not None:
+            return margin
+
+    return 0
 
 
 def serialize_json(data: Jsonable) -> str:
@@ -72,13 +83,16 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
     width = component.width
     height = component.height
 
-    # Add layout properties, in a more succinct way than sending them
-    # separately
+    margin_x = component.margin_x
+    margin_y = component.margin_y
+    margin = component.margin
+
+    # Add layout properties, in a more succinct way than sending them separately
     result["_margin_"] = (
-        component.margin_left,
-        component.margin_top,
-        component.margin_right,
-        component.margin_bottom,
+        _get_margin(component.margin_left, margin_x, margin),
+        _get_margin(component.margin_top, margin_y, margin),
+        _get_margin(component.margin_right, margin_x, margin),
+        _get_margin(component.margin_bottom, margin_y, margin),
     )
     # The width/height can be floats or strings, but they could also be numpy
     # floats or numpy strings. We could check `isinstance(width,
@@ -100,7 +114,7 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
     # If it's a fundamental component, serialize its state because JS needs it.
     # For non-fundamental components, there's no reason to send the state to
     # the frontend.
-    if isinstance(component, component_base.FundamentalComponent):
+    if isinstance(component, FundamentalComponent):
         sess = component.session
 
         for name, serializer in get_attribute_serializers(type(component)).items():
@@ -124,49 +138,28 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
 
 @functools.lru_cache(maxsize=None)
 def get_attribute_serializers(
-    cls: Type[component_base.Component],
+    cls: Type[rio.Component],
 ) -> Mapping[str, Serializer]:
     """
     Returns a dictionary of attribute names to their types that should be
     serialized for the given component class.
     """
-    serializers: Dict[str, Serializer] = {}
+    serializers: dict[str, Serializer] = {}
 
-    for attr_name, annotation in inspection.get_type_annotations_raw(cls).items():
-        if attr_name in {
-            "_",
-            "_build_generation_",
-            "_creator_stackframe_",
-            "_explicitly_set_properties_",
-            "_id",
-            "_init_signature_",
-            "_on_populate_triggered_",
-            "_rio_builtin_",
-            "_session_",
-            "_state_bindings_initialized_",
-            "_state_properties_",
-            "_weak_builder_",
-            "align_x",
-            "align_y",
-            "grow_x",
-            "grow_y",
-            "height",
-            "margin_bottom",
-            "margin_left",
-            "margin_right",
-            "margin_top",
-            "margin_x",
-            "margin_y",
-            "margin",
-            "width",
-        }:
+    for base_cls in reversed(cls.__bases__):
+        if issubclass(base_cls, rio.Component):
+            serializers.update(get_attribute_serializers(base_cls))
+
+    annotations = inspection.get_local_annotations(cls)
+
+    for attr_name, field in class_local_fields(cls).items():
+        if not field.serialize:
+            assert (
+                attr_name not in serializers
+            ), f"A base class wants to serialize {attr_name}, but {cls} doesn't"
             continue
 
-        # Annotation couldn't be eval'd? Then we can't serialize it.
-        if isinstance(annotation, inspection.UnevaluatedAnnotation):
-            continue
-
-        serializer = _get_serializer_for_annotation(annotation)
+        serializer = _get_serializer_for_annotation(annotations[attr_name])
         if serializer is None:
             continue
 
@@ -186,7 +179,7 @@ def _serialize_self_serializing(
 
 
 def _serialize_child_component(
-    sess: session.Session, component: component_base.Component
+    sess: session.Session, component: rio.Component
 ) -> Jsonable:
     return component._id
 
@@ -208,7 +201,7 @@ def _serialize_colorset(sess: session.Session, colorset: color.ColorSet) -> Json
 
 
 def _serialize_optional(
-    sess: session.Session, value: Optional[T], serializer: Serializer[T]
+    sess: session.Session, value: T | None, serializer: Serializer[T]
 ) -> Jsonable:
     if value is None:
         return None
@@ -216,7 +209,9 @@ def _serialize_optional(
     return serializer(sess, value)
 
 
-def _get_serializer_for_annotation(annotation: type) -> Serializer | None:
+def _get_serializer_for_annotation(
+    annotation: introspection.types.TypeAnnotation,
+) -> Serializer | None:
     """
     Which values are serialized for state depends on the annotated
     datatypes. There is no point in sending fancy values over to the client
@@ -256,16 +251,17 @@ def _get_serializer_for_annotation(annotation: type) -> Serializer | None:
     if origin is Literal:
         return _serialize_basic_json_value
 
-    # ColorSet
-    if origin is Union and set(args) == color._color_set_args:
-        return _serialize_colorset
+    if origin in (Union, types.UnionType):
+        # ColorSet
+        if set(args) == color._color_set_args:
+            return _serialize_colorset
 
-    # Optional
-    if origin is Union and len(args) == 2 and type(None) in args:
-        type_ = next(type_ for type_ in args if type_ is not type(None))
-        serializer = _get_serializer_for_annotation(type_)
-        if serializer is None:
-            return None
-        return functools.partial(_serialize_optional, serializer=serializer)
+        # Optional
+        if len(args) == 2 and type(None) in args:
+            type_ = next(type_ for type_ in args if type_ is not type(None))
+            serializer = _get_serializer_for_annotation(type_)
+            if serializer is None:
+                return None
+            return functools.partial(_serialize_optional, serializer=serializer)
 
     return None

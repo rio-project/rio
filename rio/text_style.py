@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import pathlib
 from dataclasses import KW_ONLY, dataclass
-from pathlib import Path
-from typing import *  # type: ignore
+from typing import Literal, Self
 
-from typing_extensions import Self
 from uniserde import JsonDoc
 
 from . import common, session
@@ -21,10 +20,10 @@ __all__ = [
 @dataclass(frozen=True)
 class Font(SelfSerializing):
     name: str
-    regular: Union[Path, bytes]
-    bold: Union[Path, bytes, None] = None
-    italic: Union[Path, bytes, None] = None
-    bold_italic: Union[Path, bytes, None] = None
+    regular: pathlib.Path | bytes
+    bold: pathlib.Path | bytes | None = None
+    italic: pathlib.Path | bytes | None = None
+    bold_italic: pathlib.Path | bytes | None = None
 
     def _serialize(self, sess: session.Session) -> str:
         sess._register_font(self)
@@ -63,13 +62,13 @@ class TextStyle(SelfSerializing):
     def replace(
         self,
         *,
-        font: Optional[Font] = None,
-        fill: Optional[FillLike] = None,
-        font_size: Optional[float] = None,
-        italic: Optional[bool] = None,
-        font_weight: Optional[Literal["normal", "bold"]] = None,
-        underlined: Optional[bool] = None,
-        all_caps: Optional[bool] = None,
+        font: Font | None = None,
+        fill: FillLike | None = None,
+        font_size: float | None = None,
+        italic: bool | None = None,
+        font_weight: Literal["normal", "bold"] | None = None,
+        underlined: bool | None = None,
+        all_caps: bool | None = None,
     ) -> Self:
         return type(self)(
             font=self.font if font is None else font,

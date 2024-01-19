@@ -21,7 +21,7 @@ class InteractiveExample(rio.Component, ABC):
         ...
 
     @abstractmethod
-    def build_controls(self) -> Dict[str, rio.Component]:
+    def build_controls(self) -> dict[str, rio.Component]:
         ...
 
     def build(self) -> rio.Component:
@@ -81,7 +81,7 @@ class ColumnExample(InteractiveExample):
             align_x=0.5,
         )
 
-    def build_controls(self) -> Dict[str, rio.Component]:
+    def build_controls(self) -> dict[str, rio.Component]:
         return {
             "Spacing": rio.Slider(
                 minimum=0,
@@ -103,7 +103,7 @@ class RowExample(InteractiveExample):
             align_y=0.5,
         )
 
-    def build_controls(self) -> Dict[str, rio.Component]:
+    def build_controls(self) -> dict[str, rio.Component]:
         return {
             "Spacing": rio.Slider(
                 minimum=0,
@@ -132,7 +132,7 @@ class StackExample(InteractiveExample):
             align_y=0.5,
         )
 
-    def build_controls(self) -> Dict[str, rio.Component]:
+    def build_controls(self) -> dict[str, rio.Component]:
         return {}
 
 
@@ -243,7 +243,7 @@ class ButtonExample(InteractiveExample):
 
         return grid
 
-    def build_controls(self) -> Dict[str, rio.Component]:
+    def build_controls(self) -> dict[str, rio.Component]:
         return {
             "Show Icon": rio.Switch(is_on=ButtonExample.show_icon),
             "Colorset": rio.Dropdown(

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Literal, TypeVar
 
 from uniserde import JsonDoc
 
 import rio
 
-from .. import text_style
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Revealer",
@@ -23,14 +22,13 @@ class RevealerChangeEvent:
     is_open: bool
 
 
-class Revealer(component_base.FundamentalComponent):
-    header: Optional[str]
-    content: component_base.Component
+class Revealer(FundamentalComponent):
+    header: str | None
+    content: rio.Component
     _: KW_ONLY
-    header_style: Union[
-        Literal["heading1", "heading2", "heading3", "text"],
-        text_style.TextStyle,
-    ] = "text"
+    header_style: Literal[
+        "heading1", "heading2", "heading3", "text"
+    ] | rio.TextStyle = "text"
     is_open: bool = False
     on_change: rio.EventHandler[RevealerChangeEvent] = None
 

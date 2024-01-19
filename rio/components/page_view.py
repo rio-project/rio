@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import KW_ONLY, field
-from typing import *  # type: ignore
 
 import rio
 
-from . import component_base
+from .component import Component
 
 __all__ = [
     "PageView",
@@ -48,7 +48,7 @@ def default_fallback_build(sess: rio.Session) -> rio.Component:
     )
 
 
-class PageView(component_base.Component):
+class PageView(Component):
     """
     Placeholders for pages.
 
@@ -95,7 +95,7 @@ class PageView(component_base.Component):
 
     _: KW_ONLY
 
-    fallback_build: Optional[Callable[[], rio.Component]] = None
+    fallback_build: Callable[[], rio.Component] | None = None
 
     # PageViews must not be reconciled completely, because doing so would prevent
     # a rebuild. Rebuilds are necessary so PageViews can update their location in
@@ -112,7 +112,7 @@ class PageView(component_base.Component):
     # top-level PageViews, 1 for the next level, and so on.
     #
     # This is stored in a list so that modifications don't trigger a rebuild.
-    _level: List[int] = field(
+    _level: list[int] = field(
         init=False,
         default_factory=lambda: [-1],
     )
@@ -134,7 +134,7 @@ class PageView(component_base.Component):
         # with this approach is, that this PageView may be rebuilt before its
         # parent.
         level = 0
-        parent: Optional[PageView] = None
+        parent: PageView | None = None
         cur_weak = self._weak_builder_
 
         while cur_weak is not None:

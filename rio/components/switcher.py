@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
-
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Switcher",
 ]
 
 
-class Switcher(component_base.FundamentalComponent):
-    child: Optional[rio.Component]
+class Switcher(FundamentalComponent):
+    child: rio.Component | None
 
 
 Switcher._unique_id = "Switcher-builtin"

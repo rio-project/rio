@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import copy
 from dataclasses import dataclass, field
 from typing import *  # type: ignore
@@ -53,18 +52,13 @@ class UserSettings:
     # set outside of any sections.
     section_name: ClassVar[str] = ""
 
-    _rio_type_hints_cache_: ClassVar[Mapping[str, Any]]
-
-    _rio_session_: Optional[session.Session] = field(
-        default=None, init=False, repr=False
-    )
-    _rio_dirty_attribute_names_: Set[str] = field(
+    _rio_session_: session.Session | None = field(default=None, init=False, repr=False)
+    _rio_dirty_attribute_names_: set[str] = field(
         default_factory=set, init=False, repr=False
     )
 
     def __init_subclass__(cls) -> None:
         dataclass(cls)
-        cls._rio_type_hints_cache_ = inspection.get_type_annotations(cls)
 
         if cls.section_name.startswith("section:"):
             raise ValueError(f"Section names may not start with 'section:'")
@@ -72,7 +66,7 @@ class UserSettings:
     @classmethod
     def _from_json(
         cls,
-        settings_json: Dict[str, object],
+        settings_json: dict[str, object],
         defaults: Self,
     ) -> Self:
         # Create the instance for this attachment. Bypass the constructor so
@@ -83,13 +77,15 @@ class UserSettings:
 
         if cls.section_name:
             section = cast(
-                Dict[str, object],
+                dict[str, object],
                 settings_json.get("section:" + cls.section_name, {}),
             )
         else:
             section = settings_json
 
-        for field_name, field_type in inspection.get_type_annotations(cls).items():
+        annotations = inspection.get_resolved_type_annotations(cls)
+
+        for field_name, field_type in annotations.items():
             # Skip internal fields
             if field_name in UserSettings.__annotations__:
                 continue

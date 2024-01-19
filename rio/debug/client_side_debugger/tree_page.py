@@ -6,7 +6,7 @@ from . import component_details
 
 
 class TreePage(rio.Component):
-    _selected_component_id: Optional[int] = None
+    _selected_component_id: int | None = None
 
     def _on_select_component(self, component_id: int) -> None:
         self._selected_component_id = component_id

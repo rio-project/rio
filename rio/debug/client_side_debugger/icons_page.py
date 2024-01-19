@@ -22,7 +22,7 @@ NORMALIZATION_PATTERN = re.compile(r"[^a-zA-Z0-9]+")
 #
 # The entires are (icon_set, icon_name, {variant_name}) tuples. The variant name
 # is a set of all variants that exist for this icon.
-ALL_AVAILABLE_ICONS: Optional[List[Tuple[str, str, Tuple[Optional[str], ...]]]] = None
+ALL_AVAILABLE_ICONS: list[tuple[str, str, tuple[str | None, ...]]] | None = None
 
 
 def normalize_for_search(text: str) -> str:
@@ -37,12 +37,12 @@ def normalize_for_search(text: str) -> str:
 
 def search(
     needle: str,
-    haystack: List[T],
+    haystack: list[T],
     *,
     min_results: int = 5,
     threshold: float = 0.85,
     key: Callable[[T], str] = lambda x: x,  # type: ignore
-) -> List[Tuple[T, float]]:
+) -> list[tuple[T, float]]:
     """
     Given a set of candidate strings, return the best matches for the provided
     search string. The result is a list of (string, score) tuples, sorted by
@@ -77,7 +77,7 @@ def search(
     return result
 
 
-def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
+def get_available_icons() -> list[tuple[str, str, tuple[str | None, ...]]]:
     """
     Return a list of all available icons. The result is caches, so subsequent
     calls are fast.
@@ -90,7 +90,7 @@ def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
 
     # Nope, get to work. Iterate over all icons and variants and group them.
     registry = rio.icon_registry.IconRegistry.get_singleton()
-    result_dict: Dict[str, Tuple[str, str, Set[Optional[str]]]] = {}
+    result_dict: dict[str, tuple[str, str, set[str | None]]] = {}
 
     for icon_set in registry.all_icon_sets():
         for icon_name, variant_name in registry.all_icons_in_set(icon_set):
@@ -105,7 +105,7 @@ def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
                 variants.add(variant_name)
 
     # Drop the dict
-    as_list: List[Any] = list(result_dict.values())
+    as_list: list[Any] = list(result_dict.values())
 
     # Sort the result
     as_list.sort(key=lambda x: x[1])
@@ -122,15 +122,15 @@ def get_available_icons() -> List[Tuple[str, str, Tuple[Optional[str], ...]]]:
 class IconsPage(rio.Component):
     _: KW_ONLY
     search_text: str = ""
-    matches: List[Tuple[str, str, Tuple[Optional[str], ...]]] = dataclasses.field(
+    matches: list[tuple[str, str, tuple[str | None, ...]]] = dataclasses.field(
         default_factory=list
     )
 
-    selected_icon: Optional[str] = None
-    selected_icon_available_variants: Tuple[Optional[str], ...] = dataclasses.field(
+    selected_icon: str | None = None
+    selected_icon_available_variants: tuple[str | None, ...] = dataclasses.field(
         default_factory=tuple
     )
-    selected_variant: Optional[str] = None
+    selected_variant: str | None = None
     selected_fill: Literal[
         "primary",
         "secondary",
@@ -162,13 +162,13 @@ class IconsPage(rio.Component):
         self,
         icon_set: str,
         icon_name: str,
-        available_variants: Tuple[Optional[str], ...],
+        available_variants: tuple[str | None, ...],
     ) -> None:
         self.selected_icon = icon_set + "/" + icon_name
         self.selected_variant = available_variants[0]
         self.selected_icon_available_variants = available_variants
 
-    def _on_select_variant(self, variant: Optional[str]) -> None:
+    def _on_select_variant(self, variant: str | None) -> None:
         self.selected_variant = variant
 
     def build_details(self) -> rio.Component:
@@ -271,7 +271,7 @@ Use the `rio.Icon` component like this:
 
     def build(self) -> rio.Component:
         # Search field
-        children: List[rio.Component] = [
+        children: list[rio.Component] = [
             rio.TextInput(
                 label="Search for an icon",
                 text=IconsPage.search_text,

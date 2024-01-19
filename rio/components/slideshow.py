@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from datetime import timedelta
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Slideshow",
 ]
 
 
-class Slideshow(component_base.FundamentalComponent):
+class Slideshow(FundamentalComponent):
     """
     Prominently switch between multiple components based on a timer.
 
@@ -35,33 +35,29 @@ class Slideshow(component_base.FundamentalComponent):
             current theme.
     """
 
-    children: List[rio.Component]
+    children: list[rio.Component]
     _: KW_ONLY
     linger_time: float
-    corner_radius: Union[None, float, Tuple[float, float, float, float]]
+    corner_radius: None | float | tuple[float, float, float, float]
 
     def __init__(
         self,
         *children: rio.Component,
-        linger_time: Union[float, timedelta] = timedelta(seconds=10),
-        corner_radius: Union[None, float, Tuple[float, float, float, float]] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        linger_time: float | timedelta = timedelta(seconds=10),
+        corner_radius: None | float | tuple[float, float, float, float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
-        assert isinstance(children, tuple), children
-        for child in children:
-            assert isinstance(child, component_base.Component), child
-
         if isinstance(linger_time, timedelta):
             linger_time = linger_time.total_seconds()
 

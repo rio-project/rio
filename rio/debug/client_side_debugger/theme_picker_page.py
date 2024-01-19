@@ -7,7 +7,7 @@ import rio
 
 async def update_and_apply_theme(
     session: rio.Session,
-    theme_replacements: Dict[str, Any],
+    theme_replacements: dict[str, Any],
 ) -> None:
     """
     Overrides the session's theme with the given one, and makes sure to update

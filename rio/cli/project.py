@@ -39,7 +39,7 @@ class RioProject:
 
         # Which sections & keys have been modified and thus must be written back
         # to the `rio.toml` file
-        self._dirty_keys: Set[Tuple[str, str]] = set()
+        self._dirty_keys: set[tuple[str, str]] = set()
 
         # Contains the parsed `.rioignore` file. When called with a path, it
         # returns True if the path should be ignored as per the `.rioignore`
@@ -48,7 +48,7 @@ class RioProject:
 
         # Any rules which should be added to the `.rioignore` file. These are
         # just strings which are appended to the end of the file, one per line.
-        self.rioignore_additions: List[str] = []
+        self.rioignore_additions: list[str] = []
 
     def get_key(
         self,
@@ -67,7 +67,7 @@ class RioProject:
         If the default value is `DEFAULT_KEYERROR`, a `KeyError` is raised.
         """
         # Try to get the section
-        section: Dict[str, Any]
+        section: dict[str, Any]
 
         try:
             section = self._toml_dict[section_name]  # type: ignore

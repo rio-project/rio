@@ -20,7 +20,7 @@ import website
 
 def check_function(
     docs: rio_docs.FunctionDocs,
-    owning_cls: Optional[type],
+    owning_cls: type | None,
 ) -> None:
     qualname = (
         f"{owning_cls.__name__}.{docs.name}" if owning_cls is not None else docs.name
@@ -84,7 +84,7 @@ def main() -> None:
 
     # Find all items that should be documented
     print_chapter("Looking for items needing documentation")
-    target_items: List[Union[type, Callable[..., Any]]] = list(
+    target_items: list[Union[type, Callable[..., Any]]] = list(
         rio_docs.custom.find_items_needing_documentation()
     )
 
@@ -114,7 +114,7 @@ def main() -> None:
             check_function(docs, None)
 
     # Make sure all items are displayed Rio's documentation
-    visited_item_names: Set[str] = set()
+    visited_item_names: set[str] = set()
 
     for entry in website.structure.DOCUMENTATION_STRUCTURE_LINEAR:
         url, section_name, entry_name, art = entry

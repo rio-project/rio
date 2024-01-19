@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = ["Grid"]
 
@@ -20,7 +21,7 @@ class GridChildPosition:
     height: int = 1
 
 
-class Grid(component_base.FundamentalComponent):
+class Grid(FundamentalComponent):
     """
     A container which arranges its children in a table-like grid.
 
@@ -45,26 +46,26 @@ class Grid(component_base.FundamentalComponent):
     # These must be annotated, otherwise rio won't understand that grids have
     # child components and won't copy over the new values when two Grids are
     # reconciled
-    _children: List[rio.Component]
-    _child_positions: List[GridChildPosition]
+    _children: list[rio.Component]
+    _child_positions: list[GridChildPosition]
 
     def __init__(
         self,
         *rows: Iterable[rio.Component],
         row_spacing: float = 0.0,
         column_spacing: float = 0.0,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,
@@ -86,8 +87,8 @@ class Grid(component_base.FundamentalComponent):
 
         # JS can only work with lists of Components, so we'll store the
         # components and their positions separately
-        _children: List[rio.Component] = []
-        _child_positions: List[GridChildPosition] = []
+        _children: list[rio.Component] = []
+        _child_positions: list[GridChildPosition] = []
 
         for row_nr, row_components in enumerate(rows):
             for col_nr, component in enumerate(row_components):

@@ -8,7 +8,7 @@ from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Dropdown",
@@ -23,7 +23,7 @@ class DropdownChangeEvent(Generic[T]):
     value: T
 
 
-class Dropdown(component_base.FundamentalComponent, Generic[T]):
+class Dropdown(FundamentalComponent, Generic[T]):
     """
     A dropdown menu allowing the user to select one of several options.
 
@@ -59,22 +59,22 @@ class Dropdown(component_base.FundamentalComponent, Generic[T]):
         options: Union[Mapping[str, T], Sequence[T]],
         *,
         label: str = "",
-        selected_value: Optional[T] = None,
+        selected_value: T | None = None,
         on_change: rio.EventHandler[DropdownChangeEvent[T]] = None,
         is_sensitive: bool = True,
         is_valid: bool = True,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         if not options:
             raise ValueError("`Dropdown` must have at least one option.")

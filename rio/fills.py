@@ -100,12 +100,12 @@ class LinearGradientFill(Fill):
             (This lines up with how angles are typically used mathematically.)
     """
 
-    stops: Tuple[Tuple[Color, float], ...]
+    stops: tuple[tuple[Color, float], ...]
     angle_degrees: float = 0.0
 
     def __init__(
         self,
-        *stops: Tuple[Color, float],
+        *stops: tuple[Color, float],
         angle_degrees: float = 0.0,
     ):
         # Make sure there's at least one stop

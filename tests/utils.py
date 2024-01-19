@@ -1,12 +1,14 @@
 import asyncio
 import contextlib
+import functools
 import json
 import types
-from typing import *
+from collections.abc import AsyncGenerator, Callable, Container, Iterable, Iterator
+from typing import Any, TypeVar
 
 from uniserde import Jsonable, JsonDoc
 
-import rio
+import rio.global_state
 from rio.app_server import AppServer
 from rio.components.root_components import (
     FundamentalRootComponent,
@@ -28,7 +30,7 @@ class MockApp:
         user_settings: JsonDoc = {},
     ) -> None:
         self._session = session
-        self.outgoing_messages: List[JsonDoc] = []
+        self.outgoing_messages: list[JsonDoc] = []
 
         self._first_refresh_completed = asyncio.Event()
 
@@ -72,7 +74,7 @@ class MockApp:
         return set(self._session._dirty_components)
 
     @property
-    def last_updated_components(self) -> Set[rio.Component]:
+    def last_updated_components(self) -> set[rio.Component]:
         for message in reversed(self.outgoing_messages):
             if message["method"] == "updateComponentStates":
                 return {
@@ -99,14 +101,14 @@ class MockApp:
 
         return scroll_container.child
 
-    def get_components(self, component_type: Type[C]) -> Iterator[C]:
+    def get_components(self, component_type: type[C]) -> Iterator[C]:
         root_component = self.get_root_component()
 
         for component in root_component._iter_component_tree():
             if type(component) is component_type:
                 yield component  # type: ignore
 
-    def get_component(self, component_type: Type[C]) -> C:
+    def get_component(self, component_type: type[C]) -> C:
         try:
             return next(self.get_components(component_type))
         except StopIteration:
@@ -115,7 +117,7 @@ class MockApp:
     def get_build_output(
         self,
         component: rio.Component,
-        type_: Optional[Type[C]] = None,
+        type_: type[C] | None = None,
     ) -> C:
         result = self._session._weak_component_data_by_component[component].build_result
 
@@ -184,3 +186,52 @@ async def create_mockapp(
         yield mock_app
     finally:
         server_task.cancel()
+
+
+def enable_component_instantiation(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        def build():
+            func(*args, **kwargs)
+            return rio.Text("")
+
+        app = rio.App(build=build)
+        app_server = AppServer(
+            app_=app,
+            debug_mode=False,
+            running_in_window=False,
+            validator_factory=None,
+            internal_on_app_start=None,
+        )
+        session = rio.Session(
+            app_server,
+            "<a fake session token>",
+            rio.URL("https://unit.test"),
+            rio.URL("https://unit.test"),
+        )
+        session.external_url = None
+        session._decimal_separator = "."
+        session._thousands_separator = ","
+        session._send_message = _fake_send_message
+        session._receive_message = _fake_receive_message
+
+        rio.global_state.currently_building_session = session
+        session._root_component = HighLevelRootComponent(build, lambda: rio.Text(""))
+
+        rio.global_state.currently_building_component = session._root_component
+        try:
+            session._root_component.build()
+        finally:
+            rio.global_state.currently_building_component = None
+            rio.global_state.currently_building_session = None
+
+    return wrapper
+
+
+async def _fake_send_message(message: Jsonable) -> None:
+    pass
+
+
+async def _fake_receive_message() -> Jsonable:
+    while True:
+        await asyncio.sleep(100000)

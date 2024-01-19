@@ -9,18 +9,18 @@ from typing import *  # type: ignore
 import introspection.typing
 from revel import *  # type: ignore
 
-from rio.inspection import get_type_annotations
+from rio import inspection
 
 from . import models
 
-valid_section_names: Set[str] = {
+valid_section_names: set[str] = {
     "args",
     "attributes",
     "raises",
 }
 
 
-def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
+def pre_parse_google_docstring(docstring: str) -> tuple[str, dict[str, dict[str, str]]]:
     """
     Given a google-style docstring, return the description and sections.
     """
@@ -31,13 +31,13 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
     # map from attribute/parameter names to their description. The description
     # is stored as a list here so lines can easily be appended in place. They're
     # converted to strings later.
-    sections: Dict[str, Dict[str, List[str]]] = {}
+    sections: dict[str, dict[str, list[str]]] = {}
 
     # The section currently being parsed, or `None` if not inside a section
-    current_section: Optional[Dict[str, List[str]]] = None
+    current_section: dict[str, list[str]] | None = None
 
     # Th lines of the value in the section currently being parsed
-    current_value_lines: List[str] = []
+    current_value_lines: list[str] = []
 
     # The indentation of content in the current section
     section_content_indent: int = 0
@@ -99,7 +99,7 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
     description = postprocess_string(description)
 
     # Convert the section values from lists to strings
-    result_sections: Dict[str, Dict[str, str]] = {}
+    result_sections: dict[str, dict[str, str]] = {}
 
     for section_name, section in sections.items():
         result_sections[section_name] = {}
@@ -110,7 +110,7 @@ def pre_parse_google_docstring(docstring: str) -> Tuple[str, Dict[str, Dict[str,
     return description.strip(), result_sections
 
 
-def parse_descriptions(description: str) -> Tuple[Optional[str], Optional[str]]:
+def parse_descriptions(description: str) -> tuple[str | None, str | None]:
     """
     Given the description part of a docstring, split it into short and long
     descriptions. Either value may be Nonne if they are not present in the
@@ -121,8 +121,8 @@ def parse_descriptions(description: str) -> Tuple[Optional[str], Optional[str]]:
     # Split into short & long descriptions
     lines = description.split("\n")
 
-    short_lines: List[str] = []
-    long_lines: List[str] = []
+    short_lines: list[str] = []
+    long_lines: list[str] = []
     cur_lines = short_lines
 
     for raw_line in lines:
@@ -161,7 +161,7 @@ def parse_docstring(
     enable_args: bool = False,
     enable_raises: bool = False,
     enable_attributes: bool = False,
-) -> Tuple[Optional[str], Optional[str], Dict[str, Dict[str, str]]]:
+) -> tuple[str | None, str | None, dict[str, dict[str, str]]]:
     """
     Parses a docstring into
 
@@ -182,7 +182,7 @@ def parse_docstring(
     short_description, long_description = parse_descriptions(description)
 
     # Post-process the sections
-    enabled_sections: Set[str] = set()
+    enabled_sections: set[str] = set()
 
     if enable_args:
         enabled_sections.add("args")
@@ -212,7 +212,7 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
 
     # Parse the parameters
     signature = inspect.signature(func)
-    parameters: Dict[str, models.FunctionParameter] = {}
+    parameters: dict[str, models.FunctionParameter] = {}
 
     for param_name, param in signature.parameters.items():
         if param.default == inspect.Parameter.empty:
@@ -284,7 +284,7 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
 
 def _parse_class_docstring_with_inheritance(
     cls: type,
-) -> Tuple[Optional[str], Optional[str], Dict[str, Dict[str, str]]]:
+) -> tuple[str | None, str | None, dict[str, dict[str, str]]]:
     """
     Parses the docstring of a class in the same format as `parse_docstring`, but
     accounts for inheritance: Sections of all classes are merged, in a way that
@@ -299,13 +299,13 @@ def _parse_class_docstring_with_inheritance(
     )
 
     # Get the docstrings for the base classes
-    base_docs: List[Tuple[str | None, str | None, Dict[str, Dict[str, str]]]] = []
+    base_docs: list[tuple[str | None, str | None, dict[str, dict[str, str]]]] = []
 
     for base in cls.__bases__:
         base_docs.append(_parse_class_docstring_with_inheritance(base))
 
     # Merge the docstrings
-    result_sections: Dict[str, Dict[str, str]] = {}
+    result_sections: dict[str, dict[str, str]] = {}
     all_in_order = base_docs + [docstring]
 
     for docs in all_in_order:
@@ -325,7 +325,7 @@ def parse_class(cls: type) -> models.ClassDocs:
     # Parse the functions
     #
     # Make sure to add functions from base classes as well
-    functions_by_name: Dict[str, models.FunctionDocs] = {}
+    functions_by_name: dict[str, models.FunctionDocs] = {}
 
     def add_functions(cls: type) -> None:
         # Chain to the base classes
@@ -341,9 +341,9 @@ def parse_class(cls: type) -> models.ClassDocs:
     functions = list(functions_by_name.values())
 
     # Parse the fields
-    fields_by_name: Dict[str, models.ClassField] = {}
+    fields_by_name: dict[str, models.ClassField] = {}
 
-    for name, typ in get_type_annotations(cls).items():
+    for name, typ in inspection.get_partially_resolved_type_annotations(cls).items():
         if typ is dataclasses.KW_ONLY:
             continue
 

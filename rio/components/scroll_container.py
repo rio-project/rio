@@ -1,7 +1,11 @@
-from dataclasses import KW_ONLY
-from typing import *  # type: ignore
+from __future__ import annotations
 
-from .component_base import Component, FundamentalComponent
+from dataclasses import KW_ONLY
+from typing import Literal
+
+import rio
+
+from .fundamental_component import FundamentalComponent
 
 __all__ = ["ScrollContainer"]
 
@@ -31,7 +35,7 @@ class ScrollContainer(FundamentalComponent):
             will automatically scroll to the bottom again.
     """
 
-    child: Component
+    child: rio.Component
     _: KW_ONLY
     scroll_x: Literal["never", "auto", "always"] = "auto"
     scroll_y: Literal["never", "auto", "always"] = "auto"

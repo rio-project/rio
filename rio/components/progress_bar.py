@@ -1,16 +1,11 @@
-from __future__ import annotations
-
-from dataclasses import KW_ONLY
-from typing import *  # type: ignore
-
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "ProgressBar",
 ]
 
 
-class ProgressBar(component_base.FundamentalComponent):
+class ProgressBar(FundamentalComponent):
     """
     A progress indicator in the shape of a horizontal bar.
 
@@ -26,7 +21,7 @@ class ProgressBar(component_base.FundamentalComponent):
             the progress indicator will be indeterminate.
     """
 
-    progress: Optional[float] = None
+    progress: float | None = None
 
 
 ProgressBar._unique_id = "ProgressBar-builtin"

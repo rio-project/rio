@@ -2,21 +2,21 @@ from __future__ import annotations
 
 from dataclasses import KW_ONLY
 from pathlib import Path
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
 from .. import color, fills, icon_registry
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Icon",
 ]
 
 
-class Icon(component_base.FundamentalComponent):
+class Icon(FundamentalComponent):
     """
     Displays one of many pre-bundled icons.
 
@@ -53,7 +53,7 @@ class Icon(component_base.FundamentalComponent):
 
     icon: str
     _: KW_ONLY
-    fill: Union[rio.FillLike, color.ColorSet, Literal["dim"]]
+    fill: rio.FillLike | rio.ColorSet | Literal["dim"]
 
     @staticmethod
     def _get_registry() -> icon_registry.IconRegistry:
@@ -106,7 +106,7 @@ class Icon(component_base.FundamentalComponent):
         icon_source: Path,
         set_name: str,
         icon_name: str,
-        variant_name: Optional[str] = None,
+        variant_name: str | None = None,
     ) -> None:
         """
         Add a single icon to the global registry. This allows the icon to be
@@ -153,19 +153,19 @@ class Icon(component_base.FundamentalComponent):
         self,
         icon: str,
         *,
-        fill: Union[rio.FillLike, color.ColorSet, Literal["dim"]] = "keep",
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["grow"], float] = 1.3,
-        height: Union[Literal["grow"], float] = 1.3,
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        fill: rio.FillLike | rio.ColorSet | Literal["dim"] = "keep",
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["grow"] = 1.3,
+        height: float | Literal["grow"] = 1.3,
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,

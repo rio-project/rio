@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 from .. import assets
 from ..common import EventHandler, ImageLike
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = ["Image"]
 
 
-class Image(component_base.FundamentalComponent):
+class Image(FundamentalComponent):
     """
     Displays an image file.
 
@@ -55,7 +55,7 @@ class Image(component_base.FundamentalComponent):
     _: KW_ONLY
     fill_mode: Literal["fit", "stretch", "zoom"] = "fit"
     on_error: EventHandler[[]] = None
-    corner_radius: Union[float, Tuple[float, float, float, float]] = 0
+    corner_radius: float | tuple[float, float, float, float] = 0
 
     def _get_image_asset(self) -> assets.Asset:
         image = self.image

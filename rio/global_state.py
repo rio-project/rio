@@ -14,14 +14,14 @@ __all__ = [
 #
 # - `Component`: The component that is currently being built
 # - `None`: The app's build method is currently being called
-currently_building_component: Optional[rio.Component] = None
+currently_building_component: rio.Component | None = None
 
 
 # Same as `currently_building_component`, but holding that component's session.
 #
 # - `Session`: The session that owns the currently building component
 # - `None`: No build is currently in progress
-currently_building_session: Optional[rio.Session] = None
+currently_building_session: rio.Session | None = None
 
 
 # This counter is increased each time a component is built. It can thus be used to

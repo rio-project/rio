@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "StyleContext",
 ]
 
 
-class StyleContext(component_base.FundamentalComponent):
-    child: Optional[rio.Component]
+class StyleContext(FundamentalComponent):
+    child: rio.Component | None
     context: Literal[
         "background",
         "neutral",

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+import rio
 
-from . import component_base
+from .component import Component
 
 __all__ = ["Container"]
 
 
-class Container(component_base.Component):
+class Container(Component):
     """
     A component holding a single child.
 
@@ -19,7 +19,7 @@ class Container(component_base.Component):
         child: The component to place inside the container.
     """
 
-    child: component_base.Component
+    child: rio.Component
 
-    def build(self) -> component_base.Component:
+    def build(self) -> rio.Component:
         return self.child

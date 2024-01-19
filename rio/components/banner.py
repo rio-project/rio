@@ -5,14 +5,14 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import component_base
+from . import component
 
 __all__ = [
     "Banner",
 ]
 
 
-class Banner(component_base.Component):
+class Banner(component.Component):
     """
     Displays a short message to the user.
 

@@ -29,7 +29,7 @@ class EventTag(enum.Enum):
 
 
 def _register_as_event_handler(function: Callable, tag: EventTag, args: Any) -> None:
-    all_events: Dict[EventTag, List[Any]] = vars(function).setdefault(
+    all_events: dict[EventTag, list[Any]] = vars(function).setdefault(
         "_rio_events_", {}
     )
     events_like_this = all_events.setdefault(tag, [])

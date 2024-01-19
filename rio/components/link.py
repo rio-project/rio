@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+from typing import Any, Literal
 
 from uniserde import JsonDoc
 
 import rio
 
 from .. import common
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Link",
 ]
 
 
-class Link(component_base.FundamentalComponent):
+class Link(FundamentalComponent):
     """
     Navigates to a page or URL when clicked.
 
@@ -23,31 +23,31 @@ class Link(component_base.FundamentalComponent):
     """
 
     # Exactly one of these will be set, the other `None`
-    child_text: Optional[str]
-    child_component: Optional[component_base.Component]
-    target_url: Union[rio.URL, str]
+    child_text: str | None
+    child_component: rio.Component | None
+    target_url: rio.URL | str
     open_in_new_tab: bool
 
     # The serializer can't handle Union types. Override the constructor, so it
     # splits the child into two values
     def __init__(
         self,
-        child: Union[str, rio.Component],
-        target_url: Union[str, rio.URL],
+        child: rio.Component | str,
+        target_url: rio.URL | str,
         *,
         open_in_new_tab: bool = False,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         """
         Args:

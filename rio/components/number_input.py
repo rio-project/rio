@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
 
 import rio
 
-from . import component_base
+from .component import Component
 
 __all__ = [
     "NumberInput",
@@ -32,7 +32,7 @@ class NumberInputConfirmEvent:
     value: float
 
 
-class NumberInput(component_base.Component):
+class NumberInput(Component):
     """
     Like `TextInput`, but specifically for inputting numbers.
 
@@ -82,8 +82,8 @@ class NumberInput(component_base.Component):
     label: str = ""
     prefix_text: str = ""
     suffix_text: str = ""
-    minimum: Optional[float] = None
-    maximum: Optional[float] = None
+    minimum: float | None = None
+    maximum: float | None = None
     decimals: int = 2
     is_sensitive: bool = True
     is_valid: bool = True

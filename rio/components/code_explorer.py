@@ -1,24 +1,19 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
-
-from uniserde import JsonDoc
-
 import rio
 
-from .. import color
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "CodeExplorer",
 ]
 
 
-class CodeExplorer(component_base.FundamentalComponent):
+class CodeExplorer(FundamentalComponent):
     source_code: str
     build_result: rio.Component
 
-    line_indices_to_component_keys: List[Optional[str]]
+    line_indices_to_component_keys: list[str | None]
 
 
 CodeExplorer._unique_id = "CodeExplorer-builtin"

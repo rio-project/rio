@@ -30,11 +30,11 @@ INT_TYPES = ()
 BOOL_TYPES = ()
 STR_TYPES = ()
 
-PANDAS_DATAFRAME_TYPES: Tuple[Type[pandas.DataFrame], ...] = ()
-POLARS_DATAFRAME_TYPES: Tuple[Type[polars.DataFrame], ...] = ()
+PANDAS_DATAFRAME_TYPES: tuple[Type[pandas.DataFrame], ...] = ()
+POLARS_DATAFRAME_TYPES: tuple[Type[polars.DataFrame], ...] = ()
 
-PLOTLY_GRAPH_TYPES: Tuple[Type[plotly.graph_objects.Figure], ...] = ()
-MATPLOTLIB_GRAPH_TYPES: Tuple[Type[matplotlib.figure.Figure], ...] = ()
+PLOTLY_GRAPH_TYPES: tuple[Type[plotly.graph_objects.Figure], ...] = ()
+MATPLOTLIB_GRAPH_TYPES: tuple[Type[matplotlib.figure.Figure], ...] = ()
 
 # This is a mapping of "weird" types to the "canonical" type, like `{np.int8: int}`
 TYPE_NORMALIZERS: Mapping[Type[T], Callable[[T], T]] = {}  # type: ignore

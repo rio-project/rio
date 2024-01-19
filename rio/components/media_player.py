@@ -1,22 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
-from pathlib import Path
-from typing import *  # type: ignore
+import pathlib
+from typing import Literal
 
 from uniserde import JsonDoc
-from yarl import URL
 
 import rio
 
 from .. import assets, color
-from ..common import URL, EventHandler
-from . import component_base
+from ..common import EventHandler
+from .fundamental_component import KeyboardFocusableFundamentalComponent
 
 __all__ = ["MediaPlayer"]
 
 
-class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
+class MediaPlayer(KeyboardFocusableFundamentalComponent):
     """
     Plays audio and video.
 
@@ -53,8 +51,8 @@ class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
             the file format isn't supported.
     """
 
-    media: Union[Path, URL, bytes]
-    media_type: Optional[str]
+    media: pathlib.Path | rio.URL | bytes
+    media_type: str | None
     loop: bool
     autoplay: bool
     controls: bool
@@ -66,9 +64,9 @@ class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
 
     def __init__(
         self,
-        media: Union[Path, URL, bytes],
+        media: pathlib.Path | rio.URL | bytes,
         *,
-        media_type: Optional[str] = None,
+        media_type: str | None = None,
         loop: bool = False,
         autoplay: bool = False,
         controls: bool = True,
@@ -77,18 +75,18 @@ class MediaPlayer(component_base.KeyboardFocusableFundamentalComponent):
         background: rio.FillLike = color.Color.TRANSPARENT,
         on_playback_end: EventHandler[[]] = None,
         on_error: EventHandler[[]] = None,
-        key: Optional[str] = None,
-        margin: Optional[float] = None,
-        margin_x: Optional[float] = None,
-        margin_y: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        width: Union[Literal["natural", "grow"], float] = "natural",
-        height: Union[Literal["natural", "grow"], float] = "natural",
-        align_x: Optional[float] = None,
-        align_y: Optional[float] = None,
+        key: str | None = None,
+        margin: float | None = None,
+        margin_x: float | None = None,
+        margin_y: float | None = None,
+        margin_left: float | None = None,
+        margin_top: float | None = None,
+        margin_right: float | None = None,
+        margin_bottom: float | None = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+        align_x: float | None = None,
+        align_y: float | None = None,
     ):
         super().__init__(
             key=key,

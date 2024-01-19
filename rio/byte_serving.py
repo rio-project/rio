@@ -33,7 +33,7 @@ def send_bytes_range_requests(
             yield f.read(read_size)
 
 
-def parse_range_header(range_header: str, file_size: int) -> Tuple[int, int]:
+def parse_range_header(range_header: str, file_size: int) -> tuple[int, int]:
     try:
         h = range_header.replace("bytes=", "").split("-")
         start = int(h[0]) if h[0] != "" else 0
@@ -57,7 +57,7 @@ def range_requests_response(
     request: fastapi.Request,
     file_path: Path,
     *,
-    media_type: Optional[str] = None,
+    media_type: str | None = None,
 ) -> fastapi.responses.Response:
     """
     Returns a fastapi response which serves the given file, supporting Range

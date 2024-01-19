@@ -11,7 +11,7 @@ class CodeSample(rio.Component):
     text: str
     source_code: str
     build_result: rio.Component
-    line_indices_to_component_keys: List[Optional[str]]
+    line_indices_to_component_keys: list[str | None]
 
     def build(self) -> rio.Component:
         return rio.Column(

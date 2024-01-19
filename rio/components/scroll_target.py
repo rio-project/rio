@@ -1,7 +1,8 @@
-from typing import *  # type: ignore
-from typing import Optional
+from __future__ import annotations
 
-from .component_base import Component, FundamentalComponent
+import rio
+
+from .fundamental_component import FundamentalComponent
 
 __all__ = ["ScrollTarget"]
 
@@ -24,7 +25,7 @@ class ScrollTarget(FundamentalComponent):
     """
 
     id: str
-    child: Optional[Component] = None
+    child: rio.Component | None = None
 
 
 ScrollTarget._unique_id = "ScrollTarget-builtin"

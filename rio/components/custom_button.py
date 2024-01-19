@@ -5,14 +5,14 @@ from typing import *  # type: ignore
 
 import rio
 
-from . import component_base
+from .component import Component
 
 __all__ = [
     "CustomButton",
 ]
 
 
-class CustomButton(component_base.Component):
+class CustomButton(Component):
     """
     A clickable button with customizable visuals.
 

@@ -323,7 +323,7 @@ class Color(SelfSerializing):
         return self._opacity
 
     @property
-    def rgb(self) -> Tuple[float, float, float]:
+    def rgb(self) -> tuple[float, float, float]:
         """
         The color as RGB values.
 
@@ -333,7 +333,7 @@ class Color(SelfSerializing):
         return (self._red, self._green, self._blue)
 
     @property
-    def rgba(self) -> Tuple[float, float, float, float]:
+    def rgba(self) -> tuple[float, float, float, float]:
         """
         The color as RGBA values.
 
@@ -343,7 +343,7 @@ class Color(SelfSerializing):
         return (self._red, self._green, self._blue, self._opacity)
 
     @property
-    def hsv(self) -> Tuple[float, float, float]:
+    def hsv(self) -> tuple[float, float, float]:
         """
         The color as HSV values.
 
@@ -418,10 +418,10 @@ class Color(SelfSerializing):
     def replace(
         self,
         *,
-        red: Optional[float] = None,
-        green: Optional[float] = None,
-        blue: Optional[float] = None,
-        opacity: Optional[float] = None,
+        red: float | None = None,
+        green: float | None = None,
+        blue: float | None = None,
+        opacity: float | None = None,
     ) -> "Color":
         """
         Return a new `Color` instance with the given values replaced.

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import *  # type: ignore
+from typing import Any
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "ClassContainer",
 ]
 
 
-class ClassContainer(component_base.FundamentalComponent):
+class ClassContainer(FundamentalComponent):
     """
     Component which holds a single child, and applies a list of CSS classes to it.
     This is enough to implement several components, preventing the need to create a
@@ -21,10 +21,10 @@ class ClassContainer(component_base.FundamentalComponent):
     API.
     """
 
-    child: Optional[rio.Component]
-    classes: List[str]
+    child: rio.Component | None
+    classes: list[str]
 
-    def _get_debug_details(self) -> Dict[str, Any]:
+    def _get_debug_details(self) -> dict[str, Any]:
         return {
             "child": self.child,
         }

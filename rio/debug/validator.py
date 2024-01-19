@@ -31,7 +31,7 @@ class ClientComponent:
         cls,
         id: int,
         delta_state: JsonDoc,
-        registered_html_components: Set[str],
+        registered_html_components: set[str],
     ) -> "ClientComponent":
         # Don't modify the original dict
         delta_state = copy.deepcopy(delta_state)
@@ -62,10 +62,11 @@ class ClientComponent:
         )
 
     def _get_child_attribute_names(self) -> Iterable[str]:
+        child_attr_names = (
+            inspection.get_child_component_containing_attribute_names_for_builtin_components()
+        )
         try:
-            return inspection.get_child_component_containing_attribute_names_for_builtin_components()[
-                self.type
-            ]
+            return child_attr_names[self.type]
         except KeyError:
             return tuple()  # TODO: How to get the children of HTML components?
 
@@ -87,7 +88,7 @@ class ClientComponent:
     @property
     def child_containing_properties(
         self,
-    ) -> Dict[str, Union[None, int, List[int]]]:
+    ) -> dict[str, Union[None, int, list[int]]]:
         child_attribute_names = self._get_child_attribute_names()
 
         result = {}
@@ -131,7 +132,7 @@ class Validator:
         self,
         sess: session.Session,
         *,
-        dump_directory_path: Optional[Path] = None,
+        dump_directory_path: Path | None = None,
     ):
         self.session = sess
 
@@ -141,12 +142,12 @@ class Validator:
 
         self.dump_directory_path = dump_directory_path
 
-        self.root_component: Optional[ClientComponent] = None
-        self.components_by_id: Dict[int, ClientComponent] = {}
+        self.root_component: ClientComponent | None = None
+        self.components_by_id: dict[int, ClientComponent] = {}
 
         # HTML components must be registered with the frontend before use. This set
         # contains the ids (`FundamentalComponent._unique_id`) of all registered components.
-        self.registered_html_components: Set[str] = set(
+        self.registered_html_components: set[str] = set(
             inspection.get_child_component_containing_attribute_names_for_builtin_components().keys()
         )
 
@@ -172,8 +173,8 @@ class Validator:
 
     def dump_client_state(
         self,
-        component: Optional[ClientComponent] = None,
-        path: Optional[Path] = None,
+        component: ClientComponent | None = None,
+        path: Path | None = None,
     ) -> None:
         """
         Dump the client state to a JSON file.
@@ -216,7 +217,7 @@ class Validator:
 
         # Find all components which are referenced directly or indirectly by the
         # root component
-        visited_ids: Set[int] = set()
+        visited_ids: set[int] = set()
 
         to_do = [self.root_component]
 
@@ -244,7 +245,7 @@ class Validator:
             if id in visited_ids
         }
 
-    def as_json(self, component: Optional[ClientComponent] = None) -> JsonDoc:
+    def as_json(self, component: ClientComponent | None = None) -> JsonDoc:
         """
         Return a JSON-serializable representation of the client state.
         """

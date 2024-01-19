@@ -6,7 +6,6 @@ from typing_extensions import Self
 
 import rio
 import rio.debug
-from rio.components.component_base import Component
 
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent
 ASSETS_DIR = PROJECT_ROOT_DIR / "assets"
@@ -50,12 +49,12 @@ class ColorPickerPopup(rio.Component):
 class ColorSwatch(rio.Component):
     theme: rio.Theme
     palette_name: str
-    description: Optional[str]
-    currently_edited_property_name: Optional[str]
+    description: str | None
+    currently_edited_property_name: str | None
     _: KW_ONLY
-    _colors: List[Tuple[str, rio.Color]] = field(default_factory=list)
-    heading_fill: Optional[rio.FillLike] = None
-    text_fill: Optional[rio.FillLike] = None
+    _colors: list[tuple[str, rio.Color]] = field(default_factory=list)
+    heading_fill: rio.FillLike | None = None
+    text_fill: rio.FillLike | None = None
 
     def _on_color_click(self, property_name: str) -> None:
         # Stop picking a color, if the same color was clicked again
@@ -144,7 +143,7 @@ class ColorSwatch(rio.Component):
                 )
 
             # The exact shape depends on this color's position
-            corner_radii: List[float] = [0, 0, 0, 0]
+            corner_radii: list[float] = [0, 0, 0, 0]
             if ii == 0:
                 corner_radii[0] = corner_radius
                 corner_radii[1] = corner_radius
@@ -239,7 +238,7 @@ class ColorSwatch(rio.Component):
 class Sidebar(rio.Component):
     theme: rio.Theme
 
-    currently_picked_property_name: Optional[str] = None
+    currently_picked_property_name: str | None = None
 
     def build(self) -> rio.Component:
         return rio.Card(

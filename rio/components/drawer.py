@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Literal
 
 from uniserde import JsonDoc
 
 import rio
 
-from . import component_base
+from .fundamental_component import FundamentalComponent
 
 __all__ = [
     "Drawer",
@@ -20,7 +20,7 @@ class DrawerOpenOrCloseEvent:
     is_open: bool
 
 
-class Drawer(component_base.FundamentalComponent):
+class Drawer(FundamentalComponent):
     """
     A container which slides in from the edge of the screen.
 
