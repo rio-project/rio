@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import io
-from typing import TYPE_CHECKING, cast, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 from uniserde import JsonDoc
 
@@ -12,6 +12,7 @@ from .. import maybes
 from .fundamental_component import FundamentalComponent
 
 if TYPE_CHECKING:
+    import matplotlib.axes  # type: ignore
     import matplotlib.figure  # type: ignore
     import plotly.graph_objects  # type: ignore
 
@@ -21,26 +22,26 @@ __all__ = ["Plot"]
 
 class Plot(FundamentalComponent):
     """
-    Displays a graph.
-
+    Displays a matplotlib, seaborn or plotly plot.
 
     Attributes:
-        figure: The `plotly` figure to display.
+        figure: The plot figure to display.
 
-        style: Controls the appearance of the plot. The following attributes are supported:
-            - `fill`
-            - `corner_radius`
+        background: The background color of the plot. If `None`, a color from
+            the theme is used.
 
-        Any other attributes are ignored at this time.
+        corner_radius: The corner radius of the plot
     """
 
-    figure: matplotlib.figure.Figure | plotly.graph_objects.Figure
+    figure: plotly.graph_objects.Figure | matplotlib.figure.Figure | matplotlib.axes.Axes
     background: rio.Fill | None
     corner_radius: float | tuple[float, float, float, float] | None
 
     def __init__(
         self,
-        figure: matplotlib.figure.Figure | plotly.graph_objects.Figure,
+        figure: plotly.graph_objects.Figure
+        | matplotlib.figure.Figure
+        | matplotlib.axes.Axes,
         *,
         background: rio.FillLike | None = None,
         corner_radius: float | tuple[float, float, float, float] | None = 0,
@@ -74,12 +75,18 @@ class Plot(FundamentalComponent):
 
         self.figure = figure
         self.background = None if background is None else rio.Fill._try_from(background)
-        self.corner_radius = corner_radius
+
+        if corner_radius is None:
+            self.corner_radius = self.session.theme.corner_radius_medium
+        else:
+            self.corner_radius = corner_radius
 
     def _custom_serialize(self) -> JsonDoc:
         # Figure
         figure = self.figure
         plot: JsonDoc
+
+        # Plotly
         if isinstance(figure, maybes.PLOTLY_GRAPH_TYPES):
             # Make the plot transparent, so `self.background` shines through.
             figure = cast("plotly.graph_objects.Figure", copy.copy(figure))
@@ -94,16 +101,30 @@ class Plot(FundamentalComponent):
                 "type": "plotly",
                 "json": figure.to_json(),
             }
-        else:
+
+        # Matplotlib (+ Seaborn)
+        elif isinstance(figure, maybes.MATPLOTLIB_GRAPH_TYPES):
+            if isinstance(figure, maybes.MATPLOTLIB_AXES_TYPES):
+                figure = figure.figure
+
             figure = cast("matplotlib.figure.Figure", figure)
 
             file = io.BytesIO()
-            figure.savefig(file, format="svg", transparent=True, bbox_inches="tight")
+            figure.savefig(
+                file,
+                format="svg",
+                transparent=True,
+                bbox_inches="tight",
+            )
 
             plot = {
                 "type": "matplotlib",
                 "svg": bytes(file.getbuffer()).decode("utf-8"),
             }
+
+        # Unsupported
+        else:
+            raise TypeError(f"Unsupported plot type: {type(figure)}")
 
         # Corner radius
         if isinstance(self.corner_radius, (int, float)):
