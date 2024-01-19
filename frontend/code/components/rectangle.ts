@@ -34,33 +34,33 @@ function setBoxStyleVariables(
             background: 'transparent',
 
             'stroke-color': 'transparent',
-            'stroke-width': '0em',
+            'stroke-width': '0',
 
-            'corner-radius-top-left': '0em',
-            'corner-radius-top-right': '0em',
-            'corner-radius-bottom-right': '0em',
-            'corner-radius-bottom-left': '0em',
+            'corner-radius-top-left': '0',
+            'corner-radius-top-right': '0',
+            'corner-radius-bottom-right': '0',
+            'corner-radius-bottom-left': '0',
 
             'shadow-color': 'transparent',
-            'shadow-radius': '0em',
-            'shadow-offset-x': '0em',
-            'shadow-offset-y': '0em',
+            'shadow-radius': '0',
+            'shadow-offset-x': '0',
+            'shadow-offset-y': '0',
         };
     } else {
         Object.assign(variables, fillToCss(style.fill));
 
         variables['stroke-color'] = colorToCssString(style.strokeColor);
-        variables['stroke-width'] = `${style.strokeWidth}em`;
+        variables['stroke-width'] = `${style.strokeWidth}rem`;
 
-        variables['corner-radius-top-left'] = `${style.cornerRadius[0]}em`;
-        variables['corner-radius-top-right'] = `${style.cornerRadius[1]}em`;
-        variables['corner-radius-bottom-right'] = `${style.cornerRadius[2]}em`;
-        variables['corner-radius-bottom-left'] = `${style.cornerRadius[3]}em`;
+        variables['corner-radius-top-left'] = `${style.cornerRadius[0]}rem`;
+        variables['corner-radius-top-right'] = `${style.cornerRadius[1]}rem`;
+        variables['corner-radius-bottom-right'] = `${style.cornerRadius[2]}rem`;
+        variables['corner-radius-bottom-left'] = `${style.cornerRadius[3]}rem`;
 
         variables['shadow-color'] = colorToCssString(style.shadowColor);
-        variables['shadow-radius'] = `${style.shadowRadius}em`;
-        variables['shadow-offset-x'] = `${style.shadowOffset[0]}em`;
-        variables['shadow-offset-y'] = `${style.shadowOffset[1]}em`;
+        variables['shadow-radius'] = `${style.shadowRadius}rem`;
+        variables['shadow-offset-x'] = `${style.shadowOffset[0]}rem`;
+        variables['shadow-offset-y'] = `${style.shadowOffset[1]}rem`;
     }
 
     // Set the variables and add the prefix

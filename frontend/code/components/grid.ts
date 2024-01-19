@@ -142,11 +142,11 @@ export class GridComponent extends ComponentBase {
         }
 
         if (deltaState.row_spacing !== undefined) {
-            element.style.rowGap = `${deltaState.row_spacing}em`;
+            element.style.rowGap = `${deltaState.row_spacing}rem`;
         }
 
         if (deltaState.column_spacing !== undefined) {
-            element.style.columnGap = `${deltaState.column_spacing}em`;
+            element.style.columnGap = `${deltaState.column_spacing}rem`;
         }
 
         this.makeLayoutDirty();

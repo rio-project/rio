@@ -896,7 +896,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     left: 0.17rem;
     width: 0.86rem;
     height: 0.43rem;
-    padding: 0.39em 0.17rem;
+    padding: 0.39rem 0.17rem;
     background-color: var(--rio-global-disabled-bg);
     border-radius: 50%;
     transition:
@@ -1115,7 +1115,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-buttonstyle-minor:not(:hover) {
-    outline: 0.1em solid var(--rio-local-plain-bg);
+    outline: 0.1rem solid var(--rio-local-plain-bg);
     --rio-local-text-color: var(--rio-local-plain-bg);
 }
 
@@ -1485,12 +1485,12 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
     ul {
         margin: 0;
-        padding-left: 1em;
+        padding-left: 1rem;
         list-style-type: none;
     }
 
     ul > li {
-        margin-bottom: 0.4em;
+        margin-bottom: 0.4rem;
     }
 
     ul > li:before {
@@ -1503,7 +1503,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
             font-family: 'Roboto Mono', monospace;
             background: var(--rio-local-plain-bg-variant);
             border-radius: var(--rio-global-corner-radius-small);
-            padding: 0.1em 0.3em;
+            padding: 0.1rem 0.3rem;
         }
     }
 
@@ -1519,7 +1519,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
         margin-top: 0;
 
         :not(:first-child) {
-            margin-top: 2em;
+            margin-top: 2rem;
         }
     }
 
@@ -1535,7 +1535,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
         margin-top: 0;
 
         :not(:first-child) {
-            margin-top: 1.5em;
+            margin-top: 1.5rem;
         }
     }
 
@@ -1551,7 +1551,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
         margin-top: 0;
 
         :not(:first-child) {
-            margin-top: 1em;
+            margin-top: 1rem;
         }
     }
 
