@@ -2244,15 +2244,18 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     position: relative;
     left: 50%;
     top: 5rem;
-    width: 40rem;
-    padding: 1.5rem;
+    // min-width: 45rem;
+    width: fit-content;
+    padding: 2.2rem;
+
+    overflow: hidden;
 
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 1.5rem;
 
-    border-radius: var(--rio-global-corner-radius-medium);
+    border-radius: var(--rio-global-corner-radius-large);
 
     box-shadow: 0 0.4rem 1rem var(--rio-global-shadow-color);
 

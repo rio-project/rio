@@ -31,7 +31,7 @@ try:
     import webview  # type: ignore
 except ImportError:
     if TYPE_CHECKING:
-        import webview
+        import webview  # type: ignore
     else:
         webview = None
 
@@ -94,7 +94,7 @@ def make_traceback_html(
         <div class="rio-traceback-footer">
             Need help?
             <div class="rio-traceback-footer-links">
-                <a class="rio-text-link" target="_blank" href="https://todo.discord.com">Ask on our Discord</a>
+                <a class="rio-text-link" target="_blank" href="https://todo.discord.com">Ask on Rio's Discord</a>
                 <a class="rio-text-link" target="_blank" href="https://chat.openai.com">Ask ChatGPT</a>
                 <a class="rio-text-link" target="_blank" href="https://rio.dev/documentation">Read the docs</a>
             </div>

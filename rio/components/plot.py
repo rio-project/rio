@@ -77,7 +77,7 @@ class Plot(FundamentalComponent):
         self.background = None if background is None else rio.Fill._try_from(background)
 
         if corner_radius is None:
-            self.corner_radius = self.session.theme.corner_radius_medium
+            self.corner_radius = self.session.theme.corner_radius_small
         else:
             self.corner_radius = corner_radius
 

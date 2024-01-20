@@ -189,7 +189,7 @@ class Theme:
                         primary_color, 0.07
                     ),
                     background_active=rio.Color.from_grey(0.93).blend(
-                        primary_color, 0.1
+                        primary_color, 0.15
                     ),
                     foreground=rio.Color.from_grey(0.1),
                 )

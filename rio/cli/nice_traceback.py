@@ -5,6 +5,7 @@ but is colored and just tweaked in general.
 
 
 import html
+import io
 import linecache
 import traceback
 from pathlib import Path
@@ -14,7 +15,8 @@ import revel
 from revel import print
 
 
-def format_exception_raw(
+def _print_single_exception_raw(
+    out: IO[str],
     err: BaseException,
     *,
     escape: Callable[[str], str],
@@ -31,7 +33,7 @@ def format_exception_raw(
     # Get the traceback as a list of frames
     tb_list = traceback.extract_tb(err.__traceback__)
 
-    # Syntax errors are special snowflakes and need separte treatment
+    # Syntax errors are very special snowflakes and need separate treatment
     if isinstance(err, SyntaxError):
         tb_list.append(
             traceback.FrameSummary(
@@ -47,8 +49,7 @@ def format_exception_raw(
         )
 
     # Lead-in
-    chunks = []
-    chunks.append(f"{dim}Traceback (most recent call last):{nodim}\n")
+    out.write(f"{dim}Traceback (most recent call last):{nodim}\n")
 
     # Iterate through frames
     for frame in tb_list:
@@ -65,7 +66,7 @@ def format_exception_raw(
                 pass
 
         # Format the file location
-        chunks.append(
+        out.write(
             f"  {dim}File{nodim} {yellow}{escape(str(frame_path))}{noyellow}{dim}, {nodim}{yellow}line {frame.lineno}{noyellow}{dim}, in {escape(frame.name)}{nodim}\n"
         )
 
@@ -94,16 +95,64 @@ def format_exception_raw(
 
             # NOW strip it
             line = line.strip()
-            chunks.append(f"    {line}\n")
+            out.write(f"    {line}\n")
 
     # Actual error message
-    chunks.append("\n")
-    chunks.append(
-        f"{bold}{red}{type(err).__name__}{nored}: {escape(str(err))}{nobold}{nobold}"
-    )
+    out.write("\n")
+    out.write(f"{bold}{red}{type(err).__name__}{nored}{nobold}")
 
-    # Combine the formatted frames into a string
-    return "".join(chunks)
+    error_message = str(err)
+    if error_message:
+        out.write(f"{bold}: {escape(str(err))}{nobold}")
+
+
+def format_exception_raw(
+    err: BaseException,
+    *,
+    escape: Callable[[str], str],
+    bold: str,
+    nobold: str,
+    dim: str,
+    nodim: str,
+    yellow: str,
+    noyellow: str,
+    red: str,
+    nored: str,
+    relpath: Path | None = None,
+) -> str:
+    # Get a full list of exceptions to display
+    exceptions = []
+
+    while err is not None:
+        exceptions.append(err)
+        err = err.__context__ or err.__cause__  # type: ignore
+
+    # Display them all
+    out = io.StringIO()
+
+    for ii, err in enumerate(reversed(exceptions)):
+        _print_single_exception_raw(
+            out,
+            err,
+            escape=escape,
+            bold=bold,
+            nobold=nobold,
+            dim=dim,
+            nodim=nodim,
+            yellow=yellow,
+            noyellow=noyellow,
+            red=red,
+            nored=nored,
+            relpath=relpath,
+        )
+
+        if ii != len(exceptions) - 1:
+            out.write("\n\n")
+            out.write(
+                f"The above exception was the direct cause of the following exception:\n\n"
+            )
+
+    return out.getvalue()
 
 
 def format_exception_revel(
