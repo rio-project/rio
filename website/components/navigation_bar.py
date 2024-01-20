@@ -53,15 +53,13 @@ class NavigationBar(rio.Component):
                 rio.SwitcherBar(
                     names=[
                         "Home",
-                        "Learn",
-                        "Documentation",
+                        "Docs",
                         "About Us",
                     ],
                     values=[
                         "",
-                        "learn",
                         "documentation",
-                        "about",
+                        "about-us",
                     ],
                     selected_value=active_url_fragment,
                     color="primary",

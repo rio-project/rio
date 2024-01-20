@@ -109,33 +109,23 @@ def get_docs(component_class: Type) -> rio.Component:
 def _make_documentation_pages() -> list[rio.Page]:
     result = []
 
-    for (
-        url_segment,
-        section_name,
-        article_name,
-        article_or_class,
-    ) in structure.DOCUMENTATION_STRUCTURE_LINEAR:
-        if inspect.isclass(article_or_class):
-            make_child = lambda rio_class=article_or_class: get_docs(rio_class)
-        else:
-            make_child = lambda article=article_or_class: article().build()
+    for section in structure.DOCUMENTATION_STRUCTURE:
+        # None is used to indicate whitespace
+        if section is None:
+            continue
 
-        result.append(
-            rio.Page(
-                url_segment,
-                lambda make_child=make_child: rio.Column(
-                    make_child(),
-                    rio.Spacer(),
-                    margin_left=30,
-                    margin_right=2,
-                    margin_bottom=4,
-                    spacing=3,
-                    width=65,
-                    height="grow",
-                    align_x=0.5,
-                ),
+        # Construct the section page
+        section_name, section_url, builders = section
+        section_page = rio.Page(section_url, rio.PageView)
+        result.append(section_page)
+
+        # Add all the pages in this section
+        for builder in builders:
+            sub_page = rio.Page(
+                builder.url_segment,
+                lambda builder=builder: builder.build().build(),
             )
-        )
+            section_page.children.append(sub_page)
 
     return result
 

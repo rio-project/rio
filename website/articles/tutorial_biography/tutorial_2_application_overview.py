@@ -1,13 +1,20 @@
 import rio
 
-from .. import article_models
+from ... import article_models
 
 
-def generate() -> article_models.BuiltArticle:
-    result = article_models.BuiltArticle()
+class Builder(article_models.ArticleBuilder):
+    def __init__(self):
+        super().__init__(
+            "Application Overview",
+            "2-application-overview",
+        )
 
-    result.markdown(
-        """
+    def build(self) -> article_models.BuiltArticle:
+        result = article_models.BuiltArticle()
+
+        result.markdown(
+            """
 # Application Overview
 
 Now that we have Rio installed, let's take a look what a Rio application looks
@@ -17,14 +24,14 @@ create our own app.
 
 This is the code of a simple Counter app. It just displays a number, along with
 some buttons to change said number.
-"""
-    )
+    """
+        )
 
-    result.snippet("example-counter/simple_counter_app.py")
+        result.snippet("example-counter/simple_counter_app.py")
 
-    result.box(
-        "info",
-        """
+        result.box(
+            "info",
+            """
 If you would like to run this app yourself, you can create a new project using
 
 ```bash
@@ -39,21 +46,23 @@ all code necessary to run the "Counter" app. You can start the app using
 ```bash
 rio run
 ```
-""",
-    )
+    """,
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 Let's break this down.
 
 ## Components
-"""
-    )
+    """
+        )
 
-    result.snippet("example-counter/simple_counter_app.py", section="circular-button")
+        result.snippet(
+            "example-counter/simple_counter_app.py", section="circular-button"
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 First, we can see the definition of a `CircularButton` component. Components are
 the building blocks of Rio apps. They are the basic elements that make up your
 app, and they can be combined to create more complex components. In this case,
@@ -88,13 +97,13 @@ when it needs to display the component. In this case the `build` method returns
 a `rio.Button` component, which is one of the built-in components that Rio
 ships with. So each time Rio needs to display a `CircularButton`, it will
 call the Component's build method and display it's output.
-"""
-    )
+    """
+        )
 
-    result.snippet("example-counter/simple_counter_app.py", section="counter")
+        result.snippet("example-counter/simple_counter_app.py", section="counter")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 Next, we can see the definition of the `Counter` component. This is the main
 component of the app, and combines the `CircularButton` component we just
 defined with other built-in components to create the final app. You can see it
@@ -156,26 +165,26 @@ because they have poor eyesight.
 ## Creating & Running the App
 
 Next in the code we can see the definition of the `App` itself:
-"""
-    )
+    """
+        )
 
-    result.snippet("example-counter/simple_counter_app.py", section="app")
+        result.snippet("example-counter/simple_counter_app.py", section="app")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 The app contains everything needed to run your app, such as the app's name, and
 which Components to display. Since we're trying to keep it simple, we'll only
 specify one thing: A page with the `Counter` component. Rio apps can have any
 number of pages, but we'll only need the one for this app.
 
 Lastly, let's run the app:
-"""
-    )
+    """
+        )
 
-    result.snippet("example-counter/simple_counter_app.py", section="run")
+        result.snippet("example-counter/simple_counter_app.py", section="run")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 This will start the app, and open it in your browser. You can now interact with
 the app, and see how it works. If you want to stop the app, simply press
 `Ctrl+C` in the terminal.
@@ -183,23 +192,23 @@ the app, and see how it works. If you want to stop the app, simply press
 Rio supports several ways to run apps, including `run_in_browser`, and
 `run_in_window`. There's more ways to run apps, but we'll cover those in detail
 when we talk about deployment.
-"""
-    )
+    """
+        )
 
-    result.summary(
-        "Rio apps are created by combining components",
-        "Many components already ship with Rio, but it's easy to create your own by combining existing ones",
-        "Components are just Python classes that inherit from `rio.Component`",
-        "At a minimum, each component needs to implement a `build` method",
-        "Components can have attributes. Each attribute has a name as well as a data type",
-        'All sizes in Rio are measured in "font heights"',
-    )
+        result.summary(
+            "Rio apps are created by combining components",
+            "Many components already ship with Rio, but it's easy to create your own by combining existing ones",
+            "Components are just Python classes that inherit from `rio.Component`",
+            "At a minimum, each component needs to implement a `build` method",
+            "Components can have attributes. Each attribute has a name as well as a data type",
+            'All sizes in Rio are measured in "font heights"',
+        )
 
-    result.navigation(
-        "Rio Setup",
-        rio.URL("tutorial-1-rio-setup"),
-        "App Setup",
-        rio.URL("tutorial-3-application-setup"),
-    )
+        result.navigation(
+            "Rio Setup",
+            rio.URL("tutorial-1-rio-setup"),
+            "App Setup",
+            rio.URL("tutorial-3-application-setup"),
+        )
 
-    return result
+        return result

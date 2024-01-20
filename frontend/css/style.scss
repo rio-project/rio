@@ -2244,8 +2244,8 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     position: relative;
     left: 50%;
     top: 5rem;
-    // min-width: 45rem;
     width: fit-content;
+    max-width: 50rem;
     padding: 2.2rem;
 
     overflow: hidden;

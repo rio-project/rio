@@ -26,4 +26,5 @@ class TopEnd(rio.Component):
             ),
             height=self.height,
             width="grow",
+            margin_bottom=3,
         )

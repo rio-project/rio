@@ -26,7 +26,7 @@ class BuiltArticle:
         self.default_language = default_language
 
         self._parts: list[rio.Component] = []
-        self._current_section: list[rio.Component | None] = None
+        self._current_section: list[rio.Component] | None = None
 
     def begin_section(self) -> None:
         if self._current_section is not None:

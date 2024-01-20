@@ -1,13 +1,20 @@
 import rio
 
-from .. import article_models
+from ... import article_models
 
 
-def generate() -> article_models.BuiltArticle:
-    result = article_models.BuiltArticle()
+class Builder(article_models.ArticleBuilder):
+    def __init__(self):
+        super().__init__(
+            "More Components",
+            "5-more-components",
+        )
 
-    result.markdown(
-        """
+    def build(self) -> article_models.BuiltArticle:
+        result = article_models.BuiltArticle()
+
+        result.markdown(
+            """
 # More Components
 
 At this point we've seen most basic concepts we need to build a Rio app. We've
@@ -23,13 +30,13 @@ previously.
 Now that everybody knows who you are, let's add a section that shows off your
 skillset. Create a new file in the `components` directory and name it
 `skill_bars.py`. Use this code:
-        """
-    )
+            """
+        )
 
-    result.snippet("tutorial-biography/skill_bars.py")
+        result.snippet("tutorial-biography/skill_bars.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 This is another rather simple component. It takes a dictionary of skills and
 their levels, and displays them as a list of bars. This will give a nice visual
 overview of your skills. The `ProgressBar` is a component we haven't come across
@@ -57,13 +64,13 @@ component for this, and then use it both for contact information, as well as to
 link to websites we can find you on.
 
 `contact.py`:
-        """
-    )
+            """
+        )
 
-    result.snippet("tutorial-biography/contact.py")
+        result.snippet("tutorial-biography/contact.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 Ah, something new is happening here! Right at the start of the component we've
 used a `KW_ONLY` annotation. This is a special annotation that tells Rio that
 the following attributes should only be passed by keyword. This isn't actually
@@ -84,22 +91,22 @@ included this really couldn't be any easier.
 
 You can find an interactive browser of all icons [on the Rio
 website](https://TODO.com).
-"""
-    )
+    """
+        )
 
-    result.box(
-        "info",
-        """
+        result.box(
+            "info",
+            """
 Icon names are in the format `set_name/icon_name:variant`. Rio already ships
 with the `material` icon set, which contains icons in the style of Google's
 Material Design. You don't have to specify all three though. If you leave out
 the set name it defaults to `material`, and if you leave out the variant it
 defaults to the default variant of the icon, i.e. no variant.
-""",
-    )
+    """,
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 
 Links are also new. Links can either point to external websites, or to other
 pages in your app. In this case we'll be using an external link to point to your
@@ -112,13 +119,13 @@ Let's add a section that shows what you've done in the past. We'll create a
 work experience and education.
 
 `history.py`:
-"""
-    )
+    """
+        )
 
-    result.snippet("tutorial-biography/history.py")
+        result.snippet("tutorial-biography/history.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 This component is a bit more complex than the previous ones. In fact, we're
 creating two components here. Since they're closely related, we're grouping them
 into a single file. But it would also be perfectly fine to split them into two
@@ -142,13 +149,13 @@ projects. Presenting a well maintained portfolio of past projects is a quick way
 to show off your skills, and can be a great way to get your foot in the door.
 
 `project.py`:
-"""
-    )
+    """
+        )
 
-    result.snippet("tutorial-biography/project.py")
+        result.snippet("tutorial-biography/project.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 Once again we're creating two components here. The `Project` component displays
 a single project. We've already encountered all of the components previously,
 but it makes use of some functionality we haven't seen yet. Earlier we've
@@ -161,12 +168,12 @@ perform any action you want.
 In our case we're using the `navigate_to` method of the `Session` class. This
 method takes a `URL` object, and opens it in the browser. This allows us to
 easily open links in the browser.
-"""
-    )
+    """
+        )
 
-    result.box(
-        "info",
-        """
+        result.box(
+            "info",
+            """
 ## Sessions
 Each time a user opens your app or connects to the website a new `rio.Session`
 is created. It contains a lot of core functionality, and you'll come across this
@@ -176,12 +183,12 @@ class a lot. Here's just some things a session can do:
 - Open & save files
 - Manage user settings
 - Store localization information, such as the user's preferred language and
-  timezone
-        """,
-    )
+timezone
+            """,
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 The `Projects` component then takes a list of `Project`s, and displays them in a
 `rio.Grid`. This component is similar to rows and columns, but allows you to
 add children two-dimensionally. Each child is added to a specific row and
@@ -192,13 +199,13 @@ column, and can occupy one or more grid cells.
 Now that we have all the components we need, let's put them together to create
 the complete bio page. We'll keep this short since we've already done this
 many times before now. Update `biography_page.py` to look like this:
-"""
-    )
+    """
+        )
 
-    result.snippet("tutorial-biography/biography_page.py")
+        result.snippet("tutorial-biography/biography_page.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 The most notable changes here are some new components again:
 
 `rio.Rectangle` is a component that simply displays a rectangle. It's not very
@@ -209,17 +216,17 @@ There's also `rio.Overlay`, and this is a weird one. It takes a single child and
 displays it above all other components on the page. The component also won't
 scroll with the rest of the page, hovering above it instead. We use it to add
 a button that allows readers to easily contact you via email.
-"""
-    )
+    """
+        )
 
-    result.summary(
-        "Rio ships with lots of useful components. Have a look at the docs (TODO link) to see them all",
-        "`rio.Session` is an extremely useful class which allows you to control the app, access user settings and more",
-        "The session is available in the `build` method of all components as `self.session`",
-    )
+        result.summary(
+            "Rio ships with lots of useful components. Have a look at the docs (TODO link) to see them all",
+            "`rio.Session` is an extremely useful class which allows you to control the app, access user settings and more",
+            "The session is available in the `build` method of all components as `self.session`",
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 **That's it!** You've now seen the basics of Rio, and are well underway to
 create your own apps. We've only scratched the surface of what Rio can do, but
 you now know enough to get started.
@@ -227,16 +234,16 @@ you now know enough to get started.
 The remaining tutorials aren't following any specific order, but instead show
 you how to solve specific tasks. Feel free to skip around, and come back to
 these tutorials whenever you need a refresher on the basics.
-        """
-    )
+            """
+        )
 
-    # TODO link more tutorials
+        # TODO link more tutorials
 
-    result.navigation(
-        "App Setup",
-        rio.URL("tutorial-4-first-components"),
-        "",
-        None,
-    )
+        result.navigation(
+            "App Setup",
+            rio.URL("tutorial-4-first-components"),
+            "",
+            None,
+        )
 
-    return result
+        return result

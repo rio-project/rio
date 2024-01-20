@@ -1,13 +1,20 @@
 import rio
 
-from .. import article_models
+from ... import article_models
 
 
-def generate() -> article_models.BuiltArticle:
-    result = article_models.BuiltArticle()
+class Builder(article_models.ArticleBuilder):
+    def __init__(self):
+        super().__init__(
+            "App Setup",
+            "3-app-setup",
+        )
 
-    result.markdown(
-        """
+    def build(self) -> article_models.BuiltArticle:
+        result = article_models.BuiltArticle()
+
+        result.markdown(
+            """
 # App Setup
 
 In the previous tutorial, we have looked at the source code of a simple Rio app.
@@ -61,20 +68,20 @@ remaining components it's easier to keep an overview over your app.
 
 The `assets` directory is empty for now. It is used to store non-code files that
 are needed by your app, such as images.
-"""
-    )
+    """
+        )
 
-    result.box(
-        "info",
-        """
+        result.box(
+            "info",
+            """
 You are of course free to change this structure to your liking, but sticking to
 the common structure will make it easier for other developers to understand your
 code and also help you when you ask for advice.
-        """,
-    )
+            """,
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 If you would like to run the placeholder code to get a quick overview over what
 it does, you can do so by running the following command:
 
@@ -84,19 +91,19 @@ rio run
 
 This already concludes the project setup. Thanks to the `rio` tool everything is
 taken care of for us, and we can start working on our app right away.
-"""
-    )
+    """
+        )
 
-    result.summary(
-        "The rio tool can be used to create new projects, as well as to run them.",
-        "Sticking to the standard project structure makes it easier to work with other developers.",
-    )
+        result.summary(
+            "The rio tool can be used to create new projects, as well as to run them.",
+            "Sticking to the standard project structure makes it easier to work with other developers.",
+        )
 
-    result.navigation(
-        "App Overview",
-        rio.URL("tutorial-2-app-overview"),
-        "First Components",
-        rio.URL("tutorial-4-first-components"),
-    )
+        result.navigation(
+            "App Overview",
+            rio.URL("tutorial-2-app-overview"),
+            "First Components",
+            rio.URL("tutorial-4-first-components"),
+        )
 
-    return result
+        return result
