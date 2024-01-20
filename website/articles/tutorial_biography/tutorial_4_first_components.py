@@ -1,13 +1,20 @@
 import rio
 
-from .. import article_models
+from ... import article_models
 
 
-def generate() -> article_models.BuiltArticle:
-    result = article_models.BuiltArticle()
+class Builder(article_models.ArticleBuilder):
+    def __init__(self):
+        super().__init__(
+            "First Components",
+            "4-first-components",
+        )
 
-    result.markdown(
-        """
+    def build(self) -> article_models.BuiltArticle:
+        result = article_models.BuiltArticle()
+
+        result.markdown(
+            """
 # Creating our First Components
 
 Everything is installed, our project structure is in place, and we are ready to
@@ -38,13 +45,13 @@ this file, we will create a new component that displays our name, and a short
 biography.
 
 Copy & paste the following code into the file:
-"""
-    )
+    """
+        )
 
-    result.snippet("tutorial-biography/about_me.py")
+        result.snippet("tutorial-biography/about_me.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 Most parts of the component should look familiar by now. We again have a class
 that inherits from `rio.Component`, and a `build` method. Since our content here
 never changes there is no need for any attributes in this class.
@@ -86,13 +93,13 @@ side.
 Now that we have a component that displays our name and a short biography, we
 can use it in our app. Rename the `sample_page.py` file to `biography_page.py`,
 and replace its contents with the following code:
-"""
-    )
+    """
+        )
 
-    result.snippet("tutorial-biography/biography_page_after_tutorial_4.py")
+        result.snippet("tutorial-biography/biography_page_after_tutorial_4.py")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 Our page currently simply returns the `AboutMe` component we just created. We'll
 extend this with more components over the next tutorials, but for now that's all
 we have.
@@ -115,20 +122,20 @@ rio.Page("", pages.BiographyPage),
 
 That's it! You can now run the app again, and see the changes you've made. Run
 `rio run` to see our new component in action!
-"""
-    )
+    """
+        )
 
-    result.summary(
-        "Projects are organized into `components`, `pages`, and `assets`. Clean projects are easier to work on!",
-        "Components often contain optional parameters that allow you to control their appearance.",
-        "We can create interesting layouts by stacking components inside each other.",
-    )
+        result.summary(
+            "Projects are organized into `components`, `pages`, and `assets`. Clean projects are easier to work on!",
+            "Components often contain optional parameters that allow you to control their appearance.",
+            "We can create interesting layouts by stacking components inside each other.",
+        )
 
-    result.navigation(
-        "App Setup",
-        rio.URL("tutorial-3-app-setup"),
-        "More Components",
-        rio.URL("tutorial-5-more-components"),
-    )
+        result.navigation(
+            "App Setup",
+            rio.URL("tutorial-3-app-setup"),
+            "More Components",
+            rio.URL("tutorial-5-more-components"),
+        )
 
-    return result
+        return result

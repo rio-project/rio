@@ -9,30 +9,58 @@ from .. import structure, theme
 
 class Outliner(rio.Component):
     @rio.event.on_page_change
-    async def _on_page_change(self) -> Any:
+    async def _on_page_change(self) -> None:
         await self.force_refresh()
 
-    def build(self) -> rio.Component:
-        docs_page = self.session.active_page_instances[0]
+    def _on_switcher_change(self, ev: rio.SwitcherBarChangeEvent) -> None:
+        assert ev.value is not None
+        self.session.navigate_to(ev.value)
 
-        if not docs_page.children:
+    def build(self) -> rio.Component:
+        try:
+            section_page = self.session.active_page_instances[1]
+        except IndexError:
+            section_page = None
+        else:
+            if section_page.page_url == "":
+                section_page = None
+
+        try:
+            selected_page = self.session.active_page_instances[2]
+        except IndexError:
+            section_page = None
+            selected_page = None
+
+        # No active section - hide
+        if section_page is None:
             return rio.Spacer(width=0, height=0)
 
-        sub_names = []
-        sub_urls = []
-        for page in docs_page.children:
-            sub_names.append(page.page_url.replace("-", " ").capitalize())
-            sub_urls.append(page.page_url)
+        assert selected_page is not None
 
+        # Find the section in the structure
+        for section in structure.DOCUMENTATION_STRUCTURE:
+            if section is None:
+                continue
+
+            section_name, section_url, builders = section
+
+            if section_url == section_page.page_url:
+                break
+        else:
+            assert False, f'Cannot find section "{section_page.page_url}" in structure'
+
+        # Display all pages in this section
         return rio.Column(
-            rio.Text("Current Section", style="heading2"),
+            rio.Text(section_name, style="heading2"),
             rio.Card(
                 rio.SwitcherBar(
-                    names=sub_names,
-                    values=sub_urls,
-                    selected_value="placeholder",
+                    names=[b.title for b in builders],
+                    values=[b.url_segment for b in builders],
+                    selected_value=selected_page.page_url,
                     color="primary",
                     orientation="vertical",
+                    on_change=self._on_switcher_change,
+                    margin=1,
                 ),
             ),
             rio.IconButton(
@@ -44,93 +72,9 @@ class Outliner(rio.Component):
             spacing=1,
         )
 
-        chapter_expanders = []
-
-        # Which page is currently selected?
-        try:
-            active_segment = self.session.active_page_url.parts[2]
-        except IndexError:
-            active_segment = ""
-
-        for section in structure.DOCUMENTATION_STRUCTURE:
-            # `None` is used to represent whitespace
-            if section is None:
-                chapter_expanders.append(rio.Spacer(height=3))
-                continue
-
-            # Otherwise, it's a tuple of (title, articles)
-            title, arts = section
-            entries = {}
-
-            # ... where each article is either a tuple of (name, url_segment,
-            # article), or a rio `Component`
-            for art in arts:
-                if isinstance(art, tuple):
-                    name, url_segment, _ = art
-                else:
-                    name = art.__name__
-                    url_segment = name
-
-                # TODO: Select the appropriate entry
-                # Highlight the button as active?
-                try:
-                    part = self.session.active_page_url.parts[2]
-                except IndexError:
-                    part = ""
-                is_active = part == url_segment
-
-                # Create the button
-                entries[name] = url_segment
-
-            chapter_expanders.append(
-                rio.Revealer(
-                    title,
-                    rio.SwitcherBar(
-                        entries,
-                        selected_value=active_segment
-                        if active_segment in entries
-                        else None,
-                        on_change=lambda ev: self.session.navigate_to(
-                            f"/documentation/{ev.value}"
-                        ),
-                        orientation="vertical",
-                        color="primary",
-                        width="grow",
-                    ),
-                ),
-            )
-
-        return rio.Card(
-            child=rio.Column(
-                *chapter_expanders,
-                width=13,
-                align_y=0,
-                margin=1.5,
-            ),
-            corner_radius=(
-                0,
-                theme.THEME.corner_radius_large,
-                theme.THEME.corner_radius_large,
-                0,
-            ),
-            elevate_on_hover=True,
-            colorize_on_hover=True,
-            align_y=0,
-        )
-
 
 class DocumentationPage(rio.Component):
     def build(self) -> rio.Component:
-        # Find the currently active section
-        active_segment = self.session.active_page_url.parts[1]
-
-        try:
-            section_name = structure.DOCUMENTATION_URL_SEGMENT_TO_SECTION[
-                active_segment
-            ]
-        except KeyError:
-            section_name = None
-
         return rio.Column(
             comps.TopEnd(),
             rio.Row(
@@ -143,7 +87,7 @@ class DocumentationPage(rio.Component):
                     height="grow",
                 ),
                 spacing=2,
-                margin_top=3,
+                height="grow",
             ),
             comps.BottomEnd(),
         )

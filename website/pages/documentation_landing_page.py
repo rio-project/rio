@@ -50,7 +50,7 @@ class LargeNavigationButtons(rio.Component):
                 ButtonCard(
                     "Getting Started",
                     "New to Rio? Start here.",
-                    rio.URL("/documentation/tutorial-1-rio-setup"),
+                    rio.URL("/documentation/tutorial-biography/1-rio-setup"),
                 ),
                 ButtonCard(
                     "How-To Guides",
@@ -60,7 +60,7 @@ class LargeNavigationButtons(rio.Component):
                 ButtonCard(
                     "API Reference",
                     "Detailed API documentation for all of Rio.",
-                    rio.URL("/documentation/api-reference"),
+                    rio.URL("/documentation/component/button"),
                 ),
                 spacing=2,
             ),

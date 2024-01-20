@@ -1,32 +1,39 @@
 import rio
 
-from .. import article_models
+from ... import article_models
 
 
-def generate() -> article_models.BuiltArticle:
-    result = article_models.BuiltArticle()
-    result.text("Rio Setup", style="heading1")
+class Builder(article_models.ArticleBuilder):
+    def __init__(self):
+        super().__init__(
+            "Rio Setup",
+            "1-rio-setup",
+        )
 
-    result.markdown(
-        """
+    def build(self) -> article_models.BuiltArticle:
+        result = article_models.BuiltArticle()
+        result.text("Rio Setup", style="heading1")
+
+        result.markdown(
+            """
 Welcome to the Rio tutorial! This short series will walk you through the process
 of setting up a Rio application from scratch, including installing Rio, creating
 a new project, and turning that project into your own interactive CV.
-"""
-    )
+    """
+        )
 
-    result.box(
-        "info",
-        """
+        result.box(
+            "info",
+            """
 Rio code is the same, regardless of whether you're creating an app or website.
 The only difference is in how you run it.
 
 So, while this tutorial will focus on creating a website, the concepts you learn
 here will apply regardless of whether you're creating a website or an app.
-        """,
-    )
-    result.markdown(
-        """
+            """,
+        )
+        result.markdown(
+            """
 ## Installing Python
 
 First things first, make sure you have Python installed. Rio is compatible with
@@ -46,20 +53,20 @@ python3 --version
 If you can see a supported Python version you're good to go! If not, install
 Python using your package manager, or download it from the [Python
 website](https://www.python.org/downloads/).
-"""
-    )
+    """
+        )
 
-    result.box(
-        "info",
-        """
+        result.box(
+            "info",
+            """
 For the rest of this tutorial, we'll assume that the Python command is available
 as `python`. If that isn't the case on your system, make sure to replace
 `python` with `python3` or whatever the appropriate command is on your system.
-        """,
-    )
+            """,
+        )
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 ## Installing Rio
 
 Rio is available on PyPI, so you can simply install it using `pip`:
@@ -113,14 +120,14 @@ If you can see an app window pop-up you're golden! If not, double check that you
 have followed all the steps above. If you need help, feel free to reach out on
 the [Rio Discord server](https://TODO-insert-discord-server-link). We have a
 section dedicated to helping newcomers get started.
-"""
-    )
+    """
+        )
 
-    result.navigation(
-        "",
-        None,
-        "Application Overview",
-        rio.URL("tutorial-2-application-overview"),
-    )
+        result.navigation(
+            "",
+            None,
+            "Application Overview",
+            rio.URL("tutorial-2-application-overview"),
+        )
 
-    return result
+        return result

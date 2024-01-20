@@ -1,27 +1,34 @@
 import rio
 
-from .. import article_models
+from ... import article_models
 
 
-def generate() -> article_models.BuiltArticle:
-    result = article_models.BuiltArticle()
+class Builder(article_models.ArticleBuilder):
+    def __init__(self):
+        super().__init__(
+            "HowTo: Passing Values Between Components",
+            "passing-values",
+        )
 
-    result.markdown(
-        """
-# Passing Values Between Components
+    def build(self) -> article_models.BuiltArticle:
+        result = article_models.BuiltArticle()
 
-## Parent to Child
+        result.markdown(
+            """
+    # Passing Values Between Components
+
+    ## Parent to Child
 
 When creating apps with Rio, values frequently need to be passed between
 components. For example, you may pass a string value to a `TextInput` component
 like this:
-"""
-    )
+    """
+        )
 
-    result.snippet("howto-passing-values/parent_to_child.py", section="code")
+        result.snippet("howto-passing-values/parent_to_child.py", section="code")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 This is teh simplest case. There is nothing special going on here - we're just
 passing a string value to a class.
 
@@ -33,13 +40,13 @@ store it in a database, send it to a server, or whatever else we need to do with
 it.
 
 Rio provides a convenient way to do this. Let's take a look at code:
-        """
-    )
+            """
+        )
 
-    result.snippet("howto-passing-values/child_to_parent.py", section="code")
+        result.snippet("howto-passing-values/child_to_parent.py", section="code")
 
-    result.markdown(
-        """
+        result.markdown(
+            """
 The results looks fairly similar to the previous example, but with one key
 difference: Notice how the `text` value we're passing to the `TextInput`
 component is written as `CustomComponent.some_value` instead of
@@ -61,17 +68,16 @@ handler.
 
 Passing values between siblings doesn't require any new concepts. Simply bind
 both components to the same class property, and they will be kept in sync:
+    """
+        )
 
-"""
-    )
+        result.snippet("howto-passing-values/sibling_to_sibling.py", section="code")
 
-    result.snippet("howto-passing-values/sibling_to_sibling.py", section="code")
-
-    result.markdown(
-        """
+        result.markdown(
+            """
 Here, changing either of the inputs will update the other one. (You might have
 to press `Enter ⏎` or click outside the input to see the change.)
-"""
-    )
+    """
+        )
 
-    return result
+        return result
