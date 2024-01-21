@@ -19,7 +19,9 @@ __all__ = [
     "MouseMoveEvent",
     "MouseEnterEvent",
     "MouseLeaveEvent",
-    "MouseDragEvent",
+    "DragStartEvent",
+    "DragMoveEvent",
+    "DragEndEvent",
 ]
 
 
@@ -67,16 +69,23 @@ class MouseLeaveEvent(_MousePositionedEvent):
 
 
 @dataclass
-class MouseDragEvent:
+class _DragEvent:
     button: MouseButton
+    x: float
+    y: float
+    component: rio.Component
 
-    start_x: float
-    start_y: float
-    start_component: rio.Component
 
-    end_x: float
-    end_y: float
-    end_component: rio.Component
+class DragStartEvent(_DragEvent):
+    pass
+
+
+class DragMoveEvent(_DragEvent):
+    pass
+
+
+class DragEndEvent(_DragEvent):
+    pass
 
 
 class MouseEventListener(FundamentalComponent):
@@ -102,7 +111,6 @@ class MouseEventListener(FundamentalComponent):
         on_mouse_move: Triggered when the mouse is moved while located over
             the child component.
 
-
         on_mouse_enter: Triggered when the mouse previously was not located
             over the child component, but now is.
 
@@ -118,7 +126,9 @@ class MouseEventListener(FundamentalComponent):
     on_mouse_move: rio.EventHandler[MouseMoveEvent] = None
     on_mouse_enter: rio.EventHandler[MouseEnterEvent] = None
     on_mouse_leave: rio.EventHandler[MouseLeaveEvent] = None
-    on_mouse_drag: rio.EventHandler[MouseDragEvent] = None
+    on_drag_start: rio.EventHandler[DragStartEvent] = None
+    on_drag_move: rio.EventHandler[DragMoveEvent] = None
+    on_drag_end: rio.EventHandler[DragEndEvent] = None
 
     def _custom_serialize(self) -> JsonDoc:
         return {
@@ -128,7 +138,9 @@ class MouseEventListener(FundamentalComponent):
             "reportMouseMove": self.on_mouse_move is not None,
             "reportMouseEnter": self.on_mouse_enter is not None,
             "reportMouseLeave": self.on_mouse_leave is not None,
-            "reportMouseDrag": self.on_mouse_drag is not None,
+            "reportDragStart": self.on_drag_start is not None,
+            "reportDragMove": self.on_drag_move is not None,
+            "reportDragEnd": self.on_drag_end is not None,
         }
 
     async def _on_message(self, msg: Any) -> None:
@@ -196,21 +208,36 @@ class MouseEventListener(FundamentalComponent):
                 ),
             )
 
-        elif msg_type == "mouseDrag":
+        elif msg_type == "dragStart":
             await self.call_event_handler(
-                self.on_mouse_drag,
-                MouseDragEvent(
+                self.on_drag_start,
+                DragStartEvent(
                     button=msg["button"],
-                    start_x=msg["startX"],
-                    start_y=msg["startY"],
-                    start_component=self.session._weak_components_by_id[
-                        msg["startComponent"]
-                    ],
-                    end_x=msg["endX"],
-                    end_y=msg["endY"],
-                    end_component=self.session._weak_components_by_id[
-                        msg["endComponent"]
-                    ],
+                    x=msg["x"],
+                    y=msg["y"],
+                    component=self.session._weak_components_by_id[msg["component"]],
+                ),
+            )
+
+        elif msg_type == "dragMove":
+            await self.call_event_handler(
+                self.on_drag_move,
+                DragMoveEvent(
+                    button=msg["button"],
+                    x=msg["x"],
+                    y=msg["y"],
+                    component=self.session._weak_components_by_id[msg["component"]],
+                ),
+            )
+
+        elif msg_type == "dragEnd":
+            await self.call_event_handler(
+                self.on_drag_end,
+                DragEndEvent(
+                    button=msg["button"],
+                    x=msg["x"],
+                    y=msg["y"],
+                    component=self.session._weak_components_by_id[msg["component"]],
                 ),
             )
 

@@ -52,15 +52,15 @@ export type MouseEventListenerState = ComponentState & {
     reportMouseMove: boolean;
     reportMouseEnter: boolean;
     reportMouseLeave: boolean;
-    reportMouseDrag: boolean;
+    reportDragStart: boolean;
+    reportDragMove: boolean;
+    reportDragEnd: boolean;
 };
 
 export class MouseEventListenerComponent extends SingleContainer {
     state: Required<MouseEventListenerState>;
 
     private _dragHandler: DragHandler | null = null;
-    private _dragStart: MouseEvent;
-    private _dragStartComponentId: ComponentId;
 
     createElement(): HTMLElement {
         return document.createElement('div');
@@ -141,12 +141,19 @@ export class MouseEventListenerComponent extends SingleContainer {
             this.element.onmouseleave = null;
         }
 
-        if (deltaState.reportMouseDrag) {
-            this._dragHandler = this.addDragHandler({
-                element: this.element,
-                onStart: this._onDragStart.bind(this),
-                onEnd: this._onDragEnd.bind(this),
-            });
+        if (
+            deltaState.reportDragStart ||
+            deltaState.reportDragMove ||
+            deltaState.reportDragEnd
+        ) {
+            if (this._dragHandler === null) {
+                this._dragHandler = this.addDragHandler({
+                    element: this.element,
+                    onStart: this._onDragStart.bind(this),
+                    onMove: this._onDragMove.bind(this),
+                    onEnd: this._onDragEnd.bind(this),
+                });
+            }
         } else {
             if (this._dragHandler !== null) {
                 this._dragHandler.disconnect();
@@ -156,21 +163,31 @@ export class MouseEventListenerComponent extends SingleContainer {
     }
 
     private _onDragStart(event: MouseEvent): boolean {
-        this._dragStart = event;
-        this._dragStartComponentId = findComponentUnderMouse(event);
+        if (this.state.reportDragStart) {
+            this._sendDragEvent('dragStart', event);
+        }
         return true;
     }
 
+    private _onDragMove(event: MouseEvent): void {
+        if (this.state.reportDragMove) {
+            this._sendDragEvent('dragMove', event);
+        }
+    }
+
     private _onDragEnd(event: MouseEvent): void {
+        if (this.state.reportDragEnd) {
+            this._sendDragEvent('dragEnd', event);
+        }
+    }
+
+    private _sendDragEvent(eventType: string, event: MouseEvent): void {
         this.sendMessageToBackend({
-            type: 'mouseDrag',
-            ...eventMouseButtonToString(this._dragStart),
-            startX: this._dragStart.clientX / pixelsPerEm,
-            startY: this._dragStart.clientY / pixelsPerEm,
-            startComponent: this._dragStartComponentId,
-            endX: event.clientX / pixelsPerEm,
-            endY: event.clientY / pixelsPerEm,
-            endComponent: findComponentUnderMouse(event),
+            type: eventType,
+            ...eventMouseButtonToString(event),
+            x: event.clientX / pixelsPerEm,
+            y: event.clientY / pixelsPerEm,
+            component: findComponentUnderMouse(event),
         });
     }
 }
