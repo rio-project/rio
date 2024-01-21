@@ -1,12 +1,9 @@
-import inspect
 from pathlib import Path
 from typing import *  # type: ignore
 
 import rio
 import rio.debug
-import rio_docs
 
-from . import article_models
 from . import components as comps
 from . import pages, structure, theme
 
@@ -77,36 +74,10 @@ class AppRoot(rio.Component):
         )
 
 
-def get_docs(component_class: Type) -> rio.Component:
-    # Get the docs class for this class
-    docs = rio_docs.ClassDocs.parse(component_class)
-
-    # Get the interactive examples for this class
-    try:
-        example = getattr(comps, f"{component_class.__name__}Example")
-    except AttributeError:
-        example = None
-
-    # Generate the article. This is done differently based on whether this is a
-    # component or another class.
-    if issubclass(component_class, rio.Component):
-        rio_docs.custom.postprocess_component_docs(docs)
-
-        art = article_models.create_component_api_docs(
-            docs,
-            example,
-        )
-
-    else:
-        rio_docs.custom.postprocess_class_docs(docs)
-
-        art = article_models.create_class_api_docs(docs)
-
-    return art.build()
-
-
-# Prepare the list of all documentation pages
 def _make_documentation_pages() -> list[rio.Page]:
+    """
+    Generates all documentation pages, as well as their children.
+    """
     result = []
 
     for section in structure.DOCUMENTATION_STRUCTURE:
@@ -116,7 +87,11 @@ def _make_documentation_pages() -> list[rio.Page]:
 
         # Construct the section page
         section_name, section_url, builders = section
-        section_page = rio.Page(section_url, rio.PageView)
+        section_page = rio.Page(
+            name=section_name,
+            page_url=section_url,
+            build=rio.PageView,
+        )
         result.append(section_page)
 
         # Add all the pages in this section
@@ -154,7 +129,6 @@ all_pages = [
 app = rio.App(
     name="Rio",
     build=AppRoot,
-    # build=lambda: rio.Text("foooooO!"),
     icon=rio.common.RIO_LOGO_ASSET_PATH,
     pages=all_pages,
     theme=theme.THEME,

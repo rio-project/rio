@@ -133,9 +133,9 @@ That's it! You can now run the app again, and see the changes you've made. Run
 
         result.navigation(
             "App Setup",
-            rio.URL("tutorial-3-app-setup"),
+            rio.URL("3-app-setup"),
             "More Components",
-            rio.URL("tutorial-5-more-components"),
+            rio.URL("5-more-components"),
         )
 
         return result

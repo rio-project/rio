@@ -9,6 +9,7 @@ from typing import Type
 
 import rio
 import rio.snippets
+import rio_docs
 from rio import escape_markdown as es
 from rio import escape_markdown_code as esc
 from rio_docs import models as docmodels
@@ -378,81 +379,32 @@ def _append_heading_and_short_description(
     )
 
 
-def create_class_api_docs(docs: docmodels.ClassDocs) -> BuiltArticle:
-    art = BuiltArticle()
+def get_docs(component_class: Type) -> rio.Component:
+    # Get the docs class for this class
+    docs = rio_docs.ClassDocs.parse(component_class)
 
-    # Heading / short description
-    _append_heading_and_short_description(
-        art,
-        docs.name,
-        docs.short_description,
-    )
+    # Get the interactive examples for this class
+    try:
+        example = getattr(comps, f"{component_class.__name__}Example")
+    except AttributeError:
+        example = None
 
-    # Long description
-    if docs.long_description is not None:
-        art.markdown(docs.long_description)
+    # Generate the article. This is done differently based on whether this is a
+    # component or another class.
+    if issubclass(component_class, rio.Component):
+        rio_docs.custom.postprocess_component_docs(docs)
 
-    # Fields
-    _append_field_docs_to_article(art, docs)
+        art = article_models.create_component_api_docs(
+            docs,
+            example,
+        )
 
-    # Functions
-    _append_method_docs_to_article(art, docs)
-
-    # Events
-    # TODO
-
-    # Done
-    return art
-
-
-def create_component_api_docs(
-    docs: docmodels.ClassDocs,
-    interactive_example: Callable[[], rio.Component] | None,
-) -> BuiltArticle:
-    art = BuiltArticle()
-
-    # Heading / short description
-    _append_heading_and_short_description(
-        art,
-        docs.name,
-        docs.short_description,
-    )
-
-    # Constructor Signature
-    for init_function in docs.functions:
-        if init_function.name == "__init__":
-            break
     else:
-        raise ValueError(f"Could not find constructor for component `{docs.name}`")
+        rio_docs.custom.postprocess_class_docs(docs)
 
-    init_signature = _str_function_signature(
-        init_function,
-        owning_class_name=docs.name,
-    )
-    art.code_block(init_signature)
+        art = article_models.create_class_api_docs(docs)
 
-    # Details
-    if docs.long_description is not None:
-        art.markdown(docs.long_description)
-
-    # Interactive example
-    if interactive_example is not None:
-        art.component(interactive_example())
-
-    # Attributes / Constructor arguments
-    #
-    # These are merged into a single section, because developers are unlikely to
-    # interact with the attributes anywhere but the constructor.
-    _append_field_docs_to_article(art, docs)
-
-    # Functions
-    _append_method_docs_to_article(
-        art,
-        docs,
-        filter=lambda func: func.name != "__init__",
-    )
-
-    return art
+    return art.build()
 
 
 class ArticleBuilder(ABC):
@@ -465,7 +417,7 @@ class ArticleBuilder(ABC):
         raise NotImplementedError()
 
 
-class ApiDocsArticle(ArticleBuilder):
+class ComponentApiDocsArticle(ArticleBuilder):
     def __init__(self, component_class: Type):
         super().__init__(
             component_class.__name__,
@@ -475,12 +427,86 @@ class ApiDocsArticle(ArticleBuilder):
         self.component_class = component_class
 
     def build(self) -> BuiltArticle:
-        result = BuiltArticle()
+        art = BuiltArticle()
 
-        result.markdown(
-            f"""
-# TODO: {self.title}
-        """
+        art.markdown(f"# TODO: API Docs for `{self.title}`")
+        return art
+
+        # Heading / short description
+        _append_heading_and_short_description(
+            art,
+            docs.name,
+            docs.short_description,
         )
 
-        return result
+        # Constructor Signature
+        for init_function in docs.functions:
+            if init_function.name == "__init__":
+                break
+        else:
+            raise ValueError(f"Could not find constructor for component `{docs.name}`")
+
+        init_signature = _str_function_signature(
+            init_function,
+            owning_class_name=docs.name,
+        )
+        art.code_block(init_signature)
+
+        # Details
+        if docs.long_description is not None:
+            art.markdown(docs.long_description)
+
+        # Interactive example
+        if interactive_example is not None:
+            art.component(interactive_example())
+
+        # Attributes / Constructor arguments
+        #
+        # These are merged into a single section, because developers are unlikely to
+        # interact with the attributes anywhere but the constructor.
+        _append_field_docs_to_article(art, docs)
+
+        # Functions
+        _append_method_docs_to_article(
+            art,
+            docs,
+            filter=lambda func: func.name != "__init__",
+        )
+
+        return art
+
+
+class ClassApiDocsArticle(ArticleBuilder):
+    def __init__(self, component_class: Type):
+        super().__init__(
+            component_class.__name__,
+            component_class.__name__.lower(),
+        )
+
+        self.component_class = component_class
+
+    def build(self) -> BuiltArticle:
+        art = BuiltArticle()
+
+        # Heading / short description
+        _append_heading_and_short_description(
+            art,
+            docs.name,
+            docs.short_description,
+        )
+
+        # Long description
+        if docs.long_description is not None:
+            art.markdown(docs.long_description)
+
+        # Fields
+        _append_field_docs_to_article(art, docs)
+
+        # Functions
+        _append_method_docs_to_article(art, docs)
+
+        # Events
+        # TODO
+
+        # Done
+        return art

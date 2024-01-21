@@ -23,7 +23,6 @@ class ComponentSample(rio.Component):
                 spacing=1,
                 margin=1.5,
             ),
-            corner_radius=self.session.theme.corner_radius_medium,
             color="background",
         )
 

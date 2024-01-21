@@ -25,7 +25,7 @@ class Builder(article_models.ArticleBuilder):
 
         result.navigation(
             "App Setup",
-            rio.URL("tutorial-4-first-components"),
+            rio.URL("4-first-components"),
             "",
             None,
         )

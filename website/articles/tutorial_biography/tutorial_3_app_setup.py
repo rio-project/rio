@@ -101,9 +101,9 @@ taken care of for us, and we can start working on our app right away.
 
         result.navigation(
             "App Overview",
-            rio.URL("tutorial-2-app-overview"),
+            rio.URL("2-app-overview"),
             "First Components",
-            rio.URL("tutorial-4-first-components"),
+            rio.URL("4-first-components"),
         )
 
         return result

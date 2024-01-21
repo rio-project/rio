@@ -69,10 +69,10 @@ export class CodeExplorerComponent extends ComponentBase {
         applyIcon(
             this.arrowElement,
             'arrow-right-alt:fill',
-            'var(--rio-local-text-color)'
+            'var(--rio-global-secondary-bg)'
         );
 
-        this.arrowElement.style.opacity = '0.3';
+        // this.arrowElement.style.opacity = '0.3';
 
         // Listen for mouse events
         this.buildResultElement.addEventListener(

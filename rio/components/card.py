@@ -68,7 +68,7 @@ class Card(FundamentalComponent):
         report_press = self.on_press is not None
 
         return {
-            "corner_radius": thm.corner_radius_large
+            "corner_radius": thm.corner_radius_medium
             if self.corner_radius is None
             else self.corner_radius,
             "reportPress": report_press,

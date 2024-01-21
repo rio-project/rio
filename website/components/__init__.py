@@ -3,6 +3,7 @@ from .bully import Bully
 from .code_sample import CodeSample
 from .community import Community
 from .component_showcase import ComponentShowcase
+from .docs_outliner import DocsOutliner
 from .footer import Footer
 from .getting_started import GettingStarted
 from .hero import Hero

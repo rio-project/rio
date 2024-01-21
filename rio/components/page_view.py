@@ -120,11 +120,11 @@ class PageView(Component):
     def _find_page_view_level_and_track_in_session(self) -> int:
         """
         Follow the chain of `_weak_builder_` references to find how deep in the
-        hierarchy of PageViews this one is. Returns 0 for a top-level PageView, 1
-        for a PageView inside a PageView, etc.
+        hierarchy of PageViews this one is. Returns 0 for a top-level PageView,
+        1 for a PageView inside one other PageView, etc.
 
-        Furthermore, this updates the session's `_page_views` dictionary to track
-        the parent PageView of this one.
+        Furthermore, this updates the session's `_page_views` dictionary to
+        track the parent PageView of this one.
         """
 
         # Determine how many PageViews are above this one
@@ -165,6 +165,7 @@ class PageView(Component):
     def build(self) -> rio.Component:
         # Look up the parent PageView
         level = self._find_page_view_level_and_track_in_session()
+        print(f"PageView {self._id} is on level {level}")
 
         # Fetch the page instance
         try:
