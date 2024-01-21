@@ -129,5 +129,7 @@ class WhatIsThisComponent(rio.Component):
             ),
             comps.GettingStarted(),
             comps.ComponentShowcase(),
-            comps.Community(),
+            comps.ShadedSubpage(
+                comps.Community(),
+            ),
         )

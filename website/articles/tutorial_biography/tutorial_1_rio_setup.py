@@ -127,7 +127,7 @@ section dedicated to helping newcomers get started.
             "",
             None,
             "Application Overview",
-            rio.URL("tutorial-2-application-overview"),
+            rio.URL("2-application-overview"),
         )
 
         return result

@@ -206,9 +206,9 @@ when we talk about deployment.
 
         result.navigation(
             "Rio Setup",
-            rio.URL("tutorial-1-rio-setup"),
+            rio.URL("1-rio-setup"),
             "App Setup",
-            rio.URL("tutorial-3-application-setup"),
+            rio.URL("3-application-setup"),
         )
 
         return result

@@ -59,8 +59,13 @@ class LargeNavigationButtons(rio.Component):
                 ),
                 ButtonCard(
                     "API Reference",
-                    "Detailed API documentation for all of Rio.",
+                    "Detailed API documentation for everything Rio.",
                     rio.URL("/documentation/component/button"),
+                ),
+                ButtonCard(
+                    "Examples",
+                    "See Rio in action with these examples.",
+                    rio.URL("/documentation/todo"),
                 ),
                 spacing=2,
             ),
@@ -82,11 +87,11 @@ class DocumentationLandingPage(rio.Component):
                 """
 # Welcome to the Rio Documentation
 
-Rio is your friendly companion for web development, especially if you're not a
-web design expert but know some Python.
+Rio is your friendly companion for web and app development, especially if you're
+not a web design expert but know some Python.
 
 This page is a perfect starting point to explore Rio and learn how to build your
-very own websites. Whether you're a beginner or have specific questions, Rio is
+very own web apps. Whether you're a beginner or have specific questions, Rio is
 here to simplify things for you.
 """,
                 margin_bottom=2,

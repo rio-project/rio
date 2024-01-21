@@ -42,6 +42,7 @@ class SocialButton(rio.Component):
                 open_in_new_tab=True,
                 margin_x=0.5,
             ),
+            color="background",
             corner_radius=99999,
             elevate_on_hover=True,
             colorize_on_hover=True,

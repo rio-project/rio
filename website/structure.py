@@ -48,23 +48,24 @@ DOCUMENTATION_STRUCTURE: tuple[SectionType, ...] = (
     ),
     None,
     # API Docs
-    # (
-    #     "Inputs",
-    #     (
-    #         rio.Button,
-    #         rio.ColorPicker,
-    #         rio.CustomButton,
-    #         rio.Dropdown,
-    #         rio.Icon,
-    #         rio.Image,
-    #         rio.KeyEventListener,
-    #         rio.MouseEventListener,
-    #         rio.NumberInput,
-    #         rio.Slider,
-    #         rio.Switch,
-    #         rio.TextInput,
-    #     ),
-    # ),
+    (
+        "Inputs",
+        "component",
+        (
+            article_models.ComponentApiDocsArticle(rio.Button),
+            article_models.ComponentApiDocsArticle(rio.ColorPicker),
+            article_models.ComponentApiDocsArticle(rio.CustomButton),
+            article_models.ComponentApiDocsArticle(rio.Dropdown),
+            article_models.ComponentApiDocsArticle(rio.Icon),
+            article_models.ComponentApiDocsArticle(rio.Image),
+            article_models.ComponentApiDocsArticle(rio.KeyEventListener),
+            article_models.ComponentApiDocsArticle(rio.MouseEventListener),
+            article_models.ComponentApiDocsArticle(rio.NumberInput),
+            article_models.ComponentApiDocsArticle(rio.Slider),
+            article_models.ComponentApiDocsArticle(rio.Switch),
+            article_models.ComponentApiDocsArticle(rio.TextInput),
+        ),
+    ),
     # (
     #     "Displays",
     #     (

@@ -1572,6 +1572,14 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     left: 0;
 }
 
+.rio-markdown-view > * > *:first-child {
+    margin-top: 0 !important;
+}
+
+.rio-markdown-view > * > *:last-child {
+    margin-bottom: 0 !important;
+}
+
 .rio-markdown-code-block {
     background: var(--rio-local-plain-bg-variant);
     border-radius: var(--rio-global-corner-radius-small);
@@ -2662,10 +2670,6 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     content: '';
     z-index: $z-index-debugger-highlighter;
     position: absolute;
-    left: -0.7rem;
-    top: -0.7rem;
-    bottom: -0.7rem;
-    right: -0.7rem;
 
     border-radius: 1rem;
     border-style: solid;

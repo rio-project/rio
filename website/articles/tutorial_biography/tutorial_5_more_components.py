@@ -241,7 +241,7 @@ these tutorials whenever you need a refresher on the basics.
 
         result.navigation(
             "App Setup",
-            rio.URL("tutorial-4-first-components"),
+            rio.URL("4-first-components"),
             "",
             None,
         )
