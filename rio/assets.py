@@ -36,7 +36,7 @@ def _securely_hash_bytes_changes_between_runs(data: bytes) -> bytes:
     return hasher.digest()
 
 
-_ASSETS: dict[tuple[Union[bytes, Path, URL], str | None], Asset] = {}
+_ASSETS: dict[tuple[bytes | Path | URL, str | None], Asset] = {}
 
 
 class Asset(SelfSerializing):
@@ -85,7 +85,7 @@ class Asset(SelfSerializing):
     @classmethod
     def new(
         cls,
-        data: Union[bytes, Path, URL],
+        data: bytes | Path | URL,
         media_type: str | None = None,
     ) -> Asset:
         key = (data, media_type)
@@ -205,7 +205,7 @@ class HostedAsset(Asset):
 class BytesAsset(HostedAsset):
     def __init__(
         self,
-        data: Union[bytes, bytearray],
+        data: bytes | bytearray,
         media_type: str | None = None,
     ):
         super().__init__(media_type)
@@ -237,7 +237,7 @@ def path_is_file(path: Path) -> bool:
 class PathAsset(HostedAsset):
     def __init__(
         self,
-        path: Union[os.PathLike, str],
+        path: os.PathLike | str,
         media_type: str | None = None,
     ):
         super().__init__(media_type)

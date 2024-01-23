@@ -45,7 +45,7 @@ T = TypeVar("T")
 Readonly = Annotated[T, _READONLY]
 
 
-ImageLike = Union[Path, Image, URL, bytes]
+ImageLike = Path | Image | URL | bytes
 
 MARKDOWN_ESCAPE = re.compile(r"([\\`\*_\{\}\[\]\(\)#\+\-.!])")
 MARKDOWN_CODE_ESCAPE = re.compile(r"([\\`])")
@@ -131,7 +131,7 @@ class FileInfo:
     async def open(self, type: Literal["rb"]) -> BytesIO:
         ...
 
-    async def open(self, type: Literal["r", "rb"] = "r") -> Union[StringIO, BytesIO]:
+    async def open(self, type: Literal["r", "rb"] = "r") -> StringIO | BytesIO:
         """
         Asynchronously opens the file, as though it were a regular file on this
         device.
@@ -161,7 +161,7 @@ class FileInfo:
 T = TypeVar("T")
 P = ParamSpec("P")
 
-EventHandler = Callable[P, Union[Any, Awaitable[Any]]] | None
+EventHandler = Callable[P, Any | Awaitable[Any]] | None
 
 
 def make_url_relative(base: URL, other: URL) -> URL:

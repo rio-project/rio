@@ -3,9 +3,15 @@ from __future__ import annotations
 import abc
 import dataclasses
 from collections.abc import Callable
-from typing import Any, ClassVar, Self, TypeVar, get_origin
 
-from typing_extensions import dataclass_transform
+from typing_extensions import (
+    Any,
+    ClassVar,
+    Self,
+    TypeVar,
+    dataclass_transform,
+    get_origin,
+)
 
 from . import inspection
 

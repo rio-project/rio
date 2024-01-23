@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
-from typing import Literal, Tuple, Union
+from typing import Literal
 
 from typing_extensions import TypeAlias
 from uniserde import Jsonable
@@ -217,4 +217,4 @@ class ImageFill(Fill):
             raise Exception(f"Invalid fill mode for image fill: {self._fill_mode}")
 
 
-FillLike: TypeAlias = Union[Fill, Color]
+FillLike: TypeAlias = Fill | Color

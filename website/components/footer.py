@@ -6,7 +6,7 @@ from .. import theme
 
 
 class FooterColumn(rio.Component):
-    entries: list[tuple[str, Union[str, rio.URL]]]
+    entries: list[tuple[str, str | rio.URL]]
 
     def build(self) -> rio.Component:
         return rio.Column(

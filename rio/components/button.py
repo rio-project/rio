@@ -33,7 +33,7 @@ class Button(Component):
     navigation button.
 
     Attributes:
-        child: The text or child component to display inside of the button.
+        content: The text or child component to display inside of the button.
 
         icon: The name of an icon to display on the button, in the form
             "set/name:variant". See the `Icon` component for details of how
@@ -61,7 +61,7 @@ class Button(Component):
         on_press: Triggered when the user clicks on the button.
     """
 
-    child: Union[rio.Component, str] = ""
+    content: rio.Component | str = ""
     _: KW_ONLY
     icon: str | None = None
     shape: Literal["pill", "rounded", "rectangle"] = "pill"
@@ -87,16 +87,16 @@ class Button(Component):
                 margin_y=CHILD_MARGIN_Y,
                 color=progress_color,
             )
-        elif isinstance(self.child, Component):
+        elif isinstance(self.content, Component):
             child = rio.Container(
-                self.child,
+                self.content,
                 margin_x=CHILD_MARGIN_Y,
                 margin_y=CHILD_MARGIN_Y,
                 align_x=0.5,
             )
         else:
             children = []
-            text = self.child.strip()
+            text = self.content.strip()
             n_children = (self.icon is not None) + bool(text)
 
             if self.icon is not None:
@@ -145,10 +145,10 @@ class Button(Component):
         )
 
     def __str__(self) -> str:
-        if isinstance(self.child, str):
-            text_or_child = f"text:{self.child!r}"
+        if isinstance(self.content, str):
+            text_or_child = f"text:{self.content!r}"
         else:
-            text_or_child = f"child:{self.child._id}"
+            text_or_child = f"child:{self.content._id}"
 
         return f"<Button id:{self._id} {text_or_child}>"
 

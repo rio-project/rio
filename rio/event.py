@@ -16,7 +16,7 @@ __all__ = [
 
 C = TypeVar("C", bound="rio.Component")
 R = TypeVar("R")
-SyncOrAsync = Union[R, Awaitable[R]]
+SyncOrAsync = R | Awaitable[R]
 SyncOrAsyncNone = TypeVar("SyncOrAsyncNone", bound=SyncOrAsync[None])
 
 
@@ -77,7 +77,7 @@ def on_unmount(handler: Callable[[C], R]) -> Callable[[C], R]:
 
 
 def periodic(
-    interval: Union[float, timedelta]
+    interval: float | timedelta,
 ) -> Callable[[Callable[[C], SyncOrAsyncNone]], Callable[[C], SyncOrAsyncNone]]:
     """
     TODO / unfinished / do not use

@@ -224,7 +224,12 @@ def _get_serializer_for_annotation(
     if annotation in (int, float, str, bool, None):
         return _serialize_basic_json_value
 
-    if inspect.isclass(annotation):
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+
+    # Python 3.10 crashes if you try `issubclass(list[str], SelfSerializing)`,
+    # so we must make absolutely sure the annotation isn't a generic type
+    if inspect.isclass(annotation) and not args:
         # Self-Serializing
         if issubclass(annotation, SelfSerializing):
             return _serialize_self_serializing
@@ -236,9 +241,6 @@ def _get_serializer_for_annotation(
         # Enums
         if issubclass(annotation, enum.Enum):
             return functools.partial(_serialize_enum, as_type=annotation)
-
-    origin = get_origin(annotation)
-    args = get_args(annotation)
 
     # Sequences of serializable values
     if origin is list:

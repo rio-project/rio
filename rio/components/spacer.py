@@ -25,8 +25,8 @@ class Spacer(class_container.ClassContainer):
     def __init__(
         self,
         *,
-        width: Union[Literal["grow"], float] = "grow",
-        height: Union[Literal["grow"], float] = "grow",
+        width: float | Literal["grow"] = "grow",
+        height: float | Literal["grow"] = "grow",
         key: str | None = None,
     ):
         """
