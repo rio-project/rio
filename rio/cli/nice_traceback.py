@@ -29,7 +29,7 @@ def _print_single_exception_raw(
     red: str,
     nored: str,
     relpath: Path | None = None,
-) -> str:
+) -> None:
     # Get the traceback as a list of frames
     tb_list = traceback.extract_tb(err.__traceback__)
 
@@ -37,7 +37,7 @@ def _print_single_exception_raw(
     if isinstance(err, SyntaxError):
         tb_list.append(
             traceback.FrameSummary(
-                filename=err.filename,
+                filename=err.filename,  # type: ignore
                 lineno=err.lineno,
                 end_lineno=err.end_lineno,
                 colno=err.offset,
