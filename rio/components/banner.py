@@ -26,7 +26,8 @@ class Banner(component.Component):
     quickly communicate the nature of the message to the user.
 
     Attributes:
-        text: The text to display. If empty, the banner will disappear entirely.
+        text: The text to display. If `None` or empty, the banner will disappear
+            entirely.
 
         style: Controls the appearance of the banner. The style is one of
             `info`, `success`, `warning` and `danger`. Depending on the value
@@ -37,7 +38,7 @@ class Banner(component.Component):
             icon fit their larger size.
     """
 
-    text: str
+    text: Optional[str]
     style: Literal["info", "success", "warning", "danger"]
 
     _: KW_ONLY
@@ -46,7 +47,11 @@ class Banner(component.Component):
 
     def build(self) -> rio.Component:
         # Early out: Nothing to show
-        if not self.text:
+        if self.text is None:
+            return rio.Spacer(width=0, height=0)
+
+        text = self.text.strip()
+        if not text:
             return rio.Spacer(width=0, height=0)
 
         # Prepare the style
@@ -68,12 +73,12 @@ class Banner(component.Component):
         # Prepare the text child
         if self.markup:
             text_child = rio.MarkdownView(
-                self.text,
+                text,
                 width="grow",
             )
         else:
             text_child = rio.Text(
-                self.text,
+                text,
                 width="grow",
                 multiline=self.multiline,
             )
