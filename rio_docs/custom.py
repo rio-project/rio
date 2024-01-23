@@ -11,7 +11,7 @@ import rio
 from . import models
 
 
-def find_items_needing_documentation() -> Iterable[Union[Type, Callable]]:
+def find_items_needing_documentation() -> Iterable[Type | Callable]:
     """
     Find all classes and functions in `Rio` that need to be documented.
     """

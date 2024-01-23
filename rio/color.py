@@ -639,8 +639,9 @@ Color.TRANSPARENT = Color.from_rgb(0.0, 0.0, 0.0, 0.0)
 
 
 # Like color, but also allows referencing theme colors
-ColorSet: TypeAlias = Union[
-    Literal[
+ColorSet: TypeAlias = (
+    Color
+    | Literal[
         "background",
         "neutral",
         "hud",
@@ -650,9 +651,8 @@ ColorSet: TypeAlias = Union[
         "warning",
         "danger",
         "keep",
-    ],
-    Color,
-]
+    ]
+)
 
 
 # Cache so the session can quickly determine whether a type annotation is

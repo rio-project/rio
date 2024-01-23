@@ -6,7 +6,7 @@ import rio
 
 class Contact(rio.Component):
     text: str
-    icon_name_or_url: Union[str, rio.URL]
+    icon_name_or_url: str | rio.URL
     _: KW_ONLY
     link: rio.URL | None = None
 

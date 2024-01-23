@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pathlib
 from dataclasses import KW_ONLY, dataclass
-from typing import Literal, Self
 
+from typing_extensions import Literal, Self
 from uniserde import JsonDoc
 
 from . import common, session

@@ -10,9 +10,6 @@ __all__ = [
 ]
 
 
-ArticleType: TypeAlias = Union[
-    tuple[str, str, Callable[[], article_models.BuiltArticle]], Type
-]
 SectionType: TypeAlias = (
     tuple[str, str, tuple[article_models.ArticleBuilder, ...]] | None
 )

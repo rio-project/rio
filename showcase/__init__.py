@@ -86,7 +86,7 @@ class Sidebar(rio.Component):
     expanded: bool = False
     popup_visible: bool = False
     text_buffer: str = "text-buffer-default"
-    number_value: Union[int, float] = 1.234
+    number_value: int | float = 1.234
 
     def _on_toggle_popup(self) -> None:
         self.popup_visible = not self.popup_visible

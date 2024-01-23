@@ -18,7 +18,7 @@ class Outliner(rio.Component):
         for entry in history_entries:
             children.append(
                 rio.Button(
-                    child=entry,
+                    content=entry,
                     style="plain",
                 )
             )
@@ -32,7 +32,7 @@ class Outliner(rio.Component):
             *children,
             rio.Button(
                 icon="add",
-                child="New Conversation",
+                content="New Conversation",
                 color="primary",
                 style="plain",
                 # margin_top=1.5,

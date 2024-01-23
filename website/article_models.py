@@ -1,20 +1,17 @@
 """
 Contains helpers for creating articles on the website. Articles are represented
-as sequences of `Union[rio.Component, str]`. Strings are rendered as markdown.
+as sequences of `rio.Component | str`. Strings are rendered as markdown.
 """
 
 from abc import ABC, abstractmethod
 from typing import *  # type: ignore
-from typing import Type
 
 import rio
 import rio.snippets
 import rio_docs
-from rio import escape_markdown as es
 from rio import escape_markdown_code as esc
 from rio_docs import models as docmodels
 
-from . import components as comps
 from . import theme
 
 
@@ -55,10 +52,9 @@ class BuiltArticle:
         self,
         text: str,
         *,
-        style: Union[
-            Literal["heading1", "heading2", "heading3", "text"],
-            rio.TextStyle,
-        ] = "text",
+        style: (
+            Literal["heading1", "heading2", "heading3", "text"] | rio.TextStyle
+        ) = "text",
     ) -> None:
         self.component(
             rio.Text(

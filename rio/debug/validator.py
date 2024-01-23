@@ -88,7 +88,7 @@ class ClientComponent:
     @property
     def child_containing_properties(
         self,
-    ) -> dict[str, Union[None, int, list[int]]]:
+    ) -> dict[str, None | int | list[int]]:
         child_attribute_names = self._get_child_attribute_names()
 
         result = {}

@@ -84,7 +84,7 @@ def main() -> None:
 
     # Find all items that should be documented
     print_chapter("Looking for items needing documentation")
-    target_items: list[Union[type, Callable[..., Any]]] = list(
+    target_items: list[type | Callable[..., Any]] = list(
         rio_docs.custom.find_items_needing_documentation()
     )
 

@@ -33,7 +33,7 @@ class BoxStyle(SelfSerializing):
         fill: rio.FillLike,
         stroke_color: rio.Color = color.Color.BLACK,
         stroke_width: float = 0.0,
-        corner_radius: Union[float, tuple[float, float, float, float]] = 0.0,
+        corner_radius: float | tuple[float, float, float, float] = 0.0,
         shadow_color: rio.Color = color.Color.BLACK,
         shadow_radius: float = 0.0,
         shadow_offset_x: float = 0.0,

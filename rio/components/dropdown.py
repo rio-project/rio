@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import KW_ONLY, dataclass
-from typing import *  # type: ignore
+from typing import Any, Generic, Literal, TypeVar
 
 from uniserde import JsonDoc
 
@@ -56,7 +56,7 @@ class Dropdown(FundamentalComponent, Generic[T]):
 
     def __init__(
         self,
-        options: Union[Mapping[str, T], Sequence[T]],
+        options: Mapping[str, T] | Sequence[T],
         *,
         label: str = "",
         selected_value: T | None = None,
