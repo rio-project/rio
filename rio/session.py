@@ -695,8 +695,9 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         To make sure async isn't used unintentionally this part of the refresh
         function is split into a separate, synchronous function.
 
-        The session keeps track of components which are no longer referenced in its
-        component tree. Those components are NOT included in the function's result.
+        The session keeps track of components which are no longer referenced in
+        its component tree. Those components are NOT included in the function's
+        result.
         """
 
         # Keep track of all components which are visited. Only they will be sent to
@@ -1074,8 +1075,8 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         - Any state which was explicitly set by the user in the new component's
           constructor is considered explicitly set, and will be copied into the
           old component
-        - If any values were changed, the component is registered as dirty with the
-          session
+        - If any values were changed, the component is registered as dirty with
+          the session
 
         This function also handles `StateBinding`s, for details see comments.
         """
@@ -1209,9 +1210,9 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         components are considered to be the same is up to the implementation and
         best-effort.
 
-        Returns an iterable over (old_component, new_component) pairs, as well as a
-        list of all components occurring in the new tree, which did not have a match
-        in the old tree.
+        Returns an iterable over (old_component, new_component) pairs, as well
+        as a list of all components occurring in the new tree, which did not
+        have a match in the old tree.
         """
 
         old_components_by_key: dict[str, rio.Component] = {}
@@ -1925,9 +1926,10 @@ document.body.removeChild(a)
 
     def _try_get_component_for_message(self, component_id: int) -> rio.Component | None:
         """
-        Attempts to get the component referenced by `component_id`. Returns `None` if
-        there is no such component. This can happen during normal opration, e.g.
-        because a component has been deleted while the message was in flight.
+        Attempts to get the component referenced by `component_id`. Returns
+        `None` if there is no such component. This can happen during normal
+        opration, e.g. because a component has been deleted while the message
+        was in flight.
         """
 
         try:
