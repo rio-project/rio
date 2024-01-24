@@ -6,6 +6,7 @@ import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import { textStyleToCss } from '../cssUtils';
 import { easeInOut } from '../easeFunctions';
+import { firstDefined } from '../utils';
 
 const ACCELERATION: number = 350; // rem/s^2
 
@@ -357,9 +358,11 @@ export class SwitcherBarComponent extends ComponentBase {
         Object.assign(result.style, TEXT_STYLE_CSS_OPTIONS);
         result.style.removeProperty('color');
 
-        let names = deltaState.names ?? this.state.names;
-        let iconSvgSources =
-            deltaState.icon_svg_sources ?? this.state.icon_svg_sources;
+        let names = firstDefined(deltaState.names, this.state.names);
+        let iconSvgSources = firstDefined(
+            deltaState.icon_svg_sources,
+            this.state.icon_svg_sources
+        );
 
         // Iterate over both
         for (let i = 0; i < names.length; i++) {
@@ -445,9 +448,11 @@ export class SwitcherBarComponent extends ComponentBase {
                 this.optionWidths = [];
                 this.optionHeights = [];
 
-                let names = deltaState.names ?? this.state.names;
-                let iconSvgSources =
-                    deltaState.icon_svg_sources ?? this.state.icon_svg_sources;
+                let names = firstDefined(deltaState.names, this.state.names);
+                let iconSvgSources = firstDefined(
+                    deltaState.icon_svg_sources,
+                    this.state.icon_svg_sources
+                );
 
                 // Iterate over both
                 for (let i = 0; i < names.length; i++) {

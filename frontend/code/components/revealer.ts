@@ -5,6 +5,7 @@ import { easeInOut } from '../easeFunctions';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext, updateLayout } from '../layouting';
 import { ComponentId, TextStyle } from '../models';
+import { firstDefined } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 
 let HEADER_PADDING: number = 0.6;
@@ -176,11 +177,14 @@ export class RevealerComponent extends ComponentBase {
             deltaState.header !== undefined ||
             deltaState.header_style !== undefined
         ) {
-            let headerText = deltaState.header ?? this.state.header;
+            let headerText = firstDefined(deltaState.header, this.state.header);
 
             if (headerText !== null) {
-                let headerStyle =
-                    deltaState.header_style ?? this.state.header_style;
+                let headerStyle = firstDefined(
+                    deltaState.header_style,
+                    this.state.header_style
+                );
+
                 [this.labelWidth, this.labelHeight] = getTextDimensions(
                     headerText,
                     headerStyle

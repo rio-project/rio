@@ -1,5 +1,6 @@
 import { getElementDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
+import { firstDefined } from '../utils';
 import { ComponentBase, ComponentState } from './componentBase';
 
 type TableValue = number | string;
@@ -34,8 +35,10 @@ export class TableComponent extends ComponentBase {
         latentComponents: Set<ComponentBase>
     ): void {
         if (deltaState.data !== undefined) {
-            let showRowNumbers =
-                deltaState.show_row_numbers ?? this.state.show_row_numbers;
+            let showRowNumbers = firstDefined(
+                deltaState.show_row_numbers,
+                this.state.show_row_numbers
+            );
             this.replaceData(deltaState.data, showRowNumbers);
         } else if (
             deltaState.show_row_numbers !== undefined &&

@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import dataclasses
 from collections.abc import Callable
+from typing import *  # type: ignore
 
 from typing_extensions import (
     Any,

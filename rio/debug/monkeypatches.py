@@ -86,6 +86,7 @@ def StateProperty_set(
             self._resolved_annotation = annotation
 
         try:
+            print(value, annotation)
             valid = introspection.typing.is_instance(
                 value, annotation, forward_ref_context=self._module
             )

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pathlib
 from dataclasses import KW_ONLY, dataclass
+from typing import *  # type: ignore
 
-from typing_extensions import Literal, Self
 from uniserde import JsonDoc
 
 from . import common, session
@@ -69,7 +69,7 @@ class TextStyle(SelfSerializing):
         font_weight: Literal["normal", "bold"] | None = None,
         underlined: bool | None = None,
         all_caps: bool | None = None,
-    ) -> Self:
+    ) -> TextStyle:
         return type(self)(
             font=self.font if font is None else font,
             fill=self.fill if fill is None else fill,
