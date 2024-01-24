@@ -89,8 +89,7 @@ def StateProperty_set(
             valid = introspection.typing.is_instance(
                 value, annotation, forward_ref_context=self._module
             )
-        # except NotImplementedError:
-        except ZeroDivisionError:
+        except NotImplementedError:
             warnings.warn(
                 f"Unable to verify assignment to"
                 f" {type(instance).__qualname__}.{self.name} (annotated as"
