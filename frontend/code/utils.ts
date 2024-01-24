@@ -23,6 +23,7 @@ export function withoutTransitions(
     enableTransitions(element);
 }
 
+/// Asynchronously sleeps for the given number of seconds.
 export async function sleep(durationInSeconds: number): Promise<void> {
     await new Promise((resolve, reject) =>
         setTimeout(resolve, durationInSeconds * 1000)
@@ -39,6 +40,8 @@ export function reprElement(element: Element): string {
     return `<${chunks.join(' ')}>`;
 }
 
+/// Returns an array containing all numbers from `start` (inclusive) to `end`
+/// (exclusive).
 export function range(start: number, end: number): number[] {
     let result: number[] = [];
 
@@ -47,4 +50,15 @@ export function range(start: number, end: number): number[] {
     }
 
     return result;
+}
+
+/// Returns the first argument that isn't `undefined`.
+export function firstDefined(...args: any[]): any {
+    for (let arg of args) {
+        if (arg !== undefined) {
+            return arg;
+        }
+    }
+
+    return undefined;
 }

@@ -4,6 +4,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { MDCRipple } from '@material/ripple';
 import { LayoutContext } from '../layouting';
 import { SingleContainer } from './singleContainer';
+import { firstDefined } from '../utils';
 
 export type ButtonState = ComponentState & {
     _type_: 'Button-builtin';
@@ -102,14 +103,14 @@ export class ButtonComponent extends SingleContainer {
         ) {
             // It looks ugly if every new button is initially greyed out, so for
             // the styling ignore `self.isStillInitiallyDisabled`.
-            let is_sensitive: boolean =
-                deltaState.is_sensitive || this.state['is_sensitive'];
+            let is_sensitive: boolean = firstDefined(
+                deltaState.is_sensitive,
+                this.state['is_sensitive']
+            );
 
             let colorSet = is_sensitive
-                ? deltaState.color || this.state['color']
+                ? firstDefined(deltaState.color, this.state['color'])
                 : 'disabled';
-
-            let style = deltaState.style || this.state['style'];
 
             // If no new colorset is specified, turn the accent color into the
             // plain color. This allows all styles to just assume that the color

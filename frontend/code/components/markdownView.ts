@@ -8,6 +8,7 @@ import { micromark } from 'micromark';
 import hljs from 'highlight.js/lib/common';
 import { LayoutContext } from '../layouting';
 import { getElementHeight, getElementWidth } from '../layoutHelpers';
+import { firstDefined } from '../utils';
 
 export type MarkdownViewState = ComponentState & {
     _type_: 'MarkdownView-builtin';
@@ -192,8 +193,10 @@ export class MarkdownViewComponent extends ComponentBase {
         if (deltaState.text !== undefined) {
             // Create a new div to hold the markdown content. This is so the
             // layouting code can move it around as needed.
-            let defaultLanguage =
-                deltaState.default_language || this.state.default_language;
+            let defaultLanguage = firstDefined(
+                deltaState.default_language,
+                this.state.default_language
+            );
 
             this.element.innerHTML = '';
             let contentDiv = document.createElement('div');

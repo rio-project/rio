@@ -3,6 +3,7 @@ import { textStyleToCss } from '../cssUtils';
 import { ComponentBase, ComponentState } from './componentBase';
 import { LayoutContext } from '../layouting';
 import { getTextDimensions } from '../layoutHelpers';
+import { firstDefined } from '../utils';
 
 export type TextState = ComponentState & {
     _type_: 'Text-builtin';
@@ -40,8 +41,11 @@ export class TextComponent extends ComponentBase {
             deltaState.text !== undefined ||
             deltaState.multiline !== undefined
         ) {
-            let text = deltaState.text ?? this.state.text;
-            let multiline = deltaState.multiline ?? this.state.multiline;
+            let text = firstDefined(deltaState.text, this.state.text);
+            let multiline = firstDefined(
+                deltaState.multiline,
+                this.state.multiline
+            );
 
             if (!multiline) {
                 text = text.replace(/\n/g, ' ');
@@ -88,7 +92,12 @@ export class TextComponent extends ComponentBase {
             this.makeLayoutDirty();
 
             // If it's single-line, compute and cache the text dimensions
-            if (!(deltaState.multiline ?? this.state.multiline)) {
+            let multiline = firstDefined(
+                deltaState.multiline,
+                this.state.multiline
+            );
+
+            if (!multiline) {
                 this.cachedSingleLineTextDimensions = getTextDimensions(
                     this.element.textContent!,
                     this.state.style

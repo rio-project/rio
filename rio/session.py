@@ -528,6 +528,8 @@ class Session(unicall.Unicall):
                 print("Exception in event handler:")
                 traceback.print_exc()
 
+            await self._refresh()
+
         self.create_task(worker(), name=f'Event handler for "{handler!r}"')
 
     def create_task(
@@ -633,6 +635,7 @@ window.location.href = {json.dumps(str(target_url))};
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
                 f"""
+console.debug(`Navigating from \`${{window.location.href}}\` to \`${json.dumps(str(active_page_url))}\``);
 window.history.{method}(null, "", {json.dumps(str(active_page_url))})
 window.scrollTo({{ top: 0, behavior: "smooth" }});
 """,
