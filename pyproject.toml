@@ -25,7 +25,7 @@ python = "^3.10"
 python-multipart = "^0.0.6"
 pytz = "^2023.3.post1"
 pywebview = { version = "^4.2.2", optional = true }
-revel = "0.8.14"
+revel = "0.8.15"
 timer-dict = "^1.0.0"
 typing-extensions = "^4.5.0"
 unicall = "^0.1.3"
