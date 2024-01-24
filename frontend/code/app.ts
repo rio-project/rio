@@ -82,10 +82,14 @@ function main(): void {
     // Listen for resize events
     window.addEventListener('resize', (event) => {
         // Notify the backend
-        callRemoteMethodDiscardResponse('onWindowResize', {
-            newWidth: window.innerWidth / pixelsPerEm,
-            newHeight: window.innerHeight / pixelsPerEm,
-        });
+        try {
+            callRemoteMethodDiscardResponse('onWindowResize', {
+                newWidth: window.innerWidth / pixelsPerEm,
+                newHeight: window.innerHeight / pixelsPerEm,
+            });
+        } catch (e) {
+            console.warn(`Couldn't notify backend of window resize: ${e}`);
+        }
 
         // Re-layout, but only if a root component already exists
         let rootElement = document.body.firstElementChild;
