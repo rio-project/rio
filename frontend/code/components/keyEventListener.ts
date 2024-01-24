@@ -687,7 +687,7 @@ function encodeEvent(event: KeyboardEvent): EncodedEvent {
 
 export type KeyEventListenerState = ComponentState & {
     _type_: 'KeyEventListener-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     reportKeyDown?: boolean;
     reportKeyUp?: boolean;
     reportKeyPress?: boolean;
@@ -754,7 +754,7 @@ export class KeyEventListenerComponent extends SingleContainer {
             element.onkeyup = null;
         }
 
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
     }
 
     grabKeyboardFocus(): void {

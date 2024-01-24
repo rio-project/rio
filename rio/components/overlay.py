@@ -13,25 +13,25 @@ class Overlay(FundamentalComponent):
     """
     Displays its child above all other components.
 
-    The overlay component takes a single child component, and displays it above all
-    other components on the page. The child will not scroll with the rest of the
-    page and is exempt from layouting.
+    The overlay component takes a single child component, and displays it above
+    all other components on the page. The child will not scroll with the rest of
+    the page and is exempt from layouting.
 
     Components inside of overlays are allocated the entire screen, and are
     themselves responsible for positioning themselves as required. You can
     easily achieve this using the child's `align_x` and `align_y` properties.
 
     Attributes:
-        child: The component to display in the overlay. It will take up the
-        entire size of the screen, so make sure to use properties such as
-        `align_x` and `align_y` to position it as needed.
+        content: The component to display in the overlay. It will take up the
+            entire size of the screen, so make sure to use properties such as
+            `align_x` and `align_y` to position it as needed.
     """
 
-    child: rio.Component
+    content: rio.Component
 
     def __init__(
         self,
-        child: rio.Component,
+        content: rio.Component,
         *,
         key: str | None = None,
     ):
@@ -41,7 +41,7 @@ class Overlay(FundamentalComponent):
 
         super().__init__(key=key)
 
-        self.child = child
+        self.content = content
 
 
 Overlay._unique_id = "Overlay-builtin"

@@ -96,10 +96,10 @@ class MockApp:
         ].build_result
         assert isinstance(low_level_root, FundamentalRootComponent), low_level_root
 
-        scroll_container = low_level_root.child
+        scroll_container = low_level_root.content
         assert isinstance(scroll_container, rio.ScrollContainer), scroll_container
 
-        return scroll_container.child
+        return scroll_container.content
 
     def get_components(self, component_type: type[C]) -> Iterator[C]:
         root_component = self.get_root_component()

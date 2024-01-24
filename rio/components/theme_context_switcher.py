@@ -12,7 +12,7 @@ __all__ = [
 
 
 class ThemeContextSwitcher(FundamentalComponent):
-    child: rio.Component
+    content: rio.Component
     color: rio.ColorSet
 
     def _custom_serialize(self) -> JsonDoc:

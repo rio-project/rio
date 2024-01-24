@@ -5,7 +5,7 @@ import { ComponentId } from '../models';
 
 export type MarginState = ComponentState & {
     _type_: 'Margin-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     margin_left?: number;
     margin_top?: number;
     margin_right?: number;
@@ -24,18 +24,18 @@ export class MarginComponent extends ComponentBase {
         deltaState: MarginState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth =
-            componentsById[this.state.child]!.requestedWidth +
+            componentsById[this.state.content]!.requestedWidth +
             this.state.margin_left +
             this.state.margin_right;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        let childInstance = componentsById[this.state.child]!;
+        let childInstance = componentsById[this.state.content]!;
         childInstance.allocatedWidth =
             this.allocatedWidth -
             this.state.margin_left -
@@ -44,13 +44,13 @@ export class MarginComponent extends ComponentBase {
 
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight =
-            componentsById[this.state.child]!.requestedHeight +
+            componentsById[this.state.content]!.requestedHeight +
             this.state.margin_top +
             this.state.margin_bottom;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let childInstance = componentsById[this.state.child]!;
+        let childInstance = componentsById[this.state.content]!;
         childInstance.allocatedHeight =
             this.allocatedHeight -
             this.state.margin_top -

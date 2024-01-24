@@ -119,7 +119,7 @@ class BuiltArticle:
 
         self.component(
             rio.Card(
-                child=rio.MarkdownView(
+                content=rio.MarkdownView(
                     f"""
 ## In Summary
 What we've learned this lesson:
@@ -347,7 +347,7 @@ def _append_heading_and_short_description(
     art.component(
         rio.Row(
             rio.Card(
-                child=rio.Column(
+                content=rio.Column(
                     rio.Text(
                         heading,
                         style="heading1",

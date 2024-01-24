@@ -201,7 +201,7 @@ function createLayoutComponentStates(
             _grow_: entireState['_grow_'],
             _rio_internal_: true,
             // @ts-ignore
-            child: resultId,
+            content: resultId,
             margin_left: margin[0],
             margin_top: margin[1],
             margin_right: margin[2],
@@ -226,7 +226,7 @@ function createLayoutComponentStates(
             _grow_: entireState['_grow_'],
             _rio_internal_: true,
             // @ts-ignore
-            child: resultId,
+            content: resultId,
             align_x: align[0],
             align_y: align[1],
         };

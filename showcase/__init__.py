@@ -96,7 +96,7 @@ class Sidebar(rio.Component):
 
     def build(self) -> rio.Component:
         return rio.Card(
-            child=rio.ScrollContainer(
+            content=rio.ScrollContainer(
                 rio.Column(
                     rio.Text(
                         "Rio UI",

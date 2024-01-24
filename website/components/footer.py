@@ -12,7 +12,7 @@ class FooterColumn(rio.Component):
         return rio.Column(
             *[
                 rio.Link(
-                    child=entry[0],
+                    content=entry[0],
                     target_url=entry[1],
                 )
                 for entry in self.entries
@@ -24,7 +24,7 @@ class FooterColumn(rio.Component):
 class Footer(rio.Component):
     def build(self) -> rio.Component:
         return rio.Rectangle(
-            child=rio.Column(
+            content=rio.Column(
                 # rio.Rectangle(
                 #     style=rio.BoxStyle(
                 #         fill=theme.THEME.background_palette.background,

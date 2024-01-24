@@ -97,7 +97,7 @@ class MouseEventListener(FundamentalComponent):
     through their event handlers.
 
     Attributes:
-        child: The child component to display.
+        content: The child component to display.
 
         on_press: Similar to `on_mouse_up`, but performs additional subtle
             checks, such as that the left mouse button was pressed.
@@ -118,7 +118,7 @@ class MouseEventListener(FundamentalComponent):
             the child component, but now is not.
     """
 
-    child: rio.Component
+    content: rio.Component
     _: KW_ONLY
     on_press: rio.EventHandler[PressEvent] = None
     on_mouse_down: rio.EventHandler[MouseDownEvent] = None

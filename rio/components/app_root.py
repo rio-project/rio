@@ -29,7 +29,7 @@ class AppTopBar(component.Component):
             )
 
         return class_container.ClassContainer(
-            child=rio.Row(
+            content=rio.Row(
                 rio.IconButton(
                     "menu",
                     style="plain",

@@ -16,10 +16,10 @@ class Container(Component):
     additional layout attributes such as a margin.
 
     Attributes:
-        child: The component to place inside the container.
+        content: The component to place inside the container.
     """
 
-    child: rio.Component
+    content: rio.Component
 
     def build(self) -> rio.Component:
-        return self.child
+        return self.content

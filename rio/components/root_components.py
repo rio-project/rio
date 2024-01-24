@@ -43,7 +43,7 @@ class HighLevelRootComponent(Component):
 
 
 class FundamentalRootComponent(FundamentalComponent):
-    child: Component
+    content: Component
     connection_lost_component: Component
     debugger: Component | None
 

@@ -21,12 +21,12 @@ class ClassContainer(FundamentalComponent):
     API.
     """
 
-    child: rio.Component | None
+    content: rio.Component | None
     classes: list[str]
 
     def _get_debug_details(self) -> dict[str, Any]:
         return {
-            "child": self.child,
+            "content": self.content,
         }
 
 

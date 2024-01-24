@@ -7,7 +7,7 @@ class GettingStarted(rio.Component):
     def build(self) -> rio.Component:
         return rio.ThemeContextSwitcher(
             rio.Rectangle(
-                child=rio.MarkdownView(
+                content=rio.MarkdownView(
                     """
 # Get started in just a few minutes
 

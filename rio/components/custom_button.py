@@ -133,7 +133,7 @@ class CustomButton(Component):
 
         return rio.MouseEventListener(
             rio.Rectangle(
-                child=child,
+                content=child,
                 style=style,
                 hover_style=hover_style,
                 transition_time=self.transition_speed,

@@ -4,7 +4,7 @@ import { ComponentId } from '../models';
 
 export type ClassContainerState = ComponentState & {
     _type_: 'ClassContainer-builtin';
-    child?: ComponentId | null;
+    content?: ComponentId | null;
     classes?: string[];
 };
 
@@ -19,7 +19,7 @@ export class ClassContainerComponent extends SingleContainer {
         deltaState: ClassContainerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         if (deltaState.classes !== undefined) {
             // Remove all old values

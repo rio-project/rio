@@ -31,7 +31,7 @@ class Rectangle(FundamentalComponent):
         style: How the rectangle should appear when the user isn't interacting
             with it.
 
-        child: The component to display inside the rectangle.
+        content: The component to display inside the rectangle.
 
         hover_style: The style of the rectangle when the mouse hovers above it.
             If set to `None`, the rectangle will not change its appearance when
@@ -48,7 +48,7 @@ class Rectangle(FundamentalComponent):
 
     _: KW_ONLY
     style: rio.BoxStyle
-    child: rio.Component | None = None
+    content: rio.Component | None = None
     hover_style: rio.BoxStyle | None = None
     transition_time: float = 1.0
     cursor: rio.CursorStyle = cursor_style.CursorStyle.DEFAULT

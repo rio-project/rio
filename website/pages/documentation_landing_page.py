@@ -12,7 +12,7 @@ class ButtonCard(rio.Component):
 
     def build(self) -> rio.Component:
         return rio.Card(
-            child=rio.Row(
+            content=rio.Row(
                 rio.Column(
                     rio.Text(
                         self.title,

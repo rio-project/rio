@@ -8,7 +8,7 @@ const TRANSITION_TIME: number = 0.35;
 
 export type SwitcherState = ComponentState & {
     _type_: 'Switcher-builtin';
-    child?: ComponentId | null;
+    content?: ComponentId | null;
 };
 
 export class SwitcherComponent extends ComponentBase {
@@ -45,10 +45,10 @@ export class SwitcherComponent extends ComponentBase {
         // Update the child
         if (
             !this.isInitialized ||
-            (deltaState.child !== undefined &&
-                deltaState.child !== this.state.child)
+            (deltaState.content !== undefined &&
+                deltaState.content !== this.state.content)
         ) {
-            console.assert(deltaState.child !== undefined);
+            console.assert(deltaState.content !== undefined);
 
             // Out with the old
             if (this.activeChildContainer !== null) {
@@ -64,7 +64,7 @@ export class SwitcherComponent extends ComponentBase {
             }
 
             // In with the new
-            if (deltaState.child === null) {
+            if (deltaState.content === null) {
                 this.activeChildContainer = null;
                 this.activeChildInstance = null;
             } else {
@@ -76,12 +76,12 @@ export class SwitcherComponent extends ComponentBase {
 
                 this.replaceOnlyChild(
                     latentComponents,
-                    deltaState.child,
+                    deltaState.content,
                     this.activeChildContainer
                 );
 
                 // Remember the child, as it is needed frequently
-                this.activeChildInstance = componentsById[deltaState.child!]!;
+                this.activeChildInstance = componentsById[deltaState.content!]!;
             }
 
             // Start the layouting process

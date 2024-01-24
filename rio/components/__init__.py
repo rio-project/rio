@@ -45,7 +45,6 @@ from .slider import *
 from .slideshow import *
 from .spacer import *
 from .stack import *
-from .style_context import *
 from .switch import *
 from .switcher import *
 from .switcher_bar import *

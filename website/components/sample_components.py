@@ -25,7 +25,7 @@ def _make_sample_rectangle(
     assert isinstance(style.fill, rio.SolidFill), style.fill
 
     return rio.Rectangle(
-        child=rio.Text(
+        content=rio.Text(
             text,
             style=rio.TextStyle(
                 fill=theme.THEME.text_color_for(

@@ -7,7 +7,7 @@ import { SingleContainer } from './singleContainer';
 export type RectangleState = ComponentState & {
     _type_: 'Rectangle-builtin';
     style?: BoxStyle;
-    child?: ComponentId | null;
+    content?: ComponentId | null;
     hover_style?: BoxStyle | null;
     transition_time?: number;
     cursor?: string;
@@ -92,7 +92,7 @@ export class RectangleComponent extends SingleContainer {
             setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
         }
 
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         if (deltaState.transition_time !== undefined) {
             element.style.transitionDuration = `${deltaState.transition_time}s`;
