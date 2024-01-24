@@ -4,6 +4,8 @@ import logging
 from collections.abc import Callable, Iterable
 from dataclasses import KW_ONLY, dataclass, field
 
+from revel import debug
+
 import rio
 
 from . import common
@@ -166,7 +168,7 @@ def check_page_guards(
             _get_active_page_instances(sess.app.pages, target_url_relative.parts)
         )
 
-        print("Actives:", [page.page_url for page in active_page_instances])
+        debug("Actives:", [page.page_url for page in active_page_instances])
 
         # Check the guards for each activated page
         redirect = None

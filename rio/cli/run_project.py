@@ -16,7 +16,7 @@ from typing import *  # type: ignore
 
 import uvicorn
 import watchfiles
-from revel import error, fatal, print, success, warning
+from revel import debug, error, fatal, print, success, warning
 
 import rio.app_server
 import rio.cli
@@ -614,18 +614,18 @@ window.setConnectionLostPopupVisible(true);
         assert self._app_server is None, "Can't start the server twice"
 
         def start_callback() -> None:
-            print("Debug: Internal on app start")
+            debug("Internal on app start")
             self._run_in_mainloop(app_has_started_event.set)
 
         # Create the app server
-        print("Debug: As fastapi")
+        debug("As fastapi")
         app_server = app._as_fastapi(
             debug_mode=self.debug_mode,
             running_in_window=self.run_in_window,
             validator_factory=None,
             internal_on_app_start=start_callback,
         )
-        print("Debug: After as fastapi")
+        debug("After as fastapi")
 
         assert isinstance(app_server, rio.app_server.AppServer), app_server
         self._app_server = app_server

@@ -17,6 +17,7 @@ from typing import *  # type: ignore
 
 import fastapi
 import pytz
+import revel
 import timer_dict
 import uniserde.case_convert
 from PIL import Image
@@ -176,7 +177,7 @@ class AppServer(fastapi.FastAPI):
 
     @contextlib.asynccontextmanager
     async def _lifespan(self):
-        print("Debug: Start of the lifespan function")
+        revel.debug("Start of the lifespan function")
         # If running as a server, periodically clean up expired sessions
         if not self.running_in_window:
             assert type(self) is AppServer  # Shut up pyright
@@ -197,7 +198,7 @@ class AppServer(fastapi.FastAPI):
         if self.internal_on_app_start is not None:
             self.internal_on_app_start()
 
-        print("Debug: Yielding from the lifespan function")
+        revel.debug("Yielding from the lifespan function")
 
         try:
             yield
@@ -214,7 +215,7 @@ class AppServer(fastapi.FastAPI):
                         type(result), result, result.__traceback__
                     )
 
-        print("Debug: End of the lifespan function")
+        revel.debug("End of the lifespan function")
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """
@@ -251,7 +252,7 @@ class AppServer(fastapi.FastAPI):
         """
         Handler for serving the index HTML page via fastapi.
         """
-        print("Debug: Serving index page")
+        revel.debug("Serving index page")
 
         # Because Rio apps are single-page, this route serves as the fallback.
         # In addition to legitimate requests for HTML pages, it will also catch
@@ -637,24 +638,24 @@ class AppServer(fastapi.FastAPI):
             sess._send_message = send_message
             sess._receive_message = receive_message
 
-        print("Debug: Setting active event")
+        revel.debug("Setting active event")
         sess._websocket = websocket
         sess._is_active_event.set()
 
         # Check if this is a reconnect
         try:
             if hasattr(sess, "window_width"):
-                print("Debug: Sending reconnect message")
+                revel.debug("Sending reconnect message")
                 init_coro = sess._send_all_components_on_reconnect()
             else:
-                print("Debug: Finishing session initialization")
+                revel.debug("Finishing session initialization")
                 await self._finish_session_initialization(
                     sess, websocket, session_token
                 )
 
                 # Trigger a refresh. This will also send the initial state to
                 # the frontend.
-                print("Debug: Refreshing session")
+                revel.debug("Refreshing session")
                 init_coro = sess._refresh()
 
             # This is done in a task because the server is not yet running, so
@@ -663,7 +664,7 @@ class AppServer(fastapi.FastAPI):
             sess.create_task(init_coro, name=f"Session `{sess}` init")
 
             # Serve the socket
-            print("Debug: Serving session")
+            revel.debug("Serving session")
             await sess.serve()
 
         except fastapi.WebSocketDisconnect as err:
@@ -674,12 +675,12 @@ class AppServer(fastapi.FastAPI):
                 sess.close()
 
         else:
-            print("Debug: Closing websocket without exception")
+            revel.debug("Closing websocket without exception")
             # I don't think this branch can even be reached, but better safe
             # than sorry, I guess?
             sess.close()
         finally:
-            print("Debug: Clearing active event")
+            revel.debug("Clearing active event")
             sess._websocket = None
             sess._is_active_event.clear()
 

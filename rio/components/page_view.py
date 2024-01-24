@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import KW_ONLY, field
 
+import revel
+
 import rio
 
 from .component import Component
@@ -165,7 +167,7 @@ class PageView(Component):
     def build(self) -> rio.Component:
         # Look up the parent PageView
         level = self._find_page_view_level_and_track_in_session()
-        print(f"PageView {self._id} is on level {level}")
+        revel.debug(f"PageView {self._id} is on level {level}")
 
         # Fetch the page instance
         try:
