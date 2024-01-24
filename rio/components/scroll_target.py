@@ -21,11 +21,11 @@ class ScrollTarget(FundamentalComponent):
         id: The ID of the `ScrollTarget`. This must be unique among all
             `ScrollTarget`s on the page.
 
-        child: The child component to display inside the `ScrollTarget`.
+        content: The child component to display inside the `ScrollTarget`.
     """
 
     id: str
-    child: rio.Component | None = None
+    content: rio.Component | None = None
 
 
 ScrollTarget._unique_id = "ScrollTarget-builtin"

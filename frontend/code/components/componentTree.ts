@@ -132,9 +132,9 @@ export class ComponentTreeComponent extends ComponentBase {
     getDisplayedRootComponent(): ComponentBase {
         let actualRoot = getRootComponent();
         let rootScroller = componentsById[
-            actualRoot.state.child
+            actualRoot.state.content
         ]! as ScrollContainerComponent;
-        let userRoot = componentsById[rootScroller.state.child]!;
+        let userRoot = componentsById[rootScroller.state.content]!;
         return userRoot;
     }
 

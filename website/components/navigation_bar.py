@@ -33,7 +33,7 @@ class NavigationBar(rio.Component):
             active_url_fragment = ""
 
         return rio.Rectangle(
-            child=rio.Row(
+            content=rio.Row(
                 rio.Icon(
                     "rio/logo:color",
                     width=2.7,

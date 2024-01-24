@@ -53,7 +53,7 @@ def make_default_connection_lost_component() -> rio.Component:
     class DefaultConnectionLostComponent(rio.Component):
         def build(self) -> rio.Component:
             return rio.Rectangle(
-                child=rio.Row(
+                content=rio.Row(
                     rio.Icon(
                         "error",
                         fill="danger",

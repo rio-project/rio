@@ -9,7 +9,7 @@ const PADDING_Y: number = 0.7;
 
 export type CustomListItemState = ComponentState & {
     _type_: 'CustomListItem-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     pressable?: boolean;
 };
 
@@ -31,7 +31,7 @@ export class CustomListItemComponent extends ComponentBase {
         latentComponents: Set<ComponentBase>
     ): void {
         // Update the child
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         // Style the surface depending on whether it is pressable.
         if (deltaState.pressable === true) {
@@ -70,21 +70,21 @@ export class CustomListItemComponent extends ComponentBase {
 
     updateNaturalWidth(ctx: LayoutContext): void {
         this.naturalWidth =
-            componentsById[this.state.child]!.requestedWidth + PADDING_X * 2;
+            componentsById[this.state.content]!.requestedWidth + PADDING_X * 2;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        componentsById[this.state.child]!.allocatedWidth =
+        componentsById[this.state.content]!.allocatedWidth =
             this.allocatedWidth - PADDING_X * 2;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
         this.naturalHeight =
-            componentsById[this.state.child]!.requestedHeight + PADDING_Y * 2;
+            componentsById[this.state.content]!.requestedHeight + PADDING_Y * 2;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
         child.allocatedHeight = this.allocatedHeight - PADDING_Y * 2;
 
         // Position the child

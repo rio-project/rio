@@ -18,7 +18,7 @@ class ScrollContainer(FundamentalComponent):
     component grows too large. It can scroll vertically and/or horizontally.
 
     Attributes:
-        child: The child component to display inside the `ScrollContainer`.
+        content: The child component to display inside the `ScrollContainer`.
 
         scroll_x: Controls horizontal scrolling. The default is `"auto"`, which
             means that a scroll bar will be displayed only if it is needed.
@@ -35,7 +35,7 @@ class ScrollContainer(FundamentalComponent):
             will automatically scroll to the bottom again.
     """
 
-    child: rio.Component
+    content: rio.Component
     _: KW_ONLY
     scroll_x: Literal["never", "auto", "always"] = "auto"
     scroll_y: Literal["never", "auto", "always"] = "auto"

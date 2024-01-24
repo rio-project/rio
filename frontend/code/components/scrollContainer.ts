@@ -6,7 +6,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 export type ScrollContainerState = ComponentState & {
     _type_: 'ScrollContainer-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     scroll_x?: 'never' | 'auto' | 'always';
     scroll_y?: 'never' | 'auto' | 'always';
     sticky_bottom?: boolean;
@@ -43,7 +43,7 @@ export class ScrollContainerComponent extends ComponentBase {
         deltaState: ScrollContainerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
@@ -51,7 +51,7 @@ export class ScrollContainerComponent extends ComponentBase {
             console.debug('scrollTop NW (px):', this.element.scrollTop);
 
         if (this.state.scroll_x === 'never') {
-            let child = componentsById[this.state.child]!;
+            let child = componentsById[this.state.content]!;
             this.naturalWidth = child.requestedWidth;
             return;
         }
@@ -67,7 +67,7 @@ export class ScrollContainerComponent extends ComponentBase {
     updateAllocatedWidth(ctx: LayoutContext): void {
         if (this.state.sticky_bottom)
             console.debug('scrollTop AW (px):', this.element.scrollTop);
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
 
         let availableWidth = this.allocatedWidth;
         if (this.shouldLayoutWithVerticalScrollbar()) {
@@ -92,7 +92,7 @@ export class ScrollContainerComponent extends ComponentBase {
         if (this.state.sticky_bottom)
             console.debug('scrollTop NH (px):', this.element.scrollTop);
         if (this.state.scroll_y === 'never') {
-            let child = componentsById[this.state.child]!;
+            let child = componentsById[this.state.content]!;
             this.naturalHeight = child.requestedHeight;
             return;
         }
@@ -108,7 +108,7 @@ export class ScrollContainerComponent extends ComponentBase {
     updateAllocatedHeight(ctx: LayoutContext): void {
         if (this.state.sticky_bottom)
             console.debug('scrollTop AH (px):', this.element.scrollTop);
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
 
         let heightBefore = child.allocatedHeight;
 

@@ -5,7 +5,7 @@ import { SingleContainer } from './singleContainer';
 
 export type CardState = ComponentState & {
     _type_: 'Card-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     corner_radius?: number | [number, number, number, number];
     reportPress?: boolean;
     elevate_on_hover?: boolean;
@@ -40,7 +40,7 @@ export class CardComponent extends SingleContainer {
         latentComponents: Set<ComponentBase>
     ): void {
         // Update the child
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         // Update the corner radius
         if (deltaState.corner_radius !== undefined) {

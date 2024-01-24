@@ -5,7 +5,7 @@ import { SingleContainer } from './singleContainer';
 
 export type ThemeContextSwitcherState = ComponentState & {
     _type_: 'ThemeContextSwitcher-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     color?: ColorSet;
 };
 
@@ -22,7 +22,7 @@ export class ThemeContextSwitcherComponent extends SingleContainer {
         latentComponents: Set<ComponentBase>
     ): void {
         // Update the child
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         // Colorize
         if (deltaState.color !== undefined) {

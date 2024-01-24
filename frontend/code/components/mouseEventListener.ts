@@ -45,7 +45,7 @@ function findComponentUnderMouse(event: MouseEvent): ComponentId {
 
 export type MouseEventListenerState = ComponentState & {
     _type_: 'MouseEventListener-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     reportPress: boolean;
     reportMouseDown: boolean;
     reportMouseUp: boolean;
@@ -70,7 +70,7 @@ export class MouseEventListenerComponent extends SingleContainer {
         deltaState: MouseEventListenerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         if (deltaState.reportPress) {
             this.element.onclick = (e) => {

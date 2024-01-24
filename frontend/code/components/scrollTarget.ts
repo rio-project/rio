@@ -5,7 +5,7 @@ import { SingleContainer } from './singleContainer';
 export type ScrollTargetState = ComponentState & {
     _type_: 'ScrollTarget-builtin';
     id?: string;
-    child?: ComponentId | null;
+    content?: ComponentId | null;
 };
 
 export class ScrollTargetComponent extends SingleContainer {
@@ -19,7 +19,7 @@ export class ScrollTargetComponent extends SingleContainer {
         deltaState: ScrollTargetState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         if (deltaState.id !== undefined) {
             this.element.id = deltaState.id;

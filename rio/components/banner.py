@@ -86,7 +86,7 @@ class Banner(component.Component):
         # Build the result
         if self.multiline:
             return rio.Card(
-                child=rio.Row(
+                content=rio.Row(
                     rio.Icon(
                         icon,
                         width=2.5,
@@ -103,7 +103,7 @@ class Banner(component.Component):
             )
 
         return rio.Card(
-            child=rio.Row(
+            content=rio.Row(
                 rio.Icon(icon),
                 text_child,
                 spacing=0.8,

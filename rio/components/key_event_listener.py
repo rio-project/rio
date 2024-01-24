@@ -614,7 +614,7 @@ class KeyEventListener(KeyboardFocusableFundamentalComponent):
     will not trigger a `KeyEventListener`.
 
     Attributes:
-        child: The child component.
+        content: The child component.
 
         on_key_down: A function to call when a key is pressed down.
 
@@ -623,7 +623,7 @@ class KeyEventListener(KeyboardFocusableFundamentalComponent):
         on_key_press: A function to call repeatedly while a key is held down.
     """
 
-    child: rio.Component
+    content: rio.Component
     _: KW_ONLY
     on_key_down: rio.EventHandler[KeyDownEvent] = None
     on_key_up: rio.EventHandler[KeyUpEvent] = None

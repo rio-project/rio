@@ -10,7 +10,7 @@ __all__ = [
 
 
 class Switcher(FundamentalComponent):
-    child: rio.Component | None
+    content: rio.Component | None
 
 
 Switcher._unique_id = "Switcher-builtin"

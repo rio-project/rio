@@ -11,7 +11,7 @@ export type ButtonState = ComponentState & {
     shape?: 'pill' | 'rounded' | 'rectangle';
     style?: 'major' | 'minor' | 'plain';
     color?: ColorSet;
-    child?: ComponentId;
+    content?: ComponentId;
     is_sensitive?: boolean;
     initially_disabled_for?: number;
 };
@@ -66,7 +66,7 @@ export class ButtonComponent extends SingleContainer {
         // Update the child
         this.replaceOnlyChild(
             latentComponents,
-            deltaState.child,
+            deltaState.content,
             this.innerElement
         );
 

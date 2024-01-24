@@ -187,7 +187,7 @@ class PalettePicker(rio.Component):  #
         return rio.Popup(
             anchor=rio.MouseEventListener(
                 rio.Rectangle(
-                    child=rio.Column(
+                    content=rio.Column(
                         rio.Text(
                             self.palette_nicename,
                             style=rio.TextStyle(
@@ -336,7 +336,7 @@ class ThemePickerPage(rio.Component):
 
         # Combine everything
         return rio.ScrollContainer(
-            child=rio.Column(
+            content=rio.Column(
                 # Main Colors
                 # rio.Text(
                 #     "Theme Colors",

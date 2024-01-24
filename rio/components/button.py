@@ -133,7 +133,7 @@ class Button(Component):
         # Delegate to a HTML Component
         return _ButtonInternal(
             on_press=self.on_press,
-            child=child,
+            content=child,
             shape=self.shape,
             style=self.style,
             color=self.color,
@@ -146,11 +146,11 @@ class Button(Component):
 
     def __str__(self) -> str:
         if isinstance(self.content, str):
-            text_or_child = f"text:{self.content!r}"
+            content = f"text:{self.content!r}"
         else:
-            text_or_child = f"child:{self.content._id}"
+            content = f"content:{self.content._id}"
 
-        return f"<Button id:{self._id} {text_or_child}>"
+        return f"<Button id:{self._id} {content}>"
 
 
 class IconButton(Component):
@@ -224,7 +224,7 @@ class IconButton(Component):
     def build(self) -> rio.Component:
         return _ButtonInternal(
             on_press=self.on_press,
-            child=rio.Icon(
+            content=rio.Icon(
                 self.icon,
                 height=self.size * 0.65,
                 width=self.size * 0.65,
@@ -248,7 +248,7 @@ class IconButton(Component):
 class _ButtonInternal(FundamentalComponent):
     _: KW_ONLY
     on_press: rio.EventHandler[[]]
-    child: rio.Component
+    content: rio.Component
     shape: Literal["pill", "rounded", "rectangle", "circle"]
     style: Literal["major", "minor", "plain"]
     color: rio.ColorSet

@@ -32,7 +32,7 @@ class Link(FundamentalComponent):
     # splits the child into two values
     def __init__(
         self,
-        child: rio.Component | str,
+        content: rio.Component | str,
         target_url: rio.URL | str,
         *,
         open_in_new_tab: bool = False,
@@ -51,7 +51,7 @@ class Link(FundamentalComponent):
     ):
         """
         Args:
-            child: The text or component to display inside the link.
+            content: The text or component to display inside the link.
 
             target_url: The page or URL to navigate to when clicked.
         """
@@ -70,12 +70,12 @@ class Link(FundamentalComponent):
             align_y=align_y,
         )
 
-        if isinstance(child, str):
-            self.child_text = child
+        if isinstance(content, str):
+            self.child_text = content
             self.child_component = None
         else:
             self.child_text = None
-            self.child_component = child
+            self.child_component = content
 
         self.target_url = target_url
         self.open_in_new_tab = open_in_new_tab

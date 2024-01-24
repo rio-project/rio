@@ -72,7 +72,7 @@ class SimpleListItem(Component):
 
         # Combine everything
         return CustomListItem(
-            child=rio.Row(
+            content=rio.Row(
                 *children,
                 spacing=1,
                 width="grow",
@@ -82,7 +82,7 @@ class SimpleListItem(Component):
 
 
 class CustomListItem(FundamentalComponent):
-    child: rio.Component
+    content: rio.Component
     _: KW_ONLY
     on_press: rio.EventHandler[[]] = None
 

@@ -5,7 +5,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 export type AlignState = ComponentState & {
     _type_: 'Align-builtin';
-    child?: ComponentId;
+    content?: ComponentId;
     align_x?: number | null;
     align_y?: number | null;
 };
@@ -22,17 +22,17 @@ export class AlignComponent extends ComponentBase {
         deltaState: AlignState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.child);
+        this.replaceOnlyChild(latentComponents, deltaState.content);
 
         this.makeLayoutDirty();
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        this.naturalWidth = componentsById[this.state.child]!.requestedWidth;
+        this.naturalWidth = componentsById[this.state.content]!.requestedWidth;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
 
         if (this.state.align_x === null) {
             child.allocatedWidth = this.allocatedWidth;
@@ -47,11 +47,12 @@ export class AlignComponent extends ComponentBase {
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        this.naturalHeight = componentsById[this.state.child]!.requestedHeight;
+        this.naturalHeight =
+            componentsById[this.state.content]!.requestedHeight;
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
 
         if (this.state.align_y === null) {
             child.allocatedHeight = this.allocatedHeight;

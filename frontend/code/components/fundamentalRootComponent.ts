@@ -7,7 +7,7 @@ import { ComponentBase, ComponentState } from './componentBase';
 
 export type FundamentalRootComponentState = ComponentState & {
     _type_: 'FundamentalRootComponent-builtin';
-    child: ComponentId;
+    content: ComponentId;
     debugger: ComponentId | null;
     connection_lost_component: ComponentId;
 };
@@ -43,7 +43,10 @@ export class FundamentalRootComponent extends ComponentBase {
         }
 
         // Update the children
-        let children = [deltaState.child, deltaState.connection_lost_component];
+        let children = [
+            deltaState.content,
+            deltaState.connection_lost_component,
+        ];
 
         if (deltaState.debugger !== null) {
             children.push(deltaState.debugger);
@@ -97,7 +100,7 @@ export class FundamentalRootComponent extends ComponentBase {
         // The child receives the remaining width. (The child is a
         // ScrollContainer, it takes care of scrolling if the user content is
         // too large)
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
         child.allocatedWidth = this.overlayWidth;
 
         // Despite being an overlay, the connection lost popup should also cover
@@ -134,7 +137,7 @@ export class FundamentalRootComponent extends ComponentBase {
         // The child once again receives the remaining width. (The child is a
         // ScrollContainer, it takes care of scrolling if the user content is
         // too large)
-        let child = componentsById[this.state.child]!;
+        let child = componentsById[this.state.content]!;
         child.allocatedHeight = this.overlayHeight;
     }
 }

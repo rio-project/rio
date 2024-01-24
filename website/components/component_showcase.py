@@ -30,7 +30,7 @@ class ComponentSample(rio.Component):
 class ComponentShowcase(rio.Component):
     def make_slide(self, icon: str, color: rio.Color) -> rio.Component:
         return rio.Rectangle(
-            child=rio.Icon(
+            content=rio.Icon(
                 icon,
                 fill=self.session.theme.text_color_for(color),
                 width=2,

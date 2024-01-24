@@ -27,7 +27,7 @@ class Card(FundamentalComponent):
     that they support interaction.
 
     Attributes:
-        child: The component to display inside the card.
+        content: The component to display inside the card.
 
         corner_radius: The radius of the card's corners. If set to `None`, it
             is picked from the active theme.
@@ -46,7 +46,7 @@ class Card(FundamentalComponent):
             color if an `on_press` event handler is attached.
     """
 
-    child: rio.Component
+    content: rio.Component
     _: KW_ONLY
     corner_radius: Union[None, float, tuple[float, float, float, float]] = None
     on_press: rio.EventHandler[[]] = None
