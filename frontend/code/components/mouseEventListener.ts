@@ -70,7 +70,7 @@ export class MouseEventListenerComponent extends SingleContainer {
         deltaState: MouseEventListenerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.content);
+        this.replaceFirstChild(latentComponents, deltaState.content);
 
         if (deltaState.reportPress) {
             this.element.onclick = (e) => {

@@ -21,7 +21,7 @@ export class OverlayComponent extends ComponentBase {
         deltaState: OverlayState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.content);
+        this.replaceFirstChild(latentComponents, deltaState.content);
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {

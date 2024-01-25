@@ -43,7 +43,7 @@ export class ScrollContainerComponent extends ComponentBase {
         deltaState: ScrollContainerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.content);
+        this.replaceFirstChild(latentComponents, deltaState.content);
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {

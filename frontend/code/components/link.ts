@@ -65,7 +65,7 @@ export class LinkComponent extends ComponentBase {
             deltaState.child_text !== null
         ) {
             // Clear any existing children
-            this.replaceOnlyChild(latentComponents, null);
+            this.replaceFirstChild(latentComponents, null);
 
             // Add the new text
             let textElement = document.createElement('div');
@@ -81,7 +81,10 @@ export class LinkComponent extends ComponentBase {
             deltaState.child_component !== undefined &&
             deltaState.child_component !== null
         ) {
-            this.replaceOnlyChild(latentComponents, deltaState.child_component);
+            this.replaceFirstChild(
+                latentComponents,
+                deltaState.child_component
+            );
             element.classList.remove('rio-text-link');
         }
 

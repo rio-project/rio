@@ -52,7 +52,7 @@ export class SwitcherComponent extends ComponentBase {
 
             // Out with the old
             if (this.activeChildContainer !== null) {
-                this.replaceOnlyChild(
+                this.replaceFirstChild(
                     latentComponents,
                     null,
                     this.activeChildContainer
@@ -74,7 +74,7 @@ export class SwitcherComponent extends ComponentBase {
                 this.activeChildContainer.style.top = '0';
                 this.element.appendChild(this.activeChildContainer);
 
-                this.replaceOnlyChild(
+                this.replaceFirstChild(
                     latentComponents,
                     deltaState.content,
                     this.activeChildContainer

@@ -92,7 +92,7 @@ export class RectangleComponent extends SingleContainer {
             setBoxStyleVariables(element, deltaState.style, 'rectangle-', '');
         }
 
-        this.replaceOnlyChild(latentComponents, deltaState.content);
+        this.replaceFirstChild(latentComponents, deltaState.content);
 
         if (deltaState.transition_time !== undefined) {
             element.style.transitionDuration = `${deltaState.transition_time}s`;
