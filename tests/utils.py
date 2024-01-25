@@ -209,7 +209,6 @@ def enable_component_instantiation(func):
             rio.URL("https://unit.test"),
             rio.URL("https://unit.test"),
         )
-        session.external_url = None
         session._decimal_separator = "."
         session._thousands_separator = ","
         session._send_message = _fake_send_message

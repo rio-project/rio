@@ -82,10 +82,10 @@ async def test_reconcile_not_dirty_high_level_component():
             return HighLevelComponent2(rio.Column(child))
 
     class HighLevelComponent2(rio.Component):
-        child: rio.Component
+        content: rio.Component
 
         def build(self):
-            return self.child
+            return self.content
 
     async with create_mockapp(HighLevelComponent1) as app:
         root_component = app.get_component(HighLevelComponent1)

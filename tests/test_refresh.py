@@ -31,10 +31,10 @@ async def test_refresh_with_clean_root_component():
 
 async def test_rebuild_component_with_dead_parent():
     class RootComponent(rio.Component):
-        child: rio.Component
+        content: rio.Component
 
         def build(self) -> rio.Component:
-            return self.child
+            return self.content
 
     class ComponentWithState(rio.Component):
         state: str
@@ -58,7 +58,7 @@ async def test_rebuild_component_with_dead_parent():
         progress_component = app.get_component(rio.ProgressCircle)
 
         component.state = "Hi"
-        root_component.child = progress_component
+        root_component.content = progress_component
 
         await app.refresh()
 
@@ -68,11 +68,11 @@ async def test_rebuild_component_with_dead_parent():
 
 async def test_unmount_and_remount():
     class DemoComponent(rio.Component):
-        child: rio.Component
+        content: rio.Component
         show_child: bool
 
         def build(self) -> rio.Component:
-            children = [self.child] if self.show_child else []
+            children = [self.content] if self.show_child else []
             return rio.Row(*children)
 
     def build() -> rio.Component:
@@ -83,7 +83,7 @@ async def test_unmount_and_remount():
 
     async with create_mockapp(build) as app:
         root_component = app.get_component(DemoComponent)
-        child_component = root_component.child
+        child_component = root_component.content
         row_component = app.get_component(rio.Row)
 
         root_component.show_child = False

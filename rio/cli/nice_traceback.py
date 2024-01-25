@@ -12,10 +12,9 @@ from pathlib import Path
 from typing import *  # type: ignore
 
 import revel
-from revel import print
 
 
-def _print_single_exception_raw(
+def _format_single_exception_raw(
     out: IO[str],
     err: BaseException,
     *,
@@ -29,6 +28,7 @@ def _print_single_exception_raw(
     red: str,
     nored: str,
     relpath: Path | None = None,
+    frame_filter: Callable[[traceback.FrameSummary], bool],
 ) -> None:
     # Get the traceback as a list of frames
     tb_list = traceback.extract_tb(err.__traceback__)
@@ -53,8 +53,9 @@ def _print_single_exception_raw(
 
     # Iterate through frames
     for frame in tb_list:
-        # Drop any leading frames which are part of Rio
-        # TODO
+        # Keep this frame?
+        if not frame_filter(frame):
+            continue
 
         # Make paths relative to the relpath if they're inside it
         frame_path = Path(frame.filename)
@@ -119,19 +120,24 @@ def format_exception_raw(
     red: str,
     nored: str,
     relpath: Path | None = None,
+    frame_filter: Callable[[traceback.FrameSummary], bool] = lambda _: True,
 ) -> str:
-    # Get a full list of exceptions to display
-    exceptions = []
+    def format_inner(err: BaseException) -> None:
+        # Chain to the cause or context if there is one
+        if err.__cause__ is not None:
+            format_inner(err.__cause__)
+            out.write("\n\n")
+            out.write(f"The above exception was the direct cause of the following:\n\n")
 
-    while err is not None:
-        exceptions.append(err)
-        err = err.__context__ or err.__cause__  # type: ignore
+        elif err.__context__ is not None:
+            format_inner(err.__context__)
+            out.write("\n\n")
+            out.write(
+                f"During handling of the above exception, another exception occurred:\n\n"
+            )
 
-    # Display them all
-    out = io.StringIO()
-
-    for ii, err in enumerate(reversed(exceptions)):
-        _print_single_exception_raw(
+        # Format this exception
+        _format_single_exception_raw(
             out,
             err,
             escape=escape,
@@ -144,14 +150,14 @@ def format_exception_raw(
             red=red,
             nored=nored,
             relpath=relpath,
+            frame_filter=frame_filter,
         )
 
-        if ii != len(exceptions) - 1:
-            out.write("\n\n")
-            out.write(
-                f"The above exception was the direct cause of the following exception:\n\n"
-            )
+    # Start the recursion
+    out = io.StringIO()
+    format_inner(err)
 
+    # Return the result
     return out.getvalue()
 
 
@@ -159,6 +165,7 @@ def format_exception_revel(
     err: BaseException,
     *,
     relpath: Path | None = None,
+    frame_filter: Callable[[traceback.FrameSummary], bool] = lambda _: True,
 ) -> str:
     return format_exception_raw(
         err,
@@ -172,6 +179,7 @@ def format_exception_revel(
         nored="[/]",
         escape=revel.escape,
         relpath=relpath,
+        frame_filter=frame_filter,
     )
 
 
@@ -179,6 +187,7 @@ def format_exception_html(
     err: BaseException,
     *,
     relpath: Path | None = None,
+    frame_filter: Callable[[traceback.FrameSummary], bool] = lambda _: True,
 ) -> str:
     result = format_exception_raw(
         err,
@@ -192,6 +201,7 @@ def format_exception_html(
         nored="</span>",
         escape=html.escape,
         relpath=relpath,
+        frame_filter=frame_filter,
     )
 
     return result.replace("\n", "<br>")

@@ -1,13 +1,14 @@
 import asyncio
 import html
-import importlib
 import json
 import logging
+import os
 import signal
 import socket
 import sys
 import threading
 import time
+import traceback
 import types
 import webbrowser
 from dataclasses import dataclass
@@ -63,6 +64,15 @@ class FileChanged(Event):
     path_to_file: Path
 
 
+def traceback_frame_filter(frame: traceback.FrameSummary) -> bool:
+    # Skip frames which are internal to rio
+    rio_root = rio.__file__
+    assert rio_root.endswith(os.sep + "__init__.py")
+    rio_root = rio_root.removesuffix(os.sep + "__init__.py")
+
+    return not frame.filename.startswith(rio_root)
+
+
 def make_traceback_html(
     *,
     err: Union[str, BaseException],
@@ -77,6 +87,7 @@ def make_traceback_html(
         traceback_html = nice_traceback.format_exception_html(
             err,
             relpath=project_directory,
+            frame_filter=traceback_frame_filter,
         )
 
     return f"""
@@ -491,6 +502,7 @@ class RunningApp:
                 nice_traceback.format_exception_revel(
                     err,
                     relpath=self.proj.project_directory,
+                    frame_filter=traceback_frame_filter,
                 )
             )
             return err

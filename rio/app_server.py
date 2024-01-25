@@ -267,20 +267,6 @@ class AppServer(fastapi.FastAPI):
         #         status_code=fastapi.status.HTTP_404_NOT_FOUND,
         #     )
 
-        # Prepare some URL constants
-        #
-        # These aren't final - the page guards still have to run, and may change
-        # the URL. The value here is merely stored in the session so the session
-        # can run the appropriate guards later on.
-        #
-        # The guards cannot run yet, because they receive the session as a
-        # parameter and the session is not yet fully initialized.
-        base_url = rio.URL(str(request.base_url))
-        assert base_url.is_absolute(), base_url
-
-        initial_page_url_absolute = rio.URL(str(request.url).lower())
-        assert initial_page_url_absolute.is_absolute(), initial_page_url_absolute
-
         # Create a session instance to hold all of this state in an organized
         # fashion.
         #
@@ -292,8 +278,6 @@ class AppServer(fastapi.FastAPI):
         sess = session.Session(
             app_server_=self,
             session_token=session_token,
-            base_url=rio.URL(str(request.base_url)),
-            initial_page_url=initial_page_url_absolute,
         )
 
         self._active_session_tokens[session_token] = sess
@@ -562,7 +546,7 @@ class AppServer(fastapi.FastAPI):
         del sessionToken
 
         # Accept the socket
-        print(f"Debug: Accepting websocket from {websocket.client}")
+        revel.debug(f"Debug: Accepting websocket from {websocket.client}")
         await websocket.accept()
 
         # Look up the session token. If it is valid the session's duration is
@@ -729,11 +713,6 @@ class AppServer(fastapi.FastAPI):
             )
             sess.timezone = pytz.UTC
 
-        # Publish the external URL via the session
-        sess.external_url = (
-            None if self.running_in_window else initial_message.website_url
-        )
-
         # Set the theme according to the user's preferences
         theme = self.app._theme
         if isinstance(theme, tuple):
@@ -767,6 +746,13 @@ class AppServer(fastapi.FastAPI):
         # Guards have access to the session. Thus, it should be fully
         # initialized, or at least pretend to be. Fill in any not yet final
         # values with placeholders.
+        sess._base_url = (
+            URL(initial_message.website_url)
+            .with_path("")
+            .with_query("")
+            .with_fragment("")
+        )
+        sess._active_page_url = sess._base_url
         sess._active_page_instances = tuple()
 
         # Then, run the guards
@@ -774,7 +760,10 @@ class AppServer(fastapi.FastAPI):
             (
                 active_page_instances,
                 active_page_url_absolute,
-            ) = routing.check_page_guards(sess, sess._active_page_url)
+            ) = routing.check_page_guards(
+                sess,
+                sess._base_url.join(rio.URL(initial_message.website_url)),
+            )
         except routing.NavigationFailed:
             # TODO: Notify the client? Show an error?
             raise fastapi.HTTPException(

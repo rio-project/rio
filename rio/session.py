@@ -168,8 +168,6 @@ class Session(unicall.Unicall):
         self,
         app_server_: app_server.AppServer,
         session_token: str,
-        base_url: rio.URL,
-        initial_page_url: rio.URL,
     ):
         super().__init__(
             send_message=dummy_send_message,
@@ -188,21 +186,6 @@ class Session(unicall.Unicall):
         # Keep track of the last time we successfully communicated with the
         # client. After a while with no communication we close the session.
         self._last_interaction_timestamp = time.monotonic()
-
-        # The URL to the app's root/index page. The current page url will always
-        # start with this.
-        assert base_url.is_absolute(), base_url
-        self._base_url = base_url
-
-        # The current page. This is publicly accessible as property. This value
-        # is **always lowercase**. This is to avoid casing issues when
-        # comparing URLs, both in rio and user code.
-        assert initial_page_url.is_absolute(), initial_page_url
-        assert str(initial_page_url) == str(initial_page_url).lower(), initial_page_url
-        self._active_page_url: rio.URL = initial_page_url
-
-        # Also the current page url, but as stack of the actual page instances
-        self._active_page_instances: tuple[rio.Page, ...] = ()
 
         # Keeps track of running asyncio tasks. This is used to make sure that
         # the tasks are cancelled when the session is closed.
@@ -241,7 +224,6 @@ class Session(unicall.Unicall):
         # These are injected by the app server after the session has already
         # been created
         self._root_component: root_components.HighLevelRootComponent
-        self.external_url: str | None  # None if running in a window
         self.timezone: tzinfo
 
         self._decimal_separator: str  # == 1 character
@@ -249,6 +231,10 @@ class Session(unicall.Unicall):
 
         self.window_width: float
         self.window_height: float
+
+        self._base_url: rio.URL
+        self._active_page_url: rio.URL
+        self._active_page_instances: tuple[rio.Page, ...]
 
         self.theme: theme.Theme
 
