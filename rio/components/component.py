@@ -409,7 +409,11 @@ class Component(metaclass=ComponentMeta):
 
     # Whether this instance is internal to Rio, e.g. because the spawning
     # component is a high-level component defined in Rio.
-    _rio_internal_: bool = internal_field(init=False)
+    #
+    # In debug mode, this field is initialized by monkeypatches. When running in
+    # release mode this value isn't set at all, and the default set below is
+    # always used.
+    _rio_internal_: bool = internal_field(init=False, default=False)
 
     # The stackframe which has created this component. Used by the debugger.
     # Only initialized if in debugging mode.
