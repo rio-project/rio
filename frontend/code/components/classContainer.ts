@@ -19,7 +19,7 @@ export class ClassContainerComponent extends SingleContainer {
         deltaState: ClassContainerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceOnlyChild(latentComponents, deltaState.content);
+        this.replaceFirstChild(latentComponents, deltaState.content);
 
         if (deltaState.classes !== undefined) {
             // Remove all old values

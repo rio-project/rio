@@ -43,12 +43,12 @@ export class PopupComponent extends ComponentBase {
         latentComponents: Set<ComponentBase>
     ): void {
         // Update the children
-        this.replaceOnlyChild(
+        this.replaceFirstChild(
             latentComponents,
             deltaState.anchor,
             this.anchorContainer
         );
-        this.replaceOnlyChild(
+        this.replaceFirstChild(
             latentComponents,
             deltaState.content,
             this.contentContainer

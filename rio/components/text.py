@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 

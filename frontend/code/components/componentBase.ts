@@ -127,7 +127,32 @@ export abstract class ComponentBase {
         latentComponents.delete(child);
     }
 
-    replaceOnlyChild(
+    /// Appends the given child component at the end of the given HTML element.
+    /// Does not remove or modify any existing children. If `childId` is
+    /// `undefined`, does nothing.
+    appendChild(
+        latentComponents: Set<ComponentBase>,
+        childId: ComponentId | undefined,
+        parentElement: HTMLElement = this.element
+    ): void {
+        // If undefined, do nothing
+        if (childId === undefined) {
+            return;
+        }
+
+        // Add the child
+        let child = componentsById[childId]!;
+        parentElement.appendChild(child.element);
+
+        this.registerChild(latentComponents, child);
+
+        this.makeLayoutDirty();
+    }
+
+    /// Replaces the first child of the given HTML element with the given child.
+    /// If `childId` is `null`, removes the current child. If `childId` is
+    /// `undefined`, does nothing.
+    replaceFirstChild(
         latentComponents: Set<ComponentBase>,
         childId: null | undefined | ComponentId,
         parentElement: HTMLElement = this.element
@@ -178,6 +203,11 @@ export abstract class ComponentBase {
         this.makeLayoutDirty();
     }
 
+    /// Replaces all children of the given HTML element with the given children.
+    /// If `childIds` is `undefined`, does nothing.
+    ///
+    /// If `wrapInDivs` is true, each child is wrapped in a `<div>` element.
+    /// This also requires any existing children to be wrapped in `<div>`s.
     replaceChildren(
         latentComponents: Set<ComponentBase>,
         childIds: undefined | ComponentId[],

@@ -43,16 +43,15 @@ export class FundamentalRootComponent extends ComponentBase {
         }
 
         // Update the children
-        let children = [
-            deltaState.content,
-            deltaState.connection_lost_component,
-        ];
+        this.appendChild(latentComponents, deltaState.content);
+        this.appendChild(
+            latentComponents,
+            deltaState.connection_lost_component
+        );
 
         if (deltaState.debugger !== null) {
-            children.push(deltaState.debugger);
+            this.appendChild(latentComponents, deltaState.debugger);
         }
-
-        this.replaceChildren(latentComponents, children);
 
         // Initialize CSS
         let connectionLostPopupElement = this.element
