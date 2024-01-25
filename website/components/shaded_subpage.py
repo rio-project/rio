@@ -7,10 +7,10 @@ from .. import theme
 
 
 class ShadedSubpage(rio.Component):
-    child: rio.Component
+    content: rio.Component
 
     def build(self) -> rio.Component:
         return rio.Card(
-            self.child,
+            self.content,
             corner_radius=0,
         )

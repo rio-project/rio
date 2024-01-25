@@ -61,7 +61,7 @@ class CustomButton(Component):
         on_press: Triggered when the user clicks on the button.
     """
 
-    child: str
+    content: str
     _: KW_ONLY
     is_sensitive: bool = True
     style_default: rio.BoxStyle
@@ -125,7 +125,7 @@ class CustomButton(Component):
 
         # Prepare the child
         child = rio.Text(
-            self.child,
+            self.content,
             selectable=False,  # Make sure the child can be clicked-through
             style=text_style,
             margin=0.3,

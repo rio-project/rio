@@ -75,7 +75,7 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
     result: JsonDoc = {
         "_python_type_": type(component).__name__,
         "_key_": component.key,
-        "_rio_internal_": False,  # TODO
+        "_rio_internal_": component._rio_internal_,
     }
 
     # Accessing state properties is pretty slow, so we'll store these in local
