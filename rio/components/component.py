@@ -196,12 +196,15 @@ class ComponentMeta(RioDataclassMeta):
         component._id = session._next_free_component_id
         session._next_free_component_id += 1
 
-        component._explicitly_set_properties_ = _determine_explicitly_set_properties(
-            component, args, kwargs
-        )
-
         # Call `__init__`
         component.__init__(*args, **kwargs)
+
+        # Some components (like `Grid`) manually mark some properties as
+        # explicitly set in their `__init__`, so we must use `.update()` instead
+        # of an assignment
+        component._explicitly_set_properties_.update(
+            _determine_explicitly_set_properties(component, args, kwargs)
+        )
 
         component._create_state_bindings()
 
@@ -404,7 +407,9 @@ class Component(metaclass=ComponentMeta):
 
     # Remember which properties were explicitly set in the constructor. This is
     # filled in by `__new__`
-    _explicitly_set_properties_: set[str] = internal_field(init=False)
+    _explicitly_set_properties_: set[str] = internal_field(
+        init=False, default_factory=set
+    )
 
     # Whether the `on_populate` event has already been triggered for this
     # component

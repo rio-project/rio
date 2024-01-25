@@ -120,7 +120,6 @@ class FundamentalComponent(Component):
             }
 
         if message_source:
-            open("/home/jakob/out.js", "w").write(message_source)
             await sess._evaluate_javascript(message_source)
 
     async def _on_message(self, message: Jsonable, /) -> None:

@@ -83,6 +83,8 @@ class RioField(dataclasses.Field):
 def internal_field(
     *,
     default: object = dataclasses.MISSING,
+    default_factory: Callable[[], object]
+    | dataclasses._MISSING_TYPE = dataclasses.MISSING,
     # vscode doesn't understand default values, so the parameter that affect
     # static type checking (like `init`) must be explicitly passed in.
     init: bool,
@@ -92,6 +94,7 @@ def internal_field(
 ) -> Any:
     return RioField(
         default=default,
+        default_factory=default_factory,
         state_property=state_property,
         serialize=serialize,
         init=init,

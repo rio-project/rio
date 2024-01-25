@@ -698,6 +698,9 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                 ]:
                     self._call_event_handler_sync(handler, component)
 
+                # If the event handler made the component dirty again, undo it
+                self._dirty_components.discard(component)
+
             # Others need to be built
             global_state.currently_building_component = component
             global_state.currently_building_session = self
@@ -710,8 +713,15 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
             # Sanity check
             if not isinstance(build_result, rio.Component):  # type: ignore[unnecessary-isinstance]
-                raise ValueError(
+                raise TypeError(
                     f"The output of `build` methods must be instances of `rio.Component`, but `{component}` returned `{build_result}`"
+                )
+
+            if component in self._dirty_components:
+                raise AssertionError(
+                    f"The `build()` method of the component `{component}`"
+                    f" changed the component's state. Assignments to properties"
+                    f" of the component aren't allowed in the `build()` method."
                 )
 
             # Has this component been built before?
