@@ -7,6 +7,7 @@ import revel
 
 import rio
 
+from .. import common
 from .component import Component
 
 __all__ = [
@@ -99,79 +100,50 @@ class PageView(Component):
 
     fallback_build: Callable[[], rio.Component] | None = None
 
-    # PageViews must not be reconciled completely, because doing so would prevent
-    # a rebuild. Rebuilds are necessary so PageViews can update their location in
-    # the component tree.
+    # How many other PageViews are above this one in the component tree. Zero
+    # for top-level PageViews, 1 for the next level, and so on.
     #
-    # This value will never compare equal to that of any other PageView,
-    # preventing reconciliation.
-    _please_do_not_reconcile_me: object = field(
-        init=False,
-        default_factory=object,
-    )
+    # Initialized in `__post_init__`.
+    level: int = field(init=False)
 
-    # How many other PageViews are above this one in the component tree. Zero for
-    # top-level PageViews, 1 for the next level, and so on.
-    #
-    # This is stored in a list so that modifications don't trigger a rebuild.
-    _level: list[int] = field(
-        init=False,
-        default_factory=lambda: [-1],
-    )
+    def __post_init__(self) -> None:
+        self.session._page_views.add(self)
 
-    def _find_page_view_level_and_track_in_session(self) -> int:
+        # Determine how many `PageView`s are above this one. This can never
+        # change, because `PageView`s cannot possibly be moved into or out of
+        # other `PageView`s by the reconciler, since they don't accept children.
+        self.level = self._find_page_view_level()
+
+    def _find_page_view_level(self) -> int:
         """
-        Follow the chain of `_weak_builder_` references to find how deep in the
+        Follow the chain of `_weak_creator_` references to find how deep in the
         hierarchy of PageViews this one is. Returns 0 for a top-level PageView,
         1 for a PageView inside one other PageView, etc.
 
-        Furthermore, this updates the session's `_page_views` dictionary to
-        track the parent PageView of this one.
+        Normally, following `_weak_creator_` references is not safe, because it
+        can skip over other components, and even across build boundaries.
+        However, since `PageView`s don't accept children, it isn't possible for
+        them to ever be moved into or out of other `PageView`s by the
+        reconciler.
         """
+        cur_parent = self._weak_creator_()
 
-        # Determine how many PageViews are above this one
-        #
-        # TODO / FIXME: This would be nice to cache - store the level in each
-        # PageView, then only look far enough to reach the parent. The problem
-        # with this approach is, that this PageView may be rebuilt before its
-        # parent.
-        level = 0
-        parent: PageView | None = None
-        cur_weak = self._weak_builder_
-
-        while cur_weak is not None:
-            cur = cur_weak()
-
-            # Possible if this PageView has been removed from the component tree
-            if cur is None:
-                break
+        while True:
+            # No more parents - this is the root
+            if cur_parent is None:
+                return 0
 
             # Found it
-            if isinstance(cur, PageView):
-                level += 1
-
-                if parent is None:
-                    parent = cur
+            if isinstance(cur_parent, PageView):
+                return cur_parent.level + 1
 
             # Chain up
-            cur_weak = cur._weak_builder_
-
-        # Update the PageView's level
-        self._level[0] = level
-
-        # Track the parent PageView in the session
-        self.session._page_views[self] = None if parent is None else parent._id
-
-        return level
+            cur_parent = cur_parent._weak_creator_()
 
     def build(self) -> rio.Component:
-        # Look up the parent PageView
-        level = self._find_page_view_level_and_track_in_session()
-        revel.debug(f"PageView {self._id} is on level {level}")
-
         # Fetch the page instance
         try:
-            page = self.session._active_page_instances[level]
+            page = self.session._active_page_instances[self.level]
         except IndexError:
             if self.fallback_build is None:
                 build_callback = lambda sess=self.session: default_fallback_build(sess)

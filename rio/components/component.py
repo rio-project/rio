@@ -205,6 +205,14 @@ class ComponentMeta(RioDataclassMeta):
 
         component._create_state_bindings()
 
+        # Store a weak reference to the component's creator
+        if global_state.currently_building_component is None:
+            component._weak_creator_ = lambda: None
+        else:
+            component._weak_creator_ = weakref.ref(
+                global_state.currently_building_component
+            )
+
         # Keep track of this component's existence
         #
         # Components must be known by their id, so any messages addressed to
@@ -381,9 +389,11 @@ class Component(metaclass=ComponentMeta):
     # Weak reference to the component's builder. Used to check if the component
     # is still part of the component tree.
     _weak_builder_: Callable[[], Component | None] = internal_field(
-        # Dataclasses seem to unintentionally turn this function into a method.
-        # Make sure it works whether or not `self` is passed.
-        default=lambda *args: None,
+        init=False,
+    )
+
+    # Weak reference to the component's creator
+    _weak_creator_: Callable[[], Component | None] = internal_field(
         init=False,
     )
 

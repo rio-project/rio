@@ -54,20 +54,15 @@ rio.Icon.register_single_icon(
 class AppRoot(rio.Component):
     def build(self) -> rio.Component:
         return rio.Column(
-            # Navigation Bar
             rio.Overlay(
                 comps.NavigationBar(
                     height=3.5, width="grow", margin_top=1.0, align_y=0
                 ),
             ),
-            # Spacer for the navigation bar
-            # rio.Spacer(height=5.1),
-            # PageView
             rio.PageView(
                 width="grow",
                 height="grow",
             ),
-            # Footer
             comps.Footer(
                 # margin_top=2,
             ),

@@ -4,10 +4,12 @@ import re
 import secrets
 import socket
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
+import revel
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL
@@ -247,3 +249,10 @@ def ensure_valid_port(host: str, port: int | None) -> int:
         return choose_free_port(host)
 
     return port
+
+
+def timing_print(text: str) -> None:
+    """
+    Temporary debug print to find why the app startup is sometimes so slow
+    """
+    # revel.debug(f"[{datetime.now(timezone.utc).isoformat()}]  {text}")

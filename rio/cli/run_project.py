@@ -626,18 +626,18 @@ window.setConnectionLostPopupVisible(true);
         assert self._app_server is None, "Can't start the server twice"
 
         def start_callback() -> None:
-            debug("Internal on app start")
+            common.timing_print("Internal on app start")
             self._run_in_mainloop(app_has_started_event.set)
 
         # Create the app server
-        debug("As fastapi")
+        common.timing_print("As fastapi")
         app_server = app._as_fastapi(
             debug_mode=self.debug_mode,
             running_in_window=self.run_in_window,
             validator_factory=None,
             internal_on_app_start=start_callback,
         )
-        debug("After as fastapi")
+        common.timing_print("After as fastapi")
 
         assert isinstance(app_server, rio.app_server.AppServer), app_server
         self._app_server = app_server
