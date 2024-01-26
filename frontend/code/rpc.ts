@@ -10,6 +10,7 @@ import {
 import { commitCss } from './utils';
 
 let websocket: WebSocket | null = null;
+let connectionAttempt: number = 1;
 let pingPongHandlerId: number;
 
 export type JsonRpcMessage = {
@@ -52,7 +53,7 @@ export function setConnectionLostPopupVisible(visible: boolean): void {
 
 globalThis.setConnectionLostPopupVisible = setConnectionLostPopupVisible;
 
-function createWebsocket(connectionAttempt: number = 1): WebSocket {
+function createWebsocket(): WebSocket {
     let url = new URL(
         `/rio/ws?sessionToken=${globalThis.SESSION_TOKEN}`,
         window.location.href
@@ -64,7 +65,7 @@ function createWebsocket(connectionAttempt: number = 1): WebSocket {
     websocket.addEventListener('open', onOpen);
     websocket.addEventListener('message', onMessage);
     websocket.addEventListener('error', onError);
-    websocket.addEventListener('close', onClose.bind(null, connectionAttempt));
+    websocket.addEventListener('close', onClose);
 
     return websocket;
 }
@@ -115,6 +116,7 @@ function sendInitialMessage(): void {
 function onOpen(): void {
     console.log('Websocket connection opened');
 
+    connectionAttempt = 1;
     setConnectionLostPopupVisible(false);
 
     // Some proxies kill idle websocket connections. Send pings occasionally to
@@ -147,7 +149,7 @@ function onError(event: Event) {
     console.warn(`Websocket error`);
 }
 
-function onClose(connectionAttempt: number, event: Event) {
+function onClose(event: Event) {
     // Stop sending pings
     clearInterval(pingPongHandlerId);
 
@@ -173,7 +175,7 @@ function onClose(connectionAttempt: number, event: Event) {
     console.log(
         `Websocket connection closed. Reconnecting in ${delay} seconds`
     );
-    setTimeout(createWebsocket, delay * 1000, connectionAttempt + 1);
+    setTimeout(createWebsocket, delay * 1000);
 }
 
 export function sendMessageOverWebsocket(message: object) {
