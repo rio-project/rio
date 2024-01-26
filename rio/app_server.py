@@ -177,7 +177,7 @@ class AppServer(fastapi.FastAPI):
 
     @contextlib.asynccontextmanager
     async def _lifespan(self):
-        revel.debug("Start of the lifespan function")
+        common.timing_print("Start of the lifespan function")
         # If running as a server, periodically clean up expired sessions
         if not self.running_in_window:
             assert type(self) is AppServer  # Shut up pyright
@@ -198,7 +198,7 @@ class AppServer(fastapi.FastAPI):
         if self.internal_on_app_start is not None:
             self.internal_on_app_start()
 
-        revel.debug("Yielding from the lifespan function")
+        common.timing_print("Yielding from the lifespan function")
 
         try:
             yield
@@ -215,7 +215,7 @@ class AppServer(fastapi.FastAPI):
                         type(result), result, result.__traceback__
                     )
 
-        revel.debug("End of the lifespan function")
+        common.timing_print("End of the lifespan function")
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """
@@ -252,7 +252,7 @@ class AppServer(fastapi.FastAPI):
         """
         Handler for serving the index HTML page via fastapi.
         """
-        revel.debug("Serving index page")
+        common.timing_print("Serving index page")
 
         # Because Rio apps are single-page, this route serves as the fallback.
         # In addition to legitimate requests for HTML pages, it will also catch
@@ -546,7 +546,7 @@ class AppServer(fastapi.FastAPI):
         del sessionToken
 
         # Accept the socket
-        revel.debug(f"Debug: Accepting websocket from {websocket.client}")
+        common.timing_print(f"Debug: Accepting websocket from {websocket.client}")
         await websocket.accept()
 
         # Look up the session token. If it is valid the session's duration is
@@ -622,24 +622,24 @@ class AppServer(fastapi.FastAPI):
             sess._send_message = send_message
             sess._receive_message = receive_message
 
-        revel.debug("Setting active event")
+        common.timing_print("Setting active event")
         sess._websocket = websocket
         sess._is_active_event.set()
 
         # Check if this is a reconnect
         try:
             if hasattr(sess, "window_width"):
-                revel.debug("Sending reconnect message")
+                common.timing_print("Sending reconnect message")
                 init_coro = sess._send_all_components_on_reconnect()
             else:
-                revel.debug("Finishing session initialization")
+                common.timing_print("Finishing session initialization")
                 await self._finish_session_initialization(
                     sess, websocket, session_token
                 )
 
                 # Trigger a refresh. This will also send the initial state to
                 # the frontend.
-                revel.debug("Refreshing session")
+                common.timing_print("Refreshing session")
                 init_coro = sess._refresh()
 
             # This is done in a task because the server is not yet running, so
@@ -648,11 +648,11 @@ class AppServer(fastapi.FastAPI):
             sess.create_task(init_coro, name=f"Session `{sess}` init")
 
             # Serve the socket
-            revel.debug("Serving session")
+            common.timing_print("Serving session")
             await sess.serve()
 
         except fastapi.WebSocketDisconnect as err:
-            revel.debug(
+            common.timing_print(
                 f'Debug: Closing connection to "{websocket.client}" because of {err}'
             )
 
@@ -661,12 +661,12 @@ class AppServer(fastapi.FastAPI):
                 sess.close()
 
         else:
-            revel.debug("Closing websocket without exception")
+            common.timing_print("Closing websocket without exception")
             # I don't think this branch can even be reached, but better safe
             # than sorry, I guess?
             sess.close()
         finally:
-            revel.debug("Clearing active event")
+            common.timing_print("Clearing active event")
             sess._websocket = None
             sess._is_active_event.clear()
 

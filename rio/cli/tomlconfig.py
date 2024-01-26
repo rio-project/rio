@@ -42,8 +42,6 @@ class TomlConfig:
         assert not self._config
 
         # Try to load the toml file
-        logging.debug(f"Loading `{self.config_path}`")
-
         try:
             self._config = tomlkit.load(
                 self.config_path.open()
@@ -61,8 +59,6 @@ class TomlConfig:
         # Are there even any changes to write?
         if not self._dirty_keys:
             return
-
-        logging.debug(f"Writing `{self.config_path}`")
 
         # Make sure the parent directory exists
         self.config_path.parent.mkdir(parents=True, exist_ok=True)

@@ -72,30 +72,6 @@ async def dummy_receive_message() -> JsonDoc:
     raise NotImplementedError()
 
 
-def _host_and_get_fill_as_css_variables(
-    fill: rio.FillLike,
-    sess: Session,
-) -> dict[str, str]:
-    # Convert the fill
-    fill = rio.Fill._try_from(fill)
-
-    if isinstance(fill, rio.SolidFill):
-        return {
-            "color": f"#{fill.color.hex}",
-            "background": "none",
-            "background-clip": "unset",
-            "fill-color": "unset",
-        }
-
-    assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill
-    return {
-        "color": "var(--rio-local-text-color)",
-        "background": fill._as_css_background(sess),
-        "background-clip": "text",
-        "fill-color": "transparent",
-    }
-
-
 class SessionAttachments:
     def __init__(self, sess: Session):
         self._session = sess
@@ -191,12 +167,9 @@ class Session(unicall.Unicall):
         # the tasks are cancelled when the session is closed.
         self._running_tasks: set[asyncio.Task[object]] = set()
 
-        # Maps all PageViews to the id of the PageView one higher up in the
-        # component tree. Root PageViews are mapped to None. This map is kept up
-        # to date by PageViews themselves.
-        self._page_views: weakref.WeakKeyDictionary[
-            rio.PageView, int | None
-        ] = weakref.WeakKeyDictionary()
+        # Keeps track of all PageView instances in this session. PageViews add
+        # themselves to this.
+        self._page_views: weakref.WeakSet[rio.PageView] = weakref.WeakSet()
 
         # All components / methods which should be called when the session's
         # page has changed.
@@ -621,7 +594,7 @@ window.location.href = {json.dumps(str(target_url))};
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
                 f"""
-console.debug(`Navigating from \`${{window.location.href}}\` to \`${json.dumps(str(active_page_url))}\``);
+console.debug(`Navigating from \\`${{window.location.href}}\\` to \\`${json.dumps(str(active_page_url))}\\``);
 window.history.{method}(null, "", {json.dumps(str(active_page_url))})
 window.scrollTo({{ top: 0, behavior: "smooth" }});
 """,
@@ -1737,6 +1710,26 @@ document.body.removeChild(a)
 """
         )
 
+    def _host_and_get_fill_as_css_variables(self, fill: rio.FillLike) -> dict[str, str]:
+        # Convert the fill
+        fill = rio.Fill._try_from(fill)
+
+        if isinstance(fill, rio.SolidFill):
+            return {
+                "color": f"#{fill.color.hex}",
+                "background": "none",
+                "background-clip": "unset",
+                "fill-color": "unset",
+            }
+
+        assert isinstance(fill, (rio.LinearGradientFill, rio.ImageFill)), fill
+        return {
+            "color": "var(--rio-local-text-color)",
+            "background": fill._as_css_background(self),
+            "background-clip": "text",
+            "fill-color": "transparent",
+        }
+
     async def _apply_theme(self, thm: theme.Theme) -> None:
         """
         Updates the client's theme to match the given one.
@@ -1805,7 +1798,8 @@ document.body.removeChild(a)
             )
 
             # CSS variables for the fill
-            fill_variables = _host_and_get_fill_as_css_variables(style.fill, self)
+            assert style.fill is not None, "Text fills must be defined in the theme."
+            fill_variables = self._host_and_get_fill_as_css_variables(style.fill)
 
             for var, value in fill_variables.items():
                 variables[f"{css_prefix}-{var}"] = value
