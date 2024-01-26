@@ -126,8 +126,19 @@ export function textStyleToCss(
         result['text-decoration'] = style.underlined ? 'underline' : 'none';
         result['text-transform'] = style.allCaps ? 'uppercase' : 'none';
 
+        // If no fill is provided, stick to the local text color. This allows
+        // the user to have their text automatically adapt to different
+        // themes/contexts.
+        if (style.fill === null) {
+            result['color'] = 'var(--rio-local-text-color)';
+            result['background'] = 'var(--rio-local-text-background)';
+            result['-webkit-background-clip'] =
+                'var(--rio-local-text-background-clip)';
+            result['-webkit-text-fill-color'] =
+                'var(--rio-local-text-fill-color)';
+        }
         // Color?
-        if (Array.isArray(style.fill)) {
+        else if (Array.isArray(style.fill)) {
             result['color'] = colorToCssString(style.fill);
             result['background'] = 'none';
             result['-webkit-background-clip'] = 'unset';

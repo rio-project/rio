@@ -52,7 +52,7 @@ ROBOTO_MONO = Font(
 class TextStyle(SelfSerializing):
     _: KW_ONLY
     font: Font = ROBOTO
-    fill: FillLike = Color.BLACK
+    fill: Optional[FillLike] = None
     font_size: float = 1.0
     italic: bool = False
     font_weight: Literal["normal", "bold"] = "normal"
@@ -88,7 +88,7 @@ class TextStyle(SelfSerializing):
 
         return {
             "fontName": font_name,
-            "fill": self.fill._serialize(sess),
+            "fill": None if self.fill is None else self.fill._serialize(sess),
             "fontSize": self.font_size,
             "italic": self.italic,
             "fontWeight": self.font_weight,
