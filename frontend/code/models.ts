@@ -37,7 +37,7 @@ export type Fill =
 
 export type TextStyle = {
     fontName: string;
-    fill: Color | Fill;
+    fill: Color | Fill | null;
     fontSize: number;
     italic: boolean;
     fontWeight: 'normal' | 'bold';

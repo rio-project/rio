@@ -652,7 +652,9 @@ class AppServer(fastapi.FastAPI):
             await sess.serve()
 
         except fastapi.WebSocketDisconnect as err:
-            print(f'Debug: Closing connection to "{websocket.client}" because of {err}')
+            revel.debug(
+                f'Debug: Closing connection to "{websocket.client}" because of {err}'
+            )
 
             # If the connection was closed on purpose, close the session
             if err.code == 1001:

@@ -137,7 +137,7 @@ def get_source_for_theme(theme: rio.Theme, *, create_theme_pair: bool) -> str:
 
     result.write(")\n")
     result.write("\n")
-    result.write(f"# Apply the {theme_or_themes}\n")
+    result.write(f"# And apply {'them' if create_theme_pair else 'it'} to your app\n")
     result.write("app = rio.App(\n")
     result.write("    ...\n")
     result.write(f"    theme={theme_or_themes},\n")

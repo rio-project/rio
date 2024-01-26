@@ -170,7 +170,7 @@ export class MediaPlayerComponent extends ComponentBase {
         }
     }
 
-    /// Hooman eers are stoopid
+    /// Hooman eers aar stoopid
     humanVolumeToLinear(volume: number): number {
         return (Math.pow(3, volume) - 1) / 2;
     }

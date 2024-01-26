@@ -133,7 +133,7 @@ class NumberInput(Component):
 
         # Try to parse the number
         try:
-            value = float(raw_value.replace(self.session._thousands_separator, "."))
+            value = float(raw_value.replace(self.session._decimal_separator, "."))
         except ValueError:
             self.value = self.value  # Force the old value to stay
             return False
