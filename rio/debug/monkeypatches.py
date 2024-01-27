@@ -8,7 +8,9 @@ import introspection.typing
 from .. import global_state
 from ..components.component import Component, ComponentMeta, StateProperty
 
-__all__ = ["apply_monkeypatches"]
+__all__ = [
+    "apply_monkeypatches",
+]
 
 
 def apply_monkeypatches() -> None:

@@ -236,7 +236,6 @@ class RioProject:
 
         # Try to load the toml file
         rio_toml_path = project_dir / "rio.toml"
-        print(f"Loading `{rio_toml_path}`")
 
         try:
             rio_toml_dict = tomlkit.load(rio_toml_path.open()).unwrap()

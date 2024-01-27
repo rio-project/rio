@@ -118,7 +118,9 @@ def run(
                     "Ignoring the `public` option, since this project is not a website"
                 )
 
-        runner = run_project.RunningApp(
+        # Running a project comes with considerable complexity. All of that is
+        # crammed into classes.
+        arbiter = run_project.Arbiter(
             proj=proj,
             port=port,
             public=public,
@@ -126,7 +128,7 @@ def run(
             debug_mode=not release,
             run_in_window=proj.app_type == "app",
         )
-        runner.run()
+        arbiter.run()
 
 
 @app.command(
