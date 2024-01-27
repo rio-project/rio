@@ -25,6 +25,7 @@ class DropdownChangeEvent(Generic[T]):
 
 class Dropdown(FundamentalComponent, Generic[T]):
     """
+    # Dropdown
     A dropdown menu allowing the user to select one of several options.
 
     Dropdowns present the user with a list of options, allowing them to select
@@ -32,18 +33,70 @@ class Dropdown(FundamentalComponent, Generic[T]):
     currently selected option. When activated, a popup menu appears with a list
     of all available options.
 
-    Attributes:
-        options: A mapping from option names to values. The names are displayed
+    ## Attributes:
+    `options:` A mapping from option names to values. The names are displayed
             in the dropdown menu, and the corresponding value is returned when
             the user selects the option. The values must be comparable.
 
-        label: A short text to display next to the dropdown.
+    `label:` A short text to display next to the dropdown.
 
-        selected_value: The value of the currently selected option.
+    `selected_value:` The value of the currently selected option.
 
-        on_change: Triggered whenever the user selects an option.
+    `is_sensitive:` Whether the dropdown should respond to user input.
 
-        is_sensitive: Whether the dropdown should respond to user input.
+    `is_valid:` Visually displays to the user whether the current option is
+        valid. You can use this to signal to the user that their input needs
+        to be changed.
+
+    `on_change:` Triggered whenever the user selects an option.
+
+    ## Example:
+    A simple `Dropdown` with three options and default value "b" will be shown:
+    ```python
+    rio.Dropdown(
+        options=["a", "b", "c"],
+        label="Dropdown",
+        selected_value="b",
+    )
+    ```
+    A simple `Dropdown` with three options and default value "b" will be shown, if an option is selected the value will be printed:
+    ```python
+    rio.Dropdown(
+        options={"a": 1, "b": 2, "c": 3},
+        label="Dropdown",
+        selected_value=2,
+        on_change=lambda event: print(event.value),
+    )
+    ```
+
+    In a Component class state bindings can be used to update the value of the input and listen to changes:
+    ```python
+    ComponentClass(rio.Component):
+        value: str="b"
+        def build(self)->rio.Component:
+            return rio.Dropdown(
+                        options=["a", "b", "c"],
+                        label="Dropdown",
+                        selected_value=ComponentClass.value,
+                    )
+    ```
+
+    In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
+    ```python
+    ComponentClass(rio.Component):
+        value: str="b"
+
+        def on_change_update_value(self, ev: rio.DropdownChangeEvent):
+            self.value = ev.value
+
+        def build(self)->rio.Component:
+            return rio.Dropdown(
+                        options=["a", "b", "c"],
+                        label="Dropdown",
+                        selected_value=self.value,
+                        on_change=self.on_change_update_value,
+                    )
+    ```
     """
 
     options: Mapping[str, T]

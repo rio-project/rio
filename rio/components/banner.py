@@ -14,6 +14,8 @@ __all__ = [
 
 class Banner(component.Component):
     """
+    # Banner
+
     Displays a short message to the user.
 
     Banners can either show a short text message to the users, or disappear
@@ -25,17 +27,52 @@ class Banner(component.Component):
     levels control the appearance of the notification bar, and allow you to
     quickly communicate the nature of the message to the user.
 
-    Attributes:
-        text: The text to display. If `None` or empty, the banner will disappear
+    ## Attributes:
+    `text:` The text to display. If `None` or empty, the banner will disappear
             entirely.
 
-        style: Controls the appearance of the banner. The style is one of
+    `style:` Controls the appearance of the banner. The style is one of
             `info`, `success`, `warning` and `danger`. Depending on the value
             the banner may change its colors and icon.
 
-        multiline: Whether long text may be wrapped over multiple lines.
+    `markup:` Whether the text should be interpreted as Markdown. If `True`, the
+            text will be rendered as Markdown, otherwise it will be rendered as
+            plain text.
+
+    `multiline:` Whether long text may be wrapped over multiple lines.
             Multiline banners are also styled slightly differently to make the
             icon fit their larger size.
+
+    ## Example:
+    ```python
+    rio.Banner(
+        text="This is a banner",
+        style="info",
+    )
+    ```
+    Here's a banner with Markdown:
+    ```python
+    ComponentClass(rio.Component):
+        banner_text: str = "**Hello World!**"
+        def build(self)->rio.Component:
+            return rio.Banner(
+                        text=ComponentClass.banner_text,
+                        style="info",
+                        markup=True,
+                    )
+    ```
+    Here's a multiline banner:
+    ```python
+    ComponentClass(rio.Component):
+        banner_text: str = 'Hello World! \n This is a multiline banner.'
+        def build(self)->rio.Component:
+            return rio.Banner(
+                        text=self.banner_text,
+                        style="info",
+                        multiline=True,
+                    )
+    ```
+
     """
 
     text: Optional[str]
