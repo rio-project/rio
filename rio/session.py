@@ -1000,13 +1000,17 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     try:
                         attr_value = reconciled_components_new_to_old[attr_value]
                     except KeyError:
-                        # Make sure that any components which are now in the tree
-                        # have their builder properly set.
-                        if isinstance(
-                            parent, fundamental_component.FundamentalComponent
-                        ):
-                            attr_value._weak_builder_ = parent._weak_builder_
-                            attr_value._build_generation_ = parent._build_generation_
+                        # TODO: can this be safely removed, or is there some
+                        # edge case, that needs it?
+
+                        # # Make sure that any components which are now in the tree
+                        # # have their builder properly set.
+                        # if isinstance(
+                        #     parent, fundamental_component.FundamentalComponent
+                        # ):
+                        #     attr_value._weak_builder_ = parent._weak_builder_
+                        #     attr_value._build_generation_ = parent._build_generation_
+                        pass
                     else:
                         parent_vars[attr_name] = attr_value
 
@@ -1021,13 +1025,17 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                             try:
                                 item = reconciled_components_new_to_old[item]
                             except KeyError:
-                                # Make sure that any components which are now in
-                                # the tree have their builder properly set.
-                                if isinstance(
-                                    parent, fundamental_component.FundamentalComponent
-                                ):
-                                    item._weak_builder_ = parent._weak_builder_
-                                    item._build_generation_ = parent._build_generation_
+                                # TODO: can this be safely removed, or is there some
+                                # edge case, that needs it?
+
+                                # # Make sure that any components which are now in
+                                # # the tree have their builder properly set.
+                                # if isinstance(
+                                #     parent, fundamental_component.FundamentalComponent
+                                # ):
+                                #     item._weak_builder_ = parent._weak_builder_
+                                #     item._build_generation_ = parent._build_generation_
+                                pass
                             else:
                                 attr_value[ii] = item
 
