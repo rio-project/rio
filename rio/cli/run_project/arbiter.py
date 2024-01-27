@@ -123,7 +123,7 @@ class Arbiter:
 
         # This future resolves once the app is ready to be shown in the webview.
         # Wait for it.
-        self._start_webview = threading.Event()
+        self._server_is_ready = threading.Event()
 
         # Used to signal that the app should close
         self._stop_requested = threading.Event()
@@ -175,7 +175,7 @@ class Arbiter:
 
         # Release anyone waiting for events
         self._stop_requested.set()
-        self._start_webview.set()
+        self._server_is_ready.set()
 
         # Stop any running workers
         assert self._mainloop is not None, "Mainloop isn't running!?"
@@ -220,7 +220,7 @@ class Arbiter:
 
     def run(self) -> None:
         assert not self._stop_requested.is_set()
-        assert not self._start_webview.is_set()
+        assert not self._server_is_ready.is_set()
 
         # Handle keyboard interrupts. KeyboardInterrupt exceptions are very
         # annoying to handle in async code, so instead we'll use a signal
@@ -236,18 +236,17 @@ class Arbiter:
         )
         asyncio_thread.start()
 
+        # Wait for the http server to be ready
+        self._server_is_ready.wait()
+
+        # Make sure the startup was successful
+        if self._stop_requested.is_set():
+            return
+
         # The webview needs to be shown from the main thread. So, if running
         # inside of a window run the arbiter in a separate thread. Otherwise
         # just run it from this one.
         if self.run_in_window:
-            # Wait for the http server to be ready
-            self._start_webview.wait()
-
-            # Make sure the startup was successful
-            if self._stop_requested.is_set():
-                return
-
-            # Start the webview
             self._webview_worker = webview_worker.WebViewWorker(
                 push_event=self.push_event,
                 debug_mode=self.debug_mode,
@@ -296,12 +295,12 @@ class Arbiter:
                 " Run `pip install rio-ui[[window]` to install it."
             )
 
-        # Try to load the app
-        app = self.try_load_app()
-
         # If running in debug mode, install safeguards
         if self.debug_mode:
             apply_monkeypatches()
+
+        # Try to load the app
+        app = self.try_load_app()
 
         # Start the file watcher
         if self.debug_mode:
@@ -315,6 +314,8 @@ class Arbiter:
             )
 
         # Start the uvicorn worker
+        uvicorn_is_ready_event = asyncio.Event()
+
         self._uvicorn_worker = uvicorn_worker.UvicornWorker(
             push_event=self.push_event,
             app=app,
@@ -323,9 +324,20 @@ class Arbiter:
             quiet=self.quiet,
             debug_mode=self.debug_mode,
             run_in_window=self.run_in_window,
-            on_server_is_ready=self._start_webview.set,
+            on_server_is_ready=uvicorn_is_ready_event.set,
             on_startup_has_failed=lambda: self.stop(keyboard_interrupt=False),
         )
+
+        self._uvicorn_task = asyncio.create_task(
+            self._uvicorn_worker.run(),
+            name="Uvicorn",
+        )
+
+        # Wait for the server to be ready
+        await uvicorn_is_ready_event.wait()
+
+        # Start the webview
+        self._server_is_ready.set()
 
         # The app was just successfully started. Inform the user
         if self.debug_mode:

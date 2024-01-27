@@ -60,7 +60,9 @@ class UvicornWorker:
             assert self._uvicorn_server is not None
 
             try:
+                revel.debug(f"Starting uvicorn on {self.host}:{self.port}")
                 self._uvicorn_server.run()
+
             except BaseException:
                 import traceback
 
@@ -69,14 +71,18 @@ class UvicornWorker:
                 self.push_event(run_models.StopRequested())
                 return
 
+            else:
+                revel.debug("Uviciron server has returned")
+
             # Nothing to do here. If the server stops running, it's because we
             # told it to - that means the program is already shutting down.
 
+        print("Starting uvicorn thread")
         uvicorn_thread = threading.Thread(target=run_uvicorn)
         uvicorn_thread.start()
 
         try:
-            # Wait for either the app to stop, or until the task is canceled
+            # Wait until the task is canceled
             wait_forever_event = asyncio.Event()
             await wait_forever_event.wait()
 

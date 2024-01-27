@@ -169,8 +169,6 @@ def check_page_guards(
             _get_active_page_instances(sess.app.pages, target_url_relative.parts)
         )
 
-        revel.debug(f"Actives: {[page.page_url for page in active_page_instances]}")
-
         # Check the guards for each activated page
         redirect = None
         for page in active_page_instances:
