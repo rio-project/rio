@@ -30,10 +30,6 @@ export class DropdownComponent extends ComponentBase {
 
     private isOpen: boolean = false;
 
-    // Event handlers, already bound to `this`, so they can be disconnected
-    private outsideClickHandler: (event: MouseEvent) => void;
-    private keyDownHandler: (event: KeyboardEvent) => void;
-
     // The currently highlighted option, if any
     private highlightedOptionName: HTMLElement | null = null;
 
@@ -49,7 +45,7 @@ export class DropdownComponent extends ComponentBase {
         );
 
         element.innerHTML = `
-            <input type="text" placeholder="" style="pointer-events: none" disabled>
+            <input type="text" placeholder="">
             <div class="rio-input-box-label"></div>
             <div class="rio-dropdown-arrow"></div>
             <div class="rio-input-box-plain-bar"></div>
@@ -73,64 +69,96 @@ export class DropdownComponent extends ComponentBase {
         applyIcon(arrowElement, 'expand-more', 'var(--rio-local-text-color)');
 
         // Connect events
-        element.addEventListener('click', (event) => {
-            let element = this.element;
+        element.addEventListener(
+            'mousedown',
+            this._onMouseDown.bind(this),
+            true
+        );
 
-            // Already open?
-            if (this.isOpen) {
-                // Hide it
-                this.hidePopup();
-
-                // Make the text input appear as inactive
-                element.classList.remove('rio-input-box-focused');
-                return;
-            }
-
-            // Show the popup
-            this.showPopup();
-
-            // Make the text input appear as active
-            element.classList.add('rio-input-box-focused');
-
-            // Eat the event
-            event.stopPropagation();
-        });
-
-        // Bind events so they can be connected/disconnected at will
-        this.outsideClickHandler = this._outsideClickHandler.bind(this);
-        this.keyDownHandler = this._keydownHandler.bind(this);
+        this.inputElement.addEventListener(
+            'keydown',
+            this._onKeyDown.bind(this)
+        );
+        this.inputElement.addEventListener(
+            'input',
+            this._onInputValueChange.bind(this)
+        );
+        this.inputElement.addEventListener(
+            'focusin',
+            this._onFocusIn.bind(this)
+        );
+        this.inputElement.addEventListener(
+            'focusout',
+            this._onFocusOut.bind(this)
+        );
 
         return element;
     }
 
-    _outsideClickHandler(event: MouseEvent): void {
-        let element = this.element;
+    private _onFocusIn(): void {
+        // Clear the input text so that all options are shown in the dropdown
+        this.inputElement.value = '';
 
-        // Clicks into the dropdown are handled elsewhere
-        if (
-            event.target === element ||
-            element.contains(event.target as Node)
-        ) {
+        this.showPopup();
+    }
+
+    private _onFocusOut(): void {
+        // When the input element loses focus, that means the user is done
+        // entering input. We now need to check if the input matches a valid
+        // option or not.
+        this.trySubmitInput();
+    }
+
+    private trySubmitInput(): void {
+        this.inputElement.blur();
+        this.hidePopup();
+
+        // Check if the inputted text corresponds to a valid option
+        let inputText = this.inputElement.value;
+
+        if (inputText === this.state.selectedName) {
             return;
         }
 
-        // Make the text input appear as inactive
-        element.classList.remove('rio-input-box-focused');
-
-        // Hide the popup
-        this.hidePopup();
+        if (this.state.optionNames.includes(inputText)) {
+            this.state.selectedName = inputText;
+            this.sendMessageToBackend({
+                name: inputText,
+            });
+        } else {
+            this.inputElement.value = this.state.selectedName;
+        }
     }
 
-    _keydownHandler(event: KeyboardEvent): void {
-        // Close the dropdown on escape
-        if (event.key === 'Escape') {
-            this.hidePopup();
+    private cancelInput(): void {
+        this.inputElement.value = this.state.selectedName;
+        this.trySubmitInput();
+    }
+
+    private submitInput(optionName: string): void {
+        this.inputElement.value = optionName;
+        this.trySubmitInput();
+    }
+
+    private _onMouseDown(event: MouseEvent): void {
+        // Already open?
+        if (this.isOpen) {
+            this.cancelInput();
+            return;
         }
 
-        // Backspace -> remove the last character from the filter text
-        else if (event.key === 'Backspace') {
-            this.inputElement.value = this.inputElement.value.slice(0, -1);
-            this._updateOptionEntries();
+        // Make the text input appear as active
+        this.inputElement.focus();
+
+        // Eat the event
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    _onKeyDown(event: KeyboardEvent): void {
+        // Close the dropdown on escape
+        if (event.key === 'Escape') {
+            this.cancelInput();
         }
 
         // Enter -> select the highlighted option
@@ -139,6 +167,7 @@ export class DropdownComponent extends ComponentBase {
                 this.highlightedOptionName.click();
             }
         }
+
         // Move highlight up
         else if (event.key === 'ArrowDown') {
             let nextOption;
@@ -155,6 +184,7 @@ export class DropdownComponent extends ComponentBase {
 
             this._highlightOption(nextOption as HTMLElement);
         }
+
         // Move highlight down
         else if (event.key === 'ArrowUp') {
             let nextOption;
@@ -171,16 +201,17 @@ export class DropdownComponent extends ComponentBase {
 
             this._highlightOption(nextOption as HTMLElement);
         }
-        // Any other key -> add it to the filter text
-        else if (event.key.length === 1) {
-            this.inputElement.value += event.key.toLowerCase();
-            this._updateOptionEntries();
-        } else {
+        // Any other key -> let the event propagate
+        else {
             return;
         }
 
         event.stopPropagation();
         event.preventDefault();
+    }
+
+    private _onInputValueChange(): void {
+        this._updateOptionEntries();
     }
 
     private _highlightOption(optionElement: HTMLElement | null): void {
@@ -207,11 +238,8 @@ export class DropdownComponent extends ComponentBase {
         // only affects the "local stacking context".
         document.body.appendChild(this.popupElement);
 
-        // Reset the filter
-        //
         // Make sure to do this after the popup has been added to the DOM, so
         // that the scrollHeight is correct.
-        this.inputElement.value = '';
         this._updateOptionEntries();
 
         // Position & Animate
@@ -258,19 +286,10 @@ export class DropdownComponent extends ComponentBase {
         }
 
         this.popupElement.style.left = dropdownRect.left + 'px';
-        this.popupElement.style.width = dropdownRect.width + 'px';
-
-        document.addEventListener('click', this.outsideClickHandler, true);
-        document.addEventListener('keydown', this.keyDownHandler, true);
     }
 
     private hidePopup(): void {
         this.isOpen = false;
-        this.inputElement.value = this.state.selectedName;
-
-        // Unregister any event handlers
-        document.removeEventListener('click', this.outsideClickHandler, true);
-        document.removeEventListener('keydown', this.keyDownHandler, true);
 
         // Animate the disappearance
         this.popupElement.style.height = '0';
@@ -345,7 +364,7 @@ export class DropdownComponent extends ComponentBase {
 
     /// Update the visible options based on everything matching the search
     /// filter
-    _updateOptionEntries() {
+    _updateOptionEntries(): void {
         this.optionsElement.innerHTML = '';
         let needleLower = this.inputElement.value.toLowerCase();
 
@@ -358,17 +377,17 @@ export class DropdownComponent extends ComponentBase {
             }
 
             match.classList.add('rio-dropdown-option');
+            match.style.padding = `0.6rem ${DROPDOWN_LIST_HORIZONTAL_PADDING}rem`;
             this.optionsElement.appendChild(match);
 
-            match.addEventListener('click', (event) => {
-                this.state.selectedName = optionName;
-                this.hidePopup();
-                this.sendMessageToBackend({
-                    name: optionName,
-                });
-
-                event.stopPropagation();
-            });
+            match.addEventListener(
+                'click',
+                (event) => {
+                    this.submitInput(optionName);
+                    event.stopPropagation();
+                },
+                true
+            );
 
             match.addEventListener('mouseenter', () => {
                 this._highlightOption(match);
@@ -461,6 +480,10 @@ export class DropdownComponent extends ComponentBase {
                 scrollBarSize +
                 2 * DROPDOWN_LIST_HORIZONTAL_PADDING
         );
+    }
+
+    updateAllocatedWidth(ctx: LayoutContext): void {
+        this.popupElement.style.width = `${this.allocatedWidth}rem`;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {

@@ -551,7 +551,7 @@ class App:
                 self.name,
                 url,
             )
-            webview.start(debug=True)
+            webview.start()
 
         finally:
             assert isinstance(server, uvicorn.Server)

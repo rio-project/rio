@@ -930,7 +930,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     height: 0;
     max-height: 100vh;
 
-    overflow: hidden;
+    overflow: auto;
 
     background-color: var(--rio-global-background-bg);
     color: var(--rio-global-text-color);
@@ -976,7 +976,6 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-dropdown-options > div {
     position: relative;
-    padding: 1rem 1rem;
 }
 
 .rio-dropdown-options > svg {
