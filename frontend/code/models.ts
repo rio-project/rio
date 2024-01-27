@@ -36,7 +36,7 @@ export type Fill =
       };
 
 export type TextStyle = {
-    fontName: string;
+    fontName: string | null;
     fill: Color | Fill | null;
     fontSize: number;
     italic: boolean;

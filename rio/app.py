@@ -67,7 +67,7 @@ def make_default_connection_lost_component() -> rio.Component:
                             font_weight="bold",
                         ),
                     ),
-                    spacing=1,
+                    spacing=0.3,
                     margin_x=2.5,
                     margin_y=1.5,
                 ),

@@ -1804,7 +1804,9 @@ document.body.removeChild(a)
             assert isinstance(style, rio.TextStyle), style
 
             css_prefix = f"--rio-global-{style_name}"
-            variables[f"{css_prefix}-font-name"] = style.font._serialize(self)
+            variables[f"{css_prefix}-font-name"] = (
+                "inherit" if style.font is None else style.font._serialize(self)
+            )
             variables[f"{css_prefix}-font-size"] = f"{style.font_size}rem"
             variables[f"{css_prefix}-italic"] = "italic" if style.italic else "normal"
             variables[f"{css_prefix}-font-weight"] = style.font_weight

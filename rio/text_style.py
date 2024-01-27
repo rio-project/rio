@@ -51,8 +51,8 @@ ROBOTO_MONO = Font(
 @dataclass(frozen=True)
 class TextStyle(SelfSerializing):
     _: KW_ONLY
-    font: Font = ROBOTO
-    fill: Optional[FillLike] = None
+    font: Font | None = None
+    fill: FillLike | None = None
     font_size: float = 1.0
     italic: bool = False
     font_weight: Literal["normal", "bold"] = "normal"
@@ -81,13 +81,8 @@ class TextStyle(SelfSerializing):
         )
 
     def _serialize(self, sess: session.Session) -> JsonDoc:
-        if isinstance(self.font, str):
-            font_name = self.font
-        else:
-            font_name = self.font._serialize(sess)
-
         return {
-            "fontName": font_name,
+            "fontName": None if self.font is None else self.font._serialize(sess),
             "fill": None if self.fill is None else self.fill._serialize(sess),
             "fontSize": self.font_size,
             "italic": self.italic,

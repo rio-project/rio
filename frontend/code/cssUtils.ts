@@ -119,12 +119,18 @@ export function textStyleToCss(
 
     // Explicitly defined style
     else {
-        result['font-family'] = style.fontName;
         result['font-size'] = style.fontSize + 'em';
         result['font-style'] = style.italic ? 'italic' : 'normal';
         result['font-weight'] = style.fontWeight;
         result['text-decoration'] = style.underlined ? 'underline' : 'none';
         result['text-transform'] = style.allCaps ? 'uppercase' : 'none';
+
+        // If no font family is provided, stick to the theme's.
+        if (style.fontName === null) {
+            result['font-family'] = 'inherit';
+        } else {
+            result['font-family'] = style.fontName;
+        }
 
         // If no fill is provided, stick to the local text color. This allows
         // the user to have their text automatically adapt to different
