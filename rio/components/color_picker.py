@@ -23,6 +23,7 @@ class ColorChangeEvent:
 
 class ColorPicker(FundamentalComponent):
     """
+    # ColorPicker
     Allows the user to pick a RGB(A) color.
 
     `ColorPicker` is a component that allows the user to pick a color. It
@@ -30,14 +31,51 @@ class ColorPicker(FundamentalComponent):
     interact with to pick a color, and optionally an opacity slider to pick
     opacity.
 
-    Attributes:
-        color: The color that the user has picked.
+    ## Attributes:
+    `color:` The color that the user has picked.
 
-        pick_opacity: Whether to allow the user to pick opacity. If `False`,
+    `pick_opacity:` Whether to allow the user to pick opacity. If `False`,
             the opacity slider will be hidden and the color value will be forced
             to be fully opaque.
 
-        on_change: This event is triggered whenever the user changes the color.
+    `on_change:` This event is triggered whenever the user changes the color.
+
+    ## Example:
+    Simple color picker:
+    ```python
+    rio.ColorPicker(
+        color=rio.Color.from_rgb(0.5, 0.5, 0.5),
+        pick_opacity=True,
+    )
+    ```
+
+    Color picker with a default color and color will be updated when user changes the color:
+    ```python
+    ComponentClass(rio.Component):
+        color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
+        def build(self)->rio.Component:
+            return rio.ColorPicker(
+                        color=ComponentClass.color,
+                        pick_opacity=True,
+                    )
+    ```
+
+    Color picker with an event handler:
+    ```python
+    ComponentClass(rio.Component):
+        color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
+        def on_change_color(self, event: rio.ColorChangeEvent) -> None:
+            print(f"Color changed to {event.color}")
+        def build(self)->rio.Component:
+            return rio.Card(
+                rio.ColorPicker(
+                        color=ComponentClass.color,
+                        pick_opacity=True,
+                        on_change=self.on_change_color,
+                    ),
+                )
+    ```
+
     """
 
     color: color.Color

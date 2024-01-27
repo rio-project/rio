@@ -11,6 +11,7 @@ __all__ = ["Column"]
 
 class Column(FundamentalComponent):
     """
+    # Column
     A container that lays out its children vertically.
 
     `Column`s are one of the most common components in Rio. They take any number
@@ -39,11 +40,46 @@ class Column(FundamentalComponent):
     components a `"grow"` value as its height, or set the `Column`'s vertical
     alignment.
 
-    Attributes:
-        children: The components to place in this `Column`.
+    ## Attributes:
+    `children:` The components to place in this `Column`.
 
-        spacing: How much empty space to leave between two adjacent children. No
+    `spacing:` How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.
+
+    ## Example:
+    A `Column` with two `Text` components and spacing between them:
+    ```python
+    rio.Column(
+        rio.Text("Hello"),
+        rio.Text("World!"),
+        spacing=1,
+    )
+    ```
+
+    A `Column` is used to place an `Icon` and two `Text` components in a Column. A `Card` with text
+    and an icon in it, which is elevated when the mouse hovers over it and prints a message
+    when clicked:
+    ```python
+    ComponentClass(rio.Component):
+        def on_press_card(self) -> None:
+            print("Card was pressed!")
+
+        def build(self)->rio.Component:
+            card_content = rio.Column(
+                rio.Icon(icon="castle"),
+                rio.Text("Hello"),
+                rio.Text("World!"),
+                spacing=1,
+                align_x=0.5, #align card content in the center
+            )
+            return rio.Card(
+                        contend=card_content,
+                        on_press=self.on_press_card,
+                        elevate_on_hover=True,
+                        color="primary",
+                    )
+    ```
+
     """
 
     children: list[rio.Component]

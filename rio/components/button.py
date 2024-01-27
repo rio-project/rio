@@ -22,6 +22,7 @@ INITIALLY_DISABLED_FOR = 0.25
 
 class Button(Component):
     """
+    # Button
     A clickable button.
 
     The `Button` component allows the user to trigger an action by clicking on
@@ -32,33 +33,84 @@ class Button(Component):
     you need more control over the button's visuals, e.g. for creating a
     navigation button.
 
-    Attributes:
-        content: The text or child component to display inside of the button.
+    ## Attributes:
+    `content`: The text or child component to display inside of the button.
 
-        icon: The name of an icon to display on the button, in the form
+    `icon:` The name of an icon to display on the button, in the form
             "set/name:variant". See the `Icon` component for details of how
             icons work in Rio.
 
-        shape: The shape of the button. This can be one of:
-            - `pill`: A rectangle where the left and right sides are completely
-              round.
-            - `rounded`: A rectangle with rounded corners.
-            - `rectangle`: A rectangle with sharp corners.
-            - `circle`: An ellipse. Make sure to control the button's width and
-              height to make it a perfect circle.
+    `shape:` The shape of the button. This can be one of:
+    - `pill`: A rectangle where the left and right sides are completely round.
+    - `rounded`: A rectangle with rounded corners.
+    - `rectangle`: A rectangle with sharp corners.
 
-        style: Controls the button's appearance. This can be one of:
-            - `major`: A highly visible button with bold visuals.
-            - `minor`: A less visible button that blends into the background.
+    `style:` Controls the button's appearance. This can be one of:
+    - `major`: A highly visible button with bold visuals.
+    - `minor`: A less visible button that blends into the background.
+    - `plain`: A button with no background or border. Use this to make
+                       the button look like a link.
 
-        color: The color scheme to use for the button.
+    `color:` The color scheme to use for the button.
 
-        is_sensitive: Whether the button should respond to user input.
+    `is_sensitive:` Whether the button should respond to user input.
 
-        is_loading: Whether the button should display a loading indicator. Use
+    `is_loading:` Whether the button should display a loading indicator. Use
             this to indicate to the user that an action is currently running.
 
-        on_press: Triggered when the user clicks on the button.
+    `initially_disabled_for:` The number of seconds the button should be
+            disabled for after it is first rendered. This is useful to prevent
+            the user from accidentally triggering an action when the page is
+            first loaded.
+
+    `on_press:` Triggered when the user clicks on the button.
+
+    ## Example:
+    A simple button with a castle icon:
+    ```python
+    rio.Button(
+        content="Click me!",
+        icon="castle",
+    )
+    ```
+
+    The same button, but with a callback which prints "Button pressed!" to the console:
+    ```python
+    ComponentClass(rio.Component):
+
+            def on_press_button(self) -> None:
+                print("Button pressed!")
+
+            def build(self)->rio.Component:
+            return rio.Button(
+                        content="Click me!",
+                        on_press=self.on_press_button,
+                    )
+    ```
+
+    A button combined with a banner, which displays a message when the button is pressed:
+    `Note:` If the banner_text is an empty string, the banner will disappear entirely.
+
+    ```python
+    ComponentClass(rio.Component):
+        banner_text: str = ""
+
+        def on_press_button(self) -> None:
+            self.banner_text = "Button pressed!"
+
+        def build(self)->rio.Component:
+            return rio.Column(
+                rio.Banner(
+                    text=self.banner_text,
+                    style="info",
+                ),
+                rio.Button(
+                    content="Click me!",
+                    on_press=self.on_press_button,
+                ),
+                spacing=1,
+            )
+    ```
     """
 
     content: rio.Component | str = ""
@@ -155,6 +207,8 @@ class Button(Component):
 
 class IconButton(Component):
     """
+    # IconButton
+
     A round, clickable button with shadow.
 
     The `FloatingActionButton` component is similar to the `Button` component,
@@ -167,6 +221,80 @@ class IconButton(Component):
     The `FloatingActionButton` itself doesn't perform any special layouting.
     Combine it with `rio.Stack` or `rio.Overlay` to make it float above other
     components.
+
+    ## Attributes:
+    `icon:` The name of an icon to display on the button, in the form
+            "set/name:variant". See the `Icon` component for details of how
+            icons work in Rio.
+
+    `style:` Controls the button's appearance. This can be one of:
+    - `major`: A highly visible button with bold visuals.
+    - `minor`: A less visible button that blends into the background.
+    - `plain`: A button with no background or border. Use this to make
+                       the button look like a link.
+
+    `color:` The color scheme to use for the button.
+
+    `is_sensitive:` Whether the button should respond to user input.
+
+    `initially_disabled_for:` The number of seconds the button should be
+            disabled for after it is first rendered. This is useful to prevent
+            the user from accidentally triggering an action when the page is
+            first loaded.
+
+    `size:` The size of the button. This is the diameter of the button in
+            font-size units.
+
+    `on_press:` Triggered when the user clicks on the button.
+
+    ## Example:
+    A simple `IconButton` with a castle icon:
+
+    ```python
+    rio.IconButton(
+        icon="castle",
+        style="major",
+    )
+    ```
+
+    The same button, but with a callback which prints "Icon button pressed!" to the console:
+    ```python
+    ComponentClass(rio.Component):
+
+            def on_press_button(self) -> None:
+                print("Icon button pressed!")
+
+            def build(self)->rio.Component:
+            return rio.IconButton(
+                        icon="castle",
+                        on_press=self.on_press_button,
+                    )
+    ```
+
+    A button combined with a banner, which displays a message when the button is pressed:
+    `Note:` If the banner_text is an empty string, the banner will disappear entirely.
+
+    ```python
+    ComponentClass(rio.Component):
+        banner_text: str = ""
+
+        def on_press_button(self) -> None:
+            self.banner_text = "Icon button pressed!"
+
+        def build(self)->rio.Component:
+            return rio.Column(
+                rio.Banner(
+                    text=self.banner_text,
+                    style="info",
+                ),
+                rio.IconButton(
+                    icon="castle",
+                    on_press=self.on_press_button,
+                ),
+                spacing=1,
+            )
+    ```
+
     """
 
     icon: str
@@ -174,9 +302,9 @@ class IconButton(Component):
     style: Literal["major", "minor", "plain"]
     color: rio.ColorSet
     is_sensitive: bool
-    on_press: rio.EventHandler[[]]
     initially_disabled_for: float = INITIALLY_DISABLED_FOR
     size: float
+    on_press: rio.EventHandler[[]]
 
     def __init__(
         self,

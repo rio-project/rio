@@ -34,6 +34,8 @@ class NumberInputConfirmEvent:
 
 class NumberInput(Component):
     """
+    # NumberInput
+
     Like `TextInput`, but specifically for inputting numbers.
 
     `NumberInput` allows the user to enter a number. This is similar to the
@@ -46,35 +48,85 @@ class NumberInput(Component):
     support suffixes such as "k" and "m" to represent thousands and millions
     respectively.
 
-    Attributes:
-        value: The number currently entered by the user.
 
-        label: A short text to display next to the text input.
+    ## Attributes:
+    `value:` The number currently entered by the user.
 
-        prefix_text: A short text to display before the text input. Useful for
+    `label:` A short text to display next to the text input.
+
+    `prefix_text:` A short text to display before the text input. Useful for
             displaying currency symbols or other prefixed units.
 
-        suffix_text: A short text to display after the text input. Useful for
+    `suffix_text:` A short text to display after the text input. Useful for
             displaying currency names or units.
 
-        minimum: The minimum value the number can be set to.
+    `minimum:` The minimum value the number can be set to.
 
-        maximum: The maximum value the number can be set to.
+    `maximum:` The maximum value the number can be set to.
 
-        decimals: The number of decimals to accept. If the user enters more
+    `decimals:` The number of decimals to accept. If the user enters more
             decimals, they will be rounded off. If this value is equal to `0`,
             the input's `value` is guaranteed to be an integer, rather than
             float.
 
-        is_sensitive: Whether the text input should respond to user input.
+    `is_sensitive:` Whether the text input should respond to user input.
 
-        is_valid: Visually displays to the user whether the current text is
+    `is_valid:` Visually displays to the user whether the current text is
             valid. You can use this to signal to the user that their input needs
             to be changed.
 
-        on_change: Triggered when the user changes the number.
+    `on_change:` Triggered when the user changes the number.
 
-        on_confirm: Triggered when the user explicitly confirms their input,
+    `on_confirm:` Triggered when the user explicitly confirms their input,
+            such as by pressing the "Enter" key.
+
+
+    ## Example:
+    A simple `NumberInput` with a default value of 20.00, a label, a prefix, a minimum value of 0 and 2 decimals: 
+    `Note:` The value will not be updated if the user changes the value in the input field.
+    ```python
+    rio.NumberInput(
+        value=20.00,
+        label="price",
+        prefix_text="$",
+        minimum=0,
+        decimals=2,
+    )
+    ```
+
+    In a Component class state bindings can be used to update the value of the input and listen to changes:
+
+    ```python
+    ComponentClass(rio.Component):
+        value: float=0.0
+        def build(self)->rio.Component:
+            return rio.NumberInput(
+                        value=ComponentClass.value,
+                        label="price",
+                        prefix_text="$",
+                        minimum=0,
+                        decimals=2,
+                    )
+    ```
+
+    In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
+    ```python
+    ComponentClass(rio.Component):
+        value: float=0.0
+
+        def on_change_update_value(self, ev: rio.NumberInputChangeEvent):
+            self.value = ev.value
+
+        def build(self)->rio.Component:
+            return rio.NumberInput(
+                        value=self.value,
+                        label="price",
+                        prefix_text="$",
+                        minimum=0,
+                        decimals=2,
+                        on_change=self.on_change_update_value,
+                    )
+    ```
     """
 
     value: float = 0
