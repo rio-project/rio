@@ -334,9 +334,7 @@ class Arbiter:
         )
 
         # Wait for the server to be ready
-        revel.debug("Begin wait")
         await uvicorn_is_ready_event.wait()
-        revel.debug("End wait")
 
         # Let everyone else know that the server is ready
         self._server_is_ready.set()
@@ -453,6 +451,7 @@ window.setConnectionLostPopupVisible(true);
         # of this, uvicorn won't call the `on_app_start` function - do it
         # manually.
         app_server = self._uvicorn_worker.app_server
+        assert app_server is not None
         await app_server._call_on_app_start()
 
         # Tell all sessions to reconnect, and close old sessions
@@ -478,11 +477,13 @@ window.setConnectionLostPopupVisible(true);
         wait for or return the result.
         """
         assert self._uvicorn_worker is not None
+        app_server = self._uvicorn_worker.app_server
+        assert app_server is not None
 
         async def evaljs_as_coroutine(sess: rio.Session) -> None:
             await sess._evaluate_javascript(javascript_source)
 
-        for sess in self._uvicorn_worker.app_server._active_session_tokens.values():
+        for sess in app_server._active_session_tokens.values():
             asyncio.create_task(
                 evaljs_as_coroutine(sess),
                 name=f"Eval JS in session {sess._session_token}",

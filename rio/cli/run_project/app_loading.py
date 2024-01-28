@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import *  # type: ignore
 
 import revel
-from revel import error
 
 import rio
 import rio.icon_registry
@@ -122,9 +121,9 @@ def load_user_app(proj: project.RioProject) -> rio.App:
     try:
         app_module = import_app_module(proj)
     except BaseException as err:
-        error(f"Could not import `{proj.app_main_module}`:")
+        revel.error(f"Could not import `{proj.app_main_module}`:")
 
-        print(
+        revel.print(
             nice_traceback.format_exception_revel(
                 err,
                 relpath=proj.project_directory,
