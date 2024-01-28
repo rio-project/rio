@@ -13,7 +13,8 @@ import httpx
 from PIL.Image import Image
 from yarl import URL
 
-from . import session
+import rio
+
 from .common import ImageLike
 from .self_serializing import SelfSerializing
 
@@ -159,7 +160,7 @@ class Asset(SelfSerializing):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _serialize(self, sess: session.Session) -> str:
+    def _serialize(self, sess: rio.Session) -> str:
         """
         Make sure this asset is available under its URL, and return that URL,
         unescaped.
@@ -197,7 +198,7 @@ class HostedAsset(Asset):
     def url(self) -> URL:
         return URL(f"/rio/asset/temp-{self.secret_id}")
 
-    def _serialize(self, sess: session.Session) -> str:
+    def _serialize(self, sess: rio.Session) -> str:
         sess._app_server.weakly_host_asset(self)
         return f"/rio/asset/temp-{self.secret_id}"
 
@@ -295,5 +296,5 @@ class UrlAsset(Asset):
     def url(self) -> URL:
         return self._url
 
-    def _serialize(self, sess: session.Session) -> str:
+    def _serialize(self, sess: rio.Session) -> str:
         return self._url.human_repr()

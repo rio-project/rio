@@ -4,12 +4,10 @@ import re
 import secrets
 import socket
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
-import revel
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL

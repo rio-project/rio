@@ -6,8 +6,9 @@ from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 
-from . import common, session
-from .color import Color
+import rio
+
+from . import common
 from .fills import FillLike
 from .self_serializing import SelfSerializing
 
@@ -25,7 +26,7 @@ class Font(SelfSerializing):
     italic: pathlib.Path | bytes | None = None
     bold_italic: pathlib.Path | bytes | None = None
 
-    def _serialize(self, sess: session.Session) -> str:
+    def _serialize(self, sess: rio.Session) -> str:
         sess._register_font(self)
         return self.name
 
@@ -80,7 +81,7 @@ class TextStyle(SelfSerializing):
             all_caps=self.all_caps if all_caps is None else all_caps,
         )
 
-    def _serialize(self, sess: session.Session) -> JsonDoc:
+    def _serialize(self, sess: rio.Session) -> JsonDoc:
         return {
             "fontName": None if self.font is None else self.font._serialize(sess),
             "fill": None if self.fill is None else self.fill._serialize(sess),

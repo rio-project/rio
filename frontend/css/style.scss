@@ -528,7 +528,7 @@ a {
 }
 
 code {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--rio-global-monospace-font), monospace;
 }
 
 html {
@@ -543,7 +543,7 @@ body {
     margin: 0;
     padding: 0;
 
-    font-family: var(--rio-global-text-font-name, Roboto, sans-serif);
+    font-family: var(--rio-global-font, Roboto, sans-serif);
 }
 
 // All components
@@ -1499,7 +1499,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
     p {
         code {
-            font-family: 'Roboto Mono', monospace;
+            font-family: var(--rio-global-monospace-font), monospace;
             background: var(--rio-local-plain-bg-variant);
             border-radius: var(--rio-global-corner-radius-small);
             padding: 0.1rem 0.3rem;
@@ -1555,7 +1555,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     }
 
     p {
-        font-family: var(--rio-global-text-font-name);
+        font-family: var(--rio-global-font);
         color: var(--rio-local-text-color);
         font-size: var(--rio-global-text-font-size);
         font-style: var(--rio-global-text-italic);
@@ -2290,7 +2290,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-traceback-traceback {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--rio-global-monospace-font), monospace;
     font-size: 0.9rem;
     white-space: pre-wrap;
     overflow-wrap: break-word;
@@ -2633,7 +2633,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     cursor: text;
     white-space: pre;
     font-size: 1rem;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--rio-global-monospace-font), monospace;
 
     position: relative;
     min-width: 25rem;

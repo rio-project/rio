@@ -10,6 +10,7 @@ from uniserde import Jsonable
 import rio
 
 from . import color
+from .text_style import ROBOTO, ROBOTO_MONO
 
 # This module imports `curses` even though it doesn't need it, which causes
 # problems on Windows. Since it's unused, we'll just give it a fake module if
@@ -32,6 +33,15 @@ __all__ = [
 ]
 
 # TODO: Consider really noticeable, memorable primary color: #e80265
+
+T = TypeVar("T")
+
+
+def elvis(optional: Optional[T], default: T) -> T:
+    if optional is None:
+        return default
+    else:
+        return optional
 
 
 class MaterialPalette:
@@ -76,14 +86,10 @@ class Palette:
         foreground: rio.Color | None = None,
     ) -> Palette:
         return Palette(
-            background=self.background if background is None else background,
-            background_variant=self.background_variant
-            if background_variant is None
-            else background_variant,
-            background_active=self.background_active
-            if background_active is None
-            else background_active,
-            foreground=self.foreground if foreground is None else foreground,
+            background=elvis(background, self.background),
+            background_variant=elvis(background_variant, self.background_variant),
+            background_active=elvis(background_active, self.background_active),
+            foreground=elvis(foreground, self.foreground),
         )
 
 
@@ -123,6 +129,9 @@ class Theme:
 
     shadow_color: rio.Color
 
+    font: rio.Font
+    monospace_font: rio.Font
+
     # Text styles
     heading1_style: rio.TextStyle
     heading2_style: rio.TextStyle
@@ -145,6 +154,8 @@ class Theme:
         corner_radius_medium: float = 1.4,
         corner_radius_large: float = 2.4,
         color_headings: bool | Literal["auto"] = "auto",
+        font: rio.Font = ROBOTO,
+        monospace_font: rio.Font = ROBOTO_MONO,
         light: bool = True,
     ) -> Self:
         # Impute defaults
@@ -313,6 +324,8 @@ class Theme:
             corner_radius_medium=corner_radius_medium,
             corner_radius_large=corner_radius_large,
             shadow_color=shadow_color,
+            font=font,
+            monospace_font=monospace_font,
             heading1_style=heading1_style,
             heading2_style=heading2_style,
             heading3_style=heading3_style,
@@ -335,6 +348,8 @@ class Theme:
         corner_radius_small: float = 0.6,
         corner_radius_medium: float = 1.6,
         corner_radius_large: float = 2.6,
+        font: rio.Font = ROBOTO,
+        monospace_font: rio.Font = ROBOTO_MONO,
         color_headings: bool | Literal["auto"] = "auto",
     ) -> tuple[Self, Self]:
         func = functools.partial(
@@ -351,6 +366,8 @@ class Theme:
             corner_radius_small=corner_radius_small,
             corner_radius_medium=corner_radius_medium,
             corner_radius_large=corner_radius_large,
+            font=font,
+            monospace_font=monospace_font,
             color_headings=color_headings,
         )
         return (
@@ -394,57 +411,33 @@ class Theme:
         corner_radius_medium: float | None = None,
         corner_radius_large: float | None = None,
         shadow_color: rio.Color | None = None,
+        font_family: rio.Font | None = None,
+        monospace_font: rio.Font | None = None,
         heading1_style: rio.TextStyle | None = None,
         heading2_style: rio.TextStyle | None = None,
         heading3_style: rio.TextStyle | None = None,
         text_style: rio.TextStyle | None = None,
     ) -> Theme:
         return Theme(
-            primary_palette=self.primary_palette
-            if primary_palette is None
-            else primary_palette,
-            secondary_palette=self.secondary_palette
-            if secondary_palette is None
-            else secondary_palette,
-            background_palette=self.background_palette
-            if background_palette is None
-            else background_palette,
-            neutral_palette=self.neutral_palette
-            if neutral_palette is None
-            else neutral_palette,
-            hud_palette=self.hud_palette if hud_palette is None else hud_palette,
-            disabled_palette=self.disabled_palette
-            if disabled_palette is None
-            else disabled_palette,
-            success_palette=self.success_palette
-            if success_palette is None
-            else success_palette,
-            warning_palette=self.warning_palette
-            if warning_palette is None
-            else warning_palette,
-            danger_palette=self.danger_palette
-            if danger_palette is None
-            else danger_palette,
-            corner_radius_small=self.corner_radius_small
-            if corner_radius_small is None
-            else corner_radius_small,
-            corner_radius_medium=self.corner_radius_medium
-            if corner_radius_medium is None
-            else corner_radius_medium,
-            corner_radius_large=self.corner_radius_large
-            if corner_radius_large is None
-            else corner_radius_large,
-            shadow_color=self.shadow_color if shadow_color is None else shadow_color,
-            heading1_style=self.heading1_style
-            if heading1_style is None
-            else heading1_style,
-            heading2_style=self.heading2_style
-            if heading2_style is None
-            else heading2_style,
-            heading3_style=self.heading3_style
-            if heading3_style is None
-            else heading3_style,
-            text_style=self.text_style if text_style is None else text_style,
+            primary_palette=elvis(primary_palette, self.primary_palette),
+            secondary_palette=elvis(secondary_palette, self.secondary_palette),
+            background_palette=elvis(background_palette, self.background_palette),
+            neutral_palette=elvis(neutral_palette, self.neutral_palette),
+            hud_palette=elvis(hud_palette, self.hud_palette),
+            disabled_palette=elvis(disabled_palette, self.disabled_palette),
+            success_palette=elvis(success_palette, self.success_palette),
+            warning_palette=elvis(warning_palette, self.warning_palette),
+            danger_palette=elvis(danger_palette, self.danger_palette),
+            corner_radius_small=elvis(corner_radius_small, self.corner_radius_small),
+            corner_radius_medium=elvis(corner_radius_medium, self.corner_radius_medium),
+            corner_radius_large=elvis(corner_radius_large, self.corner_radius_large),
+            shadow_color=elvis(shadow_color, self.shadow_color),
+            font=elvis(font_family, self.font),
+            monospace_font=elvis(monospace_font, self.monospace_font),
+            heading1_style=elvis(heading1_style, self.heading1_style),
+            heading2_style=elvis(heading2_style, self.heading2_style),
+            heading3_style=elvis(heading3_style, self.heading3_style),
+            text_style=elvis(text_style, self.text_style),
         )
 
     @property

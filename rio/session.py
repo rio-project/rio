@@ -1759,6 +1759,8 @@ document.body.removeChild(a)
 
         # Miscellaneous
         variables: dict[str, str] = {
+            "--rio-global-font": thm.font._serialize(self),
+            "--rio-global-monospace-font": thm.monospace_font._serialize(self),
             "--rio-global-corner-radius-small": f"{thm.corner_radius_small}rem",
             "--rio-global-corner-radius-medium": f"{thm.corner_radius_medium}rem",
             "--rio-global-corner-radius-large": f"{thm.corner_radius_large}rem",

@@ -6,7 +6,8 @@ from typing import *  # type: ignore
 from typing_extensions import TypeAlias
 from uniserde import Jsonable
 
-from . import session
+import rio
+
 from .self_serializing import SelfSerializing
 
 __all__ = [
@@ -579,7 +580,7 @@ class Color(SelfSerializing):
         """
         return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {int(round(self.opacity*255))})"
 
-    def _serialize(self, sess: session.Session) -> Jsonable:
+    def _serialize(self, sess: rio.Session) -> Jsonable:
         return self.rgba
 
     def __repr__(self) -> str:

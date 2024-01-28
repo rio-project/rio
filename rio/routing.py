@@ -4,9 +4,6 @@ import logging
 from collections.abc import Callable, Iterable
 from dataclasses import KW_ONLY, dataclass, field
 
-import revel
-from revel import debug
-
 import rio
 
 from . import common

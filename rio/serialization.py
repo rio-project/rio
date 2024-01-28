@@ -14,7 +14,7 @@ from uniserde import Jsonable, JsonDoc
 import rio
 
 from . import color, inspection, maybes, session
-from .components.fundamental_component import FundamentalComponent
+from .components import fundamental_component
 from .dataclass import class_local_fields
 from .self_serializing import SelfSerializing
 
@@ -114,7 +114,7 @@ def serialize_and_host_component(component: rio.Component) -> JsonDoc:
     # If it's a fundamental component, serialize its state because JS needs it.
     # For non-fundamental components, there's no reason to send the state to
     # the frontend.
-    if isinstance(component, FundamentalComponent):
+    if isinstance(component, fundamental_component.FundamentalComponent):
         sess = component.session
 
         for name, serializer in get_attribute_serializers(type(component)).items():

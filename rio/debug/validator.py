@@ -8,10 +8,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import *  # type: ignore
 
-import uniserde
 from uniserde import Jsonable, JsonDoc
 
-from .. import inspection, session
+import rio
+
+from .. import inspection
 
 __all__ = [
     "ClientComponent",
@@ -130,7 +131,7 @@ class ValidationError(Exception):
 class Validator:
     def __init__(
         self,
-        sess: session.Session,
+        sess: rio.Session,
         *,
         dump_directory_path: Path | None = None,
     ):

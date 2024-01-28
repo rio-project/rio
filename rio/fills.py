@@ -9,7 +9,7 @@ from uniserde import Jsonable
 
 import rio
 
-from . import assets, session
+from . import assets
 from .color import Color
 from .common import ImageLike
 from .self_serializing import SelfSerializing
@@ -65,7 +65,7 @@ class SolidFill(Fill):
 
     color: Color
 
-    def _serialize(self, sess: session.Session) -> Jsonable:
+    def _serialize(self, sess: rio.Session) -> Jsonable:
         return {
             "type": "solid",
             "color": self.color.rgba,
@@ -135,7 +135,7 @@ class LinearGradientFill(Fill):
             f"linear-gradient({90 - self.angle_degrees}deg, {', '.join(stop_strings)})"
         )
 
-    def _serialize(self, sess: session.Session) -> Jsonable:
+    def _serialize(self, sess: rio.Session) -> Jsonable:
         return {
             "type": "linearGradient",
             "stops": [(color.rgba, position) for color, position in self.stops],
@@ -179,7 +179,7 @@ class ImageFill(Fill):
         self._image_asset = assets.Asset.from_image(image)
         self._fill_mode = fill_mode
 
-    def _serialize(self, sess: session.Session) -> Jsonable:
+    def _serialize(self, sess: rio.Session) -> Jsonable:
         return {
             "type": "image",
             "fillMode": self._fill_mode,
