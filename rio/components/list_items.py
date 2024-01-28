@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import Any
+from typing import *  # type: ignore
 
 from uniserde import JsonDoc
 

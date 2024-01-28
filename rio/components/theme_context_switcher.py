@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import *  # type: ignore
+
 from uniserde import JsonDoc
 
 import rio

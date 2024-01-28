@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from typing import *  # type: ignore
+
 import rio
 
 from .component import Component
 
-__all__ = ["Container"]
+__all__ = [
+    "Container",
+]
 
 
 class Container(Component):

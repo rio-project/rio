@@ -7,22 +7,18 @@ from dataclasses import is_dataclass
 from typing import *  # type: ignore
 
 import introspection.typing
-from revel import *  # type: ignore
+import revel
 
 from rio import inspection
 
 from . import models
 
-valid_section_names: set[str] = {
-    "args",
-    "attributes",
-    "raises",
-}
 
-
-def pre_parse_google_docstring(docstring: str) -> tuple[str, dict[str, dict[str, str]]]:
+def pre_parse_markdown_docstring(
+    docstring: str,
+) -> tuple[str, dict[str, dict[str, str]]]:
     """
-    Given a google-style docstring, return the description and sections.
+    Given a markdown formatted docstring, return the description and sections.
     """
     # All lines not part of a section are part of the description
     description: str = ""
@@ -36,11 +32,8 @@ def pre_parse_google_docstring(docstring: str) -> tuple[str, dict[str, dict[str,
     # The section currently being parsed, or `None` if not inside a section
     current_section: dict[str, list[str]] | None = None
 
-    # Th lines of the value in the section currently being parsed
+    # The lines of the value in the section currently being parsed
     current_value_lines: list[str] = []
-
-    # The indentation of content in the current section
-    section_content_indent: int = 0
 
     # Trim the docstring and split it into lines
     docstring = textwrap.dedent(docstring.strip())
@@ -53,15 +46,10 @@ def pre_parse_google_docstring(docstring: str) -> tuple[str, dict[str, dict[str,
         strip_line = strip_line.rstrip()
 
         # Start of a new section?
-        if indent == 0 and strip_line.endswith(":"):
-            section_name = strip_line[:-1]
-            section_name = section_name.strip().lower()
-
-            if section_name in valid_section_names:
-                current_section = sections.setdefault(section_name, {})
-                current_value_lines = []
-                section_content_indent = 999999
-                continue
+        if indent == 0 and strip_line.startswith("#"):
+            section_name = strip_line.lstrip("#").lstrip().lower()
+            current_section = sections.setdefault(section_name, {})
+            current_value_lines = []
 
         # If not inside a section, append to the description
         if current_section is None:
@@ -69,34 +57,24 @@ def pre_parse_google_docstring(docstring: str) -> tuple[str, dict[str, dict[str,
             continue
 
         # Continuation of the previous value
-        if indent > section_content_indent or not strip_line:
+        if indent > 0 or not strip_line:
             current_value_lines.append(strip_line)
             continue
 
         # New value
-        section_content_indent = indent
         parts = strip_line.split(":", 1)
 
         if len(parts) == 1:
-            warning(f'Invalid indentation in docstring: "{strip_line}"')
+            revel.warning(
+                f'Expected a new mapping (key: value), but got "{strip_line}"'
+            )
             continue
 
         name, value = parts
-        name = name.strip()
+        name = name.strip().strip("`").strip()
         value = value.strip()
         current_value_lines = [value]
         current_section[name] = current_value_lines
-
-    # Post-processing function for strings
-    def postprocess_string(value: str) -> str:
-        # TODO: Remove double lines, strip whitespace, etc, but watch out for
-        # code blocks
-
-        # Is this actually necessary?
-        return value
-
-    # Post-process the description
-    description = postprocess_string(description)
 
     # Convert the section values from lists to strings
     result_sections: dict[str, dict[str, str]] = {}
@@ -105,7 +83,7 @@ def pre_parse_google_docstring(docstring: str) -> tuple[str, dict[str, dict[str,
         result_sections[section_name] = {}
 
         for name, lines in section.items():
-            result_sections[section_name][name] = postprocess_string(" ".join(lines))
+            result_sections[section_name][name] = " ".join(lines)
 
     return description.strip(), result_sections
 
@@ -176,7 +154,7 @@ def parse_docstring(
     """
 
     # Pre-parse the docstring
-    description, sections = pre_parse_google_docstring(docstring)
+    description, sections = pre_parse_markdown_docstring(docstring)
 
     # Parse the description
     short_description, long_description = parse_descriptions(description)
@@ -197,7 +175,7 @@ def parse_docstring(
         sections.setdefault(section_name, {})
 
     for section in set(sections.keys()) - enabled_sections:
-        warning(f"Removing superfluous section `{section}` from docstring")
+        revel.warning(f"Removing superfluous section `{section}` from docstring")
         del sections[section]
 
     # Done
@@ -260,7 +238,7 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
             try:
                 result_param = parameters[param_name]
             except KeyError:
-                warning(
+                revel.warning(
                     f"The docstring for function `{func.__name__}` mentions a parameter `{param_name}` that does not exist in the function signature."
                 )
                 continue
@@ -343,7 +321,7 @@ def parse_class(cls: type) -> models.ClassDocs:
     # Parse the fields
     fields_by_name: dict[str, models.ClassField] = {}
 
-    for name, typ in inspection.get_partially_resolved_type_annotations(cls).items():
+    for name, typ in inspection.get_resolved_type_annotations(cls).items():
         if typ is dataclasses.KW_ONLY:
             continue
 
@@ -388,7 +366,7 @@ def parse_class(cls: type) -> models.ClassDocs:
         try:
             result_field = fields_by_name[field_name]
         except KeyError:
-            warning(
+            revel.warning(
                 f"The docstring for class `{cls.__name__}` mentions a field `{field_name}` that does not exist in the class."
             )
             continue

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import KW_ONLY, dataclass
+from typing import *  # type: ignore
 
 import rio
 
@@ -82,7 +83,7 @@ class NumberInput(Component):
 
 
     ## Example:
-    A simple `NumberInput` with a default value of 20.00, a label, a prefix, a minimum value of 0 and 2 decimals: 
+    A simple `NumberInput` with a default value of 20.00, a label, a prefix, a minimum value of 0 and 2 decimals:
     `Note:` The value will not be updated if the user changes the value in the input field.
     ```python
     rio.NumberInput(

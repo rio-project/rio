@@ -1,7 +1,11 @@
+from typing import *  # type: ignore
+
 from ..common import URL
 from .fundamental_component import FundamentalComponent
 
-__all__ = ["Website"]
+__all__ = [
+    "Website",
+]
 
 
 class Website(FundamentalComponent):

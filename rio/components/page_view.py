@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import KW_ONLY, field
-
-import revel
+from typing import *  # type: ignore
 
 import rio
 
-from .. import common
 from .component import Component
 
 __all__ = [

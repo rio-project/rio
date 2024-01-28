@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import *  # type: ignore
 
 from .component import Component
 from .fundamental_component import FundamentalComponent
