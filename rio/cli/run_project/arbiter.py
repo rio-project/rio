@@ -274,7 +274,7 @@ class Arbiter:
         print(f"[bold green]{LOGO_TEXT}[/]")
         print()
         print()
-        print("Starting")
+        print("Starting...")
 
         # Expose the mainloop
         self._mainloop = asyncio.get_running_loop()
@@ -334,21 +334,37 @@ class Arbiter:
         )
 
         # Wait for the server to be ready
+        revel.debug("Begin wait")
         await uvicorn_is_ready_event.wait()
+        revel.debug("End wait")
 
-        # Start the webview
+        # Let everyone else know that the server is ready
         self._server_is_ready.set()
 
-        # The app was just successfully started. Inform the user
+        # The app has just successfully started. Inform the user
         if self.debug_mode:
-            print()
             warning("Rio is running in DEBUG mode.")
             warning(
                 "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
             )
             warning("Run with `--release` to disable debug mode.")
-        else:
-            print("TODOOOOO - your app is ready now")
+            print()
+
+        if not self.run_in_window:
+            revel.success(f"The app is running at [bold]{self.url}[/]")
+            print()
+
+        if self.public:
+            warning(
+                f"Running in [bold]public[/] mode. All devices on your network can access the app."
+            )
+            warning(f"Only run in public mode if you trust your network!")
+            print()
+        elif not self.run_in_window:
+            print(
+                f"[dim]Running in [/]local[dim] mode. Only this device can access the app.[/]"
+            )
+            print()
 
         # Keep track when the app was last reloaded
         last_reload_started_at = -1
@@ -400,52 +416,6 @@ window.setConnectionLostPopupVisible(true);
 """,
         )
 
-    # async def _start_app(self) -> None:
-    #     """
-    #     Starts uvicorn and the app. Returns only once the app is ready.
-
-    #     If the user's code can't be imported, a dummy app displaying the error
-    #     message will be created.
-    #     """
-    #     # Load the app
-    #     app_or_error = self._load_user_app()
-
-    #     if isinstance(app_or_error, rio.App):
-    #         app = app_or_error
-    #     else:
-    #         app = self.make_error_message_app(app_or_error)
-
-    #     # Start uvicorn
-    #     on_ready_event = asyncio.Event()
-    #     self._uvicorn_worker = self._create_worker(
-    #         self._worker_uvicorn(
-    #             app,
-    #             on_ready_or_failed=on_ready_event.set,
-    #         )
-    #     )
-    #     await on_ready_event.wait()
-
-    #     print()
-    #     if self.run_in_window:
-    #         success("Ready")
-
-    #         # Notify the webview that everything is ready for it to open
-    #         self._show_webview_event.set()
-    #     else:
-    #         success(f"Your app is running at {self.url}")
-
-    #         if self.public:
-    #             warning(
-    #                 f"Running in [bold]public[/] mode. All devices on your network can access the app."
-    #             )
-    #             warning(f"Only run in public mode if you trust your network!")
-    #         else:
-    #             print(
-    #                 f"[dim]Running in [/]local[dim] mode. Only this device can access the app.[/]"
-    #             )
-
-    #         webbrowser.open(self.url)
-
     async def _restart_app(self) -> None:
         assert self._uvicorn_worker is not None
 
@@ -477,6 +447,7 @@ window.setConnectionLostPopupVisible(true);
         else:
             # Replace the app which is currently hosted by uvicorn
             self._uvicorn_worker.replace_app(new_app)
+            revel.success("Ready")
 
         # The app has changed, but the uvicorn server is still the same. Because
         # of this, uvicorn won't call the `on_app_start` function - do it
@@ -515,4 +486,4 @@ window.setConnectionLostPopupVisible(true);
             asyncio.create_task(
                 evaljs_as_coroutine(sess),
                 name=f"Eval JS in session {sess._session_token}",
-            )  #
+            )

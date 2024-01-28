@@ -32,21 +32,29 @@ class UvicornWorker:
         self.port = port
         self.quiet = quiet
         self.debug_mode = debug_mode
+        self.run_in_window = run_in_window
         self.on_server_is_ready = on_server_is_ready
         self.on_startup_has_failed = on_startup_has_failed
 
         # The app server used to host the app
-        app_server = app._as_fastapi(
+        self.app_server: rio.app_server.AppServer | None = None
+
+    async def run(self) -> None:
+        # Set up a uvicorn server, but don't start it yet
+        external_mainloop = asyncio.get_running_loop()
+
+        def call_on_server_is_ready_in_mainloop() -> None:
+            external_mainloop.call_soon_threadsafe(self.on_server_is_ready)
+
+        app_server = self.app._as_fastapi(
             debug_mode=self.debug_mode,
-            running_in_window=run_in_window,
+            running_in_window=self.run_in_window,
             validator_factory=None,
-            internal_on_app_start=on_server_is_ready,
+            internal_on_app_start=call_on_server_is_ready_in_mainloop,
         )
         assert isinstance(app_server, rio.app_server.AppServer)
         self.app_server = app_server
 
-    async def run(self) -> None:
-        # Set up a uvicorn server, but don't start it yet
         config = uvicorn.Config(
             self.app_server,
             host=self.host,
@@ -56,11 +64,11 @@ class UvicornWorker:
         )
         self._uvicorn_server = uvicorn.Server(config)
 
+        # Since uvicorn is blocking, run it in a separate thread
         def run_uvicorn() -> None:
             assert self._uvicorn_server is not None
 
             try:
-                revel.debug(f"Starting uvicorn on {self.host}:{self.port}")
                 self._uvicorn_server.run()
 
             except BaseException:
@@ -71,13 +79,9 @@ class UvicornWorker:
                 self.push_event(run_models.StopRequested())
                 return
 
-            else:
-                revel.debug("Uviciron server has returned")
-
             # Nothing to do here. If the server stops running, it's because we
             # told it to - that means the program is already shutting down.
 
-        print("Starting uvicorn thread")
         uvicorn_thread = threading.Thread(target=run_uvicorn)
         uvicorn_thread.start()
 
@@ -94,4 +98,5 @@ class UvicornWorker:
         Replace the app currently running in the server with a new one. The
         worker must already be running for this to work.
         """
+        assert self.app_server is not None
         self.app_server.app = app
