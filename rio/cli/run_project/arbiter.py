@@ -1,24 +1,15 @@
 import asyncio
-import html
 import json
 import logging
-import os
 import signal
 import socket
 import sys
 import threading
-import time
-import traceback
-import types
 import webbrowser
-from dataclasses import dataclass
-from pathlib import Path
 from typing import *  # type: ignore
 
 import revel
-import uvicorn
-import watchfiles
-from revel import debug, error, fatal, print, success, warning
+from revel import print
 
 import rio.app_server
 import rio.cli
@@ -263,9 +254,24 @@ class Arbiter:
     async def _run_async(self) -> None:
         # Make sure the app is cleanly shut down, even if the arbiter crashes
         # for whichever reason.
+        #
+        # This loop has a bad case of hiding important exceptions. It would
+        # really be nice to only shut down on intentional errors and at least
+        # log the others.
         try:
             await self._run_async_inner()
-        except BaseException:
+
+        # Keyboard interrupts are already handled by the signal handler
+        except KeyboardInterrupt:
+            pass
+
+        # Anything else is an unintentional crash
+        except Exception as err:
+            revel.error("The arbiter has crashed.")
+            revel.error("This is a bug in Rio - please report it")
+            print()
+            revel.print(nice_traceback.format_exception_revel(err))
+
             self.stop(keyboard_interrupt=False)
 
     async def _run_async_inner(self) -> None:
@@ -281,7 +287,7 @@ class Arbiter:
 
         # Make sure the chosen port is available
         if not common.ensure_valid_port(self._host, self.port):
-            error(f"The port [bold]{self.port}[/] is already in use.")
+            revel.error(f"The port [bold]{self.port}[/] is already in use.")
             print(f"Each port can only be used by one app at a time.")
             print(
                 f"Try using another port, or let Rio choose one for you, by not specifying any port."
@@ -290,7 +296,7 @@ class Arbiter:
 
         # Make sure the webview module is available
         if self.run_in_window and webview is None:
-            fatal(
+            revel.fatal(
                 "The `window` extra is required to run apps inside of a window."
                 " Run `pip install rio-ui[[window]` to install it."
             )
@@ -341,11 +347,11 @@ class Arbiter:
 
         # The app has just successfully started. Inform the user
         if self.debug_mode:
-            warning("Rio is running in DEBUG mode.")
-            warning(
+            revel.warning("Rio is running in DEBUG mode.")
+            revel.warning(
                 "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
             )
-            warning("Run with `--release` to disable debug mode.")
+            revel.warning("Run with `--release` to disable debug mode.")
             print()
 
         if not self.run_in_window:
@@ -353,10 +359,10 @@ class Arbiter:
             print()
 
         if self.public:
-            warning(
+            revel.warning(
                 f"Running in [bold]public[/] mode. All devices on your network can access the app."
             )
-            warning(f"Only run in public mode if you trust your network!")
+            revel.warning(f"Only run in public mode if you trust your network!")
             print()
         elif not self.run_in_window:
             print(
@@ -418,34 +424,24 @@ window.setConnectionLostPopupVisible(true);
         assert self._uvicorn_worker is not None
 
         # Load the user's app again
-        try:
-            new_app = app_loading.load_user_app(self.proj)
+        new_app = self.try_load_app()
 
-        # If the app can't be loaded, create a placeholder app instead
-        except app_loading.AppLoadError as err:
-            new_app = app_loading.make_error_message_app(
-                err,
-                self.proj.project_directory,
-                self._app_theme,
-            )
+        # Replace the app which is currently hosted by uvicorn
+        self._uvicorn_worker.replace_app(new_app)
+        revel.success("Ready")
 
-            # Replace the app which is currently hosted by uvicorn
-            self._uvicorn_worker.replace_app(new_app)
-
-            # There is a subtlety here. Sessions which have requested their
-            # index.html, but aren't yet connected to the websocket cannot
-            # receive messages. So `_spawn_traceback_popups` will skip them.
-            # This is fine as long as `self._app_server.app` has already been
-            # assigned, since this ensures that any new websocket connections
-            # will receive the new app anyway.
-            #
-            # -> This MUST happen after the new app has already been injected
-            self._spawn_traceback_popups(err)
-
-        else:
-            # Replace the app which is currently hosted by uvicorn
-            self._uvicorn_worker.replace_app(new_app)
-            revel.success("Ready")
+        # TODO: Reintegrate this: If app loading has failed, spawn a popup in
+        # all connected sessions.
+        #
+        # # There is a subtlety here. Sessions which have requested their
+        # # index.html, but aren't yet connected to the websocket cannot
+        # # receive messages. So `_spawn_traceback_popups` will skip them.
+        # # This is fine as long as `self._app_server.app` has already been
+        # # assigned, since this ensures that any new websocket connections
+        # # will receive the new app anyway.
+        # #
+        # # -> This MUST happen after the new app has already been injected
+        # self._spawn_traceback_popups(err)
 
         # The app has changed, but the uvicorn server is still the same. Because
         # of this, uvicorn won't call the `on_app_start` function - do it

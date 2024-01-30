@@ -389,7 +389,11 @@ class Component(metaclass=ComponentMeta):
 
     # Weak reference to the component's builder. Used to check if the component
     # is still part of the component tree.
+    #
+    # Dataclasses like to turn this function into a method. Make sure it works
+    # both with and without `self`.
     _weak_builder_: Callable[[], Component | None] = internal_field(
+        default=lambda *args: None,
         init=False,
     )
 

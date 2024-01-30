@@ -44,7 +44,7 @@ class Plot(FundamentalComponent):
         | matplotlib.axes.Axes,
         *,
         background: rio.FillLike | None = None,
-        corner_radius: float | tuple[float, float, float, float] | None = 0,
+        corner_radius: float | tuple[float, float, float, float] | None = None,
         key: str | None = None,
         margin: float | None = None,
         margin_x: float | None = None,

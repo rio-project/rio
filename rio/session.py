@@ -559,6 +559,7 @@ class Session(unicall.Unicall):
 
         # This is an external URL. Navigate to it
         except ValueError:
+            logging.debug(f"Navigating to external site `{target_url_absolute}`")
 
             async def history_worker() -> None:
                 await self._evaluate_javascript(
@@ -578,6 +579,7 @@ window.location.href = {json.dumps(str(target_url))};
         del target_url, target_url_absolute
 
         # Update the current page
+        logging.debug(f"Navigating to page `{active_page_url}`")
         self._active_page_url = active_page_url
         self._active_page_instances = tuple(active_page_instances)
 
@@ -1000,17 +1002,17 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     try:
                         attr_value = reconciled_components_new_to_old[attr_value]
                     except KeyError:
-                        # TODO: can this be safely removed, or is there some
-                        # edge case, that needs it?
-
-                        # # Make sure that any components which are now in the tree
-                        # # have their builder properly set.
-                        # if isinstance(
-                        #     parent, fundamental_component.FundamentalComponent
-                        # ):
-                        #     attr_value._weak_builder_ = parent._weak_builder_
-                        #     attr_value._build_generation_ = parent._build_generation_
-                        pass
+                        # Make sure that any components which are now in the
+                        # tree have their builder properly set.
+                        #
+                        # TODO: Why is this needed exactly? IT IS - I have
+                        # encountered apps which only work with this code - but,
+                        # a comment why this is the case would've been nice.
+                        if isinstance(
+                            parent, fundamental_component.FundamentalComponent
+                        ):
+                            attr_value._weak_builder_ = parent._weak_builder_
+                            attr_value._build_generation_ = parent._build_generation_
                     else:
                         parent_vars[attr_name] = attr_value
 
@@ -1025,17 +1027,18 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                             try:
                                 item = reconciled_components_new_to_old[item]
                             except KeyError:
-                                # TODO: can this be safely removed, or is there some
-                                # edge case, that needs it?
-
-                                # # Make sure that any components which are now in
-                                # # the tree have their builder properly set.
-                                # if isinstance(
-                                #     parent, fundamental_component.FundamentalComponent
-                                # ):
-                                #     item._weak_builder_ = parent._weak_builder_
-                                #     item._build_generation_ = parent._build_generation_
-                                pass
+                                # Make sure that any components which are now in
+                                # the tree have their builder properly set.
+                                #
+                                # TODO: Why is this needed exactly? IT IS - I
+                                # have encountered apps which only work with
+                                # this code - but, a comment why this is the
+                                # case would've been nice.
+                                if isinstance(
+                                    parent, fundamental_component.FundamentalComponent
+                                ):
+                                    item._weak_builder_ = parent._weak_builder_
+                                    item._build_generation_ = parent._build_generation_
                             else:
                                 attr_value[ii] = item
 

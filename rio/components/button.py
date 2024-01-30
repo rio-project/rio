@@ -183,6 +183,8 @@ class Button(Component):
                 )
 
         # Delegate to a HTML Component
+        has_content = not isinstance(self.content, str) or self.content
+
         return _ButtonInternal(
             on_press=self.on_press,
             content=child,
@@ -192,7 +194,7 @@ class Button(Component):
             is_sensitive=self.is_sensitive,
             is_loading=self.is_loading,
             initially_disabled_for=self.initially_disabled_for,
-            width=8,
+            width=8 if has_content else 4,
             height=2.2,
         )
 

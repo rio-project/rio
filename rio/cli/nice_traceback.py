@@ -7,6 +7,7 @@ but is colored and just tweaked in general.
 import html
 import io
 import linecache
+import sys
 import traceback
 from pathlib import Path
 from typing import *  # type: ignore
@@ -33,10 +34,24 @@ def _format_single_exception_raw(
     # Get the traceback as a list of frames
     tb_list = traceback.extract_tb(err.__traceback__)
 
-    # Syntax errors are very special snowflakes and need separate treatment
+    # Syntax errors are very special snowflakes and need separate treatment.
+    #
+    # The exact arguments depend on the python version.
+    #
+    # TODO: Is there a better way to do this? Since Python obviously isn't
+    # keeping the arguments consistent, this could potentially break every
+    # single Python version.
     if isinstance(err, SyntaxError):
-        tb_list.append(
-            traceback.FrameSummary(
+        if sys.version_info < (3, 11):
+            frame = traceback.FrameSummary(
+                filename=err.filename,  # type: ignore
+                lineno=err.lineno,
+                name="<module>",
+                line=err.text,
+                locals=None,
+            )
+        else:
+            frame = traceback.FrameSummary(
                 filename=err.filename,  # type: ignore
                 lineno=err.lineno,
                 end_lineno=err.end_lineno,
@@ -46,7 +61,8 @@ def _format_single_exception_raw(
                 line=err.text,
                 locals=None,
             )
-        )
+
+        tb_list.append(frame)
 
     # Lead-in
     out.write(f"{dim}Traceback (most recent call last):{nodim}\n")
@@ -84,12 +100,12 @@ def _format_single_exception_raw(
                 and hasattr(frame, "colno")
                 and hasattr(frame, "end_colno")
             ):
-                assert frame.colno is not None
-                assert frame.end_colno is not None
+                assert frame.colno is not None  # type: ignore
+                assert frame.end_colno is not None  # type: ignore
 
-                before = escape(line[: frame.colno])
-                error = escape(line[frame.colno : frame.end_colno])
-                after = escape(line[frame.end_colno :])
+                before = escape(line[: frame.colno])  # type: ignore
+                error = escape(line[frame.colno : frame.end_colno])  # type: ignore
+                after = escape(line[frame.end_colno :])  # type: ignore
                 line = f"{before}{red}{error}{nored}{after}"
             else:
                 line = escape(line)

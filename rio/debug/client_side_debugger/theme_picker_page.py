@@ -2,6 +2,8 @@ import functools
 import io
 from typing import *  # type: ignore
 
+import revel
+
 import rio
 
 
@@ -53,7 +55,7 @@ async def update_and_apply_theme(
             component,
             include_children_recursively=False,
         )
-    print(f"Soiled {len(session._dirty_components)} components")
+    revel.debug(f"Soiled {len(session._dirty_components)} components")
 
     # Refresh
     await session._refresh()
