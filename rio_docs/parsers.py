@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import collections
 import dataclasses
 import inspect
 import textwrap
+import typing
 from dataclasses import is_dataclass
 from typing import *  # type: ignore
 
 import introspection.typing
 import revel
+from uniserde import Jsonable
 
 from rio import inspection
 
@@ -188,6 +191,38 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
     object.
     """
 
+    def parse_annotation(annotation: object) -> str | None:
+        if annotation is inspect.Parameter.empty:
+            return None
+
+        # Recursive types can cause issues. In particular, we have `Jsonable`,
+        # which is a recursive type, and `JsonDoc`, which references `Jsonable`.
+        # So if a module imports `JsonDoc` but doesn't import `Jsonable`, it's
+        # impossible to evaluate the forward reference `"Jsonable"` in that
+        # module.
+        #
+        # A similar problem exists due to dataclasses: Every `Component`
+        # subclass receives a constructor based on the type annotations in
+        # `Component`, but of course the relevant imports aren't there.
+        #
+        # As a workaround, we'll make the missing names available in every
+        # module.
+        extra_globals = collections.ChainMap(
+            {"Jsonable": Jsonable},
+            vars(typing),  # type: ignore
+        )
+
+        annotation = introspection.typing.resolve_forward_refs(
+            annotation,  # type: ignore
+            func.__module__,
+            extra_globals=extra_globals,
+            mode="ast",
+            treat_name_errors_as_imports=True,
+            strict=True,
+        )
+
+        return str_type_hint(annotation)  # type: ignore
+
     # Parse the parameters
     signature = inspect.signature(func)
     parameters: dict[str, models.FunctionParameter] = {}
@@ -200,21 +235,13 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
 
         parameters[param_name] = models.FunctionParameter(
             name=param_name,
-            type=None,  # Filled in later
+            type=parse_annotation(param.annotation),
             default=param_default,
             kw_only=param.kind == inspect.Parameter.KEYWORD_ONLY,
             collect_positional=param.kind == inspect.Parameter.VAR_POSITIONAL,
             collect_keyword=param.kind == inspect.Parameter.VAR_KEYWORD,
             description=None,
         )
-
-    # Add the parameter types
-    for param_name, param_type in get_type_hints(func).items():
-        if param_name == "return":
-            continue
-
-        result_param = parameters[param_name]
-        result_param.type = str_type_hint(param_type)
 
     # Parse the docstring
     docstring = inspect.getdoc(func)
@@ -252,7 +279,7 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
     return models.FunctionDocs(
         name=func.__name__,
         parameters=list(parameters.values()),
-        return_type=str_type_hint(get_type_hints(func).get("return", None)),
+        return_type=parse_annotation(signature.return_annotation),
         synchronous=not inspect.iscoroutinefunction(func),
         short_description=short_description,
         long_description=long_description,

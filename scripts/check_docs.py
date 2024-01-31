@@ -5,13 +5,20 @@ docstrings.
 
 
 import inspect
+import sys
+from pathlib import Path
 from typing import *  # type: ignore
 
 # Some rio modules optionally depend on libraries and evaling their type
 # annotations can fail if they're not installed. Import them explicitly here to produce more obvious error messages
+import matplotlib
 import pandas
+import plotly
 import polars
 from revel import *  # type: ignore
+
+# Make sure `rio_docs` can be imported
+sys.path.append(str(Path(__file__).absolute().parent.parent))
 
 import rio
 import rio_docs

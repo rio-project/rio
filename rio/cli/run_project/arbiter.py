@@ -3,7 +3,6 @@ import json
 import logging
 import signal
 import socket
-import sys
 import threading
 import webbrowser
 from typing import *  # type: ignore
@@ -18,16 +17,14 @@ import rio.snippets
 
 from ... import common
 from ...debug.monkeypatches import apply_monkeypatches
-from .. import nice_traceback, project
+from .. import project, nice_traceback
 from . import (
     app_loading,
     file_watcher_worker,
     run_models,
-    run_utils,
     uvicorn_worker,
     webview_worker,
 )
-from .run_utils import ThreadsafeFuture
 
 try:
     import webview  # type: ignore
@@ -95,9 +92,9 @@ class Arbiter:
 
         # The app to use for creating apps. This keeps the theme consistent if
         # for-example the user's app crashes and then a mock-app is injected.
-        self._app_theme: Union[
-            rio.Theme, tuple[rio.Theme, rio.Theme]
-        ] = rio.Theme.pair_from_color()
+        self._app_theme: Union[rio.Theme, tuple[rio.Theme, rio.Theme]] = (
+            rio.Theme.pair_from_color()
+        )
 
         # Prefer to consistently run on the same port, as that makes it easier
         # to connect to - this way old browser tabs don't get invalidated

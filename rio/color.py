@@ -543,7 +543,7 @@ class Color(SelfSerializing):
 
         return Color.from_hsv(hue, saturation, brightness)
 
-    def blend(self, other: "Color", factor: float) -> "Color":
+    def blend(self, other: Color, factor: float) -> Color:
         """
         Blend this color with another color.
 

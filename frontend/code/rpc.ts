@@ -157,7 +157,7 @@ function onClose(event: Event) {
     setConnectionLostPopupVisible(true);
 
     // Wait a bit before trying to reconnect (again)
-    if (!globalThis.RIO_DEBUG_MODE && connectionAttempt >= 10) {
+    if (connectionAttempt >= 10 && !globalThis.RIO_DEBUG_MODE) {
         console.warn(
             `Websocket connection closed. Giving up trying to reconnect.`
         );
