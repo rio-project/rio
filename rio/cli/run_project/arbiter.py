@@ -27,6 +27,7 @@ from . import (
     uvicorn_worker,
     webview_worker,
 )
+from .run_utils import ThreadsafeFuture
 
 try:
     import webview  # type: ignore
@@ -162,7 +163,7 @@ class Arbiter:
             print()
             print("[yellow]Interrupted[/]")
         else:
-            print("Shutting down")
+            print("Stopping")
 
         # Release anyone waiting for events
         self._stop_requested.set()
@@ -265,6 +266,10 @@ class Arbiter:
         except KeyboardInterrupt:
             pass
 
+        # The worker is expected to be canceled when the app is stopped
+        except asyncio.CancelledError:
+            pass
+
         # Anything else is an unintentional crash
         except Exception as err:
             revel.error("The arbiter has crashed.")
@@ -286,13 +291,14 @@ class Arbiter:
         self._mainloop = asyncio.get_running_loop()
 
         # Make sure the chosen port is available
-        if not common.ensure_valid_port(self._host, self.port):
+        if not common.port_is_free(self._host, self.port):
             revel.error(f"The port [bold]{self.port}[/] is already in use.")
-            print(f"Each port can only be used by one app at a time.")
-            print(
+            revel.error(f"Each port can only be used by one app at a time.")
+            revel.error(
                 f"Try using another port, or let Rio choose one for you, by not specifying any port."
             )
-            sys.exit(1)
+            self.stop(keyboard_interrupt=False)
+            return
 
         # Make sure the webview module is available
         if self.run_in_window and webview is None:
@@ -320,7 +326,7 @@ class Arbiter:
             )
 
         # Start the uvicorn worker
-        uvicorn_is_ready_event = asyncio.Event()
+        uvicorn_is_ready_or_has_failed: asyncio.Future[None] = asyncio.Future()
 
         self._uvicorn_worker = uvicorn_worker.UvicornWorker(
             push_event=self.push_event,
@@ -330,8 +336,7 @@ class Arbiter:
             quiet=self.quiet,
             debug_mode=self.debug_mode,
             run_in_window=self.run_in_window,
-            on_server_is_ready=uvicorn_is_ready_event.set,
-            on_startup_has_failed=lambda: self.stop(keyboard_interrupt=False),
+            on_server_is_ready_or_failed=uvicorn_is_ready_or_has_failed,
         )
 
         self._uvicorn_task = asyncio.create_task(
@@ -339,8 +344,18 @@ class Arbiter:
             name="Uvicorn",
         )
 
-        # Wait for the server to be ready
-        await uvicorn_is_ready_event.wait()
+        # Wait for the server to be ready or fails to start
+        uvicorn_error = await uvicorn_is_ready_or_has_failed
+
+        revel.debug(uvicorn_error)
+
+        # If the server failed to start, abort
+        if uvicorn_error is not None:
+            revel.error("Couldn't start the app:")
+            print()
+            revel.print(nice_traceback.format_exception_revel(uvicorn_error))
+            self.stop(keyboard_interrupt=False)
+            return
 
         # Let everyone else know that the server is ready
         self._server_is_ready.set()

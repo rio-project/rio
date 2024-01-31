@@ -1,5 +1,6 @@
 import asyncio
 import threading
+from functools import partial
 from typing import *  # type: ignore
 
 import revel
@@ -9,6 +10,7 @@ import rio
 import rio.app_server
 
 from ... import common
+from .. import nice_traceback
 from . import run_models
 
 
@@ -23,8 +25,7 @@ class UvicornWorker:
         quiet: bool,
         debug_mode: bool,
         run_in_window: bool,
-        on_server_is_ready: Callable[[], None],
-        on_startup_has_failed: Callable[[], None],
+        on_server_is_ready_or_failed: asyncio.Future[None],
     ) -> None:
         self.push_event = push_event
         self.app = app
@@ -33,8 +34,7 @@ class UvicornWorker:
         self.quiet = quiet
         self.debug_mode = debug_mode
         self.run_in_window = run_in_window
-        self.on_server_is_ready = on_server_is_ready
-        self.on_startup_has_failed = on_startup_has_failed
+        self.on_server_is_ready_or_failed = on_server_is_ready_or_failed
 
         # The app server used to host the app
         self.app_server: rio.app_server.AppServer | None = None
@@ -43,14 +43,13 @@ class UvicornWorker:
         # Set up a uvicorn server, but don't start it yet
         external_mainloop = asyncio.get_running_loop()
 
-        def call_on_server_is_ready_in_mainloop() -> None:
-            external_mainloop.call_soon_threadsafe(self.on_server_is_ready)
-
         app_server = self.app._as_fastapi(
             debug_mode=self.debug_mode,
             running_in_window=self.run_in_window,
             validator_factory=None,
-            internal_on_app_start=call_on_server_is_ready_in_mainloop,
+            internal_on_app_start=lambda: external_mainloop.call_soon_threadsafe(
+                lambda: self.on_server_is_ready_or_failed.set_result(None),
+            ),
         )
         assert isinstance(app_server, rio.app_server.AppServer)
         self.app_server = app_server
@@ -70,17 +69,11 @@ class UvicornWorker:
 
             try:
                 self._uvicorn_server.run()
-
-            except BaseException:
-                import traceback
-
-                revel.error("UVICORN CRASHED:")
-                traceback.print_exc()
+            except Exception as err:
+                revel.error(f"Uvicorn has crashed:")
+                print()
+                revel.print(nice_traceback.format_exception_revel(err))
                 self.push_event(run_models.StopRequested())
-                return
-
-            # Nothing to do here. If the server stops running, it's because we
-            # told it to - that means the program is already shutting down.
 
         uvicorn_thread = threading.Thread(target=run_uvicorn)
         uvicorn_thread.start()

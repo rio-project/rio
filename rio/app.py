@@ -271,7 +271,7 @@ class App:
         debug_mode: bool,
         running_in_window: bool,
         validator_factory: Callable[[rio.Session], debug.Validator] | None,
-        internal_on_app_start: Callable[[], None] | None,
+        internal_on_app_start: Callable[[], Any] | None,
     ) -> fastapi.FastAPI:
         """
         Internal equivalent of `as_fastapi` that takes additional arguments.

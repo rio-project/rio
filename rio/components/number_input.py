@@ -154,11 +154,7 @@ class NumberInput(Component):
 
         # Strip the number down as much as possible
         raw_value = raw_value.strip()
-
-        try:
-            raw_value = raw_value.replace(self.session._thousands_separator, "")
-        except KeyError:
-            pass
+        raw_value = raw_value.replace(self.session._thousands_separator, "")
 
         # If left empty, set the value to 0, if that's allowable
         if not raw_value:
