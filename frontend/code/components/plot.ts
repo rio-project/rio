@@ -21,17 +21,32 @@ type PlotState = ComponentState & {
     corner_radius?: [number, number, number, number];
 };
 
-function loadPlotly(callback: () => void): void {
+let fetchPlotlyPromise: Promise<void> | null = null;
+
+function withPlotly(callback: () => void): void {
+    // If plotly is already loaded just call the callback
     if (typeof window['Plotly'] !== 'undefined') {
         callback();
         return;
     }
 
+    // If plotly is currently being fetched, wait for it to finish
+    if (fetchPlotlyPromise !== null) {
+        fetchPlotlyPromise.then(callback);
+        return;
+    }
+
+    // Otherwise fetch plotly and call the callback when it's done
     console.log('Fetching plotly.js');
     let script = document.createElement('script');
     script.src = '/rio/asset/plotly.min.js';
-    script.onload = callback;
-    document.head.appendChild(script);
+
+    fetchPlotlyPromise = new Promise((resolve) => {
+        script.onload = () => {
+            resolve(null);
+        };
+        document.head.appendChild(script);
+    }).then(callback);
 }
 
 export class PlotComponent extends ComponentBase {
@@ -54,7 +69,7 @@ export class PlotComponent extends ComponentBase {
             if (deltaState.plot.type === 'plotly') {
                 let plot = deltaState.plot;
 
-                loadPlotly(() => {
+                withPlotly(() => {
                     let plotJson = JSON.parse(plot.json);
                     window['Plotly'].newPlot(
                         this.element,
