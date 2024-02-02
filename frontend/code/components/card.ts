@@ -22,13 +22,16 @@ export class CardComponent extends SingleContainer {
         element.classList.add('rio-card');
 
         // Detect presses
-        element.onmouseup = (e) => {
+        element.onclick = (event) => {
             // Is the backend interested in presses?
             if (!this.state.reportPress) {
                 return;
             }
 
-            // Otherwise notify the backend
+            // The event was handled. Stop it from propagating further.
+            event.stopPropagation();
+
+            // Notify the backend
             this.sendMessageToBackend({});
         };
 
