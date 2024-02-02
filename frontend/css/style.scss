@@ -1173,8 +1173,6 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-revealer-arrow {
-    opacity: 0.5;
-
     transform: rotate(90deg);
 
     transition: transform 0.25s ease-in-out;

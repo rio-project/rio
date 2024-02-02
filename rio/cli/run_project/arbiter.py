@@ -182,10 +182,12 @@ class Arbiter:
         if self._webview_worker is not None:
             self._webview_worker.request_stop()
 
-    def try_load_app(self) -> rio.App:
+    def try_load_app(self) -> tuple[rio.App, Exception | None]:
         """
         Tries to load the user's app. If it fails, a dummy app is created and
         returned, unless running in release mode.
+
+        Returns the new app and the error that occurred, if any.
         """
         try:
             app = app_loading.load_user_app(self.proj)
@@ -198,17 +200,20 @@ class Arbiter:
 
             # Otherwise create a placeholder app which displays the error
             # message
-            return app_loading.make_error_message_app(
+            return (
+                app_loading.make_error_message_app(
+                    err,
+                    self.proj.project_directory,
+                    self._app_theme,
+                ),
                 err,
-                self.proj.project_directory,
-                self._app_theme,
             )
 
         # Remember the app's theme. If in the future a placeholder app is used,
         # this theme will be used for it.
         self._app_theme = app._theme
 
-        return app
+        return app, None
 
     def run(self) -> None:
         assert not self._stop_requested.is_set()
@@ -312,7 +317,7 @@ class Arbiter:
             apply_monkeypatches()
 
         # Try to load the app
-        app = self.try_load_app()
+        app, _ = self.try_load_app()
 
         # Start the file watcher
         if self.debug_mode:
@@ -345,44 +350,34 @@ class Arbiter:
         )
 
         # Wait for the server to be ready or fails to start
-        uvicorn_error = await uvicorn_is_ready_or_has_failed
-
-        revel.debug(uvicorn_error)
-
-        # If the server failed to start, abort
-        if uvicorn_error is not None:
-            revel.error("Couldn't start the app:")
-            print()
-            revel.print(nice_traceback.format_exception_revel(uvicorn_error))
-            self.stop(keyboard_interrupt=False)
-            return
+        await uvicorn_is_ready_or_has_failed
 
         # Let everyone else know that the server is ready
         self._server_is_ready.set()
 
         # The app has just successfully started. Inform the user
         if self.debug_mode:
-            revel.warning("Rio is running in DEBUG mode.")
+            revel.warning("Debug mode is enabled.")
             revel.warning(
                 "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
             )
             revel.warning("Run with `--release` to disable debug mode.")
             print()
 
-        if not self.run_in_window:
-            revel.success(f"The app is running at [bold]{self.url}[/]")
-            print()
-
         if self.public:
             revel.warning(
-                f"Running in [bold]public[/] mode. All devices on your network can access the app."
+                f"Running in public mode. All devices on your network can access the app."
             )
             revel.warning(f"Only run in public mode if you trust your network!")
+            revel.warning(f"Run without `--public` to limit access to this device.")
             print()
         elif not self.run_in_window:
             print(
                 f"[dim]Running in [/]local[dim] mode. Only this device can access the app.[/]"
             )
+
+        if not self.run_in_window:
+            revel.success(f"The app is running at [bold]{self.url}[/]")
             print()
 
         # Keep track when the app was last reloaded
@@ -419,13 +414,18 @@ class Arbiter:
         """
         Displays a popup with the traceback in the rio UI.
         """
+        assert self._uvicorn_worker is not None
+        assert self._uvicorn_worker.app_server is not None
+
         popup_html = app_loading.make_traceback_html(
             err=err,
             project_directory=self.proj.project_directory,
         )
 
-        self._evaluate_javascript_in_all_sessions(
-            f"""
+        for session in self._uvicorn_worker.app_server._active_session_tokens.values():
+            self._evaluate_javascript_in_session_if_connected(
+                session,
+                f"""
 // Override the popup with the traceback message
 let popup = document.querySelector(".rio-connection-lost-popup");
 popup.innerHTML = {json.dumps(popup_html)};
@@ -433,30 +433,28 @@ popup.innerHTML = {json.dumps(popup_html)};
 // Spawn the popup
 window.setConnectionLostPopupVisible(true);
 """,
-        )
+            )
 
     async def _restart_app(self) -> None:
         assert self._uvicorn_worker is not None
 
         # Load the user's app again
-        new_app = self.try_load_app()
+        new_app, loading_error = self.try_load_app()
 
         # Replace the app which is currently hosted by uvicorn
         self._uvicorn_worker.replace_app(new_app)
         revel.success("Ready")
 
-        # TODO: Reintegrate this: If app loading has failed, spawn a popup in
-        # all connected sessions.
+        # There is a subtlety here. Sessions which have requested their
+        # index.html, but aren't yet connected to the websocket cannot
+        # receive messages. So `_spawn_traceback_popups` will skip them.
+        # This is fine as long as `self._app_server.app` has already been
+        # assigned, since this ensures that any new websocket connections
+        # will receive the new app anyway.
         #
-        # # There is a subtlety here. Sessions which have requested their
-        # # index.html, but aren't yet connected to the websocket cannot
-        # # receive messages. So `_spawn_traceback_popups` will skip them.
-        # # This is fine as long as `self._app_server.app` has already been
-        # # assigned, since this ensures that any new websocket connections
-        # # will receive the new app anyway.
-        # #
-        # # -> This MUST happen after the new app has already been injected
-        # self._spawn_traceback_popups(err)
+        # -> This MUST happen after the new app has already been injected
+        if loading_error is not None:
+            self._spawn_traceback_popups(loading_error)
 
         # The app has changed, but the uvicorn server is still the same. Because
         # of this, uvicorn won't call the `on_app_start` function - do it
@@ -466,15 +464,14 @@ window.setConnectionLostPopupVisible(true);
         await app_server._call_on_app_start()
 
         # Tell all sessions to reconnect, and close old sessions
-        #
-        # This can't use `self._evaluate_javascript`, it would race with closing
-        # the sessions.
         for sess in list(app_server._active_session_tokens.values()):
             # Tell the session to reload
             #
             # TODO: Should there be some waiting period here, so that the
             # session has time to save settings first and shut down in general?
-            await sess._evaluate_javascript("window.location.reload()")
+            self._evaluate_javascript_in_session_if_connected(
+                sess, "window.location.reload()"
+            )
 
             # Close it
             asyncio.create_task(
@@ -482,20 +479,26 @@ window.setConnectionLostPopupVisible(true);
                 name=f'Close session "{sess._session_token}"',
             )
 
-    def _evaluate_javascript_in_all_sessions(self, javascript_source: str) -> None:
+    def _evaluate_javascript_in_session_if_connected(
+        self,
+        session: rio.Session,
+        javascript_source: str,
+    ) -> None:
         """
-        Runs the given javascript source in all connected sessions. Does not
+        Runs the given javascript source in the given session. Does not
         wait for or return the result.
+
+        Does nothing if the session hasn't fully connected yet.
         """
-        assert self._uvicorn_worker is not None
-        app_server = self._uvicorn_worker.app_server
-        assert app_server is not None
+        # If this session isn't done connecting, just return
+        if session._send_message is rio.session.dummy_send_message:
+            return
 
-        async def evaljs_as_coroutine(sess: rio.Session) -> None:
-            await sess._evaluate_javascript(javascript_source)
+        # Run the javascript in a task
+        async def evaljs_as_coroutine() -> None:
+            await session._evaluate_javascript(javascript_source)
 
-        for sess in app_server._active_session_tokens.values():
-            asyncio.create_task(
-                evaljs_as_coroutine(sess),
-                name=f"Eval JS in session {sess._session_token}",
-            )
+        session.create_task(
+            evaljs_as_coroutine(),
+            name=f"Eval JS in session {session._session_token}",
+        )

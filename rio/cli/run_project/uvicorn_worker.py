@@ -1,6 +1,5 @@
 import asyncio
 import threading
-from functools import partial
 from typing import *  # type: ignore
 
 import revel
@@ -9,7 +8,6 @@ import uvicorn
 import rio
 import rio.app_server
 
-from ... import common
 from .. import nice_traceback
 from . import run_models
 
