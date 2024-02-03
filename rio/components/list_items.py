@@ -177,10 +177,10 @@ class CustomListItem(FundamentalComponent):
     """
     # CustomListItem
 
-    A list item with custom content. The content can be any component.
+    A list item with custom content.
 
     Most of the time the `SimpleListItem` will do the job. With `CustomListItems` you can
-    build more complex list items. You can add any component to the list item. This can be
+    build more complex list items. You can add any component to the list item. This can be e.g.
     a `Row`, `Column`, `Text`, `Icon`, `Image` or any other component.
 
     `Note:` check `rio.ListView` for more information on how to easily build this component.
@@ -191,7 +191,7 @@ class CustomListItem(FundamentalComponent):
     `on_press:` Triggered when the list item is pressed.
 
     ## Example:
-    # TODO: add example
+    TODO: add example
 
     ```python
 

@@ -20,11 +20,40 @@ TableValue = int | float | str
 
 
 class Table(FundamentalComponent):
+    """
+    # Table
+    A table of data.
+
+    Tables are a way to display data in a grid, with rows and columns. They are
+    very useful for displaying data that is naturally tabular, such as
+    spreadsheets, databases, or CSV files.
+
+    ## Attributes:
+    `data:` The data to display.
+
+    `show_row_numbers:` Whether to show row numbers on the left side of the table.
+
+    ## Example:
+    A simple table with some data:
+    ```python
+    rio.Table(
+        data={
+            "Name": ["Alice", "Bob", "Charlie"],
+            "Age": [25, 30, 35],
+            "City": ["New York", "San Francisco", "Los Angeles"],
+        }
+    )
+    ```
+
+
+    """
+
     data: (
         pandas.DataFrame
         | polars.DataFrame
         | Mapping[str, Iterable[TableValue]]
         | Iterable[Iterable[TableValue]]
+        # TODO:| ndarray
     )
     show_row_numbers: bool = True
 
