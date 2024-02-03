@@ -75,7 +75,7 @@ class TextInput(KeyboardFocusableFundamentalComponent):
     In a Component class state bindings can be used to update the the input and listen to changes:
 
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         text: str = ""
         def build(self)->rio.Component:
             return rio.TextInput(
@@ -87,7 +87,7 @@ class TextInput(KeyboardFocusableFundamentalComponent):
     In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
 
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         text: str = ""
 
         def on_change_update_text(self, ev: rio.TextInputChangeEvent):
