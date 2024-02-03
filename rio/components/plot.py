@@ -22,26 +22,38 @@ __all__ = ["Plot"]
 
 class Plot(FundamentalComponent):
     """
+    # Plot
     Displays a matplotlib, seaborn or plotly plot.
 
-    Attributes:
-        figure: The plot figure to display.
+    ## Attributes:
+    `figure:` The plot figure to display.
 
-        background: The background color of the plot. If `None`, a color from
-            the theme is used.
+    `background:` The background color of the plot. If `None`, a color from
+        the theme is used.
 
-        corner_radius: The corner radius of the plot
+    `corner_radius:` The corner radius of the plot
+
+    ## Example:
+    A simple plot with a background color:
+    ```python
+    TODO: add example
+    ```
+
     """
 
-    figure: plotly.graph_objects.Figure | matplotlib.figure.Figure | matplotlib.axes.Axes
+    figure: (
+        plotly.graph_objects.Figure | matplotlib.figure.Figure | matplotlib.axes.Axes
+    )
     background: rio.Fill | None
     corner_radius: float | tuple[float, float, float, float] | None
 
     def __init__(
         self,
-        figure: plotly.graph_objects.Figure
-        | matplotlib.figure.Figure
-        | matplotlib.axes.Axes,
+        figure: (
+            plotly.graph_objects.Figure
+            | matplotlib.figure.Figure
+            | matplotlib.axes.Axes
+        ),
         *,
         background: rio.FillLike | None = None,
         corner_radius: float | tuple[float, float, float, float] | None = None,

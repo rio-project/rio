@@ -71,7 +71,7 @@ class Dropdown(FundamentalComponent, Generic[T]):
 
     In a Component class state bindings can be used to update the value of the input and listen to changes:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         value: str="b"
         def build(self)->rio.Component:
             return rio.Dropdown(
@@ -83,7 +83,7 @@ class Dropdown(FundamentalComponent, Generic[T]):
 
     In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         value: str="b"
 
         def on_change_update_value(self, ev: rio.DropdownChangeEvent):

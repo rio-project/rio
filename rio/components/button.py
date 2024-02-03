@@ -76,7 +76,7 @@ class Button(Component):
 
     The same button, but with a callback which prints "Button pressed!" to the console:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
 
             def on_press_button(self) -> None:
                 print("Button pressed!")
@@ -92,7 +92,7 @@ class Button(Component):
     `Note:` If the banner_text is an empty string, the banner will disappear entirely.
 
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         banner_text: str = ""
 
         def on_press_button(self) -> None:

@@ -52,7 +52,7 @@ class Banner(component.Component):
     ```
     Here's a banner with Markdown:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         banner_text: str = "**Hello World!**"
         def build(self)->rio.Component:
             return rio.Banner(
@@ -63,7 +63,7 @@ class Banner(component.Component):
     ```
     Here's a multiline banner:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         banner_text: str = 'Hello World! \n This is a multiline banner.'
         def build(self)->rio.Component:
             return rio.Banner(

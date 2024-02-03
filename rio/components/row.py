@@ -13,6 +13,7 @@ __all__ = [
 
 class Row(FundamentalComponent):
     """
+    # Row
     A container that lays out its children horizontally.
 
     `Row`s are one of the most common components in Rio. They take any number of
@@ -41,11 +42,46 @@ class Row(FundamentalComponent):
     components a `"grow"` value as its height, or set the `Row`'s vertical
     alignment.
 
-    Attributes:
-        children: The components to place in this `Row`.
+    ## Attributes:
+    `children:` The components to place in this `Row`.
 
-        spacing: How much empty space to leave between two adjacent children. No
+    `spacing:` How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.
+
+    ## Example:
+
+    A `Row` with two `Text` components and spacing between them:
+    ```python
+    rio.Row(
+        rio.Text("Hello"),
+        rio.Text("World!"),
+        spacing=1,
+    )
+    ```
+
+    A `Row` is used to place an `Icon` and two `Text` components in a Row. A `Card` with text
+    and an icon in it, which is elevated when the mouse hovers over it and prints a message
+    when clicked:
+    ```python
+    class Component(rio.Component):
+        def on_press_card(self) -> None:
+            print("Card was pressed!")
+
+        def build(self)->rio.Component:
+            card_content = rio.Row(
+                rio.Icon(icon="castle"),
+                rio.Text("Hello"),
+                rio.Text("World!"),
+                spacing=1,
+                align_x=0.5, #align card content in the center
+            )
+            return rio.Card(
+                        contend=card_content,
+                        on_press=self.on_press_card,
+                        elevate_on_hover=True,
+                        color="primary",
+                    )
+    ```
     """
 
     children: list[rio.Component]

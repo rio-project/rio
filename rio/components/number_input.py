@@ -98,7 +98,7 @@ class NumberInput(Component):
     In a Component class state bindings can be used to update the value of the input and listen to changes:
 
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         value: float=0.0
         def build(self)->rio.Component:
             return rio.NumberInput(
@@ -112,7 +112,7 @@ class NumberInput(Component):
 
     In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         value: float=0.0
 
         def on_change_update_value(self, ev: rio.NumberInputChangeEvent):

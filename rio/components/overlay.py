@@ -11,6 +11,7 @@ __all__ = [
 
 class Overlay(FundamentalComponent):
     """
+    # Overlay
     Displays its child above all other components.
 
     The overlay component takes a single child component, and displays it above
@@ -21,10 +22,19 @@ class Overlay(FundamentalComponent):
     themselves responsible for positioning themselves as required. You can
     easily achieve this using the child's `align_x` and `align_y` properties.
 
-    Attributes:
-        content: The component to display in the overlay. It will take up the
-            entire size of the screen, so make sure to use properties such as
-            `align_x` and `align_y` to position it as needed.
+    ## Attributes:
+    `content:` The component to display in the overlay. It will take up the
+        entire size of the screen, so make sure to use properties such as
+        `align_x` and `align_y` to position it as needed.
+
+    ## Example:
+    An overlay containing a `Text` component will be shown on the middle of your screen:
+    ```python
+    rio.Overlay(
+        rio.Text("Hello, world!"),
+        align_x=0.5,
+        align_y=0.5,
+    )
     """
 
     content: rio.Component

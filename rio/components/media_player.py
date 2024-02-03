@@ -16,6 +16,7 @@ __all__ = ["MediaPlayer"]
 
 class MediaPlayer(KeyboardFocusableFundamentalComponent):
     """
+    # MediaPlayer
     Plays audio and video.
 
     `MediaPlayer` plays back audio and video files. It can play local files and
@@ -24,31 +25,40 @@ class MediaPlayer(KeyboardFocusableFundamentalComponent):
     Note that the `MediaPlayer` component doesn't reserve any space for itself,
     it simply makes do with the space it is given by its parent component.
 
-    Attributes:
-        media: The media to play. This can be a file path, URL, or bytes.
+    ## Attributes:
+    `media:` The media to play. This can be a file path, URL, or bytes.
 
-        media_type: The mime type of the media file. May help the browser to
+    `media_type:` The mime type of the media file. May help the browser to
             play the file correctly.
 
-        loop: Whether to automatically restart from the beginning when the
+    `loop:` Whether to automatically restart from the beginning when the
             playback ends.
 
-        autoplay: Whether to start playing the media automatically, without
+    `autoplay:` Whether to start playing the media automatically, without
             requiring the user to press "Play".
 
-        controls: Whether to display controls like a Play/Pause button, volume
+    `controls:` Whether to display controls like a Play/Pause button, volume
             slider, etc.
 
-        muted: Whether to mute the audio.
+    `muted:` Whether to mute the audio.
 
-        volume: The volume to play the audio at. 1.0 is the native volume;
+    `volume:` The volume to play the audio at. 1.0 is the native volume;
             larger numbers increase the volume, smaller numbers decrease it.
 
-        on_playback_end: An event handler to call when the media finishes
+    `on_playback_end:` An event handler to call when the media finishes
             playing.
 
-        on_error: An event handler to call when an error occurs, for example if
+    `on_error:` An event handler to call when an error occurs, for example if
             the file format isn't supported.
+
+    ## Example:
+    A `MediaPlayer` playing a local file will be shown:
+
+    ```python
+    from pathlib import Path
+    PATH = Path(__file__).parent
+
+    rio.MediaPlayer(PATH / "example_video.mp4")
     """
 
     media: pathlib.Path | rio.URL | bytes

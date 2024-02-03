@@ -11,6 +11,35 @@ __all__ = ["FlowContainer"]
 
 
 class FlowContainer(FundamentalComponent):
+    """
+    # FlowContainer
+    A container that lays out its children in a horizontal or vertical flow.
+
+    `FlowContainer` is a container that lays out its children in a horizontal or
+    vertical flow. It is similar to `Container`, but allows you to specify
+    spacing between the children.
+
+    ## Attributes:
+    `children:` The components to place inside the container.
+
+    `spacing_x:` The horizontal spacing between the children.
+
+    `spacing_y:` The vertical spacing between the children.
+
+    ## Example:
+    A container with a horizontal flow:
+    ```python
+    rio.FlowContainer(
+        children=[
+            rio.Text("Hello"),
+            rio.Text("World!"),
+        ],
+        spacing_x=1,
+    )
+    ```
+
+    """
+
     children: list[rio.Component]
     _: KW_ONLY
     spacing_x: float

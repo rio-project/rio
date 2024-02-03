@@ -53,6 +53,9 @@ class Drawer(FundamentalComponent):
         is_user_openable: Whether the user can open or close the drawer. If this
             is `False`, the drawer can only be opened or closed
             programmatically.
+
+    ## Example:
+    #TODO: Add example
     """
 
     anchor: rio.Component

@@ -90,9 +90,6 @@ class CustomButton(Component):
         ripple=True,
     )
     ```
-
-
-
     """
 
     content: str

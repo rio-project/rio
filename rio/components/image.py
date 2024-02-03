@@ -14,12 +14,13 @@ __all__ = ["Image"]
 
 class Image(FundamentalComponent):
     """
+    # Image
     Displays an image file.
 
     `Image` does just what you'd expect: it displays a single image. The image
     can be loaded from a URL or a local file.
 
-    Note that the resolution of the image does not affect the size at which it
+    `Note` that the resolution of the image does not affect the size at which it
     is displayed. The `Image` component doesn't reserve any space for itself, it
     simply makes do with the space it is given by its parent component.
 
@@ -33,22 +34,45 @@ class Image(FundamentalComponent):
       its aspect ratio. This may cause the image to overflow the shape.
 
 
-    Attributes:
-        image: The image to display.
+    ## Attributes:
+    `image:` The image to display.
 
-        fill_mode: How the image should be scaled to fit the shape. If `fit`,
+    `fill_mode:` How the image should be scaled to fit the shape. If `fit`,
             the image is scaled to fit entirely inside the shape. If `stretch`,
             the image is stretched to fill the shape exactly, possibly
             distorting it in the process. If `zoom`, the image is scaled to fill
             the shape entirely, possibly overflowing.
 
-        on_error: Triggered when the image fails to load.
+    `on_error:` Triggered when the image fails to load.
 
-        corner_radius: How round to make the corners of the image. If a single
+    `corner_radius:` How round to make the corners of the image. If a single
             number is given, all four corners will be rounded equally. If a
             tuple of four numbers is given, they will be interpreted as the
             radii of the top-left, top-right, bottom-right, and bottom-left
             corners, in that order.
+
+    # TODO: figure out if width and height are needed to begin with
+
+    ## Example:
+    A `Image` with the URL "https://example.com/image.png" will be shown:
+    ```python
+    rio.Image(https://example.com/image.png,
+              width=20,
+              height=20,
+    )
+    ````
+    A `Image` with a Path object will be shown:
+    ```python
+    from pathlib import Path
+    PATH = Path(__file__).parent
+
+    rio.Image(PATH / "example_image.png",
+              fill_mode="zoom",
+              width=20,
+              height=20,
+              corner_radius=2,
+    )
+    ```
     """
 
     image: ImageLike

@@ -18,6 +18,7 @@ __all__ = [
 
 class Icon(FundamentalComponent):
     """
+    # Icon
     Displays one of many pre-bundled icons.
 
     Icons are a great way to add polish to your app. A good icon can help your
@@ -42,13 +43,37 @@ class Icon(FundamentalComponent):
     defaults to `material`. If not variant is specified, the default version of
     the icon, i.e. no variant, is used.
 
-    Attributes:
-        icon: The name of the icon to display, in the format
+    ## Attributes:
+    `icon:` The name of the icon to display, in the format
             `icon-set/name:variant`. You can browse all available icons in Rio's
             debugger sidebar.
 
-        fill: The color scheme of the icon. The text color is used if no fill is
+    `fill:` The color scheme of the icon. The text color is used if no fill is
             specified.
+
+    ## Example:
+    A simple `Icon` with the name "castle" will be shown:
+    ```python
+    rio.Icon("castle")
+    ```
+
+    A simple `Icon` with the name "castle", fill color red and size five will be shown:
+    ```python
+    rio.Icon(
+        "castle",
+        fill=rio.Color.from_hex("ff0000"),
+        height=2.5,
+        width=2.5,
+    )
+    ```
+    or with a fill color from the default color scheme:
+    ```python
+    rio.Icon(
+        'material/castle:fill',
+        width=2.5,
+        height=2.5,
+    )
+    ```
     """
 
     icon: str

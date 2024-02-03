@@ -22,20 +22,61 @@ class SliderChangeEvent:
 
 class Slider(FundamentalComponent):
     """
+    # Slider
     A component for selecting a single value from a range.
 
     The `Slider` components allows the user to select a single real number value
     by dragging a handle along a line. The value can be any number within a
     range you can specify.
 
-    Attributes:
-        minimum: The minimum value the slider can be set to.
+    ## Attributes:
+    `minimum:` The minimum value the slider can be set to.
 
-        maximum: The maximum value the slider can be set to.
+    `maximum:` The maximum value the slider can be set to.
 
-        value: The current value of the slider.
+    `value:` The current value of the slider.
 
-        is_sensitive: Whether the slider should respond to user input.
+    `is_sensitive:` Whether the slider should respond to user input.
+
+    ## Example:
+    A simple slider with a range from 0 to 100:
+    ```python
+    rio.Slider(
+        minimum=0,
+        maximum=100,
+    )
+    ```
+
+    A simple slider with with a range from 0 to 100 and a step size of 1:
+    ```python
+    class Component(rio.Component):
+        value:int = 0
+
+        def build(self)->rio.Component:
+            return rio.Slider(
+                value=Component.value,
+                minimum=0,
+                maximum=100,
+                step_size=1,
+            )
+
+    Or a slider with a range from 0 to 100 and a step size of 1, and a callback:
+    ```python
+    class Component(rio.Component):
+        value:int = 0
+
+        def on_change(self, event:rio.SliderChangeEvent):
+            self.value = event.value
+
+        def build(self)->rio.Component:
+            return rio.Slider(
+                value=self.value,
+                minimum=0,
+                maximum=100,
+                step_size=1,
+                on_change=self.on_change,
+            )
+    ```
     """
 
     minimum: float

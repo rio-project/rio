@@ -14,6 +14,8 @@ __all__ = [
 
 class Rectangle(FundamentalComponent):
     """
+    # Rectangle
+
     A customizable rectangle shape.
 
     Rectangles are versatile components that can be used to build up more
@@ -27,23 +29,54 @@ class Rectangle(FundamentalComponent):
     `transition_time` attribute allows you to make your app feel dynamic and
     alive.
 
-    Attributes:
-        style: How the rectangle should appear when the user isn't interacting
-            with it.
+    ## Attributes:
+    `content:` The component to display inside the rectangle.
 
-        content: The component to display inside the rectangle.
+    `style:` How the rectangle should appear when the user isn't interacting
+        with it.
 
-        hover_style: The style of the rectangle when the mouse hovers above it.
-            If set to `None`, the rectangle will not change its appearance when
-            hovered.
+    `hover_style:` The style of the rectangle when the mouse hovers above it.
+        If set to `None`, the rectangle will not change its appearance when
+        hovered.
 
-        transition_time: How many seconds it should take for the rectangle to
-            transition between its styles.
+    `transition_time:` How many seconds it should take for the rectangle to
+        transition between its styles.
 
-        cursor: The cursor to display when the mouse hovers above the rectangle.
+    `cursor:` The cursor to display when the mouse hovers above the rectangle.
 
-        ripple: Whether to display a Material Design ripple effect when the
-            rectangle is hovered or clicked.
+    `ripple:` Whether to display a Material Design ripple effect when the
+        rectangle is hovered or clicked.
+
+
+    ## Example:
+    A simple rectangle with a red background and height 10:
+    ```python
+    rio.Rectangle(
+        style=rio.BoxStyle(
+        fill=rio.Color.from_hex("ff0000"),
+        ),
+        height=10,
+    )
+    ```
+
+    A rectangle with a card inside of it, and a background image:
+    ```python
+    from pathlib import Path
+    PATH = Path(__file__).parent
+
+    rio.Rectangle(
+        content=rio.Card(
+            rio.MarkdownView("# Hello World!"),
+            margin=3,
+        ),
+        style=rio.BoxStyle(
+            fill=rio.ImageFill(
+                PATH / "example_image.jpg",
+                fill_mode="zoom",
+            ),
+        ),
+    )
+    ```
     """
 
     _: KW_ONLY

@@ -15,6 +15,7 @@ __all__ = [
 
 class Text(FundamentalComponent):
     """
+    # Text
     Displays unformatted text.
 
     `Text` displays text without any formatting, making it one of the most
@@ -24,17 +25,24 @@ class Text(FundamentalComponent):
     the text using the `style` attribute. This allows you to change the font
     size, color, and more.
 
-    Attributes:
-        text: The text to display.
+    ## Attributes:
+    `text:` The text to display.
 
-        multiline: Whether the text may be split into multiple lines if not
-            enough space is available.
+    `multiline:` Whether the text may be split into multiple lines if not
+        enough space is available.
 
-        selectable: Whether the text can be selected by the user.
+    `selectable:` Whether the text can be selected by the user.
 
-        style: The style of the text. This can either be a `TextStyle` instance,
+    style:` The style of the text. This can either be a `TextStyle` instance,
             or one of the built-in styles: `heading1`, `heading2`, `heading3`,
             or `text`.
+
+    ## Example:
+
+    A simple text component:
+    ```python
+    rio.Text("Hello, world!")
+    ```
     """
 
     text: str
@@ -50,8 +58,9 @@ class Text(FundamentalComponent):
         *,
         multiline: bool = False,
         selectable: bool = False,
-        style: Literal["heading1", "heading2", "heading3", "text", "dim"]
-        | rio.TextStyle = "text",
+        style: (
+            Literal["heading1", "heading2", "heading3", "text", "dim"] | rio.TextStyle
+        ) = "text",
         key: str | None = None,
         margin: float | None = None,
         margin_x: float | None = None,

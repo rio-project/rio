@@ -8,7 +8,10 @@ __all__ = [
 
 
 class MarkdownView(FundamentalComponent):
+    # TODO: check if bold, italics and links are displayed here correctly
     """
+    # MarkdownView
+
     Displays Markdown-formatted text.
 
     `MarkdownView` displays text formatted using Markdown. Markdown is a
@@ -18,17 +21,25 @@ class MarkdownView(FundamentalComponent):
     Markdown is a great way to write text that is both human-readable, yet
     beautifully formatted.
 
-    Attributes:
-        text: The Markdown-formatted text to display.
+    ## Attributes:
+    `text:` The Markdown-formatted text to display.
 
-        default_language: The default language to use for code blocks. If
-            `None`, Rio will try to guess the language automatically. If a
-            default is given, it will be used for all code blocks that don't
-            specify a language explicitly.
+    `default_language:` The default language to use for code blocks. If
+        `None`, Rio will try to guess the language automatically. If a
+        default is given, it will be used for all code blocks that don't
+        specify a language explicitly.
 
-            Inline code will always use the default language, since they are too
-            short to reliably guess the language - so make sure to set a default
-            language if you want your inline code to be syntax-highlighted.
+        Inline code will always use the default language, since they are too
+        short to reliably guess the language - so make sure to set a default
+        language if you want your inline code to be syntax-highlighted.
+
+    ## Example:
+
+    A `MarkdownView` with the text Hello and World in bold will be shown:
+
+     ```python
+    rio.MarkdownView("Hello **World**!")
+    ```
     """
 
     text: str

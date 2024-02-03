@@ -60,7 +60,7 @@ class Column(FundamentalComponent):
     and an icon in it, which is elevated when the mouse hovers over it and prints a message
     when clicked:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         def on_press_card(self) -> None:
             print("Card was pressed!")
 

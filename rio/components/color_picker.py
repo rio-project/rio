@@ -51,7 +51,7 @@ class ColorPicker(FundamentalComponent):
 
     Color picker with a default color and color will be updated when user changes the color:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
         def build(self)->rio.Component:
             return rio.ColorPicker(
@@ -62,7 +62,7 @@ class ColorPicker(FundamentalComponent):
 
     Color picker with an event handler:
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
         def on_change_color(self, event: rio.ColorChangeEvent) -> None:
             print(f"Color changed to {event.color}")

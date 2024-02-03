@@ -23,20 +23,56 @@ class GridChildPosition:
 
 class Grid(FundamentalComponent):
     """
+    # Grid
     A container which arranges its children in a table-like grid.
 
     Grids arrange their children in a table-like grid. Each child is placed in
     one or more cells of the grid.
 
-    Example:
+    ## Attributes:
+    `row_spacing:` The amount of space between rows of the grid.
+
+    `column_spacing:` The amount of space between columns of the grid.
+
+    ## Example:
+
+    A grid with two rows and two columns. In the first row will be the `Text` component  "Hello" and
+    "World!", in the second row "Foo" and "Bar":
     ```python
-    # TODO
+    rio.Grid(
+        [
+            rio.Text("Hello"),
+            rio.Text("World!"),
+        ],
+        [
+            rio.Text("Foo"),
+            rio.Text("Bar"),
+        ],
+        row_spacing=1,
+        column_spacing=1,
+    )
     ```
 
-    Attributes:
-        row_spacing: The amount of space between rows of the grid.
+    Another option is to use the `add_child` method in the build function to add children to the grid:
+    ```python
+    grid = rio.Grid(row_spacing=1, column_spacing=1)
+    grid.add_child(rio.Text("Hello"), row=0, column=0)
+    grid.add_child(rio.Text("World!"), row=0, column=1)
+    grid.add_child(rio.Text("Foo"), row=1, column=0)
+    grid.add_child(rio.Text("Bar"), row=1, column=1)
+    ```
 
-        column_spacing: The amount of space between columns of the grid.
+    In a Component class the grid can be used like this:
+    ```python
+    ComponentClass(rio.Component):
+        def build(self)->rio.Component:
+            grid = rio.Grid(row_spacing=1, column_spacing=1)
+            grid.add_child(rio.Text("Hello"), row=0, column=0)
+            grid.add_child(rio.Text("World!"), row=0, column=1)
+            grid.add_child(rio.Text("Foo"), row=1, column=0)
+            grid.add_child(rio.Text("Bar"), row=1, column=1)
+            return grid
+    ```
     """
 
     _: KW_ONLY
