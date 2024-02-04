@@ -30,10 +30,8 @@ class FlowContainer(FundamentalComponent):
     A container with a horizontal flow:
     ```python
     rio.FlowContainer(
-        children=[
-            rio.Text("Hello"),
-            rio.Text("World!"),
-        ],
+        rio.Text("Hello"),
+        rio.Text("World!"),
         spacing_x=1,
     )
     ```

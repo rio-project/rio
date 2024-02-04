@@ -25,6 +25,99 @@ class SwitcherBarChangeEvent(Generic[T]):
 
 
 class SwitcherBar(FundamentalComponent, Generic[T]):
+    """
+    # SwitcherBar
+    A bar of options which can be switched between.
+
+    A `SwitcherBar` is a bar of options which can be switched between. It is
+    commonly used to switch between different views or modes.
+
+    ## Attributes:
+    `values:` The list of values which can be selected.
+
+    `names:` The list of names to display for each value. If `None`, the
+        string representation of each value is used.
+
+    `icons:` The list of icons to display for each value.
+
+    `color:` The color of the switcher bar.
+
+    `orientation:` The orientation of the switcher bar.
+
+    `spacing:` The spacing between options.
+
+    `selected_value:` The currently selected value.
+
+    `allow_none:` Whether the switcher bar can have no value selected.
+
+    `on_change:` Triggered whenever the selected value changes.
+
+    ## Example:
+    A simple switcher bar with three options:
+    ```python
+    rio.SwitcherBar(
+                values=[1, 2, 3],
+                names=["A-SwitchName", "B-SwitchName", "C-SwitchName"],
+                selected_value=1,
+                on_change=lambda event: print(event.value),
+            )
+    ```
+
+    You can use a `SwitcherBar` to create your own custom Navigation Bar. You
+    can use the `on_page_change` event to trigger a refresh of the `SwitcherBar`
+    when the page changes. Use the page_url defined in your rio.App and rio.Page
+    instances to navigate to the selected page.Here is an example of a custom
+    `NavigationBar` component:
+
+    ```python
+    class NavigationBar(rio.Component):
+        @rio.event.on_page_change
+        async def _on_page_change(self) -> None:
+            await self.force_refresh()
+
+        def _on_change(self, event: rio.SwitcherBarChangeEvent) -> None:
+            # navigate to the selected page
+            assert isinstance(event.value, str)
+            self.session.navigate_to(event.value)
+
+        def build(self) -> rio.Component:
+            return rio.Card(
+                rio.Column(
+                    rio.Row(
+                        rio.Image(
+                            self.session.assets / "example.png",
+                            width=10,
+                            height=2,
+                        ),
+                        rio.Spacer(),
+                        rio.SwitcherBar(
+                            # values are the page_urls, which are the same as the page_url
+                            # of the rio.Page instances, e.g.: rio.Page(page_url="first-page", ...)
+                            # rio.App -> rio.Page(page_url="first-page", ...) -> "first-page"
+                            values=["/", "first-page", "second-page"],
+                            names=["Home", "First Page", "Second Page"],
+                            selected_value=self.session.active_page_instances[0].page_url,
+                            align_y=0.5,
+                            color="primary",
+                            on_change=self._on_change,
+                        ),
+                        margin=1,
+                        width="grow",
+                    ),
+                    rio.Rectangle(
+                        width="grow",
+                        height=0.2,
+                        style=rio.BoxStyle(fill=rio.Color.from_hex("ffdc00")),
+                        margin_bottom=2,
+                    ),
+                ),
+                width="grow",
+                corner_radius=0,
+                color="background",
+            )
+    ```
+    """
+
     names: list[str]
     values: list[T]
     icon_svg_sources: list[str | None]

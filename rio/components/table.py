@@ -9,6 +9,7 @@ from .. import maybes
 from .fundamental_component import FundamentalComponent
 
 if TYPE_CHECKING:
+    import numpy
     import pandas
     import polars
 
@@ -26,7 +27,8 @@ class Table(FundamentalComponent):
 
     Tables are a way to display data in a grid, with rows and columns. They are
     very useful for displaying data that is naturally tabular, such as
-    spreadsheets, databases, or CSV files.
+    spreadsheets, databases, or CSV files. Tables can be sorted by clicking on
+    the column headers.
 
     ## Attributes:
     `data:` The data to display.
@@ -53,7 +55,7 @@ class Table(FundamentalComponent):
         | polars.DataFrame
         | Mapping[str, Iterable[TableValue]]
         | Iterable[Iterable[TableValue]]
-        # TODO:| ndarray
+        # | numpy.ndarray
     )
     show_row_numbers: bool = True
 
