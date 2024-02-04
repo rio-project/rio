@@ -323,7 +323,7 @@ export class DrawerComponent extends ComponentBase {
         anchorInst.allocatedWidth = this.allocatedWidth;
 
         if (this.state.side === 'left' || this.state.side === 'right') {
-            contentInst.allocatedWidth = anchorInst.requestedWidth;
+            contentInst.allocatedWidth = contentInst.requestedWidth;
         } else {
             contentInst.allocatedWidth = this.allocatedWidth;
         }
@@ -346,7 +346,7 @@ export class DrawerComponent extends ComponentBase {
         anchorInst.allocatedHeight = this.allocatedHeight;
 
         if (this.state.side === 'top' || this.state.side === 'bottom') {
-            contentInst.allocatedHeight = anchorInst.requestedHeight;
+            contentInst.allocatedHeight = contentInst.requestedHeight;
         } else {
             contentInst.allocatedHeight = this.allocatedHeight;
         }

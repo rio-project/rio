@@ -115,5 +115,13 @@ class Text(FundamentalComponent):
             "text_align": self._text_align,
         }
 
+    def get_debug_details(self) -> dict[str, Any]:
+        result = super().get_debug_details()
+
+        # Pretend `text-align` is the same as `align_x`
+        result["align_x"] = self._text_align
+
+        return result
+
 
 Text._unique_id = "Text-builtin"

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import *  # type: ignore
+
 import rio
 
 from .fundamental_component import FundamentalComponent
@@ -52,6 +54,23 @@ class Overlay(FundamentalComponent):
         super().__init__(key=key)
 
         self.content = content
+
+    def get_debug_details(self) -> dict[str, Any]:
+        result = super().get_debug_details()
+
+        # Overlays intentionally remove a lot of common properties, because they
+        # would behave in unexpected ways.
+        del result["width"]
+        del result["height"]
+        del result["margin"]
+        del result["margin_x"]
+        del result["margin_y"]
+        del result["margin_left"]
+        del result["margin_top"]
+        del result["margin_right"]
+        del result["margin_bottom"]
+
+        return result
 
 
 Overlay._unique_id = "Overlay-builtin"

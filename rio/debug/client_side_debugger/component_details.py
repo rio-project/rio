@@ -7,48 +7,6 @@ import rio
 class ComponentDetails(rio.Component):
     component_id: int
 
-    def _get_component_details(self, target: rio.Component) -> dict[str, Any]:
-        """
-        Given a component, return a set of keys/values of all the details which
-        should be displayed to the user.
-        """
-        # Some components have a custom function which determines what to
-        # display
-        try:
-            return target._get_debug_details()  # type: ignore
-        except AttributeError:
-            pass
-
-        # Otherwise fall back to using the state properties
-        result = {}
-
-        for prop in target._state_properties_:
-            # Explicitly excluded properties
-            if prop in (
-                "align_x",
-                "align_y",
-                "height",
-                "key",
-                "margin_bottom",
-                "margin_left",
-                "margin_right",
-                "margin_top",
-                "margin_x",
-                "margin_y",
-                "margin",
-                "width",
-            ):
-                continue
-
-            # Properties starting with an underscore are private
-            if prop.startswith("_"):
-                continue
-
-            # Keep it
-            result[prop] = getattr(target, prop)
-
-        return result
-
     def build(self) -> rio.Component:
         # Get the target component
         try:
@@ -136,7 +94,23 @@ class ComponentDetails(rio.Component):
         # Custom properties
         #
         # Make sure to skip any which already have custom tailored cells
-        for prop_name, prop_value in self._get_component_details(target).items():
+        debug_details = target.get_debug_details()
+        for prop_name, prop_value in debug_details.items():
+            # Some values have special handling below
+            if prop_name in (
+                "key",
+                "width",
+                "height",
+                "margin_left",
+                "margin_right",
+                "margin_top",
+                "margin_bottom",
+                "align_x",
+                "align_y",
+            ):
+                continue
+
+            # Display this property
             value_limit = 30
             prop_str = repr(prop_value)
 
@@ -148,56 +122,77 @@ class ComponentDetails(rio.Component):
             row_index += 1
 
         # Size
-        add_cell("width", 0, True)
-        add_cell(repr(target.width), 1, False)
+        if "width" in debug_details or "height" in debug_details:
+            try:
+                width = debug_details["width"]
+            except KeyError:
+                width = "-"
+            else:
+                width = repr(width)
 
-        add_cell("height", 2, True)
-        add_cell(repr(target.height), 3, False)
-        row_index += 1
+            add_cell("width", 0, True)
+            add_cell(width, 1, False)
+
+            try:
+                height = debug_details["height"]
+            except KeyError:
+                height = "-"
+            else:
+                height = repr(height)
+
+            add_cell("height", 2, True)
+            add_cell(height, 3, False)
+            row_index += 1
 
         # Margins
-        single_x_margin = target.margin_left == target.margin_right
-        single_y_margin = target.margin_top == target.margin_bottom
+        margin_left = debug_details.get("margin_left", 0)
+        margin_right = debug_details.get("margin_right", 0)
+        margin_top = debug_details.get("margin_top", 0)
+        margin_bottom = debug_details.get("margin_bottom", 0)
+
+        single_x_margin = margin_left == margin_right
+        single_y_margin = margin_top == margin_bottom
 
         if single_x_margin and single_y_margin:
             add_cell("margin", 0, True)
-            add_cell(str(target.margin_left), 1, False)
+            add_cell(str(margin_left), 1, False)
             row_index += 1
 
         else:
             if single_x_margin:
                 add_cell("margin_x", 0, True)
-                add_cell(str(target.margin_left), 1, False)
+                add_cell(str(margin_left), 1, False)
 
             else:
                 add_cell("margin_left", 0, True)
-                add_cell(str(target.margin_left), 1, False)
+                add_cell(str(margin_left), 1, False)
 
                 add_cell("margin_right", 2, True)
-                add_cell(str(target.margin_right), 3, False)
+                add_cell(str(margin_right), 3, False)
 
             row_index += 1
 
             if single_y_margin:
                 add_cell("margin_y", 0, True)
-                add_cell(str(target.margin_top), 1, False)
+                add_cell(str(margin_top), 1, False)
 
             else:
                 add_cell("margin_top", 0, True)
-                add_cell(str(target.margin_top), 1, False)
+                add_cell(str(margin_top), 1, False)
 
                 add_cell("margin_bottom", 2, True)
-                add_cell(str(target.margin_bottom), 3, False)
+                add_cell(str(margin_bottom), 3, False)
 
             row_index += 1
 
         # # Alignment
-        add_cell("align_x", 0, True)
-        add_cell(str(target.align_x), 1, False)
+        if "align_x" in debug_details or "align_y" in debug_details:
+            add_cell("align_x", 0, True)
+            add_cell(str(debug_details.get("align_x", "-")), 1, False)
 
-        add_cell("align_y", 2, True)
-        add_cell(str(target.align_y), 3, False)
-        row_index += 1
+            add_cell("align_y", 2, True)
+            add_cell(str(debug_details.get("align_y", "-")), 3, False)
+            row_index += 1
 
         # Link to docs
         if type(target)._rio_builtin_:

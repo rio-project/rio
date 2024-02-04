@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import *  # type: ignore
+from typing import *
+from typing import Any  # type: ignore
 
 import rio
 
@@ -373,6 +374,15 @@ class IconButton(Component):
             align_x=0.5,
             align_y=0.5,
         )
+
+    def get_debug_details(self) -> dict[str, Any]:
+        result = super().get_debug_details()
+
+        # `width` & `height` are replaced with `size`
+        del result["width"]
+        del result["height"]
+
+        return result
 
 
 class _ButtonInternal(FundamentalComponent):

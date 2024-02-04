@@ -685,6 +685,23 @@ class Component(metaclass=ComponentMeta):
 
         await self.session._refresh()
 
+    def get_debug_details(self) -> dict[str, Any]:
+        """
+        Used by Rio's debugger to decide which properties to display to a user,
+        when they select a component.
+        """
+        result = {}
+
+        for prop in self._state_properties_:
+            # Consider properties starting with an underscore internal
+            if prop.startswith("_"):
+                continue
+
+            # Keep it
+            result[prop] = getattr(self, prop)
+
+        return result
+
     def __repr__(self) -> str:
         result = f"<{type(self).__name__} id:{self._id}"
 
