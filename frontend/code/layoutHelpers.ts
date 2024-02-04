@@ -1,4 +1,4 @@
-import { pixelsPerEm } from './app';
+import { pixelsPerRem } from './app';
 import { textStyleToCss } from './cssUtils';
 import { TextStyle } from './models';
 
@@ -69,7 +69,7 @@ export function getTextDimensions(
     }
 
     let rect = element.getBoundingClientRect();
-    let result = [rect.width / pixelsPerEm, rect.height / pixelsPerEm] as [
+    let result = [rect.width / pixelsPerRem, rect.height / pixelsPerRem] as [
         number,
         number,
     ];
@@ -108,8 +108,8 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
 
     // Get its dimensions
     let result = [
-        element.scrollWidth / pixelsPerEm,
-        element.scrollHeight / pixelsPerEm,
+        element.scrollWidth / pixelsPerRem,
+        element.scrollHeight / pixelsPerRem,
     ] as [number, number];
 
     // Restore the original parent and display mode

@@ -1,4 +1,4 @@
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
@@ -135,7 +135,7 @@ export class RowComponent extends LinearContainer {
 
             console.log(
                 `Warning: Component #${this.id} has ${
-                    additionalSpace * pixelsPerEm
+                    additionalSpace * pixelsPerRem
                 }px of unused space`
             );
         }
@@ -210,7 +210,7 @@ export class ColumnComponent extends LinearContainer {
 
             console.log(
                 `Warning: Component #${this.id} has ${
-                    additionalSpace * pixelsPerEm
+                    additionalSpace * pixelsPerRem
                 }px of unused space`
             );
         }

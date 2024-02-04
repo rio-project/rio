@@ -1,11 +1,56 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
+import revel
+
 import rio
 
 
 class ComponentDetails(rio.Component):
     component_id: int
+
+    component_natural_width: float = 0
+    component_natural_height: float = 0
+
+    component_allocated_width: float = 0
+    component_allocated_height: float = 0
+
+    @rio.event.on_populate
+    async def fetch_client_side_details(self) -> None:
+        """
+        Fetch additional details about the component which are only known
+        client-side. Stores them in the class.
+        """
+        # Remember which component the details are being fetched for
+        component_id = self.component_id
+
+        # Fetch the details
+        response = await self.session._evaluate_javascript(
+            f"""
+            let component = componentsById[{component_id}];
+            let rect = component.element.getBoundingClientRect();
+
+            return [
+                component.naturalWidth,
+                component.naturalHeight,
+                rect.width / pixelsPerRem,
+                rect.height / pixelsPerRem,
+            ];
+            """
+        )
+
+        # If the current component has changed while the values were fetched,
+        # don't update the state
+        if self.component_id != component_id:
+            return
+
+        # Publish the results
+        (
+            self.component_natural_width,
+            self.component_natural_height,
+            self.component_allocated_width,
+            self.component_allocated_height,
+        ) = response
 
     def build(self) -> rio.Component:
         # Get the target component
@@ -124,24 +169,52 @@ class ComponentDetails(rio.Component):
         # Size
         if "width" in debug_details or "height" in debug_details:
             try:
-                width = debug_details["width"]
+                py_width_str = debug_details["width"]
             except KeyError:
-                width = "-"
+                py_width_str = "-"
             else:
-                width = repr(width)
+                if isinstance(py_width_str, (int, float)):
+                    py_width_str = round(py_width_str, 2)
 
-            add_cell("width", 0, True)
-            add_cell(width, 1, False)
+                py_width_str = repr(py_width_str)
 
             try:
-                height = debug_details["height"]
+                py_height_str = debug_details["height"]
             except KeyError:
-                height = "-"
+                py_height_str = "-"
             else:
-                height = repr(height)
+                if isinstance(py_height_str, (int, float)):
+                    py_height_str = round(py_height_str, 2)
 
-            add_cell("height", 2, True)
-            add_cell(height, 3, False)
+                py_height_str = repr(py_height_str)
+
+            # Spacing to separate the table from the rest
+            row_index += 1
+
+            # Header
+            result.add_child(rio.Text("width", style="dim", align_x=0), row_index, 1)
+            result.add_child(rio.Text("height", style="dim", align_x=0), row_index, 2)
+            row_index += 1
+
+            # The size as specified in Python
+            add_cell("python", 0, True)
+            add_cell(py_width_str, 1, False)
+            add_cell(py_height_str, 2, False)
+            row_index += 1
+
+            # The component's natural size
+            add_cell("natural", 0, True)
+            add_cell(str(round(self.component_natural_width, 2)), 1, False)
+            add_cell(str(round(self.component_natural_height, 2)), 2, False)
+            row_index += 1
+
+            # The component's allocated size
+            add_cell("allocated", 0, True)
+            add_cell(str(round(self.component_allocated_width, 2)), 1, False)
+            add_cell(str(round(self.component_allocated_height, 2)), 2, False)
+            row_index += 1
+
+            # More spacing
             row_index += 1
 
         # Margins
@@ -185,7 +258,7 @@ class ComponentDetails(rio.Component):
 
             row_index += 1
 
-        # # Alignment
+        # Alignment
         if "align_x" in debug_details or "align_y" in debug_details:
             add_cell("align_x", 0, True)
             add_cell(str(debug_details.get("align_x", "-")), 1, False)

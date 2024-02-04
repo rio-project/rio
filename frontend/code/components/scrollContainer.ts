@@ -1,4 +1,4 @@
-import { pixelsPerEm, scrollBarSize } from '../app';
+import { pixelsPerRem, scrollBarSize } from '../app';
 import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
@@ -191,21 +191,21 @@ export class ScrollContainerComponent extends ComponentBase {
 
             // Check if the scrollbar is all the way at the bottom
             if (
-                (this.element.scrollTop + 1) / pixelsPerEm + visibleHeight >=
+                (this.element.scrollTop + 1) / pixelsPerRem + visibleHeight >=
                 heightBefore - 0.00001
             ) {
                 console.debug('Scrolling to', child.allocatedHeight);
                 // Our CSS `height` hasn't been updated yet, so we can't scroll
                 // down any further. We must assign the `height` manually.
                 this.element.style.height = `${
-                    this.allocatedHeight * pixelsPerEm
+                    this.allocatedHeight * pixelsPerRem
                 }px`;
                 child.element.style.height = `${
-                    child.allocatedHeight * pixelsPerEm
+                    child.allocatedHeight * pixelsPerRem
                 }px`;
 
                 this.element.scroll({
-                    top: child.allocatedHeight * pixelsPerEm + 1000,
+                    top: child.allocatedHeight * pixelsPerRem + 1000,
                     left: this.element.scrollLeft,
                     behavior: 'instant',
                 });

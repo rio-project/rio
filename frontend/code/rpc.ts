@@ -1,4 +1,4 @@
-import { pixelsPerEm } from './app';
+import { pixelsPerRem } from './app';
 import { DebuggerConnectorComponent } from './components/debuggerConnector';
 import { componentsById, updateComponentStates } from './componentManagement';
 import {
@@ -108,8 +108,8 @@ function sendInitialMessage(): void {
         userSettings: userSettings,
         prefersLightTheme: !window.matchMedia('(prefers-color-scheme: dark)')
             .matches,
-        windowWidth: window.innerWidth / pixelsPerEm,
-        windowHeight: window.innerHeight / pixelsPerEm,
+        windowWidth: window.innerWidth / pixelsPerRem,
+        windowHeight: window.innerHeight / pixelsPerRem,
     });
 }
 
@@ -242,7 +242,7 @@ export async function processMessageReturnResponse(
             // Avoid using `eval` so that parceljs can minify the code
             try {
                 const func = new Function(message.params.javaScriptSource);
-                response = await func();
+                response = func();
 
                 if (response === undefined) {
                     response = null;

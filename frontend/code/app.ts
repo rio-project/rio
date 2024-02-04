@@ -45,8 +45,8 @@ function getScrollBarWidthInPixels(): number {
 
 const SCROLL_BAR_SIZE_IN_PIXELS = getScrollBarWidthInPixels();
 
-export let pixelsPerEm = 16;
-export let scrollBarSize = SCROLL_BAR_SIZE_IN_PIXELS / pixelsPerEm;
+export let pixelsPerRem = 16;
+export let scrollBarSize = SCROLL_BAR_SIZE_IN_PIXELS / pixelsPerRem;
 
 function main(): void {
     // Display a warning if running in debug mode
@@ -63,12 +63,12 @@ function main(): void {
     var measure = document.createElement('div');
     measure.style.height = '10rem';
     document.body.appendChild(measure);
-    pixelsPerEm = measure.offsetHeight / 10;
-    scrollBarSize = SCROLL_BAR_SIZE_IN_PIXELS / pixelsPerEm;
+    pixelsPerRem = measure.offsetHeight / 10;
+    scrollBarSize = SCROLL_BAR_SIZE_IN_PIXELS / pixelsPerRem;
     document.body.removeChild(measure);
 
     // TEMP, for debugging
-    globalThis.pixelsPerEm = pixelsPerEm;
+    globalThis.pixelsPerRem = pixelsPerRem;
     globalThis.scrollBarSize = scrollBarSize;
 
     // Listen for URL changes, so the session can switch page
@@ -84,8 +84,8 @@ function main(): void {
         // Notify the backend
         try {
             callRemoteMethodDiscardResponse('onWindowResize', {
-                newWidth: window.innerWidth / pixelsPerEm,
-                newHeight: window.innerHeight / pixelsPerEm,
+                newWidth: window.innerWidth / pixelsPerRem,
+                newHeight: window.innerHeight / pixelsPerRem,
             });
         } catch (e) {
             console.warn(`Couldn't notify backend of window resize: ${e}`);

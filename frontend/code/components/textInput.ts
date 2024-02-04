@@ -5,7 +5,7 @@ import {
     updateInputBoxNaturalHeight,
     updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 
 export type TextInputState = ComponentState & {
     _type_: 'TextInput-builtin';

@@ -6,7 +6,7 @@ import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyIcon } from '../designApplication';
 import { commitCss, disableTransitions, enableTransitions } from '../utils';
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 
 // Layouting variables needed by both JS and CSS
 const MAIN_GAP = 1;

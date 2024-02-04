@@ -1,4 +1,4 @@
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { SingleContainer } from './singleContainer';
 import { ComponentBase, ComponentState } from './componentBase';
 import { DragHandler } from '../eventHandling';
@@ -13,8 +13,8 @@ function eventMouseButtonToString(event: MouseEvent): object {
 
 function eventMousePositionToString(event: MouseEvent): object {
     return {
-        x: event.clientX / pixelsPerEm,
-        y: event.clientY / pixelsPerEm,
+        x: event.clientX / pixelsPerRem,
+        y: event.clientY / pixelsPerRem,
     };
 }
 
@@ -185,8 +185,8 @@ export class MouseEventListenerComponent extends SingleContainer {
         this.sendMessageToBackend({
             type: eventType,
             ...eventMouseButtonToString(event),
-            x: event.clientX / pixelsPerEm,
-            y: event.clientY / pixelsPerEm,
+            x: event.clientX / pixelsPerRem,
+            y: event.clientY / pixelsPerRem,
             component: findComponentUnderMouse(event),
         });
     }

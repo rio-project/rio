@@ -1,7 +1,7 @@
 import { ColorSet, Fill } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 import { applyFillToSVG } from '../designApplication';
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { LayoutContext } from '../layouting';
 
 export type IconState = ComponentState & {
@@ -88,11 +88,11 @@ export class IconComponent extends ComponentBase {
             // SVG can't handle `rem`, but needs `px`. Convert.
             let cssWidth = this.state._grow_[0]
                 ? '100%'
-                : `${this.state._size_[0] * pixelsPerEm}px`;
+                : `${this.state._size_[0] * pixelsPerRem}px`;
 
             let cssHeight = this.state._grow_[1]
                 ? '100%'
-                : `${this.state._size_[1] * pixelsPerEm}px`;
+                : `${this.state._size_[1] * pixelsPerRem}px`;
 
             let svgElement = this.element.querySelector('svg') as SVGSVGElement;
 

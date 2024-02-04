@@ -1,4 +1,4 @@
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { commitCss } from '../utils';
 import { componentsById } from '../componentManagement';
 import { ComponentBase, ComponentState } from './componentBase';
@@ -208,7 +208,7 @@ export class DrawerComponent extends ComponentBase {
         let drawerRect = element.getBoundingClientRect();
 
         // Account for the side of the drawer
-        const handleSizeIfClosed = 2.0 * pixelsPerEm;
+        const handleSizeIfClosed = 2.0 * pixelsPerRem;
         let relevantClickCoordinate, thresholdMin, thresholdMax;
 
         if (this.state.side === 'left') {

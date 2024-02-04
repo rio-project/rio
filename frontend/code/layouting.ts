@@ -1,4 +1,4 @@
-import { pixelsPerEm } from './app';
+import { pixelsPerRem } from './app';
 import { getRootComponent } from './componentManagement';
 import { ComponentBase } from './components/componentBase';
 
@@ -51,7 +51,7 @@ export class LayoutContext {
             }
 
             let element = child.element;
-            element.style.width = `${child.allocatedWidth * pixelsPerEm}px`;
+            element.style.width = `${child.allocatedWidth * pixelsPerRem}px`;
         }
     }
 
@@ -103,7 +103,7 @@ export class LayoutContext {
             child.isLayoutDirty = false;
 
             let element = child.element;
-            element.style.height = `${child.allocatedHeight * pixelsPerEm}px`;
+            element.style.height = `${child.allocatedHeight * pixelsPerRem}px`;
         }
     }
 

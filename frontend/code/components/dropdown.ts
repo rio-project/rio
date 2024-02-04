@@ -5,7 +5,7 @@ import {
     updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
 import { LayoutContext } from '../layouting';
-import { pixelsPerEm, scrollBarSize } from '../app';
+import { pixelsPerRem, scrollBarSize } from '../app';
 import { getTextDimensions } from '../layoutHelpers';
 
 // Make sure this is in sync with the CSS
@@ -254,7 +254,7 @@ export class DropdownComponent extends ComponentBase {
         this.popupElement.style.removeProperty('top');
         this.popupElement.style.removeProperty('bottom');
 
-        const MARGIN_IF_ENTIRELY_ABOVE = 0.5 * pixelsPerEm;
+        const MARGIN_IF_ENTIRELY_ABOVE = 0.5 * pixelsPerRem;
 
         // Popup is larger than the window. Give it all the space that's
         // available.

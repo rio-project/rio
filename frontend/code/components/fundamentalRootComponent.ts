@@ -1,4 +1,4 @@
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
@@ -81,8 +81,8 @@ export class FundamentalRootComponent extends ComponentBase {
         // `getBoundingClientRect()` doesn't account for scroll bars, but our
         // <html> element is set to `overflow: hidden` anyway, so that's not an issue.
         let rect = document.documentElement.getBoundingClientRect();
-        this.naturalWidth = this.allocatedWidth = rect.width / pixelsPerEm;
-        this.naturalHeight = this.allocatedHeight = rect.height / pixelsPerEm;
+        this.naturalWidth = this.allocatedWidth = rect.width / pixelsPerRem;
+        this.naturalHeight = this.allocatedHeight = rect.height / pixelsPerRem;
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {

@@ -1,4 +1,4 @@
-let pixelsPerEm = 16;
+let pixelsPerRem = 16;
 
 type NodeGraphState = {
     children?: string[];
@@ -166,8 +166,8 @@ class DevelComponent {
         event: MouseEvent
     ): void {
         // Update the node state
-        nodeState.left += event.movementX / pixelsPerEm;
-        nodeState.top += event.movementY / pixelsPerEm;
+        nodeState.left += event.movementX / pixelsPerRem;
+        nodeState.top += event.movementY / pixelsPerRem;
 
         // Move its element
         nodeElement.style.left = `${nodeState.left}rem`;
@@ -443,7 +443,7 @@ class DevelComponent {
         let signedDistance = x4 - x1;
 
         let velocity = Math.sqrt(Math.abs(signedDistance * 20));
-        velocity = Math.max(velocity, 2 * pixelsPerEm);
+        velocity = Math.max(velocity, 2 * pixelsPerRem);
 
         // Calculate the intermediate points
         const x2 = x1 + velocity;

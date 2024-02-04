@@ -1,4 +1,4 @@
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { componentsById } from '../componentManagement';
 import { applyColorSet } from '../designApplication';
 import { LayoutContext } from '../layouting';
@@ -141,13 +141,13 @@ export class PopupComponent extends ComponentBase {
         let popupPointY = popupHeight * contentRelativeY;
 
         let spawnPointX =
-            anchorPointX - popupPointX + fixedOffsetXRem * pixelsPerEm;
+            anchorPointX - popupPointX + fixedOffsetXRem * pixelsPerRem;
         let spawnPointY =
-            anchorPointY - popupPointY + fixedOffsetYRem * pixelsPerEm;
+            anchorPointY - popupPointY + fixedOffsetYRem * pixelsPerRem;
 
         // Establish limits, so the popup doesn't go off the screen. This is
         // relative to the popup's top left corner.
-        let margin = 1 * pixelsPerEm;
+        let margin = 1 * pixelsPerRem;
 
         let minX = margin;
         let maxX = screenWidth - popupWidth - margin;

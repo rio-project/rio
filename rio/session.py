@@ -1832,9 +1832,11 @@ document.body.removeChild(a)
         # Update the variables client-side
         await self._remote_apply_theme(
             variables,
-            "light"
-            if thm.neutral_palette.background.perceived_brightness > 0.5
-            else "dark",
+            (
+                "light"
+                if thm.neutral_palette.background.perceived_brightness > 0.5
+                else "dark"
+            ),
         )
 
     @unicall.remote(
@@ -1890,7 +1892,13 @@ document.body.removeChild(a)
     )
     async def _evaluate_javascript(self, java_script_source: str) -> Any:
         """
-        Evaluate the given javascript code in the client.
+        Evaluate the given JavaScript code in the client.
+
+        - The code is run as the body of a function, i.e.
+          - `return` statements are allowed and must be used to receive a result
+            other than `None`
+          - Variables are neatly contained in a scope and don't pollute the
+            global scope
         """
         raise NotImplementedError
 

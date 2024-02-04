@@ -1,4 +1,4 @@
-import { pixelsPerEm } from '../app';
+import { pixelsPerRem } from '../app';
 import { fillToCss } from '../cssUtils';
 import { LayoutContext } from '../layouting';
 import { Fill } from '../models';
@@ -112,8 +112,8 @@ export class PlotComponent extends ComponentBase {
             this.element,
             {},
             {
-                width: this.allocatedWidth * pixelsPerEm,
-                height: this.allocatedHeight * pixelsPerEm,
+                width: this.allocatedWidth * pixelsPerRem,
+                height: this.allocatedHeight * pixelsPerRem,
             }
         );
     }
