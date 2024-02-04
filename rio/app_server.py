@@ -14,6 +14,7 @@ import traceback
 import weakref
 from datetime import timedelta
 from typing import *  # type: ignore
+from xml.etree import ElementTree as ET
 
 import fastapi
 import pytz
@@ -48,7 +49,46 @@ try:
 except ImportError:
     plotly = None
 
-__all__ = ["AppServer"]
+__all__ = [
+    "AppServer",
+]
+
+
+@functools.lru_cache(maxsize=None)
+def _build_sitemap(base_url: rio.URL, app: rio.App) -> str:
+    # Find all pages to add
+    page_urls = {
+        rio.URL(""),
+    }
+
+    def worker(
+        parent_url: rio.URL,
+        page: rio.Page,
+    ) -> None:
+        cur_url = parent_url / page.page_url
+        page_urls.add(cur_url)
+
+        for child in page.children:
+            worker(cur_url, child)
+
+    for page in app.pages:
+        worker(rio.URL(), page)
+
+    # Build a XML site map
+    tree = ET.Element(
+        "urlset",
+        xmlns="http://www.sitemaps.org/schemas/sitemap/0.9",
+    )
+
+    for relative_url in page_urls:
+        full_url = base_url.with_path(relative_url.path)
+
+        url = ET.SubElement(tree, "url")
+        loc = ET.SubElement(url, "loc")
+        loc.text = str(full_url)
+
+    # Done
+    return ET.tostring(tree, encoding="unicode")
 
 
 @functools.lru_cache(maxsize=None)
@@ -138,7 +178,8 @@ class AppServer(fastapi.FastAPI):
         ] = timer_dict.TimerDict(default_duration=timedelta(minutes=15))
 
         # FastAPI
-
+        self.add_api_route("/robots.txt", self._serve_robots, methods=["GET"])
+        self.add_api_route("/sitemap.xml", self._serve_sitemap, methods=["GET"])
         # self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
         # self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
         self.add_api_route("/rio/favicon.ico", self._serve_favicon, methods=["GET"])
@@ -321,6 +362,38 @@ class AppServer(fastapi.FastAPI):
 
         # Respond
         return fastapi.responses.HTMLResponse(html)
+
+    async def _serve_robots(
+        self, request: fastapi.Request
+    ) -> fastapi.responses.Response:
+        """
+        Handler for serving the `robots.txt` file via fastapi.
+        """
+
+        # TODO: Disallow internal API routes? Icons, assets, etc?
+        request_url = URL(str(request.url))
+        content = f"""
+User-agent: *
+Disallow:
+
+Sitemap: {request_url.with_path("/sitemap.xml")}
+        """.strip()
+
+        return fastapi.responses.Response(
+            content=content,
+            media_type="text/plain",
+        )
+
+    async def _serve_sitemap(
+        self, request: fastapi.Request
+    ) -> fastapi.responses.Response:
+        """
+        Handler for serving the `sitemap.xml` file via fastapi.
+        """
+        return fastapi.responses.Response(
+            content=_build_sitemap(rio.URL(str(request.url)), self.app),
+            media_type="application/xml",
+        )
 
     async def _serve_js_map(self) -> fastapi.responses.Response:
         """
