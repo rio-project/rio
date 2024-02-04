@@ -1720,14 +1720,14 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         # Tell the frontend to download the file
         await self._evaluate_javascript(
             f"""
-const a = document.createElement('a')
-a.href = {json.dumps(str(url))}
-a.download = {json.dumps(file_name)}
-a.type = {json.dumps(media_type)}
-a.target = "_blank"
-document.body.appendChild(a)
-a.click()
-document.body.removeChild(a)
+const a = document.createElement('a');
+a.href = {json.dumps(str(url))};
+a.download = {json.dumps(file_name)};
+a.type = {json.dumps(media_type)};
+a.target = "_blank";
+document.body.appendChild(a);
+a.click();
+a.remove();
 """
         )
 

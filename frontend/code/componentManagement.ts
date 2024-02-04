@@ -111,8 +111,16 @@ export const componentsById: { [id: ComponentId]: ComponentBase | undefined } =
 export const componentsByElement = new Map<HTMLElement, ComponentBase>();
 
 export function getRootComponent(): FundamentalRootComponent {
-    let element = document.body.firstElementChild as HTMLElement;
-    return getComponentByElement(element) as FundamentalRootComponent;
+    let element = document.body.querySelector(
+        '.rio-fundamental-root-component'
+    );
+    console.assert(
+        element !== null,
+        "Couldn't find the root component in the document body"
+    );
+    return componentsByElement.get(
+        element as HTMLElement
+    ) as FundamentalRootComponent;
 }
 
 export function getComponentByElement(element: Element): ComponentBase {
@@ -446,14 +454,6 @@ export function updateComponentStates(
     if (rootComponentId !== null) {
         let rootElement = componentsById[rootComponentId]!.element;
         document.body.appendChild(rootElement);
-
-        // Initialize the debugger, or not
-        //
-        // TODO: This should absolutely not be done here. It's just a convenient
-        // spot for development.
-        if (globalThis.RIO_DEBUG_MODE && globalThis.rioDebugger === undefined) {
-            // initializeDebugger();
-        }
     }
 
     // Restore the keyboard focus
