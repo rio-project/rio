@@ -102,11 +102,15 @@ export class DropdownComponent extends ComponentBase {
         this.showPopup();
     }
 
-    private _onFocusOut(): void {
+    private _onFocusOut(event: FocusEvent): void {
         // When the input element loses focus, that means the user is done
-        // entering input. We now need to check if the input matches a valid
-        // option or not.
-        this.trySubmitInput();
+        // entering input. Depending on whether they inputted a valid option,
+        // either save it or reset.
+        //
+        // Careful: Clicking on a dropdown option with the mouse also causes us
+        // to lose focus. If we close the popup too early, the click won't hit
+        // anything. So delay this a little bit.
+        setTimeout(() => this.trySubmitInput(), 35);
     }
 
     private trySubmitInput(): void {
@@ -255,16 +259,19 @@ export class DropdownComponent extends ComponentBase {
         // Popup is larger than the window. Give it all the space that's
         // available.
         if (popupHeight >= windowHeight) {
+            this.popupElement.style.overflowY = 'scroll';
             this.popupElement.style.top = '0';
             this.popupElement.classList.add('rio-dropdown-popup-above');
         }
         // Popup fits below the dropdown
         else if (dropdownRect.bottom + popupHeight <= windowHeight) {
+            this.popupElement.style.overflowY = 'hidden';
             this.popupElement.style.top = `${dropdownRect.bottom}px`;
             this.popupElement.classList.remove('rio-dropdown-popup-above');
         }
         // Popup fits above the dropdown
         else if (dropdownRect.top - popupHeight >= MARGIN_IF_ENTIRELY_ABOVE) {
+            this.popupElement.style.overflowY = 'hidden';
             this.popupElement.style.bottom = `${
                 windowHeight - dropdownRect.top + MARGIN_IF_ENTIRELY_ABOVE
             }px`;
@@ -273,6 +280,7 @@ export class DropdownComponent extends ComponentBase {
         // Popup doesn't fit above or below the dropdown. Center it as much
         // as possible
         else {
+            this.popupElement.style.overflowY = 'hidden';
             let top =
                 dropdownRect.top + dropdownRect.height / 2 - popupHeight / 2;
             if (top < 0) {
@@ -385,6 +393,7 @@ export class DropdownComponent extends ComponentBase {
                 (event) => {
                     this.submitInput(optionName);
                     event.stopPropagation();
+                    event.preventDefault();
                 },
                 true
             );

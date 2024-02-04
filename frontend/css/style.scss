@@ -921,7 +921,11 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 // Dropdown
 .rio-dropdown {
     pointer-events: auto;
-    cursor: pointer;
+
+    &,
+    & > input {
+        cursor: pointer;
+    }
 }
 
 .rio-dropdown-popup {
@@ -929,8 +933,6 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     z-index: $z-index-popup;
     height: 0;
     max-height: 100vh;
-
-    overflow: auto;
 
     background-color: var(--rio-global-background-bg);
     color: var(--rio-global-text-color);
