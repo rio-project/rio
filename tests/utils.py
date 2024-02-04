@@ -206,8 +206,6 @@ def enable_component_instantiation(func):
         session = rio.Session(
             app_server,
             "<a fake session token>",
-            rio.URL("https://unit.test"),
-            rio.URL("https://unit.test"),
         )
         session._decimal_separator = "."
         session._thousands_separator = ","
