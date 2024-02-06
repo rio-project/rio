@@ -30,7 +30,6 @@ export class DropdownComponent extends ComponentBase {
     private inputElement: HTMLInputElement;
 
     private isOpen: boolean = false;
-    private windowClickHandler: ClickHandler | null = null;
 
     // The currently highlighted option, if any
     private highlightedOptionElement: HTMLElement | null = null;
@@ -127,24 +126,6 @@ export class DropdownComponent extends ComponentBase {
         this.trySubmitInput();
     }
 
-    private _onWindowClick(event: MouseEvent): void {
-        // There are 2 possible scenarios:
-        // 1. The user clicked on our popup. In this case we're responsible for
-        //    closing it, since `_onFocusOut` intentionally leaves it open for
-        //    us.
-        // 2. The user clicked somewhere else. In this case we don't need to do
-        //    anything, since `_onFocusOut` will take care of closing the popup
-        //    if necessary.
-        if (
-            event.target instanceof HTMLElement &&
-            event.target.classList.contains('rio-dropdown-option')
-        ) {
-            this.submitInput(event.target.textContent!);
-            event.stopPropagation();
-            event.preventDefault();
-        }
-    }
-
     private trySubmitInput(): void {
         this.inputElement.blur();
         this.hidePopup();
@@ -182,6 +163,10 @@ export class DropdownComponent extends ComponentBase {
             return;
         }
 
+        // Eat the event
+        event.stopPropagation();
+        event.preventDefault();
+
         // Already open?
         if (this.isOpen) {
             this.cancelInput();
@@ -190,10 +175,6 @@ export class DropdownComponent extends ComponentBase {
 
         // Make the text input appear as active
         this.inputElement.focus();
-
-        // Eat the event
-        event.stopPropagation();
-        event.preventDefault();
     }
 
     _onKeyDown(event: KeyboardEvent): void {
@@ -273,6 +254,10 @@ export class DropdownComponent extends ComponentBase {
     }
 
     private showPopup(): void {
+        if (this.isOpen) {
+            return;
+        }
+
         this.isOpen = true;
 
         // In order to guarantee that the popup is on top of all components, it
@@ -283,17 +268,6 @@ export class DropdownComponent extends ComponentBase {
         // Make sure to do this after the popup has been added to the DOM, so
         // that the scrollHeight is correct.
         this._updateOptionEntries();
-
-        // The order of the `focusout` and `click` events doesn't seem to be
-        // well-defined across different browsers. If `focusout` is triggered
-        // too early, it will close the popup and the click will go nowhere. So
-        // we want to run our click handler as early as possible: On the
-        // `window`, and in `capturing` mode.
-        this.windowClickHandler = this.addClickHandler({
-            target: window,
-            onClick: this._onWindowClick.bind(this),
-            capturing: true,
-        });
 
         // Position & Animate
         let dropdownRect = this.element.getBoundingClientRect();
@@ -346,10 +320,11 @@ export class DropdownComponent extends ComponentBase {
     }
 
     private hidePopup(): void {
-        this.isOpen = false;
+        if (!this.isOpen) {
+            return;
+        }
 
-        this.windowClickHandler!.disconnect();
-        this.windowClickHandler = null;
+        this.isOpen = false;
 
         // Animate the disappearance
         this.popupElement.style.height = '0';
@@ -442,6 +417,11 @@ export class DropdownComponent extends ComponentBase {
 
             match.addEventListener('mouseenter', () => {
                 this._highlightOption(match);
+            });
+
+            match.addEventListener('click', (event) => {
+                this.submitInput(optionName);
+                event.stopPropagation();
             });
         }
 
