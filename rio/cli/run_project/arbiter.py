@@ -4,6 +4,7 @@ import logging
 import signal
 import socket
 import threading
+import time
 import webbrowser
 from typing import *  # type: ignore
 
@@ -252,7 +253,18 @@ class Arbiter:
         # If not running in a webview, just wait
         else:
             webbrowser.open(self.url)
-            self._stop_requested.wait()
+
+            # Event.wait() blocks the SIGINT handler, so we must periodically
+            # return to python land.
+            #
+            # We could pass a timeout to `_stop_requested.wait()`, but
+            # `time.sleep()` reacts to keyboard interrupts immediately, which is
+            # preferable.
+            while True:
+                time.sleep(0.2)
+
+                if self._stop_requested.is_set():
+                    break
 
     async def _run_async(self) -> None:
         # Make sure the app is cleanly shut down, even if the arbiter crashes
