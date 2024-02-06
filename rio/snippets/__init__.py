@@ -9,7 +9,7 @@ from .. import common
 
 SECTION_PATTERN = re.compile(r"#\s*<(\/?[\w-]+)>")
 
-_ALL_SNIPPET_PATHS: dict[str, Path | None] = None
+_ALL_SNIPPET_PATHS: dict[str, Path] | None = None
 
 
 @dataclass

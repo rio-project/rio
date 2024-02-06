@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import KW_ONLY
-from typing import *
-from typing import Any  # type: ignore
+from typing import *  # type: ignore
 
 import rio
 

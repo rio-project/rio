@@ -3,7 +3,6 @@ Helper script for running checks on documentation, such as looking for missing
 docstrings.
 """
 
-
 import inspect
 import sys
 from pathlib import Path
@@ -127,8 +126,12 @@ def main() -> None:
     visited_item_names: set[str] = set()
 
     for entry in website.structure.DOCUMENTATION_STRUCTURE_LINEAR:
-        url, section_name, entry_name, art = entry
-        visited_item_names.add(entry_name)
+        section_name, section_url, builder = entry
+
+        if not isinstance(builder, website.article_models.ArticleBuilder):
+            continue
+
+        visited_item_names.add(builder.component_class.__name__)
 
     for item in target_items:
         if item.__name__ not in visited_item_names:

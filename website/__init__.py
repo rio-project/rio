@@ -4,6 +4,7 @@ from typing import *  # type: ignore
 import rio
 import rio.debug
 
+from . import article_models
 from . import components as comps
 from . import pages, structure, theme
 
