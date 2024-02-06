@@ -5,6 +5,7 @@ import { ColumnComponent, LinearContainerState } from './linearContainers';
 export class ListViewComponent extends ColumnComponent {
     constructor(id: ComponentId, state: Required<LinearContainerState>) {
         state.spacing = 0;
+        state.proportions = null;
         super(id, state);
     }
 
