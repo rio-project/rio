@@ -83,6 +83,8 @@ export function getTextDimensions(
     return result;
 }
 
+globalThis.getTextDimensions = getTextDimensions; // For debugging
+
 /// Get the width and height an element takes up on the screen, in rems.
 ///
 /// This works even if the element is not visible, e.g. because a parent is

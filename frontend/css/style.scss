@@ -546,6 +546,15 @@ body {
     font-family: var(--rio-global-font, Roboto, sans-serif);
 }
 
+// Force input elements to use the font-family we specified. For some reason
+// they don't inherit it per default.
+input,
+textarea,
+select {
+    font-family: inherit;
+    font-size: 1rem;
+}
+
 // All components
 .rio-component {
     position: absolute;
@@ -747,13 +756,10 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     flex-grow: 1;
     min-width: 0;
 
-    font-family: Roboto, sans-serif;
-
     background-color: transparent;
     color: var(--rio-local-text-color);
     caret-color: var(--rio-local-accent-bg);
     border: none;
-    font-size: 1rem;
 }
 
 .rio-input-box > input {

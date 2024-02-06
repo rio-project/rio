@@ -8,7 +8,6 @@ from .button import *
 from .card import *
 from .code_explorer import *
 from .color_picker import *
-from .column import *
 from .component import *
 from .container import *
 from .custom_button import *
@@ -22,6 +21,7 @@ from .icon import *
 from .image import *
 from .key_event_listener import *
 from .labeled_column import *
+from .linear_containers import *
 from .link import *
 from .list_items import *
 from .list_view import *
@@ -38,7 +38,6 @@ from .progress_bar import *
 from .progress_circle import *
 from .rectangle import *
 from .revealer import *
-from .row import *
 from .scroll_container import *
 from .scroll_target import *
 from .slider import *

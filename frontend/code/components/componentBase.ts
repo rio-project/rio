@@ -5,6 +5,8 @@ import {
     EventHandler,
     DragHandler,
     DragHandlerArguments,
+    ClickHandlerArguments,
+    ClickHandler,
 } from '../eventHandling';
 import { DebuggerConnectorComponent } from './debuggerConnector';
 import { ComponentId } from '../models';
@@ -359,6 +361,10 @@ export abstract class ComponentBase {
                 componentIdString: deltaState,
             });
         }
+    }
+
+    addClickHandler(args: ClickHandlerArguments): ClickHandler {
+        return new ClickHandler(this, args);
     }
 
     addDragHandler(args: DragHandlerArguments): DragHandler {

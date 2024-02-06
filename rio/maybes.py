@@ -17,6 +17,7 @@ import introspection
 if TYPE_CHECKING:
     import matplotlib.axes  # type: ignore
     import matplotlib.figure  # type: ignore
+    import numpy  # type: ignore
     import pandas  # type: ignore
     import plotly.graph_objects  # type: ignore
     import polars  # type: ignore
@@ -31,15 +32,17 @@ INT_TYPES = ()
 BOOL_TYPES = ()
 STR_TYPES = ()
 
-PANDAS_DATAFRAME_TYPES: tuple[Type[pandas.DataFrame], ...] = ()
-POLARS_DATAFRAME_TYPES: tuple[Type[polars.DataFrame], ...] = ()
+NUMPY_ARRAY_TYPES: tuple[type[numpy.ndarray], ...] = ()
 
-PLOTLY_GRAPH_TYPES: tuple[Type[plotly.graph_objects.Figure], ...] = ()
-MATPLOTLIB_GRAPH_TYPES: tuple[Type, ...] = ()
-MATPLOTLIB_AXES_TYPES: tuple[Type[matplotlib.axes.Axes], ...] = ()
+PANDAS_DATAFRAME_TYPES: tuple[type[pandas.DataFrame], ...] = ()
+POLARS_DATAFRAME_TYPES: tuple[type[polars.DataFrame], ...] = ()
+
+PLOTLY_GRAPH_TYPES: tuple[type[plotly.graph_objects.Figure], ...] = ()
+MATPLOTLIB_GRAPH_TYPES: tuple[type, ...] = ()
+MATPLOTLIB_AXES_TYPES: tuple[type[matplotlib.axes.Axes], ...] = ()
 
 # This is a mapping of "weird" types to the "canonical" type, like `{np.int8: int}`
-TYPE_NORMALIZERS: Mapping[Type[T], Callable[[T], T]] = {}  # type: ignore
+TYPE_NORMALIZERS: Mapping[type[T], Callable[[T], T]] = {}  # type: ignore
 
 
 def initialize(force: bool = False) -> None:
@@ -51,6 +54,7 @@ def initialize(force: bool = False) -> None:
     """
     global _IS_INITIALIZED
     global FLOAT_TYPES, INT_TYPES, BOOL_TYPES, STR_TYPES
+    global NUMPY_ARRAY_TYPES
     global PANDAS_DATAFRAME_TYPES, POLARS_DATAFRAME_TYPES
     global PLOTLY_GRAPH_TYPES, MATPLOTLIB_GRAPH_TYPES
 
@@ -68,6 +72,8 @@ def initialize(force: bool = False) -> None:
     # Is numpy available and loaded?
     if "numpy" in sys.modules:
         import numpy
+
+        NUMPY_ARRAY_TYPES = (numpy.ndarray,)
 
         numpy_floats = tuple(introspection.iter_subclasses(numpy.floating))
         numpy_ints = tuple(introspection.iter_subclasses(numpy.integer))

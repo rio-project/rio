@@ -32,28 +32,31 @@ export class FundamentalRootComponent extends ComponentBase {
         deltaState: FundamentalRootComponentState,
         latentComponents: Set<ComponentBase>
     ): void {
-        // Unlike what you'd expect, this function can actually be called more
-        // than once. This is because of injected layout components; if the
-        // user's root component changes, then its parent - this component right
-        // here - is also updated. We don't actually need to do anything in that
-        // case, so if we know that this function has already been executed
-        // once, we'll abort.
-        if (this.element.firstChild !== null) {
-            return;
-        }
-
         // Update the children
-        this.appendChild(latentComponents, deltaState.content);
-        this.appendChild(
-            latentComponents,
-            deltaState.connection_lost_component
-        );
+        let content = deltaState.content ?? this.state.content;
+        let connectionLostComponent =
+            deltaState.connection_lost_component ??
+            this.state.connection_lost_component;
+        let debugger_ = deltaState.debugger ?? this.state.debugger;
 
-        if (deltaState.debugger !== null) {
-            this.appendChild(latentComponents, deltaState.debugger);
+        let children = [content, connectionLostComponent];
+        if (debugger_ !== null) {
+            children.push(debugger_);
         }
+
+        this.replaceChildren(latentComponents, children);
 
         // Initialize CSS
+        let oldConnectionLostPopup = document.querySelector(
+            '.rio-connection-lost-popup'
+        );
+        let connectionLostPopupVisible =
+            oldConnectionLostPopup === null
+                ? false // It's hidden by default
+                : oldConnectionLostPopup.classList.contains(
+                      'rio-connection-lost-popup-visible'
+                  );
+
         let connectionLostPopupElement = this.element
             .children[1] as HTMLElement;
         connectionLostPopupElement.classList.add('rio-connection-lost-popup');
@@ -63,14 +66,13 @@ export class FundamentalRootComponent extends ComponentBase {
             debuggerElement.classList.add('rio-debugger');
         }
 
-        // Hide the connection lost popup by default
-        //
         // Looking up elements via selector is wonky if the element has only
         // just been added. Give the browser time to update.
-        setTimeout(() => setConnectionLostPopupVisible(false), 0);
+        setTimeout(
+            () => setConnectionLostPopupVisible(connectionLostPopupVisible),
+            0
+        );
 
-        // Not really needed since this component will never see an update, but
-        // here for consistency
         this.makeLayoutDirty();
     }
 

@@ -7,6 +7,7 @@ import {
 import { LayoutContext } from '../layouting';
 import { pixelsPerRem, scrollBarSize } from '../app';
 import { getTextDimensions } from '../layoutHelpers';
+import { ClickHandler } from '../eventHandling';
 
 // Make sure this is in sync with the CSS
 const RESERVED_WIDTH_FOR_ARROW = 1.5;
@@ -29,9 +30,10 @@ export class DropdownComponent extends ComponentBase {
     private inputElement: HTMLInputElement;
 
     private isOpen: boolean = false;
+    private windowClickHandler: ClickHandler | null = null;
 
     // The currently highlighted option, if any
-    private highlightedOptionName: HTMLElement | null = null;
+    private highlightedOptionElement: HTMLElement | null = null;
 
     private longestOptionWidth: number = 0;
 
@@ -56,6 +58,7 @@ export class DropdownComponent extends ComponentBase {
         this.inputElement = element.querySelector('input') as HTMLInputElement;
 
         this.popupElement = document.createElement('div');
+        this.popupElement.tabIndex = -999; // Required for Chrome, sets `FocusEvent.relatedTarget`
         this.popupElement.classList.add('rio-dropdown-popup');
 
         this.optionsElement = document.createElement('div');
@@ -109,8 +112,37 @@ export class DropdownComponent extends ComponentBase {
         //
         // Careful: Clicking on a dropdown option with the mouse also causes us
         // to lose focus. If we close the popup too early, the click won't hit
-        // anything. So delay this a little bit.
-        setTimeout(() => this.trySubmitInput(), 35);
+        // anything.
+        //
+        // In Firefox the click is triggered before the focusout, so
+        // that's no problem. But in Chrome, we have to check whether the focus
+        // went to our popup element.
+        if (
+            event.relatedTarget instanceof HTMLElement &&
+            event.relatedTarget.classList.contains('rio-dropdown-popup')
+        ) {
+            return;
+        }
+
+        this.trySubmitInput();
+    }
+
+    private _onWindowClick(event: MouseEvent): void {
+        // There are 2 possible scenarios:
+        // 1. The user clicked on our popup. In this case we're responsible for
+        //    closing it, since `_onFocusOut` intentionally leaves it open for
+        //    us.
+        // 2. The user clicked somewhere else. In this case we don't need to do
+        //    anything, since `_onFocusOut` will take care of closing the popup
+        //    if necessary.
+        if (
+            event.target instanceof HTMLElement &&
+            event.target.classList.contains('rio-dropdown-option')
+        ) {
+            this.submitInput(event.target.textContent!);
+            event.stopPropagation();
+            event.preventDefault();
+        }
     }
 
     private trySubmitInput(): void {
@@ -145,6 +177,11 @@ export class DropdownComponent extends ComponentBase {
     }
 
     private _onMouseDown(event: MouseEvent): void {
+        // Not left click?
+        if (event.button !== 0) {
+            return;
+        }
+
         // Already open?
         if (this.isOpen) {
             this.cancelInput();
@@ -167,8 +204,8 @@ export class DropdownComponent extends ComponentBase {
 
         // Enter -> select the highlighted option
         else if (event.key === 'Enter') {
-            if (this.highlightedOptionName !== null) {
-                this.highlightedOptionName.click();
+            if (this.highlightedOptionElement !== null) {
+                this.highlightedOptionElement.click();
             }
         }
 
@@ -176,10 +213,10 @@ export class DropdownComponent extends ComponentBase {
         else if (event.key === 'ArrowDown') {
             let nextOption;
 
-            if (this.highlightedOptionName === null) {
+            if (this.highlightedOptionElement === null) {
                 nextOption = this.optionsElement.firstElementChild;
             } else {
-                nextOption = this.highlightedOptionName.nextElementSibling;
+                nextOption = this.highlightedOptionElement.nextElementSibling;
 
                 if (nextOption === null) {
                     nextOption = this.optionsElement.firstElementChild;
@@ -193,10 +230,11 @@ export class DropdownComponent extends ComponentBase {
         else if (event.key === 'ArrowUp') {
             let nextOption;
 
-            if (this.highlightedOptionName === null) {
+            if (this.highlightedOptionElement === null) {
                 nextOption = this.optionsElement.lastElementChild;
             } else {
-                nextOption = this.highlightedOptionName.previousElementSibling;
+                nextOption =
+                    this.highlightedOptionElement.previousElementSibling;
 
                 if (nextOption === null) {
                     nextOption = this.optionsElement.lastElementChild;
@@ -220,14 +258,14 @@ export class DropdownComponent extends ComponentBase {
 
     private _highlightOption(optionElement: HTMLElement | null): void {
         // Remove the highlight from the previous option
-        if (this.highlightedOptionName !== null) {
-            this.highlightedOptionName.classList.remove(
+        if (this.highlightedOptionElement !== null) {
+            this.highlightedOptionElement.classList.remove(
                 'rio-dropdown-option-highlighted'
             );
         }
 
         // Remember the new option and highlight it
-        this.highlightedOptionName = optionElement;
+        this.highlightedOptionElement = optionElement;
 
         if (optionElement !== null) {
             optionElement.classList.add('rio-dropdown-option-highlighted');
@@ -245,6 +283,17 @@ export class DropdownComponent extends ComponentBase {
         // Make sure to do this after the popup has been added to the DOM, so
         // that the scrollHeight is correct.
         this._updateOptionEntries();
+
+        // The order of the `focusout` and `click` events doesn't seem to be
+        // well-defined across different browsers. If `focusout` is triggered
+        // too early, it will close the popup and the click will go nowhere. So
+        // we want to run our click handler as early as possible: On the
+        // `window`, and in `capturing` mode.
+        this.windowClickHandler = this.addClickHandler({
+            target: window,
+            onClick: this._onWindowClick.bind(this),
+            capturing: true,
+        });
 
         // Position & Animate
         let dropdownRect = this.element.getBoundingClientRect();
@@ -298,6 +347,9 @@ export class DropdownComponent extends ComponentBase {
 
     private hidePopup(): void {
         this.isOpen = false;
+
+        this.windowClickHandler!.disconnect();
+        this.windowClickHandler = null;
 
         // Animate the disappearance
         this.popupElement.style.height = '0';
@@ -387,16 +439,6 @@ export class DropdownComponent extends ComponentBase {
             match.classList.add('rio-dropdown-option');
             match.style.padding = `0.6rem ${DROPDOWN_LIST_HORIZONTAL_PADDING}rem`;
             this.optionsElement.appendChild(match);
-
-            match.addEventListener(
-                'click',
-                (event) => {
-                    this.submitInput(optionName);
-                    event.stopPropagation();
-                    event.preventDefault();
-                },
-                true
-            );
 
             match.addEventListener('mouseenter', () => {
                 this._highlightOption(match);

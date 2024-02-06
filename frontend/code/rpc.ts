@@ -239,7 +239,7 @@ export async function processMessageReturnResponse(
         case 'evaluateJavaScript':
             // Allow the server to run JavaScript
             //
-            // Avoid using `eval` so that parceljs can minify the code
+            // Avoid using `eval` so that the code can be minified
             try {
                 const func = new Function(message.params.javaScriptSource);
                 response = func();

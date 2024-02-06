@@ -18,6 +18,36 @@ function _no_op(): boolean {
     return true;
 }
 
+export type ClickHandlerArguments = {
+    onClick: (event: MouseEvent) => boolean;
+    target?: EventTarget;
+    capturing?: boolean;
+};
+
+export class ClickHandler extends EventHandler {
+    private onClick: (event: MouseEvent) => void;
+    private target: EventTarget;
+    private capturing: boolean;
+
+    constructor(component: ComponentBase, args: ClickHandlerArguments) {
+        super(component);
+
+        this.onClick = args.onClick;
+        this.target = args.target ?? component.element;
+        this.capturing = args.capturing ?? false;
+
+        // @ts-ignore
+        this.target.addEventListener('click', this.onClick, this.capturing);
+    }
+
+    override disconnect(): void {
+        super.disconnect();
+
+        // @ts-ignore
+        this.target.removeEventListener('click', this.onClick, this.capturing);
+    }
+}
+
 export type DragHandlerArguments = {
     element: HTMLElement;
     onStart?: (event: MouseEvent) => boolean;
@@ -31,6 +61,7 @@ export class DragHandler extends EventHandler {
     private onStart: (event: MouseEvent) => boolean;
     private onMove: (event: MouseEvent) => void;
     private onEnd: (event: MouseEvent) => void;
+    private capturing: boolean;
 
     private onMouseDown = this._onMouseDown.bind(this);
     private onMouseMove = this._onMouseMove.bind(this);
@@ -48,8 +79,12 @@ export class DragHandler extends EventHandler {
         this.onMove = args.onMove ?? _no_op;
         this.onEnd = args.onEnd ?? _no_op;
 
-        let capturing = args.capturing ?? true;
-        this.element.addEventListener('mousedown', this.onMouseDown, capturing);
+        this.capturing = args.capturing ?? true;
+        this.element.addEventListener(
+            'mousedown',
+            this.onMouseDown,
+            this.capturing
+        );
     }
 
     private _onMouseDown(event: MouseEvent): void {
@@ -121,7 +156,11 @@ export class DragHandler extends EventHandler {
     override disconnect(): void {
         super.disconnect();
 
-        this.element.removeEventListener('mousedown', this.onMouseDown, true);
+        this.element.removeEventListener(
+            'mousedown',
+            this.onMouseDown,
+            this.capturing
+        );
         this._disconnectDragListeners();
     }
 }

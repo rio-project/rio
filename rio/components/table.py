@@ -46,8 +46,6 @@ class Table(FundamentalComponent):
         }
     )
     ```
-
-
     """
 
     data: (
@@ -55,42 +53,32 @@ class Table(FundamentalComponent):
         | polars.DataFrame
         | Mapping[str, Iterable[TableValue]]
         | Iterable[Iterable[TableValue]]
-        # | numpy.ndarray
+        | numpy.ndarray
     )
     show_row_numbers: bool = True
 
     def _custom_serialize(self) -> JsonDoc:
-        data = self.data
-        jsonable_data: dict[str, list[TableValue]]
-
-        maybes.initialize()
-
-        # Convert the data to a dict of lists so it can be serialized as json
-        if isinstance(data, Mapping):
-            # For some reason Pyright infers that `data` can be a
-            # `Mapping[Iterable[TableValue], Unknown]`. WTF.
-            data = cast(Mapping[str, Iterable[TableValue]], data)
-
-            jsonable_data = {
-                key: (column if isinstance(column, list) else list(column))
-                for key, column in data.items()
-            }
-        elif isinstance(data, maybes.PANDAS_DATAFRAME_TYPES):
-            jsonable_data = {
-                str(title): column
-                for title, column in data.to_dict(orient="list").items()
-            }
-        elif isinstance(data, maybes.POLARS_DATAFRAME_TYPES):
-            jsonable_data = {
-                str(title): column
-                for title, column in data.to_dict(as_series=False).items()
-            }
-        else:
-            jsonable_data = {header: column for header, *column in zip(*data)}
-
         return {
-            "data": jsonable_data,  # type: ignore[variance]
+            "data": self._data_to_json(),  # type: ignore[variance]
         }
+
+    def _data_to_json(self) -> dict[str, list[TableValue]] | list[list[TableValue]]:
+        data = self.data
+
+        if isinstance(data, maybes.PANDAS_DATAFRAME_TYPES):
+            return data.to_dict(orient="list")  # type: ignore
+
+        if isinstance(data, maybes.POLARS_DATAFRAME_TYPES):
+            return data.to_dict(as_series=False)
+
+        if isinstance(data, Mapping):
+            return dict(data)  # type: ignore[wtf]
+
+        if isinstance(data, maybes.NUMPY_ARRAY_TYPES):
+            return data.tolist()
+
+        data = cast(Iterable[Iterable[TableValue]], data)
+        return [row if isinstance(row, list) else list(row) for row in data]
 
 
 Table._unique_id = "Table-builtin"
