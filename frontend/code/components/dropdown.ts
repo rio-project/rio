@@ -10,7 +10,7 @@ import { getTextDimensions } from '../layoutHelpers';
 import { ClickHandler } from '../eventHandling';
 
 // Make sure this is in sync with the CSS
-const RESERVED_WIDTH_FOR_ARROW = 1.5;
+const RESERVED_WIDTH_FOR_ARROW = 1.3;
 const DROPDOWN_LIST_HORIZONTAL_PADDING = 1;
 
 export type DropdownState = ComponentState & {
@@ -521,14 +521,11 @@ export class DropdownComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        updateInputBoxNaturalWidth(this, RESERVED_WIDTH_FOR_ARROW);
-
-        // Make sure we're wide enough to fit even the longest option + a scroll
-        // bar
-        this.naturalWidth = Math.max(
-            this.naturalWidth,
+        updateInputBoxNaturalWidth(
+            this,
             this.longestOptionWidth +
                 scrollBarSize +
+                RESERVED_WIDTH_FOR_ARROW +
                 2 * DROPDOWN_LIST_HORIZONTAL_PADDING
         );
     }
