@@ -9,6 +9,7 @@ import hljs from 'highlight.js/lib/common';
 import { LayoutContext } from '../layouting';
 import { getElementHeight, getElementWidth } from '../layoutHelpers';
 import { firstDefined } from '../utils';
+import { applyIcon } from '../designApplication';
 
 export type MarkdownViewState = ComponentState & {
     _type_: 'MarkdownView-builtin';
@@ -62,7 +63,7 @@ function convertMarkdown(
 
         // Add syntax highlighting. This will also detect the actual
         // language.
-        let languageNiceName;
+        let languageNiceName: string | undefined;
 
         if (specifiedLanguage === null) {
             let hlResult = hljs.highlightAuto(codeBlockInner.textContent);
@@ -100,6 +101,13 @@ function convertMarkdown(
             '.rio-markdown-code-block-copy-button'
         ) as HTMLButtonElement;
 
+        copyButton.title = 'Copy code';
+        applyIcon(
+            copyButton,
+            'material/content-copy',
+            'var(--rio-local-text-color)'
+        );
+
         copyButton.addEventListener('click', (event) => {
             const codeToCopy =
                 (codeBlockInner as HTMLElement).textContent ?? '';
@@ -111,9 +119,20 @@ function convertMarkdown(
             document.execCommand('copy');
             document.body.removeChild(textArea);
 
-            copyButton.textContent = 'Copied ✓';
+            copyButton.title = 'Copied!';
+            applyIcon(
+                copyButton,
+                'material/done',
+                'var(--rio-local-text-color)'
+            );
+
             setTimeout(() => {
-                copyButton.textContent = 'Copy code';
+                copyButton.title = 'Copy code';
+                applyIcon(
+                    copyButton,
+                    'material/content-copy',
+                    'var(--rio-local-text-color)'
+                );
             }, 5000);
 
             event.stopPropagation();
