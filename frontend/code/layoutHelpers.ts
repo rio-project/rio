@@ -101,6 +101,12 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
         nextSibling = element.nextSibling;
     }
 
+    let originalWidth = element.style.width;
+    let originalHeight = element.style.height;
+
+    element.style.removeProperty('width');
+    element.style.removeProperty('height');
+
     // Ensure the element is in the DOM
     if (!isInDom) {
         document.body.appendChild(element);
@@ -114,7 +120,7 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
         element.scrollHeight / pixelsPerRem,
     ] as [number, number];
 
-    // Restore the original parent and display mode
+    // Restore the original state
     if (isInDom) {
         element.style.display = originalDisplay;
     } else if (parentElement === null) {
@@ -125,8 +131,13 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
         parentElement.insertBefore(element, nextSibling);
     }
 
+    element.style.width = originalWidth;
+    element.style.height = originalHeight;
+
     return result;
 }
+
+globalThis.getElementDimensions = getElementDimensions; // For debugging
 
 export function getElementWidth(element: HTMLElement): number {
     // TODO: Don't request both height and width - that's the whole point of

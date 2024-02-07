@@ -16,37 +16,6 @@ export type MarkdownViewState = ComponentState & {
     default_language?: null | string;
 };
 
-// Remove an equal amount of trim from each line, taking care to ignore
-// empty lines.
-function dedent(value: string) {
-    if (!value) {
-        return '';
-    }
-
-    // Split the input string into lines
-    const lines = value.replace(/\t/g, ' ').split('\n');
-
-    // Determine the minimum indentation level
-    let indent = Number.MAX_SAFE_INTEGER;
-    for (const line of lines.slice(1)) {
-        const stripped = line.trimStart();
-        if (stripped) {
-            indent = Math.min(indent, line.length - stripped.length);
-        }
-    }
-
-    // Remove excess indentation and leading/trailing blank lines
-    const trimmedLines = [lines[0].trim()];
-    if (indent < Number.MAX_SAFE_INTEGER) {
-        for (const line of lines.slice(1)) {
-            trimmedLines.push(line.slice(indent).trimRight());
-        }
-    }
-
-    // Join the lines back together
-    return trimmedLines.join('\n');
-}
-
 // Convert a Markdown string to HTML and render it in the given div.
 function convertMarkdown(
     markdownSource: string,
@@ -198,21 +167,13 @@ export class MarkdownViewComponent extends ComponentBase {
                 this.state.default_language
             );
 
-            this.element.innerHTML = '';
-            let contentDiv = document.createElement('div');
-            contentDiv.style.display = 'flex'; // Prevent collapsing margins
-            contentDiv.style.flexDirection = 'column'; // Prevent collapsing margins
-            this.element.appendChild(contentDiv);
-
-            convertMarkdown(deltaState.text, contentDiv, defaultLanguage);
+            convertMarkdown(deltaState.text, this.element, defaultLanguage);
 
             // Update the width request
             //
             // For some reason the element takes up the whole parent's width
-            // without explicitly setting its with
-            contentDiv.style.width = 'min-content';
-            this.naturalWidth = getElementWidth(contentDiv);
-            contentDiv.style.removeProperty('width');
+            // without explicitly setting its width
+            this.naturalWidth = getElementWidth(this.element);
 
             // Any previously calculated height request is no longer valid
             this.heightRequestAssumesWidth = -1;
@@ -231,9 +192,7 @@ export class MarkdownViewComponent extends ComponentBase {
         }
 
         // No, re-layout
-        let element = this.element;
-        let contentDiv = element.firstElementChild as HTMLElement;
-        this.naturalHeight = getElementHeight(contentDiv);
+        this.naturalHeight = getElementHeight(this.element);
         this.heightRequestAssumesWidth = this.allocatedWidth;
     }
 
