@@ -106,8 +106,9 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        if (this.state.sticky_bottom)
+        if (this.state.sticky_bottom) {
             console.debug('scrollTop AH (px):', this.element.scrollTop);
+        }
         let child = componentsById[this.state.content]!;
 
         let heightBefore = child.allocatedHeight;
@@ -156,6 +157,13 @@ export class ScrollContainerComponent extends ComponentBase {
                 this.assumeVerticalScrollBarWillBeNeeded =
                     !this.assumeVerticalScrollBarWillBeNeeded;
 
+                // While a re-layout is about to be requested, this doesn't mean
+                // that the current layouting process won't continue. Assign a
+                // reasonable amount of space to the child so any subsequent
+                // layouting functions don't crash because of unassigned values.
+                child.allocatedHeight = child.requestedHeight;
+
+                // Then, request a re-layout
                 ctx.requestImmediateReLayout(() => {
                     this.makeLayoutDirty();
                 });

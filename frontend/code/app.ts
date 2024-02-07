@@ -1,4 +1,4 @@
-import { getComponentByElement } from './componentManagement';
+import { getComponentByElement, getRootComponent } from './componentManagement';
 import { updateLayout } from './layouting';
 import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
 
@@ -92,7 +92,9 @@ function main(): void {
         }
 
         // Re-layout, but only if a root component already exists
-        let rootElement = document.body.firstElementChild;
+        let rootElement = document.body.querySelector(
+            '.rio-fundamental-root-component'
+        );
 
         if (rootElement !== null) {
             let rootInstance = getComponentByElement(

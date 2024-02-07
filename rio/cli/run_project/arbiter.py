@@ -17,7 +17,7 @@ import rio.snippets
 
 from ... import common
 from ...debug.monkeypatches import apply_monkeypatches
-from .. import project, nice_traceback
+from .. import nice_traceback, project
 from . import (
     app_loading,
     file_watcher_worker,
@@ -92,9 +92,9 @@ class Arbiter:
 
         # The app to use for creating apps. This keeps the theme consistent if
         # for-example the user's app crashes and then a mock-app is injected.
-        self._app_theme: Union[rio.Theme, tuple[rio.Theme, rio.Theme]] = (
-            rio.Theme.pair_from_color()
-        )
+        self._app_theme: Union[
+            rio.Theme, tuple[rio.Theme, rio.Theme]
+        ] = rio.Theme.pair_from_color()
 
         # Prefer to consistently run on the same port, as that makes it easier
         # to connect to - this way old browser tabs don't get invalidated
@@ -293,119 +293,125 @@ class Arbiter:
         self._mainloop = asyncio.get_running_loop()
 
         # Make sure the chosen port is available
-        if not common.port_is_free(self._host, self.port):
-            revel.error(f"The port [bold]{self.port}[/] is already in use.")
-            revel.error(f"Each port can only be used by one app at a time.")
-            revel.error(
-                f"Try using another port, or let Rio choose one for you, by not specifying any port."
-            )
-            self.stop(keyboard_interrupt=False)
-            return
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # Make sure the webview module is available
-        if self.run_in_window and webview is None:
-            revel.fatal(
-                "The `window` extra is required to run apps inside of a window."
-                " Run `pip install rio-ui[[window]` to install it."
-            )
-
-        # If running in debug mode, install safeguards
-        if self.debug_mode:
-            apply_monkeypatches()
-
-        # Try to load the app
-        app, _ = self.try_load_app()
-
-        # Start the file watcher
-        if self.debug_mode:
-            self._file_watcher_worker = file_watcher_worker.FileWatcherWorker(
-                push_event=self.push_event,
-                proj=self.proj,
-            )
-            self._file_watcher_task = asyncio.create_task(
-                self._file_watcher_worker.run(),
-                name="File watcher",
-            )
-
-        # Start the uvicorn worker
-        uvicorn_is_ready_or_has_failed: asyncio.Future[None] = asyncio.Future()
-
-        self._uvicorn_worker = uvicorn_worker.UvicornWorker(
-            push_event=self.push_event,
-            app=app,
-            port=self.port,
-            host=self._host,
-            quiet=self.quiet,
-            debug_mode=self.debug_mode,
-            run_in_window=self.run_in_window,
-            on_server_is_ready_or_failed=uvicorn_is_ready_or_has_failed,
-        )
-
-        self._uvicorn_task = asyncio.create_task(
-            self._uvicorn_worker.run(),
-            name="Uvicorn",
-        )
-
-        # Wait for the server to be ready or fails to start
-        await uvicorn_is_ready_or_has_failed
-
-        # Let everyone else know that the server is ready
-        self._server_is_ready.set()
-
-        # The app has just successfully started. Inform the user
-        if self.debug_mode:
-            revel.warning("Debug mode is enabled.")
-            revel.warning(
-                "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
-            )
-            revel.warning("Run with `--release` to disable debug mode.")
-            print()
-
-        if self.public:
-            revel.warning(
-                f"Running in public mode. All devices on your network can access the app."
-            )
-            revel.warning(f"Only run in public mode if you trust your network!")
-            revel.warning(f"Run without `--public` to limit access to this device.")
-            print()
-        elif not self.run_in_window:
-            print(
-                f"[dim]Running in [/]local[dim] mode. Only this device can access the app.[/]"
-            )
-
-        if not self.run_in_window:
-            revel.success(f"The app is running at [bold]{self.url}[/]")
-            print()
-
-        # Keep track when the app was last reloaded
-        last_reload_started_at = -1
-
-        # Listen for events and react to them
-        while True:
-            event = await self._event_queue.get()
-
-            # A file has changed
-            if isinstance(event, run_models.FileChanged):
-                # Ignore events that happened before the last reload started
-                if event.timestamp_nanoseconds < last_reload_started_at:
-                    continue
-
-                # Display to the user that a reload is happening
-                rel_path = event.path_to_file.relative_to(self.proj.project_directory)
-                print()
-                print(f"[bold]{rel_path}[/] has changed -> Reloading")
-
-                # Restart the app
-                await self._restart_app()
-
-            # Somebody requested that the app should stop
-            elif isinstance(event, run_models.StopRequested):
+            try:
+                sock.bind((self._host, self.port))
+            except OSError as err:
+                revel.error(f"The port [bold]{self.port}[/] is already in use.")
+                revel.error(f"Each port can only be used by one app at a time.")
+                revel.error(
+                    f"Try using another port, or let Rio choose one for you, by not specifying any port."
+                )
                 self.stop(keyboard_interrupt=False)
-                break
+                return
 
-            # ???
-            else:
-                raise NotImplementedError(f'Unknown event "{event}"')
+            # Make sure the webview module is available
+            if self.run_in_window and webview is None:
+                revel.fatal(
+                    "The `window` extra is required to run apps inside of a window."
+                    " Run `pip install rio-ui[[window]` to install it."
+                )
+
+            # If running in debug mode, install safeguards
+            if self.debug_mode:
+                apply_monkeypatches()
+
+            # Try to load the app
+            app, _ = self.try_load_app()
+
+            # Start the file watcher
+            if self.debug_mode:
+                self._file_watcher_worker = file_watcher_worker.FileWatcherWorker(
+                    push_event=self.push_event,
+                    proj=self.proj,
+                )
+                self._file_watcher_task = asyncio.create_task(
+                    self._file_watcher_worker.run(),
+                    name="File watcher",
+                )
+
+            # Start the uvicorn worker
+            uvicorn_is_ready_or_has_failed: asyncio.Future[None] = asyncio.Future()
+
+            self._uvicorn_worker = uvicorn_worker.UvicornWorker(
+                push_event=self.push_event,
+                app=app,
+                socket=sock,
+                quiet=self.quiet,
+                debug_mode=self.debug_mode,
+                run_in_window=self.run_in_window,
+                on_server_is_ready_or_failed=uvicorn_is_ready_or_has_failed,
+            )
+
+            self._uvicorn_task = asyncio.create_task(
+                self._uvicorn_worker.run(),
+                name="Uvicorn",
+            )
+
+            # Wait for the server to be ready or fails to start
+            await uvicorn_is_ready_or_has_failed
+
+            # Let everyone else know that the server is ready
+            self._server_is_ready.set()
+
+            # The app has just successfully started. Inform the user
+            if self.debug_mode:
+                revel.warning("Debug mode is enabled.")
+                revel.warning(
+                    "Debug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!"
+                )
+                revel.warning("Run with `--release` to disable debug mode.")
+                print()
+
+            if self.public:
+                revel.warning(
+                    f"Running in public mode. All devices on your network can access the app."
+                )
+                revel.warning(f"Only run in public mode if you trust your network!")
+                revel.warning(f"Run without `--public` to limit access to this device.")
+                print()
+            elif not self.run_in_window:
+                print(
+                    f"[dim]Running in [/]local[dim] mode. Only this device can access the app.[/]"
+                )
+
+            if not self.run_in_window:
+                revel.success(f"The app is running at [bold]{self.url}[/]")
+                print()
+
+            # Keep track when the app was last reloaded
+            last_reload_started_at = -1
+
+            # Listen for events and react to them
+            while True:
+                event = await self._event_queue.get()
+
+                # A file has changed
+                if isinstance(event, run_models.FileChanged):
+                    # Ignore events that happened before the last reload started
+                    if event.timestamp_nanoseconds < last_reload_started_at:
+                        continue
+
+                    # Display to the user that a reload is happening
+                    rel_path = event.path_to_file.relative_to(
+                        self.proj.project_directory
+                    )
+                    print()
+                    print(f"[bold]{rel_path}[/] has changed -> Reloading")
+
+                    # Restart the app
+                    await self._restart_app()
+
+                # Somebody requested that the app should stop
+                elif isinstance(event, run_models.StopRequested):
+                    self.stop(keyboard_interrupt=False)
+                    break
+
+                # ???
+                else:
+                    raise NotImplementedError(f'Unknown event "{event}"')
 
     def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
         """

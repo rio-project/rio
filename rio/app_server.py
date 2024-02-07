@@ -18,7 +18,6 @@ from xml.etree import ElementTree as ET
 
 import fastapi
 import pytz
-import revel
 import timer_dict
 import uniserde.case_convert
 from PIL import Image
@@ -665,7 +664,14 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
                 self._active_session_tokens[session_token] = sess
 
                 # Fetch a message
-                return await websocket.receive_json()
+                try:
+                    result = await websocket.receive_json()
+                except RuntimeError:  # Socket is already closed
+                    raise fastapi.WebSocketDisconnect(
+                        -1
+                    )  # Not clear which error code to use
+
+                return result
 
             sess._send_message = send_message
             sess._receive_message = receive_message
@@ -688,7 +694,13 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
                 self._active_session_tokens[session_token] = sess
 
                 # Fetch a message
-                msg = await websocket.receive_json()
+                try:
+                    msg = await websocket.receive_json()
+                except RuntimeError:  # Socket is already closed
+                    raise fastapi.WebSocketDisconnect(
+                        -1
+                    )  # Not clear which error code to use
+
                 validator_instance.handle_incoming_message(msg)
                 return msg
 

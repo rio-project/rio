@@ -85,11 +85,15 @@ class ComponentDetails(rio.Component):
                 width=width,
             )
 
-        # Key, if any. These are displayed right in the title
-        key_children = []
+        # Any values which should be displayed right in the title
+        header_accessories = []
+
+        # TODO: Display this only if rio itself (not the app!) is in debug mode
+        # if self.session._app_server.debug_mode:
+        #     header_accessories.append(rio.Text(f"#{target._id}", style="dim"))
 
         if target.key is not None:
-            key_children = [
+            header_accessories = [
                 rio.Icon("key", fill="dim"),
                 rio.Text(
                     target.key,
@@ -106,7 +110,7 @@ class ComponentDetails(rio.Component):
                     style="heading3",
                 ),
                 rio.Spacer(),
-                *key_children,
+                *header_accessories,
                 margin_bottom=0.2,
                 spacing=0.5,
             ),

@@ -101,6 +101,14 @@ $port-size: 1.4rem;
     border-radius: 50%;
 }
 
+.rio-node-editor-input {
+    text-align: left;
+}
+
+.rio-node-editor-output {
+    text-align: right;
+}
+
 .rio-node-editor-input > .rio-node-editor-port-circle {
     left: 0;
     transform: translateX(calc(-1 * ($port-size / 2 + $node-padding)));

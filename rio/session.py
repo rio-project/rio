@@ -597,7 +597,6 @@ window.location.href = {json.dumps(str(target_url))};
             method = "replaceState" if replace else "pushState"
             await self._evaluate_javascript(
                 f"""
-console.debug(`Navigating from \\`${{window.location.href}}\\` to \\`${json.dumps(str(active_page_url))}\\``);
 window.history.{method}(null, "", {json.dumps(str(active_page_url))})
 window.scrollTo({{ top: 0, behavior: "smooth" }});
 """,
