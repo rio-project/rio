@@ -29,6 +29,8 @@ from .markdown_view import *
 from .media_player import *
 from .mouse_event_listener import *
 from .multi_line_text_input import *
+from .node_input import *
+from .node_output import *
 from .number_input import *
 from .overlay import *
 from .page_view import *

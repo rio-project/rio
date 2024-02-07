@@ -50,6 +50,8 @@ import { TextInputComponent } from './components/textInput';
 import { ThemeContextSwitcherComponent } from './components/themeContextSwitcher';
 import { TooltipComponent } from './components/tooltip';
 import { updateLayout } from './layouting';
+import { NodeInputComponent } from './components/nodeInput';
+import { NodeOutputComponent } from './components/nodeOutput';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -79,6 +81,8 @@ const COMPONENT_CLASSES = {
     'MediaPlayer-builtin': MediaPlayerComponent,
     'MouseEventListener-builtin': MouseEventListenerComponent,
     'MultiLineTextInput-builtin': MultiLineTextInputComponent,
+    'NodeInput-builtin': NodeInputComponent,
+    'NodeOutput-builtin': NodeOutputComponent,
     'Overlay-builtin': OverlayComponent,
     'Plot-builtin': PlotComponent,
     'Popup-builtin': PopupComponent,

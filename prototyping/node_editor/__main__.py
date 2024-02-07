@@ -11,7 +11,11 @@ rio.DevelComponent.initialize(HERE)
 app = rio.App(
     build=lambda: rio.DevelComponent(
         children=[
-            rio.Text("Child 1"),
+            rio.Column(
+                rio.NodeInput("input 1", rio.Color.RED, key="input1"),
+                rio.Text("Child 1"),
+                rio.NodeOutput("output 1", rio.Color.RED, key="output1"),
+            ),
             rio.Text("Child 2"),
         ],
     ),

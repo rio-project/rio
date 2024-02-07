@@ -61,8 +61,6 @@ $port-size: 1.4rem;
     align-items: stretch;
     gap: 0.5rem;
 
-    min-height: 3rem;
-
     padding: $node-padding;
 
     border-radius: 0 0 var(--rio-global-corner-radius-small)
@@ -90,7 +88,9 @@ $port-size: 1.4rem;
     position: relative;
 }
 
-.rio-node-editor-port > *:first-child {
+.rio-node-editor-port-circle {
+    position: absolute;
+
     pointer-events: auto;
     cursor: pointer;
 
@@ -101,65 +101,41 @@ $port-size: 1.4rem;
     border-radius: 50%;
 }
 
-.rio-node-editor-port > *:first-child::after {
-    pointer-events: none;
+.rio-node-editor-input > .rio-node-editor-port-circle {
+    left: 0;
+    transform: translateX(calc(-1 * ($port-size / 2 + $node-padding)));
+}
 
+.rio-node-editor-output > .rio-node-editor-port-circle {
+    right: 0;
+    transform: translateX(calc($port-size / 2 + $node-padding));
+}
+
+.rio-node-editor-port-circle::after {
     content: '';
     position: absolute;
-    width: 0.75rem;
-    height: 0.75rem;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    left: 25%;
+    top: 25%;
+    right: 25%;
+    bottom: 25%;
+
     border-radius: 50%;
-    background-color: var(--rio-global-secondary-bg);
+    background-color: var(--port-color);
 
     transition:
-        width 0.1s ease-in-out,
-        height 0.1s ease-in-out;
+        left 0.1s ease-in-out,
+        top 0.1s ease-in-out,
+        right 0.1s ease-in-out,
+        bottom 0.1s ease-in-out;
 }
 
-.rio-node-editor-port > *:first-child:hover::after {
-    width: 1rem;
-    height: 1rem;
+.rio-node-editor-port-circle:hover::after {
+    left: 15%;
+    top: 15%;
+    right: 15%;
+    bottom: 15%;
 }
 
-.rio-node-editor-input {
-    align-self: flex-start;
-}
-
-.rio-node-editor-input > *:first-child {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translate(calc($port-size * -0.5 - $node-padding), -50%);
-}
-
-.rio-node-editor-input > *:last-child {
-    align-self: flex-start;
-}
-
-.rio-node-editor-output {
-    align-self: flex-end;
-}
-
-.rio-node-editor-output > *:first-child {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translate(calc($port-size * 0.5 + $node-padding), -50%);
-}
-
-.rio-node-editor-output > *:last-child {
-    align-self: flex-end;
-}
-
-#node1 {
-    top: 20%;
-    left: 20%;
-}
-
-#node2 {
-    top: 60%;
-    left: 60%;
+.rio-node-editor-port-text {
+    pointer-events: none;
 }

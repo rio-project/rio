@@ -277,10 +277,10 @@ class DevelComponent {
         parentElement.appendChild(child.element);
 
         // @ts-ignore
-        child.parent = this.rioWrapper;
+        child.parent = this.__rioWrapper__;
 
         // @ts-ignore
-        this.rioWrapper.children.add(child);
+        this.__rioWrapper__.children.add(child);
     }
 
     _makeNode(nodeState: NodeState, childId: string): HTMLElement {
@@ -328,7 +328,7 @@ class DevelComponent {
 
         //     // Allow dragging the port
         //     // @ts-ignore
-        //     this.rioWrapper.addDragHandler({
+        //     this.__rioWrapper__.addDragHandler({
         //         element: portElement,
         //         onStart: (event: MouseEvent) =>
         //             this._beginDragConnection(true, circleElement, event),
@@ -356,7 +356,7 @@ class DevelComponent {
 
         //     // Allow dragging the port
         //     // @ts-ignore
-        //     this.rioWrapper.addDragHandler({
+        //     this.__rioWrapper__.addDragHandler({
         //         element: portElement,
         //         onStart: (event: MouseEvent) =>
         //             this._beginDragConnection(false, circleElement, event),
@@ -367,7 +367,7 @@ class DevelComponent {
 
         // Allow dragging the node
         // @ts-ignore
-        this.rioWrapper.addDragHandler({
+        this.__rioWrapper__.addDragHandler({
             element: header,
             onStart: (event: MouseEvent) =>
                 this._beginDragNode(nodeState, nodeElement, event),
