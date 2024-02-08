@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-import revel
-
 import rio
+
+from ... import common
 
 
 class ComponentDetails(rio.Component):
@@ -51,6 +51,34 @@ class ComponentDetails(rio.Component):
             self.component_allocated_width,
             self.component_allocated_height,
         ) = response
+
+    def _get_effective_margins(self) -> Tuple[float, float, float, float]:
+        return (
+            common.first_non_null(
+                self.margin_left,
+                self.margin_x,
+                self.margin,
+                0,
+            ),
+            common.first_non_null(
+                self.margin_top,
+                self.margin_y,
+                self.margin,
+                0,
+            ),
+            common.first_non_null(
+                self.margin_right,
+                self.margin_x,
+                self.margin,
+                0,
+            ),
+            common.first_non_null(
+                self.margin_bottom,
+                self.margin_y,
+                self.margin,
+                0,
+            ),
+        )
 
     def build(self) -> rio.Component:
         # Get the target component
@@ -150,6 +178,9 @@ class ComponentDetails(rio.Component):
                 "key",
                 "width",
                 "height",
+                "margin",
+                "margin_x",
+                "margin_y",
                 "margin_left",
                 "margin_right",
                 "margin_top",
@@ -222,10 +253,12 @@ class ComponentDetails(rio.Component):
             row_index += 1
 
         # Margins
-        margin_left = debug_details.get("margin_left", 0)
-        margin_right = debug_details.get("margin_right", 0)
-        margin_top = debug_details.get("margin_top", 0)
-        margin_bottom = debug_details.get("margin_bottom", 0)
+        (
+            margin_left,
+            margin_top,
+            margin_right,
+            margin_bottom,
+        ) = self._get_effective_margins()
 
         single_x_margin = margin_left == margin_right
         single_y_margin = margin_top == margin_bottom

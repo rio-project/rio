@@ -120,7 +120,7 @@ class FileInfo:
             encoding: The encoding to use when decoding the file.
 
         Raises:
-            UnicodeDecodeError: The file could not be decoded using the given
+            ValueError: The file could not be decoded using the given
                 `encoding`, or the encoding could not be detected.
         """
 
@@ -130,11 +130,9 @@ class FileInfo:
 
             # Did it work?
             if result is None:
-                raise UnicodeDecodeError(
-                    "The encoding of the file could not be detected."
-                )
+                raise ValueError("The encoding of the file could not be detected.")
 
-            encoding = result["encoding"]
+            encoding = result["encoding"]  # type: ignore
 
         # Decode the file
         return self._contents.decode(encoding)
@@ -272,3 +270,16 @@ def timing_print(text: str) -> None:
     Temporary debug print to find why the app startup is sometimes so slow
     """
     # revel.debug(f"[{datetime.now(timezone.utc).isoformat()}]  {text}")
+
+
+def first_non_null(*values: float | None) -> float:
+    """
+    Returns the first non-`None` value, or raises a `ValueError` if all values
+    are `None`.
+    """
+
+    for value in values:
+        if value is not None:
+            return value
+
+    raise ValueError("At least one value must be non-`None`")
