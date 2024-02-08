@@ -4,6 +4,8 @@ from collections.abc import Callable
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
+import revel
+
 import rio
 
 from .component import Component
@@ -142,16 +144,20 @@ class PageView(Component):
             cur_parent = cur_parent._weak_creator_()
 
     def build(self) -> rio.Component:
-        # Fetch the page instance
+        # Build the active page
+        #
+        # Because the build function is being called inside of Rio, the
+        # component is mistaken of being internal to Rio. Take care to fix that.
         try:
             page = self.session._active_page_instances[self.level]
         except IndexError:
             if self.fallback_build is None:
-                build_callback = lambda sess=self.session: default_fallback_build(sess)
+                result = default_fallback_build(self.session)
             else:
-                build_callback = self.fallback_build
+                result = self.fallback_build()
+                result._rio_internal_ = False
         else:
-            build_callback = page.build
+            result = page.build()
+            result._rio_internal_ = False
 
-        # Build the child
-        return build_callback()
+        return result

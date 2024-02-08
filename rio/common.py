@@ -8,6 +8,7 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
+import chardet
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL
@@ -106,21 +107,36 @@ class FileInfo:
         """
         return self._contents
 
-    async def read_text(self, *, encoding: str = "utf-8") -> str:
+    async def read_text(self, *, encoding: str = "auto") -> str:
         """
         Asynchronously reads the entire file as text.
 
         Reads and returns the entire file as a `str` object. The file is decoded
-        using the given `encoding`. If you don't know that the file is valid
-        text, use `read_bytes` instead.
+        using the given `encoding`. If `encoding` is `"auto"` attempts to
+        automatically detect the encoding. If you don't know that the file is
+        valid text, use `read_bytes` instead.
 
         Args:
             encoding: The encoding to use when decoding the file.
 
         Raises:
             UnicodeDecodeError: The file could not be decoded using the given
-                `encoding`.
+                `encoding`, or the encoding could not be detected.
         """
+
+        if encoding == "auto":
+            # Detect the encoding
+            result = chardet.detect(self._contents)
+
+            # Did it work?
+            if result is None:
+                raise UnicodeDecodeError(
+                    "The encoding of the file could not be detected."
+                )
+
+            encoding = result["encoding"]
+
+        # Decode the file
         return self._contents.decode(encoding)
 
     @overload
