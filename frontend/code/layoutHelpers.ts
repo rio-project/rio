@@ -101,12 +101,6 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
         nextSibling = element.nextSibling;
     }
 
-    let originalWidth = element.style.width;
-    let originalHeight = element.style.height;
-
-    element.style.removeProperty('width');
-    element.style.removeProperty('height');
-
     // Ensure the element is in the DOM
     if (!isInDom) {
         document.body.appendChild(element);
@@ -130,9 +124,6 @@ export function getElementDimensions(element: HTMLElement): [number, number] {
     } else {
         parentElement.insertBefore(element, nextSibling);
     }
-
-    element.style.width = originalWidth;
-    element.style.height = originalHeight;
 
     return result;
 }

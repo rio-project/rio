@@ -173,6 +173,7 @@ export class MarkdownViewComponent extends ComponentBase {
             //
             // For some reason the element takes up the whole parent's width
             // without explicitly setting its width
+            this.element.style.width = 'min-content';
             this.naturalWidth = getElementWidth(this.element);
 
             // Any previously calculated height request is no longer valid
@@ -192,6 +193,7 @@ export class MarkdownViewComponent extends ComponentBase {
         }
 
         // No, re-layout
+        this.element.style.height = 'min-content';
         this.naturalHeight = getElementHeight(this.element);
         this.heightRequestAssumesWidth = this.allocatedWidth;
     }
