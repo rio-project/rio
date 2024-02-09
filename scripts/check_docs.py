@@ -38,10 +38,10 @@ def check_function(
         return
 
     # Run checks
-    if docs.short_description is None and docs.name != "__init__":
+    if docs.summary is None and docs.name != "__init__":
         warning(f"Docstring for `{qualname}` is missing a short description")
 
-    if docs.long_description is None and docs.name != "__init__":
+    if docs.details is None and docs.name != "__init__":
         warning(f"Docstring for `{qualname}` is missing a long description")
 
     if docs.return_type is None:
@@ -63,10 +63,10 @@ def check_function(
 
 def check_class(cls: type, docs: rio_docs.ClassDocs) -> None:
     # Run checks
-    if docs.short_description is None:
+    if docs.summary is None:
         warning(f"Docstring for `{docs.name}` is missing a short description")
 
-    if docs.long_description is None:
+    if docs.details is None:
         warning(f"Docstring for `{docs.name}` is missing a long description")
 
     for attr in docs.attributes:

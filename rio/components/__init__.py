@@ -58,4 +58,4 @@ from .website import *
 
 assert (
     Container is not typing.Container
-), "Looks like somebody imported `typing.Container`, accidentally overwriting `rio.Container`. Are you missing a `__all__` in some component?"
+), "Looks like somebody imported `typing.Container`, thus accidentally overwriting `rio.Container`. Are you missing an `__all__` in some component?"

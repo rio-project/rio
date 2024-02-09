@@ -1,2 +1,2 @@
-from . import custom
+from . import custom, parsers
 from .models import *

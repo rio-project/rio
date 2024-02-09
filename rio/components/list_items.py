@@ -53,6 +53,8 @@ class HeadingListItem(FundamentalComponent):
     """
 
     text: str
+    _: KW_ONLY
+    key: str
 
 
 HeadingListItem._unique_id = "HeadingListItem-builtin"
@@ -119,6 +121,7 @@ class SimpleListItem(Component):
 
     text: str
     _: KW_ONLY
+    key: str
     secondary_text: str = ""
     left_child: rio.Component | None = None
     right_child: rio.Component | None = None
@@ -200,6 +203,7 @@ class CustomListItem(FundamentalComponent):
 
     content: rio.Component
     _: KW_ONLY
+    key: str
     on_press: rio.EventHandler[[]] = None
 
     def _custom_serialize(self) -> JsonDoc:

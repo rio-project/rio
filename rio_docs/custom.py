@@ -86,11 +86,9 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
     """
 
     # Strip default docstrings created by dataclasses
-    if docs.short_description is not None and docs.short_description.startswith(
-        f"{docs.name}("
-    ):
-        docs.short_description = None
-        docs.long_description = None
+    if docs.summary is not None and docs.summary.startswith(f"{docs.name}("):
+        docs.summary = None
+        docs.details = None
 
     # Strip internal attributes
     index = 0
@@ -158,15 +156,15 @@ def postprocess_class_docs(docs: models.ClassDocs) -> None:
         # FIXME: Not working for some reason
         if (
             func_docs.name == "__init__"
-            and func_docs.short_description
+            and func_docs.summary
             == "Initialize self. See help(type(self)) for accurate signature."
         ):
-            func_docs.short_description = None
-            func_docs.long_description = None
+            func_docs.summary = None
+            func_docs.details = None
 
         # Inject a short description for `__init__` if there is none.
-        if func_docs.name == "__init__" and func_docs.short_description is None:
-            func_docs.short_description = f"Creates a new `{docs.name}` instance."
+        if func_docs.name == "__init__" and func_docs.summary is None:
+            func_docs.summary = f"Creates a new `{docs.name}` instance."
 
     # TODO: Strip out anything `Session` inherits from `unicall`
 

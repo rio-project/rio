@@ -17,51 +17,66 @@ from rio import inspection
 from . import models
 
 
-def pre_parse_markdown_docstring(
-    docstring: str,
-) -> tuple[str, dict[str, dict[str, str]]]:
+def split_docstring_into_sections(docstring: str) -> tuple[str, dict[str, str]]:
     """
-    Given a markdown formatted docstring, return the description and sections.
+    Splits the given docstring into sections separated by markdown headings. The
+    result is the part of the string before the first heading, and a dictionary
+    mapping the heading names to the text of the sections ("the summary").
+
+    If the docstring starts with a heading it will not create a separate section
+    and the text of that section will be considered part of the summary.
     """
-    # All lines not part of a section are part of the description
-    description: str = ""
+    # Drop the title if it exists
+    if docstring.startswith("#"):
+        docstring = docstring.split("\n", 1)[1]
 
-    # Maps section names to their contents. The contents themselves are also a
-    # map from attribute/parameter names to their description. The description
-    # is stored as a list here so lines can easily be appended in place. They're
-    # converted to strings later.
-    sections: dict[str, dict[str, list[str]]] = {}
+    # Split the docstring into sections
+    sections: dict[str, list[str]] = {}
+    details: list[str] = []
+    current_section: list[str] = details
 
-    # The section currently being parsed, or `None` if not inside a section
-    current_section: dict[str, list[str]] | None = None
+    # Process the individual lines
+    for line in docstring.splitlines():
+        if line.startswith("#"):
+            section_name = line.strip()
+            current_section = sections.setdefault(section_name, [])
+        else:
+            current_section.append(line)
 
-    # The lines of the value in the section currently being parsed
-    current_value_lines: list[str] = []
+    # Post-process the sections
+    def postprocess(section: list[str]) -> str:
+        return "\n".join(section).strip()
 
-    # Trim the docstring and split it into lines
-    docstring = textwrap.dedent(docstring.strip())
-    lines = docstring.splitlines()
+    return postprocess(details), {
+        name: postprocess(section) for name, section in sections.items()
+    }
 
-    for raw_line in lines:
+
+def parse_key_value_section(section_string: str) -> dict[str, str]:
+    """
+    Some docstring sections are formatted as a list of key-value pairs, such as
+    this:
+
+    ```
+    key: A description of the key.
+    `key_in_code`: A description of the key in code.
+    ```
+
+    This function splits such a section into a dictionary of key-value pairs.
+    """
+    result_lines: dict[str, list[str]] = {}
+    current_value: list[str] = []
+
+    # Process the lines individually
+    for raw_line in section_string.splitlines():
         # Strip the line and calculate the indentation
         strip_line = raw_line.lstrip()
         indent = len(raw_line) - len(strip_line)
         strip_line = strip_line.rstrip()
 
-        # Start of a new section?
-        if indent == 0 and strip_line.startswith("#"):
-            section_name = strip_line.lstrip("#").lstrip().lower()
-            current_section = sections.setdefault(section_name, {})
-            current_value_lines = []
-
-        # If not inside a section, append to the description
-        if current_section is None:
-            description += raw_line + "\n"
-            continue
-
         # Continuation of the previous value
         if indent > 0 or not strip_line:
-            current_value_lines.append(strip_line)
+            current_value.append(strip_line)
             continue
 
         # New value
@@ -71,36 +86,33 @@ def pre_parse_markdown_docstring(
             revel.warning(
                 f'Expected a new mapping (key: value), but got "{strip_line}"'
             )
+            current_value.append(strip_line)
             continue
 
-        name, value = parts
-        name = name.strip().strip("`").strip()
+        key, value = parts
+        key = key.strip().strip("`").strip()
         value = value.strip()
-        current_value_lines = [value]
-        current_section[name] = current_value_lines
+        current_value = [value]
+        result_lines[key] = current_value
 
     # Convert the section values from lists to strings
-    result_sections: dict[str, dict[str, str]] = {}
+    result: dict[str, str] = {}
 
-    for section_name, section in sections.items():
-        result_sections[section_name] = {}
+    for key, lines in result_lines.items():
+        result[key] = " ".join(lines).strip()
 
-        for name, lines in section.items():
-            result_sections[section_name][name] = " ".join(lines)
-
-    return description.strip(), result_sections
+    return result
 
 
-def parse_descriptions(description: str) -> tuple[str | None, str | None]:
+def parse_details(details: str) -> tuple[str | None, str | None]:
     """
-    Given the description part of a docstring, split it into short and long
-    descriptions. Either value may be Nonne if they are not present in the
-    original string.
+    Given the details part of a docstring, split it into summary and details.
+    Either value may be Nonne if they are not present in the original string.
     """
-    description = description.strip()
+    details = details.strip()
 
-    # Split into short & long descriptions
-    lines = description.split("\n")
+    # Split into summary & details
+    lines = details.split("\n")
 
     short_lines: list[str] = []
     long_lines: list[str] = []
@@ -136,53 +148,86 @@ def str_type_hint(typ: type) -> str:
     return introspection.typing.annotation_to_string(typ)
 
 
+def parse_docstring_basic(
+    docstring: str,
+) -> tuple[str | None, str | None, dict[str, str]]:
+    """
+    Parses a docstring into
+
+    - summary
+    - details
+    - sections
+    """
+
+    # Dedent & strip
+    docstring = textwrap.dedent(docstring).strip()
+
+    # Split the docstring into sections
+    details, sections = split_docstring_into_sections(docstring)
+
+    # Split into summary and details
+    summary, details = parse_details(details)
+
+    # Done
+    return summary, details, sections
+
+
 def parse_docstring(
     docstring: str,
     *,
-    enable_args: bool = False,
-    enable_raises: bool = False,
-    enable_attributes: bool = False,
+    key_sections: Iterable[str],
 ) -> tuple[str | None, str | None, dict[str, dict[str, str]]]:
     """
     Parses a docstring into
 
-    - short description
-    - long description
+    - summary
+    - details
     - sections
 
-    The function parameters control which sections are supported. Any other
-    sections will trigger a warning and be removed. All enabled sections will be
-    imputed (as empty) if they aren't present in the docstring. Sections are
-    normalized to be lowercase.
+    Any sections listed in `key_sections` will be parsed as key-value pairs and
+    returned as sections. Any remaining sections will be re-joined into the
+    details.
+
+    Any sections listed in `key_sections` that are not present in the docstring
+    will be imputed as empty.
     """
+    # Parse the docstring
+    summary, details, sections = parse_docstring_basic(docstring)
 
-    # Pre-parse the docstring
-    description, sections = pre_parse_markdown_docstring(docstring)
+    if details is None:
+        details = ""
 
-    # Parse the description
-    short_description, long_description = parse_descriptions(description)
+    # Find and parse all key-value sections
+    key_sections = set(key_sections)
+    key_value_sections: dict[str, dict[str, str]] = {}
 
-    # Post-process the sections
-    enabled_sections: set[str] = set()
+    for section_name, section_contents in sections.items():
+        # Key section?
+        normalized_section_name = section_name.lstrip("#").strip().lower()
 
-    if enable_args:
-        enabled_sections.add("args")
+        if normalized_section_name in key_sections:
+            key_value_sections[normalized_section_name] = parse_key_value_section(
+                section_contents
+            )
 
-    if enable_raises:
-        enabled_sections.add("raises")
+        # Text section
+        else:
+            details += f"\n\n{section_name}\n\n{section_contents}"
 
-    if enable_attributes:
-        enabled_sections.add("attributes")
+    # Don't keep around an empty details section
+    details = details.strip()
 
-    for section_name in enabled_sections:
-        sections.setdefault(section_name, {})
+    if not details:
+        details = None
 
-    for section in set(sections.keys()) - enabled_sections:
-        revel.warning(f"Removing superfluous section `{section}` from docstring")
-        del sections[section]
+    # Make sure all requested sections are present
+    missing_sections = key_sections - key_value_sections.keys()
+
+    for missing_section in missing_sections:
+        key_value_sections[missing_section] = {}
 
     # Done
-    return short_description, long_description, sections
+    return summary, details, key_value_sections
 
 
 def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
@@ -247,14 +292,13 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
     docstring = inspect.getdoc(func)
 
     if docstring is None:
-        short_description = None
-        long_description = None
+        summary = None
+        details = None
         raises = []
     else:
-        short_description, long_description, sections = parse_docstring(
+        summary, details, sections = parse_docstring(
             docstring,
-            enable_args=True,
-            enable_raises=True,
+            key_sections=["args", "raises"],
         )
 
         raw_params = sections["args"]
@@ -281,37 +325,45 @@ def parse_function(func: Callable[..., Any]) -> models.FunctionDocs:
         parameters=list(parameters.values()),
         return_type=parse_annotation(signature.return_annotation),
         synchronous=not inspect.iscoroutinefunction(func),
-        short_description=short_description,
-        long_description=long_description,
+        summary=summary,
+        details=details,
         raises=raises,
     )
 
 
 def _parse_class_docstring_with_inheritance(
     cls: type,
+    *,
+    key_sections: Iterable[str],
 ) -> tuple[str | None, str | None, dict[str, dict[str, str]]]:
     """
     Parses the docstring of a class in the same format as `parse_docstring`, but
-    accounts for inheritance: Sections of all classes are merged, in a way that
-    preserves child docs over parent docs.
+    accounts for inheritance: Key-Value sections of all classes are merged, in a
+    way that preserves child docs over parent docs.
     """
 
     # Parse the docstring for this class
     raw_docs = inspect.getdoc(cls)
-    docstring = parse_docstring(
+    key_sections = set(key_sections)
+    parsed_docs = parse_docstring(
         "" if raw_docs is None else raw_docs,
-        enable_attributes=True,
+        key_sections=key_sections,
     )
 
     # Get the docstrings for the base classes
     base_docs: list[tuple[str | None, str | None, dict[str, dict[str, str]]]] = []
 
     for base in cls.__bases__:
-        base_docs.append(_parse_class_docstring_with_inheritance(base))
+        base_docs.append(
+            _parse_class_docstring_with_inheritance(
+                base,
+                key_sections=key_sections,
+            )
+        )
 
     # Merge the docstrings
     result_sections: dict[str, dict[str, str]] = {}
-    all_in_order = base_docs + [docstring]
+    all_in_order = base_docs + [parsed_docs]
 
     for docs in all_in_order:
         for section_name, section in docs[2].items():
@@ -319,7 +371,7 @@ def _parse_class_docstring_with_inheritance(
             result_section.update(section)
 
     # Done
-    return docstring[0], docstring[1], result_sections
+    return parsed_docs[0], parsed_docs[1], result_sections
 
 
 def parse_class(cls: type) -> models.ClassDocs:
@@ -384,6 +436,7 @@ def parse_class(cls: type) -> models.ClassDocs:
         sections,
     ) = _parse_class_docstring_with_inheritance(
         cls,
+        key_sections=["attributes"],
     )
 
     # Add any information learned about fields from the docstring
@@ -424,6 +477,6 @@ def parse_class(cls: type) -> models.ClassDocs:
         name=cls.__name__,
         attributes=list(fields_by_name.values()),
         functions=functions,
-        short_description=short_description,
-        long_description=long_description,
+        summary=short_description,
+        details=long_description,
     )

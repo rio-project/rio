@@ -271,12 +271,12 @@ def _append_method_docs_to_article(
         art.code_block(_str_function_signature(func))
 
         # Short description
-        if func.short_description is not None:
-            art.markdown(func.short_description)
+        if func.summary is not None:
+            art.markdown(func.summary)
 
         # Long description
-        if func.long_description is not None:
-            art.markdown(func.long_description)
+        if func.details is not None:
+            art.markdown(func.details)
 
         # Parameters
         for param in func.parameters:

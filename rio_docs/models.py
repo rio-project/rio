@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import *  # type: ignore
 
 import uniserde
-from typing_extensions import Self
 
 from . import parsers
 
@@ -28,8 +27,8 @@ class FunctionDocs(uniserde.Serde):
     return_type: str | None
     synchronous: bool
 
-    short_description: str | None
-    long_description: str | None
+    summary: str | None
+    details: str | None
 
     raises: list[tuple[str, str]]  # type, description
 
@@ -53,8 +52,8 @@ class ClassDocs(uniserde.Serde):
     attributes: list[ClassField]  # name, type
     functions: list[FunctionDocs]
 
-    short_description: str | None
-    long_description: str | None
+    summary: str | None
+    details: str | None
 
     @classmethod
     def parse(cls, typ: Type) -> "ClassDocs":
