@@ -64,57 +64,71 @@ class SimpleListItem(Component):
     """
     # SimpleListItem
 
-    A simple list item with a header and optional secondary text. Additional components
-    can be added to the left and right sides of the list item.
+    A simple list item with a header and optional secondary text and children.
 
-    `Note:` check `rio.ListView` for more information on how to easily build this component.
-    Don't forget to add the `key` attribute to the `SimpleListItem` if you want to use it in
-    a `ListView`. Therefor you can assure that the list item is properly rebuild.
+    `SimpleListItem`s are a convenient way to create list items, which can
+    take care of the most common tasks: Display a text, optional secondary text
+    and even additional children (e.g. icons or buttons) to the left and right.
+    Most children are optional so you can only add whichever parts you need.
 
-    ## Attributes:
-    `text:` The text to display.
+    Note that like with other `ListItem`s the `key` is not optional. This is to
+    avoid unintentional reconciliation with other items when the list is
+    updated.
 
-    `secondary_text:` The secondary text to display.
+    ## Attributes
 
-    `left_child:` A component to display on the left side of the list item.
+    `text`: The text to display.
 
-    `right_child:` A component to display on the right side of the list item.
+    `secondary_text`: Additional text to display below the primary text. This
+        text may span multiple lines (use `"\\n"` to add a line break).
 
-    `on_press:` Triggered when the list item is pressed.
+    `left_child`: A component to display on the left side of the list item.
 
-    ## Example:
-    A simple `SimpleListItem` with the text "Click me!" will be shown:
+    `right_child`: A component to display on the right side of the list item.
+
+    `on_press`: Triggered when the list item is pressed.
+
+    ## Example
+
+    This minimal example will simply display a list item with the text "Click
+    me!":
+
     ```python
-    rio.SimpleListItem("Click me!")
+    rio.SimpleListItem("Click me!", key='item1')
     ```
 
-    Lets assume you want to build a `ListView` with a list of products. You can easily
-    build the list items with a for loop and add them to the `ListView`. You can use
-    `functools.partial` to pass the product to the `on_press` event handler:
+    `ListView`s are commonly used to display lists of dynamic length. You can easily
+    achieve this by adding the children to a list first, and then unpacking that list:
 
     ```python
     import functools
 
-    class ComponentClass(rio.Component):
-
-        products: List[str] = ["Product 1", "Product 2", "Product 3"]
+    class MyComponent(rio.Component):
+        products: list[str] = ["Product 1", "Product 2", "Product 3"]
 
         def on_press_simple_list_item(self, product:str) -> None:
             print(f"Selected {product}")
 
         def build(self)->rio.Component:
+            # Store all children in an intermediate list
             list_items = []
+
             for product in self.products:
                 list_items.append(
                     rio.SimpleListItem(
                         text=product,
+                        key=product,
                         left_child=rio.Icon("castle"),
+                        # Note the use of `functools.partial` to pass the product
+                        # to the event handler.
                         on_press=functools.partial(
                             self.on_press_simple_list_item,
                             product=product,
                         ),
                     )
                 )
+
+            # Then unpack the list to pass the children to the `ListView`
             return rio.ListView(*list_items)
     ```
     """
@@ -173,6 +187,7 @@ class SimpleListItem(Component):
                 width="grow",
             ),
             on_press=self.on_press,
+            key="",
         )
 
 

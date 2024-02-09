@@ -81,9 +81,9 @@ class ComponentShowcase(rio.Component):
             ),
             ComponentSample(
                 rio.ListView(
-                    rio.HeadingListItem("Heading"),
-                    rio.SimpleListItem("Item 1"),
-                    rio.SimpleListItem("Item 2"),
+                    rio.HeadingListItem("Heading", key="heading1"),
+                    rio.SimpleListItem("Item 1", key="item1"),
+                    rio.SimpleListItem("Item 2", key="item2"),
                 ),
                 'rio.ListView((rio.SimpleListItem("Item 1"), rio.SimpleListItem("Item 2"))',
             ),

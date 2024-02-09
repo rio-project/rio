@@ -133,9 +133,11 @@ class Sidebar(rio.Component):
                                 "Button",
                                 # icon="bootstrap/zoom-out",
                                 is_sensitive=bool(self.search_text),
-                                color=rio.Color.BLACK
-                                if bool(self.search_text)
-                                else rio.Color.RED,
+                                color=(
+                                    rio.Color.BLACK
+                                    if bool(self.search_text)
+                                    else rio.Color.RED
+                                ),
                             ),
                             rio.ProgressCircle(
                                 progress=None,
@@ -385,13 +387,13 @@ class Sidebar(rio.Component):
                         ),
                     ),
                     rio.ListView(
-                        rio.HeadingListItem("Heading 1"),
-                        rio.SimpleListItem("Simple 1"),
-                        rio.SimpleListItem("Simple 2"),
-                        rio.SimpleListItem("Simple 3"),
-                        rio.HeadingListItem("Heading 2"),
-                        rio.SimpleListItem("Simple 4"),
-                        rio.SimpleListItem("Simple 5"),
+                        rio.HeadingListItem("Heading 1", key="item1"),
+                        rio.SimpleListItem("Simple 1", key="item2"),
+                        rio.SimpleListItem("Simple 2", key="item3"),
+                        rio.SimpleListItem("Simple 3", key="item4"),
+                        rio.HeadingListItem("Heading 2", key="item5"),
+                        rio.SimpleListItem("Simple 4", key="item6"),
+                        rio.SimpleListItem("Simple 5", key="item7"),
                     ),
                     spacing=1.0,
                     align_y=0,

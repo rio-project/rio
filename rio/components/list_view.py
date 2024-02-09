@@ -28,8 +28,8 @@ class ListView(FundamentalComponent):
     ```python
     rio.ListView(
         [
-            rio.SimpleListItem("Hello"),
-            rio.SimpleListItem("World!"),
+            rio.SimpleListItem("Hello", key='item1'),
+            rio.SimpleListItem("World!", key='item2'),
         ],
     )
     ```
@@ -54,6 +54,7 @@ class ListView(FundamentalComponent):
                 list_items.append(
                     rio.SimpleListItem(
                         text=product,
+                        key=product,
                         left_child=rio.Icon("castle"),
                         on_press=functools.partial(
                             self.on_press_simple_list_item,
