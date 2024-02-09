@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import KW_ONLY
+from dataclasses import KW_ONLY, MISSING, field
 from typing import *  # type: ignore
 
 from uniserde import JsonDoc
@@ -53,8 +53,23 @@ class HeadingListItem(FundamentalComponent):
     """
 
     text: str
-    _: KW_ONLY
     key: str
+
+    def __init__(
+        self,
+        text: str,
+        *,
+        key: str,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+    ) -> None:
+        super().__init__(
+            width=width,
+            height=height,
+            key=key,
+        )
+
+        self.text = text
 
 
 HeadingListItem._unique_id = "HeadingListItem-builtin"
@@ -134,12 +149,35 @@ class SimpleListItem(Component):
     """
 
     text: str
-    _: KW_ONLY
+    secondary_text: str
+    left_child: rio.Component | None
+    right_child: rio.Component | None
+    on_press: rio.EventHandler[[]]
     key: str
-    secondary_text: str = ""
-    left_child: rio.Component | None = None
-    right_child: rio.Component | None = None
-    on_press: rio.EventHandler[[]] = None
+
+    def __init__(
+        self,
+        text: str,
+        *,
+        key: str,
+        secondary_text: str = "",
+        left_child: rio.Component | None = None,
+        right_child: rio.Component | None = None,
+        on_press: rio.EventHandler[[]] = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+    ) -> None:
+        super().__init__(
+            width=width,
+            height=height,
+            key=key,
+        )
+
+        self.text = text
+        self.secondary_text = secondary_text
+        self.left_child = left_child
+        self.right_child = right_child
+        self.on_press = on_press
 
     def build(self) -> rio.Component:
         children = []
@@ -217,9 +255,26 @@ class CustomListItem(FundamentalComponent):
     """
 
     content: rio.Component
-    _: KW_ONLY
+    on_press: rio.EventHandler[[]]
     key: str
-    on_press: rio.EventHandler[[]] = None
+
+    def __init__(
+        self,
+        content: rio.Component,
+        *,
+        key: str,
+        on_press: rio.EventHandler[[]] = None,
+        width: float | Literal["natural", "grow"] = "natural",
+        height: float | Literal["natural", "grow"] = "natural",
+    ) -> None:
+        super().__init__(
+            width=width,
+            height=height,
+            key=key,
+        )
+
+        self.content = content
+        self.on_press = on_press
 
     def _custom_serialize(self) -> JsonDoc:
         return {
