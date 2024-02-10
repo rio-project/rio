@@ -166,6 +166,8 @@ export class RowComponent extends LinearContainer {
         if (this.nGrowers > 0 || Math.abs(additionalSpace) < 1e-6) {
             this.undef1.style.flexGrow = '0';
             this.undef2.style.flexGrow = '0';
+            this.undef1.classList.remove('rio-undefined-space');
+            this.undef2.classList.remove('rio-undefined-space');
         } else {
             // If there is no child elements make a single undefined space take
             // up everything. This way there is no unsightly disconnect between
@@ -185,6 +187,12 @@ export class RowComponent extends LinearContainer {
                     additionalSpace * pixelsPerRem
                 }px of unused horizontal space`
             );
+
+            // Since the undefined space is animated, it takes up a fair amount
+            // of CPU time - even though it's not visible. Only apply the
+            // animation if the component is visible.
+            this.undef1.classList.add('rio-undefined-space');
+            this.undef2.classList.add('rio-undefined-space');
         }
 
         // Assign the allocated height to the children
@@ -268,6 +276,8 @@ export class ColumnComponent extends LinearContainer {
             if (this.nGrowers > 0 || Math.abs(additionalSpace) < 1e-6) {
                 this.undef1.style.flexGrow = '0';
                 this.undef2.style.flexGrow = '0';
+                this.undef1.classList.remove('rio-undefined-space');
+                this.undef2.classList.remove('rio-undefined-space');
             } else {
                 // If there is no child elements make a single undefined space take
                 // up everything. This way there is no unsightly disconnect between
@@ -287,6 +297,12 @@ export class ColumnComponent extends LinearContainer {
                         additionalSpace * pixelsPerRem
                     }px of unused vertical space`
                 );
+
+                // Since the undefined space is animated, it takes up a fair amount
+                // of CPU time - even though it's not visible. Only apply the
+                // animation if the component is visible.
+                this.undef1.classList.add('rio-undefined-space');
+                this.undef2.classList.add('rio-undefined-space');
             }
 
             // Assign the allocated height to the children

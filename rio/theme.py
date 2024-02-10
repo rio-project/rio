@@ -32,7 +32,6 @@ __all__ = [
     "Theme",
 ]
 
-# TODO: Consider really noticeable, memorable primary color: #e80265
 
 T = TypeVar("T")
 

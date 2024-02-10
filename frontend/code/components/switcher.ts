@@ -14,6 +14,10 @@ export type SwitcherState = ComponentState & {
 export class SwitcherComponent extends ComponentBase {
     state: Required<SwitcherState>;
 
+    // The width and height the child requested before the animation started.
+    private previousChildRequestedWidth: number = 0;
+    private previousChildRequestedHeight: number = 0;
+
     // If true, the current layout operation isn't meant for actually laying out
     // the UI, but rather for determining which size the child will receive once
     // the animation finishes.
@@ -108,6 +112,22 @@ export class SwitcherComponent extends ComponentBase {
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
+        // If the child's requested size has changed, start the animation
+        // if (
+        //     this.activeChildInstance !== null &&
+        //     (this.previousChildRequestedWidth !==
+        //         this.activeChildInstance.requestedWidth ||
+        //         this.previousChildRequestedHeight !==
+        //             this.activeChildInstance.requestedHeight)
+        // ) {
+        //     this.isDeterminingLayout = true;
+
+        //     this.previousChildRequestedWidth =
+        //         this.activeChildInstance.requestedWidth;
+        //     this.previousChildRequestedHeight =
+        //         this.activeChildInstance.requestedHeight;
+        // }
+
         // Case: Trying to determine the size the child will receive once the
         // animation finishes
         if (this.isDeterminingLayout) {
