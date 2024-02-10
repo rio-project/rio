@@ -1,3 +1,35 @@
+export class AsyncQueue<T> {
+    private waitingForValue: ((value: T) => void)[] = [];
+    private values: T[] = [];
+
+    push(value: T): void {
+        // If someone is waiting for a value, give it to them
+        let notifyFirstWaiter = this.waitingForValue.shift();
+        if (notifyFirstWaiter !== undefined) {
+            notifyFirstWaiter(value);
+            return;
+        }
+
+        // Otherwise, push it onto the stack
+        this.values.push(value);
+    }
+
+    async get(): Promise<T> {
+        // If a value exists in the queue, just return that
+        let value = this.values.shift();
+        if (value !== undefined) {
+            return value;
+        }
+
+        // Otherwise, create a Promise that will be resolved when a new value is
+        // added to the queue
+        let waitForValue = new Promise((resolve: (value: T) => void) => {
+            this.waitingForValue.push(resolve);
+        });
+        return await waitForValue;
+    }
+}
+
 export function commitCss(element: HTMLElement): void {
     element.offsetHeight;
 }

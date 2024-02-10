@@ -7,11 +7,12 @@ import {
     closeSession,
     setTitle,
 } from './rpcFunctions';
-import { commitCss } from './utils';
+import { AsyncQueue, commitCss } from './utils';
 
 let websocket: WebSocket | null = null;
 let connectionAttempt: number = 1;
 let pingPongHandlerId: number;
+let incomingMessageQueue: AsyncQueue<JsonRpcMessage> = new AsyncQueue();
 
 export type JsonRpcMessage = {
     jsonrpc: '2.0';
@@ -52,6 +53,28 @@ export function setConnectionLostPopupVisible(visible: boolean): void {
 }
 
 globalThis.setConnectionLostPopupVisible = setConnectionLostPopupVisible;
+
+// Because processing incoming messages is async, we can't just attach our
+// function to `websocket.onMessage`. That could lead to multiple messages being
+// processed at the same time, which can cause problems. (For example, when a new
+// font is registered, we have to wait until the font is loaded before
+// processing any `updateComponentStates` messages. Otherwise the layouting will
+// happen with the incorrect font.)
+//
+// To work around this problem, all incoming messages are simply pushed into a
+// queue and then processed in order by this async worker here.
+async function processMessages(): Promise<void> {
+    while (true) {
+        let message = await incomingMessageQueue.get();
+
+        let response = await processMessageReturnResponse(message);
+
+        if (response !== null) {
+            sendMessageOverWebsocket(response);
+        }
+    }
+}
+processMessages();
 
 function createWebsocket(): WebSocket {
     let url = new URL(
@@ -131,18 +154,17 @@ function onOpen(): void {
     }, globalThis.PING_PONG_INTERVAL_SECONDS * 1000) as any;
 }
 
-async function onMessage(event: any) {
+function onMessage(event: MessageEvent<string>) {
     // Parse the message JSON
     let message = JSON.parse(event.data);
-    console.log('Received message: ', JSON.parse(JSON.stringify(message)));
 
-    // Handle it
-    let response = await processMessageReturnResponse(message);
+    // Print a copy of the message because some messages are modified in-place
+    // when they're processed
+    console.log('Received message: ', JSON.parse(event.data));
 
-    // If this is a request, send the response
-    if (message.id !== undefined && response !== null) {
-        sendMessageOverWebsocket(response);
-    }
+    // Push it into the queue, to be processed as soon as the previous message
+    // has been processed
+    incomingMessageQueue.push(message);
 }
 
 function onError(event: Event) {

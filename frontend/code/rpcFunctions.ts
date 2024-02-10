@@ -1,6 +1,3 @@
-import { getElementByComponentId } from './componentManagement';
-import { ComponentId } from './models';
-
 export async function registerFont(
     name: string,
     urls: (string | null)[]

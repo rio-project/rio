@@ -190,10 +190,7 @@ class Session(unicall.Unicall):
         # All fonts which have been registered with the session. This maps the
         # name of the font to the font's assets, which ensures that the assets
         # are kept alive until the session is closed.
-        self._registered_font_assets: dict[str, list[assets.Asset]] = {
-            font.ROBOTO.name: [],
-            font.ROBOTO_MONO.name: [],
-        }
+        self._registered_font_assets: dict[str, list[assets.Asset]] = {}
 
         # These are injected by the app server after the session has already
         # been created
