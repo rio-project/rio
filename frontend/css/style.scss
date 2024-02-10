@@ -2083,62 +2083,30 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-table {
     pointer-events: auto;
 
-    color: var(--rio-local-text-color);
-    border-collapse: collapse;
+    display: grid;
 
-    // borders
-    border-spacing: 0;
-
-    th,
-    tr,
-    td {
-        border: none;
-    }
-    tbody > tr {
-        border-top: 1px solid var(--rio-local-plain-bg-variant);
-    }
-
-    // header row
-    th {
-        font-weight: bold;
-        cursor: pointer;
-
-        transition: color 0.06s ease-out;
-    }
-
-    th:hover {
-        color: var(--rio-local-accent-bg);
-    }
-
-    th,
-    td {
+    & > * {
         padding: 0.5rem 0.8rem;
     }
 
-    th::after {
+    .header {
+        display: flex;
+        cursor: pointer;
+    }
+
+    .header::after {
         content: '▴';
         display: inline-block;
         margin-left: 0.3rem;
         opacity: 0;
     }
-    th[data-sort='asc']::after {
+    .header[data-sort='ascending']::after {
         content: '▴';
-        margin-left: 0.3rem;
         opacity: 1;
     }
-    th[data-sort='desc']::after {
+    .header[data-sort='descending']::after {
         content: '▾';
-        margin-left: 0.3rem;
         opacity: 1;
-    }
-
-    // Highlight the row when hovered
-    tr {
-        transition: background-color 0.06s ease-out;
-    }
-
-    tbody > tr:hover {
-        background-color: var(--rio-local-plain-bg-active);
     }
 }
 

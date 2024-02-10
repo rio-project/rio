@@ -9,9 +9,9 @@ from .. import maybes
 from .fundamental_component import FundamentalComponent
 
 if TYPE_CHECKING:
-    import numpy
-    import pandas
-    import polars
+    import numpy  # type: ignore
+    import pandas  # type: ignore
+    import polars  # type: ignore
 
 
 __all__ = ["Table"]
