@@ -1,4 +1,4 @@
-# Hostd Assets
+# Hosted Assets
 
 **Any files in this directory are publicly hosted, WITHOUT ACCESS CONTROL.**
 

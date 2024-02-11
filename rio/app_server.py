@@ -151,7 +151,7 @@ class AppServer(fastapi.FastAPI):
         self.internal_on_app_start = internal_on_app_start
 
         # Initialized lazily, when the favicon is first requested.
-        self._icon_as_ico_blob: bytes | None = None
+        self._icon_as_png_blob: bytes | None = None
 
         # The session tokens for all active sessions. These allow clients to
         # identify themselves, for example to reconnect in case of a lost
@@ -181,7 +181,7 @@ class AppServer(fastapi.FastAPI):
         self.add_api_route("/sitemap.xml", self._serve_sitemap, methods=["GET"])
         # self.add_api_route("/app.js.map", self._serve_js_map, methods=["GET"])
         # self.add_api_route("/style.css.map", self._serve_css_map, methods=["GET"])
-        self.add_api_route("/rio/favicon.ico", self._serve_favicon, methods=["GET"])
+        self.add_api_route("/rio/favicon.png", self._serve_favicon, methods=["GET"])
         self.add_api_route(
             "/rio/asset/{asset_id:path}", self._serve_asset, methods=["GET"]
         )
@@ -417,7 +417,7 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
         Handler for serving the favicon via fastapi, if one is set.
         """
         # If an icon is set, make sure a cached version exists
-        if self._icon_as_ico_blob is None and self.app._icon is not None:
+        if self._icon_as_png_blob is None and self.app._icon is not None:
             try:
                 icon_blob, _ = await self.app._icon.try_fetch_as_blob()
 
@@ -425,7 +425,7 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
                 output_buffer = io.BytesIO()
 
                 with Image.open(input_buffer) as image:
-                    image.save(output_buffer, format="ico")
+                    image.save(output_buffer, format="png")
 
             except Exception as err:
                 raise fastapi.HTTPException(
@@ -433,16 +433,16 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
                     detail="Could not fetch the app's icon.",
                 ) from err
 
-            self._icon_as_ico_blob = output_buffer.getvalue()
+            self._icon_as_png_blob = output_buffer.getvalue()
 
         # No icon set or fetching failed
-        if self._icon_as_ico_blob is None:
+        if self._icon_as_png_blob is None:
             return fastapi.responses.Response(status_code=404)
 
         # There is an icon, respond
         return fastapi.responses.Response(
-            content=self._icon_as_ico_blob,
-            media_type="image/x-icon",
+            content=self._icon_as_png_blob,
+            media_type="image/png",
         )
 
     async def _serve_asset(

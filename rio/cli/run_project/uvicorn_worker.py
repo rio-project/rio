@@ -55,7 +55,7 @@ class UvicornWorker:
         )
         self._uvicorn_server = uvicorn.Server(config)
 
-        # TODO: Univcorn wishes to set up the event loop. The current code
+        # TODO: Uvicorn wishes to set up the event loop. The current code
         # doesn't let it do that, since asyncio is already running.
         #
         # self._uvicorn_server.config.setup_event_loop()
@@ -65,6 +65,8 @@ class UvicornWorker:
             await self._uvicorn_server.serve(
                 sockets=[self.socket],
             )
+        except asyncio.CancelledError:
+            self._uvicorn_server.should_exit = True
         except Exception as err:
             revel.error(f"Uvicorn has crashed:")
             print()

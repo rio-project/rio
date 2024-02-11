@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
+import revel
+
 import rio
 
 from ... import common
@@ -45,6 +47,11 @@ class ComponentDetails(rio.Component):
             return
 
         # Publish the results
+        revel.debug(
+            self.component_id,
+            self.session._weak_components_by_id[self.component_id],
+            response,
+        )
         (
             self.component_natural_width,
             self.component_natural_height,

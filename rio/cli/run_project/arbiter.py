@@ -90,6 +90,7 @@ class Arbiter:
 
         self._file_watcher_task: asyncio.Task[None] | None = None
         self._uvicorn_task: asyncio.Task[None] | None = None
+        self._arbiter_task: asyncio.Task[None] | None = None
 
         # The app to use for creating apps. This keeps the theme consistent if
         # for-example the user's app crashes and then a mock-app is injected.
@@ -171,8 +172,14 @@ class Arbiter:
         assert self._mainloop is not None, "Mainloop isn't running!?"
 
         def cancel_all_tasks() -> None:
-            for task in asyncio.all_tasks(self._mainloop):
-                task.cancel()
+            if self._file_watcher_task is not None:
+                self._file_watcher_task.cancel()
+
+            if self._uvicorn_task is not None:
+                self._uvicorn_task.cancel()
+
+            if self._arbiter_task is not None:
+                self._arbiter_task.cancel()
 
         self._mainloop.call_soon_threadsafe(cancel_all_tasks)
 
@@ -267,6 +274,9 @@ class Arbiter:
                     break
 
     async def _run_async(self) -> None:
+        # Publish the task, so it can be cancelled
+        self._arbiter_task = asyncio.current_task()
+
         # Make sure the app is cleanly shut down, even if the arbiter crashes
         # for whichever reason.
         #
@@ -280,7 +290,7 @@ class Arbiter:
         except KeyboardInterrupt:
             pass
 
-        # The worker is expected to be canceled when the app is stopped
+        # The worker is expected to be cancelled when the app is stopped
         except asyncio.CancelledError:
             pass
 
@@ -424,6 +434,8 @@ class Arbiter:
                 # ???
                 else:
                     raise NotImplementedError(f'Unknown event "{event}"')
+
+        revel.debug("Post arbiter loop")
 
     def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
         """

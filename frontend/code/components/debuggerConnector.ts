@@ -22,7 +22,7 @@ export class DebuggerConnectorComponent extends ComponentBase {
         element.target = '_blank';
         element.classList.add('rio-debugger-navigation-rio-logo');
         element.innerHTML = `
-            <img src="/rio/asset/rio-logo.png">
+            <img src="/rio/asset/rio-logos/rio-logo-square.png">
             <div>Rio</div>
         `;
         return element;

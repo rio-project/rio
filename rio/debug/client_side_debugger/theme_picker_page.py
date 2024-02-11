@@ -193,7 +193,7 @@ class PalettePicker(rio.Component):  #
                         rio.Text(
                             self.palette_nicename,
                             style=rio.TextStyle(
-                                font_size=self.session.theme.heading3_style.font_size,
+                                # font_size=self.session.theme.heading3_style.font_size,
                                 fill=palette.foreground,
                             ),
                             selectable=False,

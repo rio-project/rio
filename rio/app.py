@@ -235,7 +235,7 @@ class App:
             name = _get_default_app_name(main_file)
 
         if icon is None:
-            icon = common.HOSTED_ASSETS_DIR / "rio-logo.ico"
+            icon = common.HOSTED_ASSETS_DIR / "rio-logos/rio-logo-square.png"
 
         if build is None:
             build = rio.PageView
