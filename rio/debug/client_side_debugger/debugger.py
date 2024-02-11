@@ -104,7 +104,7 @@ class ClientSideDebugger(rio.Component):
                     ],
                     icons=[
                         # "home",
-                        "rio/logo:outline",
+                        "rio/logo",
                         "view-quilt",
                         "emoji-people",
                         "palette",
