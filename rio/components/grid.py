@@ -139,7 +139,7 @@ class Grid(FundamentalComponent):
         self._children = _children
         self._child_positions = _child_positions
 
-        self._explicitly_set_properties_.update(["_children", "_child_positions"])
+        self._properties_set_by_creator_.update(["_children", "_child_positions"])
 
     def add_child(
         self,

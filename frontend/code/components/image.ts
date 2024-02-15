@@ -44,7 +44,7 @@ export class ImageComponent extends ComponentBase {
             deltaState.imageUrl !== undefined &&
             imgElement.src !== deltaState.imageUrl
         ) {
-            imgElement.classList.add('rio-content-loading');
+            // imgElement.classList.add('rio-content-loading');
             imgElement.src = deltaState.imageUrl;
         }
 

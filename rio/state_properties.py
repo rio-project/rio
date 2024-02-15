@@ -87,6 +87,8 @@ class StateProperty:
                 f"Cannot assign to readonly property {cls_name}.{self.name}"
             )
 
+        instance._properties_assigned_after_creation_.add(self.name)
+
         # Look up the stored value
         instance_vars = vars(instance)
         try:

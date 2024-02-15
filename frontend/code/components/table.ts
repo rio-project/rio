@@ -1,6 +1,5 @@
 import { getElementDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
-import { ComponentId } from '../models';
 import { ComponentBase, ComponentState } from './componentBase';
 
 type TableValue = number | string;

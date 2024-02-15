@@ -65,7 +65,7 @@ async def _periodic_event_worker(
         await call_component_handler_once(weak_component, handler)
 
 
-def _determine_explicitly_set_properties(
+def _determine_properties_set_by_creator(
     component: Component, args: tuple, kwargs: dict
 ) -> set[str]:
     # Determine which properties were explicitly set. This includes
@@ -73,10 +73,10 @@ def _determine_explicitly_set_properties(
     signature = inspect.signature(component.__init__)
     bound_args = signature.bind(*args, **kwargs)
 
-    explicitly_set_properties = set(bound_args.arguments)
+    properties_set_by_creator = set(bound_args.arguments)
 
     # fmt: off
-    explicitly_set_properties.update(
+    properties_set_by_creator.update(
         param.name
         for param in signature.parameters.values()
         if param.kind in (
@@ -86,7 +86,7 @@ def _determine_explicitly_set_properties(
     )
     # fmt: on
 
-    return explicitly_set_properties
+    return properties_set_by_creator
 
 
 C = typing.TypeVar("C", bound="Component")
@@ -196,14 +196,16 @@ class ComponentMeta(RioDataclassMeta):
         component._id = session._next_free_component_id
         session._next_free_component_id += 1
 
+        component._properties_assigned_after_creation_ = set()
+
         # Call `__init__`
         component.__init__(*args, **kwargs)
 
         # Some components (like `Grid`) manually mark some properties as
         # explicitly set in their `__init__`, so we must use `.update()` instead
         # of an assignment
-        component._explicitly_set_properties_.update(
-            _determine_explicitly_set_properties(component, args, kwargs)
+        component._properties_set_by_creator_.update(
+            _determine_properties_set_by_creator(component, args, kwargs)
         )
 
         component._create_state_bindings()
@@ -257,6 +259,8 @@ class ComponentMeta(RioDataclassMeta):
                 continue
 
             post_init(component)
+
+        component._properties_assigned_after_creation_.clear()
 
         return component
 
@@ -409,11 +413,14 @@ class Component(metaclass=ComponentMeta):
 
     _session_: rio.Session = internal_field(init=False)
 
-    # Remember which properties were explicitly set in the constructor. This is
-    # filled in by `__new__`
-    _explicitly_set_properties_: set[str] = internal_field(
+    # Remember which properties were explicitly set in the constructor
+    _properties_set_by_creator_: set[str] = internal_field(
         init=False, default_factory=set
     )
+
+    # Remember which properties had new values assigned after the component's
+    # construction
+    _properties_assigned_after_creation_: set[str] = internal_field(init=False)
 
     # Whether the `on_populate` event has already been triggered for this
     # component

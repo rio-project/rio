@@ -14,13 +14,16 @@ from . import (
 
 
 class ClientSideDebugger(rio.Component):
-    selected_page: Literal[
-        "project",
-        "tree",
-        "docs",
-        "ai-chat",
-        "deploy",
-    ] | None = None
+    selected_page: (
+        Literal[
+            "project",
+            "tree",
+            "docs",
+            "ai-chat",
+            "deploy",
+        ]
+        | None
+    ) = None
 
     def get_selected_page(self) -> rio.Component | None:
         PAGE_WIDTH = 22
@@ -104,7 +107,7 @@ class ClientSideDebugger(rio.Component):
                     ],
                     icons=[
                         # "home",
-                        "rio/logo",
+                        "rio/logo:color",
                         "view-quilt",
                         "emoji-people",
                         "palette",

@@ -41,7 +41,7 @@ except ImportError:
 # directory, then `watchfiles` will pick up on that new log line, thus
 # triggering another change. Infinite loop, here we come!
 #
-# -> STFFU, watchfiles!
+# -> STFU, watchfiles!
 logging.getLogger("watchfiles").setLevel(logging.CRITICAL + 1)
 
 
@@ -243,6 +243,7 @@ class Arbiter:
 
         # Make sure the startup was successful
         if self._stop_requested.is_set():
+            asyncio_thread.join()
             return
 
         # The webview needs to be shown from the main thread. So, if running
@@ -262,7 +263,7 @@ class Arbiter:
             webbrowser.open(self.url)
 
             # Event.wait() blocks the SIGINT handler, so we must periodically
-            # return to python land.
+            # return to python land to react to keyboard interrupts.
             #
             # We could pass a timeout to `_stop_requested.wait()`, but
             # `time.sleep()` reacts to keyboard interrupts immediately, which is
@@ -273,9 +274,21 @@ class Arbiter:
                 if self._stop_requested.is_set():
                     break
 
+        # Make sure the main thread stays alive until the asyncio thread is
+        # done. Otherwise we get weird errors like "Can't start thread during
+        # interpreter shutdown" from asyncio.
+        asyncio_thread.join()
+
     async def _run_async(self) -> None:
         # Publish the task, so it can be cancelled
         self._arbiter_task = asyncio.current_task()
+
+        # Make sure the webview module is available
+        if self.run_in_window and webview is None:
+            revel.fatal(
+                "The `window` extra is required to run apps inside of a window."
+                " Run `pip install rio-ui[[window]` to install it."
+            )
 
         # Make sure the app is cleanly shut down, even if the arbiter crashes
         # for whichever reason.
@@ -303,6 +316,18 @@ class Arbiter:
 
             self.stop(keyboard_interrupt=False)
 
+        finally:
+            # Wait until all the other tasks are done. If we return, then
+            # `asyncio.run` will cancel anything that's still running.
+            for task in (self._uvicorn_task, self._file_watcher_task):
+                if task is None:
+                    continue
+
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
     async def _run_async_inner(self) -> None:
         # Print some initial messages
         print()
@@ -320,7 +345,7 @@ class Arbiter:
 
             try:
                 sock.bind((self._host, self.port))
-            except OSError as err:
+            except OSError:
                 revel.error(f"The port [bold]{self.port}[/] is already in use.")
                 revel.error(f"Each port can only be used by one app at a time.")
                 revel.error(
@@ -328,13 +353,6 @@ class Arbiter:
                 )
                 self.stop(keyboard_interrupt=False)
                 return
-
-            # Make sure the webview module is available
-            if self.run_in_window and webview is None:
-                revel.fatal(
-                    "The `window` extra is required to run apps inside of a window."
-                    " Run `pip install rio-ui[[window]` to install it."
-                )
 
             # If running in debug mode, install safeguards
             if self.debug_mode:

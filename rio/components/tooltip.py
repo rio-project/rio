@@ -63,7 +63,7 @@ class Tooltip(FundamentalComponent):
 
         self.position = position
 
-        self._explicitly_set_properties_.update(("tip_text", "tip_component"))
+        self._properties_set_by_creator_.update(("tip_text", "tip_component"))
 
     def __post_init__(self):
         if isinstance(self.tip_text, str):

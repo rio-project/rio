@@ -1081,7 +1081,10 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         for prop_name in new_component._state_properties_:
             # Should the value be overridden?
-            if prop_name not in new_component._explicitly_set_properties_:
+            if (
+                prop_name in old_component._properties_assigned_after_creation_
+                and prop_name not in new_component._properties_set_by_creator_
+            ):
                 continue
 
             # Take care to keep state bindings up to date

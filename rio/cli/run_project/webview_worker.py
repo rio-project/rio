@@ -50,6 +50,9 @@ class WebViewWorker:
         )
         webview.start()
 
+        # If we've reached this point, the window must have been closed.
+        self.window = None
+
         # If the webview window is closed, tell the Arbiter about it.
         self.push_event(run_models.StopRequested())
 
