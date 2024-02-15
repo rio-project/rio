@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import io
 import sys
 import typing
 import weakref
@@ -10,7 +11,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable
 from dataclasses import KW_ONLY, field
 from pathlib import Path
-from typing import Any, ClassVar, Literal, TypeVar, cast, overload
+from typing import *  # type: ignore
 
 from typing_extensions import dataclass_transform
 from uniserde import Jsonable, JsonDoc
@@ -720,3 +721,20 @@ class Component(metaclass=ComponentMeta):
             result += " -" + "".join(child_strings)
 
         return result + ">"
+
+    def _repr_tree_worker(self, file: IO[str], indent: str) -> None:
+        file.write(indent)
+        file.write(type(self).__name__)
+        file.write("(\n")
+
+        for child in self._iter_direct_children():
+            child._repr_tree_worker(file, indent + "    ")
+            file.write(",\n")
+
+        file.write(indent)
+        file.write(")")
+
+    def _repr_tree(self) -> str:
+        file = io.StringIO()
+        self._repr_tree_worker(file, "")
+        return file.getvalue()
