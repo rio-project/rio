@@ -52,6 +52,7 @@ import { TooltipComponent } from './components/tooltip';
 import { updateLayout } from './layouting';
 import { NodeInputComponent } from './components/nodeInput';
 import { NodeOutputComponent } from './components/nodeOutput';
+import { SeparatorComponent } from './components/separator';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -93,6 +94,7 @@ const COMPONENT_CLASSES = {
     'Row-builtin': RowComponent,
     'ScrollContainer-builtin': ScrollContainerComponent,
     'ScrollTarget-builtin': ScrollTargetComponent,
+    'Separator-builtin': SeparatorComponent,
     'Slider-builtin': SliderComponent,
     'Slideshow-builtin': SlideshowComponent,
     'Stack-builtin': StackComponent,
