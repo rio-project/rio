@@ -2645,3 +2645,21 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
     animation: pulse 1.4s infinite;
 }
+
+.rio-separator {
+    position: relative;
+    background-color: var(--rio-local-plain-bg);
+}
+
+.rio-separator::after {
+    content: '';
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: var(--separator-color);
+    opacity: var(--separator-opacity);
+}

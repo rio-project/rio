@@ -15,6 +15,7 @@ export class SeparatorComponent extends ComponentBase {
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
+        element.classList.add('rio-separator');
         return element;
     }
 
@@ -28,15 +29,19 @@ export class SeparatorComponent extends ComponentBase {
         }
         // If nothing was specified, use a color from the theme
         else if (deltaState.color === null) {
-            this.element.style.backgroundColor = 'var(--rio-local-text-color)';
-            this.element.style.opacity = '0.3';
+            this.element.style.setProperty(
+                '--separator-color',
+                'var(--rio-local-text-color)'
+            );
+            this.element.style.setProperty('--separator-opacity', '0.3');
         }
         // Use the provided color
         else {
-            this.element.style.backgroundColor = colorToCssString(
-                deltaState.color
+            this.element.style.setProperty(
+                '--separator-color',
+                colorToCssString(deltaState.color)
             );
-            this.element.style.opacity = '1';
+            this.element.style.setProperty('--separator-opacity', '1');
         }
 
         // Orientation
