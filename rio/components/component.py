@@ -87,6 +87,9 @@ def _determine_properties_set_by_creator(
     )
     # fmt: on
 
+    # Discard parameters that don't correspond to state properties
+    properties_set_by_creator.intersection_update(type(component)._state_properties_)
+
     return properties_set_by_creator
 
 
