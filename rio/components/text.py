@@ -123,5 +123,13 @@ class Text(FundamentalComponent):
 
         return result
 
+    def __repr__(self) -> str:
+        if len(self.text) > 40:
+            text = self.text[:40] + "..."
+        else:
+            text = self.text
+
+        return f"<{type(self).__name__} id:{self._id} text:{text!r}>"
+
 
 Text._unique_id = "Text-builtin"

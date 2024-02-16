@@ -8,7 +8,8 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
-import chardet
+import motor.motor_asyncio
+import revel
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL
@@ -107,34 +108,21 @@ class FileInfo:
         """
         return self._contents
 
-    async def read_text(self, *, encoding: str = "auto") -> str:
+    async def read_text(self, *, encoding: str = "utf-8") -> str:
         """
         Asynchronously reads the entire file as text.
 
         Reads and returns the entire file as a `str` object. The file is decoded
-        using the given `encoding`. If `encoding` is `"auto"` attempts to
-        automatically detect the encoding. If you don't know that the file is
-        valid text, use `read_bytes` instead.
+        using the given `encoding`. If you don't know that the file is valid
+        text, use `read_bytes` instead.
 
         Args:
             encoding: The encoding to use when decoding the file.
 
         Raises:
-            ValueError: The file could not be decoded using the given
-                `encoding`, or the encoding could not be detected.
+            UnicodeDecodeError: The file could not be decoded using the given
+                `encoding`.
         """
-
-        if encoding == "auto":
-            # Detect the encoding
-            result = chardet.detect(self._contents)
-
-            # Did it work?
-            if result is None:
-                raise ValueError("The encoding of the file could not be detected.")
-
-            encoding = result["encoding"]  # type: ignore
-
-        # Decode the file
         return self._contents.decode(encoding)
 
     @overload
@@ -263,13 +251,6 @@ def ensure_valid_port(host: str, port: int | None) -> int:
         return choose_free_port(host)
 
     return port
-
-
-def timing_print(text: str) -> None:
-    """
-    Temporary debug print to find why the app startup is sometimes so slow
-    """
-    # revel.debug(f"[{datetime.now(timezone.utc).isoformat()}]  {text}")
 
 
 def first_non_null(*values: float | None) -> float:

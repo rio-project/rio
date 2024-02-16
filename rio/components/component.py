@@ -724,15 +724,11 @@ class Component(metaclass=ComponentMeta):
 
     def _repr_tree_worker(self, file: IO[str], indent: str) -> None:
         file.write(indent)
-        file.write(type(self).__name__)
-        file.write("(\n")
+        file.write(repr(self))
 
         for child in self._iter_direct_children():
+            file.write("\n")
             child._repr_tree_worker(file, indent + "    ")
-            file.write(",\n")
-
-        file.write(indent)
-        file.write(")")
 
     def _repr_tree(self) -> str:
         file = io.StringIO()

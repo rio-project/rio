@@ -453,8 +453,6 @@ class Arbiter:
                 else:
                     raise NotImplementedError(f'Unknown event "{event}"')
 
-        revel.debug("Post arbiter loop")
-
     def _spawn_traceback_popups(self, err: Union[str, BaseException]) -> None:
         """
         Displays a popup with the traceback in the rio UI.

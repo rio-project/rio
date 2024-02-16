@@ -187,11 +187,11 @@ class IconRegistry:
             if not icon_set_path.exists():
                 raise AssetError(
                     f"Unknown icon set `{icon_set}`. Known icon sets are: `{'`, `'.join(self.icon_set_archives.keys())}`"
-                )
+                ) from None
 
             raise AssetError(
                 f"There is no icon named `{icon_name}` in the `{icon_set}` icon set"
-            )
+            ) from None
 
         # Cache the icon
         self.cached_icons[icon_name] = svg_string

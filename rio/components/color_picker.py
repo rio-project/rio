@@ -64,8 +64,10 @@ class ColorPicker(FundamentalComponent):
     ```python
     class ComponentClass(rio.Component):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
+
         def on_change_color(self, event: rio.ColorChangeEvent) -> None:
             print(f"Color changed to {event.color}")
+
         def build(self)->rio.Component:
             return rio.Card(
                 rio.ColorPicker(

@@ -754,14 +754,14 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             else:
                 self._reconcile_tree(component_data, build_result)
 
-                # Increment the build generation
-                component_data.build_generation = global_state.build_generation
-                global_state.build_generation += 1
-
                 # Reconciliation can change the build result. Make sure nobody
                 # uses `build_result` instead of `component_data.build_result`
                 # from now on.
                 del build_result
+
+                # Increment the build generation
+                component_data.build_generation = global_state.build_generation
+                global_state.build_generation += 1
 
             # Remember the previous children of this component
             old_children_in_build_boundary_for_visited_children[
@@ -965,6 +965,10 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         # Reconcile all matched pairs
         for new_component, old_component in reconciled_components_new_to_old.items():
+            assert (
+                new_component is not old_component
+            ), f"Attempted to reconcile {new_component!r} with itself!?"
+
             self._reconcile_component(
                 old_component,
                 new_component,
@@ -977,8 +981,8 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             # components to prevent a pointless rebuild.
             self._dirty_components.discard(new_component)
 
-        # Update the component data. If the root component was not reconciled, the new
-        # component is the new build result.
+        # Update the component data. If the root component was not reconciled,
+        # the new component is the new build result.
         try:
             reconciled_build_result = reconciled_components_new_to_old[new_build]
         except KeyError:
@@ -1079,14 +1083,12 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         old_component_dict = vars(old_component)
         new_component_dict = vars(new_component)
 
-        for prop_name in new_component._state_properties_:
-            # Should the value be overridden?
-            if (
-                prop_name in old_component._properties_assigned_after_creation_
-                and prop_name not in new_component._properties_set_by_creator_
-            ):
-                continue
+        overridden_property_names = (
+            old_component._properties_set_by_creator_
+            - old_component._properties_assigned_after_creation_
+        ) | new_component._properties_set_by_creator_
 
+        for prop_name in overridden_property_names:
             # Take care to keep state bindings up to date
             old_value = old_component_dict[prop_name]
             new_value = new_component_dict[prop_name]
@@ -1197,7 +1199,6 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
         as a list of all components occurring in the new tree, which did not
         have a match in the old tree.
         """
-
         old_components_by_key: dict[str, rio.Component] = {}
         new_components_by_key: dict[str, rio.Component] = {}
 
@@ -1277,6 +1278,13 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     key_scan(new_components_by_key, new_child, include_self=True)
 
         def worker(old_component: rio.Component, new_component: rio.Component) -> None:
+            # If a component was passed to a container, it is possible that the
+            # container returns the same instance of that component in multiple
+            # builds. This would reconcile a component with itself, which ends
+            # in disaster.
+            if old_component is new_component:
+                return
+
             # Register the component by key
             register_component_by_key(old_components_by_key, old_component)
             register_component_by_key(new_components_by_key, new_component)
@@ -1309,6 +1317,13 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             for key in new_key_matches:
                 old_component = old_components_by_key[key]
                 new_component = new_components_by_key[key]
+
+                # If a component was passed to a container, it is possible that
+                # the container returns the same instance of that component in
+                # multiple builds. This would reconcile a component with itself,
+                # which ends in disaster.
+                if old_component is new_component:
+                    continue
 
                 # If the components have different types, even the same key
                 # can't make them match

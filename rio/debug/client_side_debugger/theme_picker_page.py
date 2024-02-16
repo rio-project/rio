@@ -55,7 +55,6 @@ async def update_and_apply_theme(
             component,
             include_children_recursively=False,
         )
-    revel.debug(f"Soiled {len(session._dirty_components)} components")
 
     # Refresh
     await session._refresh()

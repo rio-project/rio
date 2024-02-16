@@ -217,7 +217,6 @@ class AppServer(fastapi.FastAPI):
 
     @contextlib.asynccontextmanager
     async def _lifespan(self):
-        common.timing_print("Start of the lifespan function")
         # If running as a server, periodically clean up expired sessions
         if not self.running_in_window:
             assert type(self) is AppServer  # Shut up pyright
@@ -238,8 +237,6 @@ class AppServer(fastapi.FastAPI):
         if self.internal_on_app_start is not None:
             self.internal_on_app_start()
 
-        common.timing_print("Yielding from the lifespan function")
-
         try:
             yield
         finally:
@@ -254,8 +251,6 @@ class AppServer(fastapi.FastAPI):
                     traceback.print_exception(
                         type(result), result, result.__traceback__
                     )
-
-        common.timing_print("End of the lifespan function")
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """
@@ -292,7 +287,6 @@ class AppServer(fastapi.FastAPI):
         """
         Handler for serving the index HTML page via fastapi.
         """
-        common.timing_print("Serving index page")
 
         # Because Rio apps are single-page, this route serves as the fallback.
         # In addition to legitimate requests for HTML pages, it will also catch
@@ -618,7 +612,6 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
         del sessionToken
 
         # Accept the socket
-        common.timing_print(f"Debug: Accepting websocket from {websocket.client}")
         await websocket.accept()
 
         # Look up the session token. If it is valid the session's duration is
@@ -707,24 +700,20 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
             sess._send_message = send_message
             sess._receive_message = receive_message
 
-        common.timing_print("Setting active event")
         sess._websocket = websocket
         sess._is_active_event.set()
 
         # Check if this is a reconnect
         try:
             if hasattr(sess, "window_width"):
-                common.timing_print("Sending reconnect message")
                 init_coro = sess._send_all_components_on_reconnect()
             else:
-                common.timing_print("Finishing session initialization")
                 await self._finish_session_initialization(
                     sess, websocket, session_token
                 )
 
                 # Trigger a refresh. This will also send the initial state to
                 # the frontend.
-                common.timing_print("Refreshing session")
                 init_coro = sess._refresh()
 
             # This is done in a task because the server is not yet running, so
@@ -733,25 +722,18 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
             sess.create_task(init_coro, name=f"Session `{sess}` init")
 
             # Serve the socket
-            common.timing_print("Serving session")
             await sess.serve()
 
         except fastapi.WebSocketDisconnect as err:
-            common.timing_print(
-                f'Debug: Closing connection to "{websocket.client}" because of {err}'
-            )
-
             # If the connection was closed on purpose, close the session
             if err.code == 1001:
                 sess.close()
 
         else:
-            common.timing_print("Closing websocket without exception")
             # I don't think this branch can even be reached, but better safe
             # than sorry, I guess?
             sess.close()
         finally:
-            common.timing_print("Clearing active event")
             sess._websocket = None
             sess._is_active_event.clear()
 
