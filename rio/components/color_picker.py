@@ -24,6 +24,7 @@ class ColorChangeEvent:
 class ColorPicker(FundamentalComponent):
     """
     # ColorPicker
+
     Allows the user to pick a RGB(A) color.
 
     `ColorPicker` is a component that allows the user to pick a color. It
@@ -31,22 +32,24 @@ class ColorPicker(FundamentalComponent):
     interact with to pick a color, and optionally an opacity slider to pick
     opacity.
 
-    ## Attributes:
-    `color:` The color that the user has picked.
 
-    `pick_opacity:` Whether to allow the user to pick opacity. If `False`,
+    ## Attributes:
+
+    `color`: The color that the user has picked.
+
+    `pick_opacity`: Whether to allow the user to pick opacity. If `False`,
             the opacity slider will be hidden and the color value will be forced
             to be fully opaque.
 
-    `on_change:` This event is triggered whenever the user changes the color.
+    `on_change`: This event is triggered whenever the user changes the color.
+
 
     ## Example:
+
     Simple color picker:
+
     ```python
-    rio.ColorPicker(
-        color=rio.Color.from_rgb(0.5, 0.5, 0.5),
-        pick_opacity=True,
-    )
+    rio.ColorPicker(rio.Color.from_rgb(0.5, 0.5, 0.5))
     ```
 
     Color picker with a default color and color will be updated when user changes the color:
@@ -61,6 +64,7 @@ class ColorPicker(FundamentalComponent):
     ```
 
     Color picker with an event handler:
+
     ```python
     class ComponentClass(rio.Component):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)

@@ -17,6 +17,7 @@ __all__ = [
 class Card(FundamentalComponent):
     """
     # Card
+
     A container that visually encompasses its child components.
 
     Cards are used to group related components together, and to visually
@@ -27,56 +28,65 @@ class Card(FundamentalComponent):
     elevate slightly when the mouse hovers over them, indicating to the user
     that they support interaction.
 
-    ## Attributes:
-    `content:` The component to display inside the card.
 
-    `corner_radius:` The radius of the card's corners. If set to `None`, it
+    ## Attributes:
+
+    `content`: The component to display inside the card.
+
+    `corner_radius`: The radius of the card's corners. If set to `None`, it
             is picked from the active theme.
 
-    `on_press:` An event handler that is called when the card is clicked.
+    `on_press`: An event handler that is called when the card is clicked.
             Note that attaching an even handler will also modify the appearance
             of the card, to signal the possible interaction to the user. See
             `elevate_on_hover` and `colorize_on_hover` for details.
 
-    `elevate_on_hover:` Whether the card should elevate slightly when the
+    `elevate_on_hover`: Whether the card should elevate slightly when the
             mouse hovers over it. If set to `None` the card will elevate if
             an `on_press` event handler is attached.
 
-    `colorize_on_hover:` Whether the card should change its color when the
+    `colorize_on_hover`: Whether the card should change its color when the
             mouse hovers over it. If set to `None` the card will change its
             color if an `on_press` event handler is attached.
 
-    `color:` The color scheme to use for the card. The color scheme controls
+    `color`: The color scheme to use for the card. The color scheme controls
             the background color of the card, and the color of the text and
             icons inside it. Check `rio.Color` for details.
 
+
     ## Example:
-    A `Card` with an icon in it:
+
+    This minimal example will simply display a `Card` with the castle icon
+    in it:
+
     ```python
-    rio.Card(
-        content=rio.Icon("castle"),
-    )
+    rio.Card(content=rio.Icon("castle"))
     ```
 
-    A `Card` with text and an icon in it, which is elevated when the
-    mouse hovers over it and prints a message when clicked:
+    `Card`s are commonly used to display content. You can easily achieve this
+    by adding a icon and text in a row. You can also attach an event handler
+    to the card to make it interactive:
+
     ```python
-    class ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
+
         def on_press_card(self) -> None:
             print("Card was pressed!")
 
         def build(self)->rio.Component:
+            # Create a row with an icon and text
+            # as the card content
             card_content = rio.Row(
                 rio.Icon(icon="castle"),
-                rio.Text("Hello World!"),
+                rio.Text("Click me!"),
                 spacing=1,
-                align_x=0.5, #align card content in the center
+                # align the card content in the center
+                align_x=0.5,
             )
             return rio.Card(
                         contend=card_content,
                         on_press=self.on_press_card,
                         elevate_on_hover=True,
-                        color="primary",
                     )
     ```
     """

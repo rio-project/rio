@@ -27,52 +27,87 @@ class Banner(component.Component):
     levels control the appearance of the notification bar, and allow you to
     quickly communicate the nature of the message to the user.
 
+
     ## Attributes:
-    `text:` The text to display. If `None` or empty, the banner will disappear
+
+    `text`: The text to display. If `None` or empty, the banner will disappear
             entirely.
 
-    `style:` Controls the appearance of the banner. The style is one of
+    `style`: Controls the appearance of the banner. The style is one of
             `info`, `success`, `warning` and `danger`. Depending on the value
             the banner may change its colors and icon.
 
-    `markup:` Whether the text should be interpreted as Markdown. If `True`, the
+    `markup`: Whether the text should be interpreted as Markdown. If `True`, the
             text will be rendered as Markdown, otherwise it will be rendered as
             plain text.
 
-    `multiline:` Whether long text may be wrapped over multiple lines.
+    `multiline`: Whether long text may be wrapped over multiple lines.
             Multiline banners are also styled slightly differently to make the
-            icon fit their larger size.
+            icon fit their larger size. Use `"\\n"` to add a line break.
+
 
     ## Example:
+
+    This minimal example will simply display a banner with the text "This is a
+    banner":
+
     ```python
-    rio.Banner(
-        text="This is a banner",
-        style="info",
-    )
+    rio.Banner(text="This is a banner", style="info")
     ```
-    Here's a banner with Markdown:
+
+    `Banner`s are commonly used to inform the users of about the result
+    of an action. You can easily achieve this by adding a banner with its text
+    set to the result of the action. For example, you could show a banner with
+    the text "Button pressed!" when a button is pressed:
+
     ```python
-    class ComponentClass(rio.Component):
-        banner_text: str = "**Hello World!**"
+    class MyComponent(rio.Component):
+        banner_text: str = ""
+
+        def on_press_button(self) -> None:
+            MyComponent.banner_text = "Button pressed!"
+
         def build(self)->rio.Component:
-            return rio.Banner(
-                        text=ComponentClass.banner_text,
-                        style="info",
-                        markup=True,
-                    )
-    ```
-    Here's a multiline banner:
-    ```python
-    class ComponentClass(rio.Component):
-        banner_text: str = 'Hello World! \n This is a multiline banner.'
-        def build(self)->rio.Component:
-            return rio.Banner(
-                        text=self.banner_text,
-                        style="info",
-                        multiline=True,
+
+            return rio.Column(
+                        rio.Banner(
+                                text=self.banner_text,
+                                style="info",
+                        ),
+                        rio.Button(
+                            text="Press me!",
+                            on_press=on_press_button,
+                        ),
+                        spacing=1,
                     )
     ```
 
+    `Banner`s are commonly used to inform the users of about the result
+    of an action. You can easily achieve this by adding a banner with its text
+    set to the result of the action. You can share the banner text with other
+    components by using state bindings:
+
+    ```python
+    class MyComponent(rio.Component):
+        banner_text: str = ""
+
+        def on_press_button(self) -> None:
+            MyComponent.banner_text = "Button pressed!"
+
+        def build(self)->rio.Component:
+
+            return rio.Column(
+                        rio.Banner(
+                                text=MyComponent.banner_text,
+                                style="info",
+                        ),
+                        rio.Button(
+                            text="Press me!",
+                            on_press=on_press_button,
+                        ),
+                        spacing=1,
+                    )
+    ```
     """
 
     text: Optional[str]

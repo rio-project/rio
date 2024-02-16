@@ -33,9 +33,9 @@ class Text(FundamentalComponent):
 
     `selectable:` Whether the text can be selected by the user.
 
-    style:` The style of the text. This can either be a `TextStyle` instance,
-            or one of the built-in styles: `heading1`, `heading2`, `heading3`,
-            or `text`.
+    `style:` The style of the text. This can either be a `TextStyle` instance,
+        or one of the built-in styles: `heading1`, `heading2`, `heading3`,
+        or `text`.
 
     ## Example:
 

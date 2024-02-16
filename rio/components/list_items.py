@@ -19,35 +19,69 @@ __all__ = [
 
 class HeadingListItem(FundamentalComponent):
     """
-
     # HeadingListItem
 
-    A list item with a header. Similar to `SimpleListItem` but without secondary text and additional components.
-    on_press event is not supported.
+    A simple list item with only a header.
 
-    `Note:` check `rio.ListView` for more information on how to easily build this component.
+    `HeadingListItem`s are the easiest way to create list items, which can
+    take care of the most primitive task: Display a text. If your want a more
+    generic list item with additional children, you can use the `SimpleListItem`.
+    Or if you want to build a more complex list item, you can use the `CustomListItem`.
+
+    Note that like with other `ListItem`s the `key` is not optional. This is to
+    avoid unintentional reconciliation with other items when the list is
+    updated.
+
 
     ## Attributes:
-    `text:` The text to display.
+
+    `text`: The text to display.
+
+    `key`: A unique key to identify the list item. This is used to avoid
+        unintentional reconciliation with other items when the list is
+        updated.
+
 
     ## Example:
-    A simple `HeadingListItem` with the text "Hello World!" will be shown:
+
+    This minimal example will simply display a list item with the text "Click
+    me!":
+
     ```python
-    rio.HeadingListItem("Hello World!")
+    rio.HeadingListItem("Click me!", key="item1")
     ```
 
-    Lets assume you want to build a `ListView` with a list of products as Headers. You can easily
-    build the list items with a for loop and add them to the `ListView`:
+    `ListView`s are commonly used to display lists of dynamic length. You can easily
+    achieve this by adding the children to a list first, and then unpacking that list:
 
     ```python
-    class ComponentClass(rio.Component):
+    import functools
 
-        products: List[str] = ["Product 1", "Product 2", "Product 3"]
+    class MyComponent(rio.Component):
+        products: list[str] = ["Product 1", "Product 2", "Product 3"]
+
+        def on_press_heading_list_item(self, product:str) -> None:
+            print(f"Selected {product}")
 
         def build(self)->rio.Component:
+            # Store all children in an intermediate list
             list_items = []
+
             for product in self.products:
-                list_items.append(rio.HeadingListItem(product))
+                list_items.append(
+                    rio.HeadingListItem(
+                        text=product,
+                        key=product,
+                        # Note the use of `functools.partial` to pass the product
+                        # to the event handler.
+                        on_press=functools.partial(
+                            self.on_press_heading_list_item,
+                            product=product,
+                        ),
+                    )
+                )
+
+            # Then unpack the list to pass the children to the `ListView`
             return rio.ListView(*list_items)
     ```
     """
@@ -90,6 +124,7 @@ class SimpleListItem(Component):
     avoid unintentional reconciliation with other items when the list is
     updated.
 
+
     ## Attributes
 
     `text`: The text to display.
@@ -103,13 +138,18 @@ class SimpleListItem(Component):
 
     `on_press`: Triggered when the list item is pressed.
 
+    `key`: A unique key to identify the list item. This is used to avoid
+        unintentional reconciliation with other items when the list is
+        updated.
+
+
     ## Example
 
     This minimal example will simply display a list item with the text "Click
     me!":
 
     ```python
-    rio.SimpleListItem("Click me!", key='item1')
+    rio.SimpleListItem("Click me!", key="item1")
     ```
 
     `ListView`s are commonly used to display lists of dynamic length. You can easily
@@ -235,16 +275,24 @@ class CustomListItem(FundamentalComponent):
 
     A list item with custom content.
 
-    Most of the time the `SimpleListItem` will do the job. With `CustomListItems` you can
-    build more complex list items. You can add any component to the list item. This can be e.g.
-    a `Row`, `Column`, `Text`, `Icon`, `Image` or any other component.
+    Most of the time the `SimpleListItem` will do the job. With `CustomListItems` you
+    can build more complex list items. You can add any component to the list item.
+    This can be e.g. a `Row`, `Column`, `Text`, `Icon`, `Image` or any other component.
 
-    `Note:` check `rio.ListView` for more information on how to easily build this component.
+    Note that like with other `ListItem`s the `key` is not optional. This is to
+    avoid unintentional reconciliation with other items when the list is
+    updated.
+
 
     ## Attributes:
-    `content:` The content to display.
+    `content`: The content to display.
 
-    `on_press:` Triggered when the list item is pressed.
+    `on_press`: Triggered when the list item is pressed.
+
+    `key`: A unique key to identify the list item. This is used to avoid
+        unintentional reconciliation with other items when the list is
+        updated.
+
 
     ## Example:
     TODO: add example
