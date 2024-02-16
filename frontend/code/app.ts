@@ -71,6 +71,15 @@ function main(): void {
     globalThis.pixelsPerRem = pixelsPerRem;
     globalThis.scrollBarSize = scrollBarSize;
 
+    window.addEventListener('beforeunload', () => {
+        // Delete the connection-lost-popup, otherwise it would become visible
+        // for a little while when the browser navigates to a different website
+        let connectionLostPopup = document.querySelector(
+            '.rio-connection-lost-popup'
+        );
+        connectionLostPopup?.remove();
+    });
+
     // Listen for URL changes, so the session can switch page
     window.addEventListener('popstate', (event) => {
         console.log(`URL changed to ${window.location.href}`);

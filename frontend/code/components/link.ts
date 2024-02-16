@@ -38,13 +38,6 @@ export class LinkComponent extends ComponentBase {
 
                     event.stopPropagation();
                     event.preventDefault();
-                } else {
-                    // Delete the connection-lost-popup, otherwise it would
-                    // become visible for a little while
-                    let connectionLostPopup = document.querySelector(
-                        '.rio-connection-lost-popup'
-                    ) as HTMLElement;
-                    connectionLostPopup.remove();
                 }
             },
             { capture: true }
