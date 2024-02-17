@@ -1,8 +1,5 @@
 [app]
 app_type = "website"
 main_module = "tinytest"
+# main_module = "dashboard"
 # main_module = "website"
-
-[deploy]
-app_name = "my-app"
-name = "foo"

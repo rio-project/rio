@@ -1966,7 +1966,7 @@ a.remove();
         try:
             return self._weak_components_by_id[component_id]
         except KeyError:
-            logging.warn(
+            logging.warning(
                 f"Encountered message for unknown component {component_id}. (The component might have been deleted in the meantime.)"
             )
             return None

@@ -9,6 +9,7 @@ import webbrowser
 from typing import *  # type: ignore
 
 import revel
+import uvicorn.lifespan
 from revel import print
 
 import rio.app_server
@@ -535,6 +536,7 @@ window.setConnectionLostPopupVisible(true);
         """
         # If this session isn't done connecting, just return
         if session._send_message is rio.session.dummy_send_message:
+            revel.debug(f"Skipping send: {javascript_source}")
             return
 
         # Run the javascript in a task

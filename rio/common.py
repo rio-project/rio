@@ -8,7 +8,6 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
-import motor.motor_asyncio
 import revel
 from PIL.Image import Image
 from typing_extensions import Annotated

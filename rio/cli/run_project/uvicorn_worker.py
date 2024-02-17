@@ -4,6 +4,7 @@ from typing import *  # type: ignore
 
 import revel
 import uvicorn
+import uvicorn.lifespan.on
 
 import rio
 import rio.app_server
@@ -50,6 +51,7 @@ class UvicornWorker:
 
         config = uvicorn.Config(
             self.app_server,
+            log_config=None,  # Prevent uvicorn from configuring global logging
             log_level="error" if self.quiet else "info",
             timeout_graceful_shutdown=1,  # Without a timeout the server sometimes deadlocks
         )
@@ -60,13 +62,34 @@ class UvicornWorker:
         #
         # self._uvicorn_server.config.setup_event_loop()
 
+        # Uvicorn can't handle `CancelledError` properly, so make sure it never
+        # sees one. Uvicorn is wrapped in a task, which can finish peacefully.
+        serve_task = asyncio.create_task(
+            self._uvicorn_server.serve(
+                sockets=[self.socket],
+            ),
+            name="uvicorn serve",
+        )
+
+        # Uvicorn doesn't handle CancelledError properly, which results in ugly
+        # output in the console. This monkeypatch suppresses that.
+        original_receive = uvicorn.lifespan.on.LifespanOn.receive
+
+        async def patched_receive(self) -> Any:
+            try:
+                return await original_receive(self)
+            except asyncio.CancelledError:
+                return {
+                    "type": "lifespan.shutdown",
+                }
+
+        uvicorn.lifespan.on.LifespanOn.receive = patched_receive
+
         # Run the server
         try:
-            await self._uvicorn_server.serve(
-                sockets=[self.socket],
-            )
+            await serve_task
         except asyncio.CancelledError:
-            self._uvicorn_server.should_exit = True
+            pass
         except Exception as err:
             revel.error(f"Uvicorn has crashed:")
             print()
@@ -74,6 +97,13 @@ class UvicornWorker:
             self.push_event(run_models.StopRequested())
         finally:
             self._uvicorn_server.should_exit = True
+
+            # Make sure not to return before the task has returned, but also
+            # avoid receiving any exceptions _again_
+            try:
+                await serve_task
+            except:
+                pass
 
     def replace_app(self, app: rio.App) -> None:
         """

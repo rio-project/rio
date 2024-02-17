@@ -1,3 +1,4 @@
+import logging
 from typing import Literal
 
 import introspection
@@ -156,11 +157,10 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
     with project.RioProject.try_load() as proj:
         module_path = proj.module_path
         if not module_path.is_dir():
-            error(
+            fatal(
                 f"Cannot add {what}s to a single-file project. Please convert"
                 f" your project into a package."
             )
-            return
 
         # Make sure the `pages` or `components` folder exists
         folder_path = module_path / (what + "s")
@@ -173,21 +173,17 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
 
         file_path = folder_path / (file_name + ".py")
         if file_path.exists():
-            error(f"File {file_path.relative_to(module_path)} already exists")
-            return
+            fatal(f"File {file_path.relative_to(module_path)} already exists")
 
         file_path.write_text(
-            f"""
-from __future__ import annotations
+            f"""from __future__ import annotations
 
+from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
 import rio
 
 from .. import components as comps
-
-
-__all__ = ['{class_name}']
 
 
 class {class_name}(rio.Component):
@@ -204,7 +200,9 @@ class {class_name}(rio.Component):
             init_py_code = init_py_path.read_text(encoding="utf8")
         except FileNotFoundError:
             init_py_code = ""
-        init_py_code = init_py_code.rstrip() + f"\nfrom .{file_name} import *\n"
+        init_py_code = (
+            init_py_code.rstrip() + f"\nfrom .{file_name} import {class_name}\n"
+        )
         init_py_path.write_text(init_py_code, encoding="utf8")
 
         success(

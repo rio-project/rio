@@ -18,6 +18,7 @@ from xml.etree import ElementTree as ET
 
 import fastapi
 import pytz
+import revel
 import timer_dict
 import uniserde.case_convert
 from PIL import Image
@@ -723,6 +724,9 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
 
             # Serve the socket
             await sess.serve()
+
+        except asyncio.CancelledError:
+            pass
 
         except fastapi.WebSocketDisconnect as err:
             # If the connection was closed on purpose, close the session
