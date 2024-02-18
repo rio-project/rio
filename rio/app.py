@@ -290,10 +290,7 @@ class App:
             internal_on_app_start=internal_on_app_start,
         )
 
-    def as_fastapi(
-        self,
-        debug_mode: bool = False,
-    ) -> fastapi.FastAPI:
+    def as_fastapi(self) -> fastapi.FastAPI:
         """
         Return a FastAPI instance that serves this app.
 
@@ -316,7 +313,7 @@ class App:
         ```
         """
         return self._as_fastapi(
-            debug_mode=debug_mode,
+            debug_mode=False,
             running_in_window=False,
             validator_factory=None,
             internal_on_app_start=None,
@@ -329,7 +326,6 @@ class App:
         port: int,
         quiet: bool,
         running_in_window: bool,
-        debug_mode: bool = False,
         validator_factory: Callable[[rio.Session], debug.Validator] | None = None,
         internal_on_app_start: Callable[[], None] | None = None,
         internal_on_server_created: Callable[[uvicorn.Server], None] | None = None,
@@ -354,7 +350,7 @@ class App:
 
         # Create the FastAPI server
         fastapi_app = self._as_fastapi(
-            debug_mode=debug_mode,
+            debug_mode=False,
             running_in_window=running_in_window,
             validator_factory=validator_factory,
             internal_on_app_start=internal_on_app_start,
@@ -383,7 +379,6 @@ class App:
         host: str = "localhost",
         port: int = 8000,
         quiet: bool = False,
-        debug_mode: bool = False,
     ) -> None:
         """
         Creates and runs a webserver that serves this app.
@@ -417,7 +412,6 @@ class App:
             port=port,
             quiet=quiet,
             running_in_window=False,
-            debug_mode=debug_mode,
         )
 
     def run_in_browser(
@@ -426,7 +420,6 @@ class App:
         host: str = "localhost",
         port: int | None = None,
         quiet: bool = False,
-        debug_mode: bool = False,
     ) -> None:
         """
         Runs an internal webserver and opens the app in the default browser.
@@ -464,7 +457,6 @@ class App:
             host=host,
             port=port,
             quiet=quiet,
-            debug_mode=debug_mode,
             running_in_window=False,
             internal_on_app_start=on_startup,
         )
@@ -472,7 +464,6 @@ class App:
     def run_in_window(
         self,
         quiet: bool = True,
-        debug_mode: bool = False,
     ) -> None:
         """
         Runs the app in a local window.
@@ -533,7 +524,6 @@ class App:
                 host=host,
                 port=port,
                 quiet=quiet,
-                debug_mode=debug_mode,
                 running_in_window=True,
                 internal_on_app_start=app_ready_event.set,
                 internal_on_server_created=on_server_created,

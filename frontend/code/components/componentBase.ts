@@ -47,7 +47,7 @@ export abstract class ComponentBase {
     state: Required<ComponentState>;
 
     // Reference to the parent component. If the component is about to be
-    // removed from the widget tree (i.e. it's in `latent-components`), this
+    // removed from the component tree (i.e. it's in `latent-components`), this
     // still references the *last* parent component. `null` is only for newly
     // created components and the root component.
     parent: ComponentBase | null = null;
@@ -303,7 +303,7 @@ export abstract class ComponentBase {
     protected abstract createElement(): HTMLElement;
 
     /// This method is called when a component is about to be removed from the
-    /// widget tree. It can be used for cleaning up event handlers and helper
+    /// component tree. It can be used for cleaning up event handlers and helper
     /// HTML elements (like popups).
     onDestruction(): void {
         for (let handler of this._eventHandlers) {

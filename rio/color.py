@@ -578,7 +578,7 @@ class Color(SelfSerializing):
         Plotly expects colors to be specified as strings, and this function
         returns the color formatted as such.
         """
-        return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {int(round(self.opacity*255))})"
+        return f"rgba({int(round(self.red*255))}, {int(round(self.green*255))}, {int(round(self.blue*255))}, {self.opacity})"
 
     def _serialize(self, sess: rio.Session) -> Jsonable:
         return self.rgba

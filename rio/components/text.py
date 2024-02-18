@@ -90,8 +90,8 @@ class Text(FundamentalComponent):
             margin_bottom=margin_bottom,
             width=width,
             height=height,
-            # Note that align_x is not passed on. The fundamental widget instead
-            # sets its text align.
+            # Note that align_x is not passed on. The fundamental component
+            # instead sets its text align.
             align_x=None,
             align_y=align_y,
         )
@@ -101,6 +101,8 @@ class Text(FundamentalComponent):
         self.selectable = selectable
         self.style = style
         self._text_align = align_x
+
+        self._properties_set_by_creator_.add("_text_align")
 
     def _custom_serialize(self) -> JsonDoc:
         # Serialization doesn't handle unions. Hence the custom serialization
