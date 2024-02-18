@@ -49,7 +49,7 @@ ImageLike = Path | Image | URL | bytes
 ASSET_MANGER: imy.asset_manager.AssetManager = imy.asset_manager.AssetManager(
     xz_dir=RIO_ASSETS_DIR,
     cache_dir=USER_CACHE_DIR / "rio",
-    version=imy.package_metadata.get_package_version(),
+    version=imy.package_metadata.get_package_version("rio-ui"),
 )
 
 
