@@ -3,7 +3,6 @@ Pretty-strings a traceback. The result looks very similar to Python's default,
 but is colored and just tweaked in general.
 """
 
-
 import html
 import io
 import linecache
@@ -19,6 +18,7 @@ def _format_single_exception_raw(
     out: IO[str],
     err: BaseException,
     *,
+    include_header: bool,
     escape: Callable[[str], str],
     bold: str,
     nobold: str,
@@ -65,7 +65,8 @@ def _format_single_exception_raw(
         tb_list.append(frame)
 
     # Lead-in
-    out.write(f"{dim}Traceback (most recent call last):{nodim}\n")
+    if include_header:
+        out.write(f"{dim}Traceback (most recent call last):{nodim}\n")
 
     # Iterate through frames
     for frame in tb_list:
@@ -144,6 +145,7 @@ def format_exception_raw(
             format_inner(err.__cause__)
             out.write("\n\n")
             out.write(f"The above exception was the direct cause of the following:\n\n")
+            include_header = False
 
         elif err.__context__ is not None:
             format_inner(err.__context__)
@@ -151,11 +153,15 @@ def format_exception_raw(
             out.write(
                 f"During handling of the above exception, another exception occurred:\n\n"
             )
+            include_header = False
+        else:
+            include_header = True
 
         # Format this exception
         _format_single_exception_raw(
             out,
             err,
+            include_header=include_header,
             escape=escape,
             bold=bold,
             nobold=nobold,
