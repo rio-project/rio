@@ -77,12 +77,11 @@ class Button(Component):
     The same button, but with a callback which prints "Button pressed!" to the console:
     ```python
     class ComponentClass(rio.Component):
-
             def on_press_button(self) -> None:
                 print("Button pressed!")
 
             def build(self)->rio.Component:
-            return rio.Button(
+                return rio.Button(
                         content="Click me!",
                         on_press=self.on_press_button,
                     )
@@ -261,13 +260,12 @@ class IconButton(Component):
 
     The same button, but with a callback which prints "Icon button pressed!" to the console:
     ```python
-    ComponentClass(rio.Component):
-
+    class ComponentClass(rio.Component):
             def on_press_button(self) -> None:
                 print("Icon button pressed!")
 
             def build(self)->rio.Component:
-            return rio.IconButton(
+                return rio.IconButton(
                         icon="castle",
                         on_press=self.on_press_button,
                     )
@@ -277,7 +275,7 @@ class IconButton(Component):
     `Note:` If the banner_text is an empty string, the banner will disappear entirely.
 
     ```python
-    ComponentClass(rio.Component):
+    class ComponentClass(rio.Component):
         banner_text: str = ""
 
         def on_press_button(self) -> None:

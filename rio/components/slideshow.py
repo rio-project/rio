@@ -39,13 +39,14 @@ class Slideshow(FundamentalComponent):
     A simple slideshow with two images:
     ```python
     from pathlib import Path
-    PATH = Path(__file__).parent
+
+    pictures_directory = Path.home() / "Pictures" / "..."
 
     rio.Slideshow(
         children=[
-            rio.Image(PATH / "first.jpg"),
-            rio.Image(PATH / "second.jpg"),
-        ]
+            rio.Image(pictures_directory / "first.jpg"),
+            rio.Image(pictures_directory / "second.jpg"),
+        ],
         linger_time=5,
     )
     ```
