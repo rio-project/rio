@@ -19,9 +19,7 @@ class IconRegistry:
     have been accessed are kept in memory for rapid access.
     """
 
-    def __init__(self, cache_dir: Path):
-        self.cache_dir = cache_dir
-
+    def __init__(self) -> None:
         # Maps icon names (set/icon:variant) to the icon's SVG string. The icon
         # names are canonical form.
         self.cached_icons: dict[str, str] = {}
@@ -38,15 +36,15 @@ class IconRegistry:
 
         # Create the instance if there is none yet
         if _icon_registry is None:
-            _icon_registry = IconRegistry(common.RIO_CACHE_DIR / "extracted-icon-sets")
+            _icon_registry = IconRegistry()
 
             # Register built-in icon sets
-            _icon_registry.icon_set_archives["rio"] = (
-                common.RIO_ASSETS_DIR / "compressed-icon-sets" / "rio.tar.xz"
+            _icon_registry.icon_set_archives["material"] = (
+                common.RIO_ASSETS_DIR / "icon-sets" / "material.tar.xz"
             )
 
-            _icon_registry.icon_set_archives["material"] = (
-                common.RIO_ASSETS_DIR / "compressed-icon-sets" / "material.tar.xz"
+            _icon_registry.icon_set_archives["rio"] = (
+                common.RIO_ASSETS_DIR / "icon-sets" / "rio.tar.xz"
             )
 
         # Use it
@@ -100,6 +98,15 @@ class IconRegistry:
 
         return f"{set}/{name}:{section}"
 
+    def _icon_set_extraction_dir(self, icon_set: str) -> Path:
+        """
+        Given the name of an icon set, return the directory where the icon set
+        will be extracted to. The directory will be created if necessary.
+        """
+        return common.ASSET_MANGER.get_cache_path(
+            Path("icon-sets") / icon_set,
+        )
+
     def _ensure_icon_set_is_extracted(self, icon_set: str) -> None:
         """
         Given the name of an icon set, extract the icon set's archive to the
@@ -107,9 +114,9 @@ class IconRegistry:
         `KeyError` if no icon set with the given name has been registered.
         """
         # If the target directory already exists there is nothing to do
-        target_dir = self.cache_dir / icon_set
+        icon_set_dir = self._icon_set_extraction_dir(icon_set)
 
-        if target_dir.exists():
+        if icon_set_dir.exists():
             return
 
         # Get the path to the icon set's archive. If there is no icon set with
@@ -117,19 +124,17 @@ class IconRegistry:
         archive_path = self.icon_set_archives[icon_set]
 
         # Extract the set
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-
         logging.debug(
-            f"Extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`"
+            f"Extracting icon set `{icon_set}` from `{archive_path}` to `{icon_set_dir}`"
         )
 
         with tarfile.open(archive_path, "r:xz") as tar_file:
-            tar_file.extractall(self.cache_dir)
+            tar_file.extractall(icon_set_dir.parent)
 
         # Sanity check: Make sure the target directory exists now
-        if not target_dir.exists():
+        if not icon_set_dir.exists():
             raise RuntimeError(
-                f"After extracting icon set `{icon_set}` from `{archive_path}` to `{target_dir}`, the target directory does not exist. Is the directory in the archive named correctly?"
+                f"After extracting icon set `{icon_set}` from `{archive_path}` to `{icon_set_dir.parent}`, the target directory does not exist. Is the directory in the archive named correctly?"
             )
 
     def _get_icon_svg_path(
@@ -143,7 +148,7 @@ class IconRegistry:
         # Prepare some paths
         icon_set, icon_name, variant = IconRegistry.parse_icon_name(icon_name)
 
-        icon_set_dir = self.cache_dir / icon_set
+        icon_set_dir = self._icon_set_extraction_dir(icon_set)
 
         if variant is None:
             svg_path = icon_set_dir / f"{icon_name}.svg"
@@ -182,9 +187,9 @@ class IconRegistry:
             # descriptive error message
             icon_set, icon_name, variant = IconRegistry.parse_icon_name(icon_name)
 
-            icon_set_path = self.cache_dir / icon_set
+            icon_set_dir = self._icon_set_extraction_dir(icon_set)
 
-            if not icon_set_path.exists():
+            if not icon_set_dir.exists():
                 raise AssetError(
                     f"Unknown icon set `{icon_set}`. Known icon sets are: `{'`, `'.join(self.icon_set_archives.keys())}`"
                 ) from None
@@ -213,7 +218,7 @@ class IconRegistry:
         # Iterate over all files in the icon set directory. Directories
         # correspond to variants. If icons are found in the root directory, they
         # are part of the default variant.
-        icon_set_dir = self.cache_dir / icon_set
+        icon_set_dir = self._icon_set_extraction_dir(icon_set)
         has_default_variant = False
 
         for path in icon_set_dir.iterdir():

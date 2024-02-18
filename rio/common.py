@@ -8,13 +8,12 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import *  # type: ignore
 
+import imy.asset_manager
+import imy.package_metadata
 import revel
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL
-
-__all__ = ["ImageLike", "Readonly", "FileInfo", "EventHandler"]
-
 
 _SECURE_HASH_SEED: bytes = secrets.token_bytes(32)
 
@@ -38,16 +37,23 @@ else:
     USER_CACHE_DIR = Path.home() / ".cache"
     USER_CONFIG_DIR = Path.home() / ".config"
 
-RIO_CACHE_DIR = USER_CACHE_DIR / "rio"
 
-
+# Constants & types
 _READONLY = object()
 T = TypeVar("T")
 Readonly = Annotated[T, _READONLY]
 
-
 ImageLike = Path | Image | URL | bytes
 
+
+ASSET_MANGER: imy.asset_manager.AssetManager = imy.asset_manager.AssetManager(
+    xz_dir=RIO_ASSETS_DIR,
+    cache_dir=USER_CACHE_DIR / "rio",
+    version=imy.package_metadata.get_package_version(),
+)
+
+
+# Precompiled regexes
 MARKDOWN_ESCAPE = re.compile(r"([\\`\*_\{\}\[\]\(\)#\+\-.!])")
 MARKDOWN_CODE_ESCAPE = re.compile(r"([\\`])")
 

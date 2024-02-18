@@ -38,7 +38,7 @@ INPUT_NAME_PATTERN = r"(.+).svg"
 
 # Configure: The output file will be written into this directory as
 # <SET_NAME>.tar.xz
-OUTPUT_DIR = rio.common.RIO_ASSETS_DIR / "compressed-icon-sets"
+OUTPUT_DIR = rio.common.RIO_ASSETS_DIR / "icon-sets"
 
 # For debugging: Stop after processing this many icons. Set to `None` for no
 # limit
