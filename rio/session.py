@@ -19,7 +19,6 @@ from typing import Any, Literal, cast, overload
 
 import aiofiles
 import fastapi
-import revel
 import unicall
 import uniserde
 from uniserde import Jsonable, JsonDoc

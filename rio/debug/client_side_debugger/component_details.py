@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import *  # type: ignore
 
-import revel
-
 import rio
 
 from ... import common

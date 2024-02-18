@@ -4,8 +4,6 @@ from collections.abc import Callable
 from dataclasses import KW_ONLY, field
 from typing import *  # type: ignore
 
-import revel
-
 import rio
 
 from .component import Component

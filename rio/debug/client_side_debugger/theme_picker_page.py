@@ -2,8 +2,6 @@ import functools
 import io
 from typing import *  # type: ignore
 
-import revel
-
 import rio
 
 

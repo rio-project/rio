@@ -10,7 +10,6 @@ from typing import *  # type: ignore
 
 import imy.asset_manager
 import imy.package_metadata
-import revel
 from PIL.Image import Image
 from typing_extensions import Annotated
 from yarl import URL

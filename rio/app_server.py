@@ -18,7 +18,6 @@ from xml.etree import ElementTree as ET
 
 import fastapi
 import pytz
-import revel
 import timer_dict
 import uniserde.case_convert
 from PIL import Image
