@@ -127,7 +127,7 @@ class ClientSideDebugger(rio.Component):
                     orientation="vertical",
                     spacing=2,
                     color="primary",
-                    selected_value=ClientSideDebugger.selected_page,
+                    selected_value=self.bind().selected_page,
                     margin=0.3,
                 ),
                 rio.Spacer(),

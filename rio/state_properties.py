@@ -12,7 +12,12 @@ if TYPE_CHECKING:
     from .components import Component
 
 
-__all__ = ["StateProperty", "StateBinding"]
+__all__ = [
+    "StateProperty",
+    "StateBinding",
+    "StateBindingMaker",
+    "PleaseTurnThisIntoAStateBinding",
+]
 
 
 class StateProperty:
@@ -99,7 +104,7 @@ class StateProperty:
             # If a value is already stored, that means this is a re-assignment.
             # Which further means it's an assignment outside of `__init__`.
             # Which is not a valid place to create a state binding.
-            if isinstance(value, StateProperty):
+            if isinstance(value, PleaseTurnThisIntoAStateBinding):
                 raise RuntimeError(
                     "State bindings can only be created when calling the component constructor"
                 )
@@ -173,3 +178,27 @@ class StateBinding:
                 )
 
             to_do.extend(cur.children)
+
+
+class StateBindingMaker:
+    """
+    Helper class returned by `Component.bind()`. Used to create state bindings.
+    """
+
+    def __init__(self, component: Component):
+        self.component = component
+
+    def __getattribute__(self, name: str) -> object:
+        component = super().__getattribute__("__dict__")["component"]
+        component_cls = type(component)
+
+        if name not in component_cls._state_properties_:
+            raise AttributeError
+
+        state_property = getattr(component_cls, name)
+        return PleaseTurnThisIntoAStateBinding(state_property)
+
+
+class PleaseTurnThisIntoAStateBinding:
+    def __init__(self, state_property: StateProperty):
+        self.state_property = state_property

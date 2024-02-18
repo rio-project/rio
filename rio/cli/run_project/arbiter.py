@@ -149,6 +149,12 @@ class Arbiter:
 
         return f"http://{local_ip}:{self.port}"
 
+    @property
+    def running_tasks(self) -> Iterator[asyncio.Task[None]]:
+        for task in (self._uvicorn_task, self._file_watcher_task, self._arbiter_task):
+            if task is not None:
+                yield task
+
     def stop(self, *, keyboard_interrupt: bool) -> None:
         """
         Stops the app. This function can safely be called more than once, and at
@@ -173,14 +179,8 @@ class Arbiter:
         assert self._mainloop is not None, "Mainloop isn't running!?"
 
         def cancel_all_tasks() -> None:
-            if self._file_watcher_task is not None:
-                self._file_watcher_task.cancel()
-
-            if self._uvicorn_task is not None:
-                self._uvicorn_task.cancel()
-
-            if self._arbiter_task is not None:
-                self._arbiter_task.cancel()
+            for task in self.running_tasks:
+                task.cancel()
 
         self._mainloop.call_soon_threadsafe(cancel_all_tasks)
 
@@ -320,8 +320,8 @@ class Arbiter:
         finally:
             # Wait until all the other tasks are done. If we return, then
             # `asyncio.run` will cancel anything that's still running.
-            for task in (self._uvicorn_task, self._file_watcher_task):
-                if task is None:
+            for task in self.running_tasks:
+                if task is self._arbiter_task:
                     continue
 
                 try:

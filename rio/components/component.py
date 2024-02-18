@@ -13,14 +13,19 @@ from dataclasses import KW_ONLY, field
 from pathlib import Path
 from typing import *  # type: ignore
 
-from typing_extensions import dataclass_transform
+from typing_extensions import Self, dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
 import rio
 
-from .. import debug, event, global_state, inspection
+from .. import event, global_state, inspection
 from ..dataclass import RioDataclassMeta, class_local_fields, internal_field
-from ..state_properties import StateBinding, StateProperty
+from ..state_properties import (
+    PleaseTurnThisIntoAStateBinding,
+    StateBinding,
+    StateBindingMaker,
+    StateProperty,
+)
 from . import fundamental_component
 
 __all__ = ["Component"]
@@ -471,13 +476,17 @@ class Component(metaclass=ComponentMeta):
             except KeyError:
                 continue
 
-            # Create a StateBinding, if requested
-            if not isinstance(value, StateProperty):
+            assert not isinstance(
+                value, StateProperty
+            ), f"You're still using the old state binding syntax for {self} {prop_name}"
+
+            # Create a StateBinding if requested
+            if not isinstance(value, PleaseTurnThisIntoAStateBinding):
                 continue
 
-            # In order to create a `StateBinding`, the creator's
-            # attribute must also be a binding
-            parent_binding = creator_vars[value.name]
+            # In order to create a `StateBinding`, the creator's attribute must
+            # also be a binding
+            parent_binding = creator_vars[value.state_property.name]
 
             if not isinstance(parent_binding, StateBinding):
                 parent_binding = StateBinding(
@@ -488,7 +497,7 @@ class Component(metaclass=ComponentMeta):
                     value=parent_binding,
                     children=weakref.WeakSet(),
                 )
-                creator_vars[value.name] = parent_binding
+                creator_vars[value.state_property.name] = parent_binding
 
             # Create the child binding
             child_binding = StateBinding(
@@ -508,6 +517,11 @@ class Component(metaclass=ComponentMeta):
         Return the session this component is part of.
         """
         return self._session_
+
+    # There isn't really a good type annotation for this... Self is the closest
+    # thing
+    def bind(self) -> Self:
+        return StateBindingMaker(self)  # type: ignore
 
     def _custom_serialize(self) -> JsonDoc:
         """

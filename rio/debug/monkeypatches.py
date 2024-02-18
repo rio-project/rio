@@ -6,7 +6,8 @@ from pathlib import Path
 import introspection.typing
 
 from .. import global_state
-from ..components.component import Component, ComponentMeta, StateProperty
+from ..components.component import Component, ComponentMeta
+from ..state_properties import PleaseTurnThisIntoAStateBinding, StateProperty
 
 __all__ = [
     "apply_monkeypatches",
@@ -74,7 +75,7 @@ def StateProperty_set(
     value: object,
 ):
     # Type check the value
-    if not isinstance(value, StateProperty):
+    if not isinstance(value, PleaseTurnThisIntoAStateBinding):
         try:
             annotation = self._resolved_annotation
         except AttributeError:

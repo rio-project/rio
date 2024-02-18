@@ -191,7 +191,7 @@ class IconsPage(rio.Component):
                     "keep",
                     "dim",
                 ],
-                selected_value=IconsPage.selected_fill,
+                selected_value=self.bind().selected_fill,
             )
         )
 
@@ -209,9 +209,9 @@ class IconsPage(rio.Component):
                     rio.Container(
                         rio.IconButton(
                             full_name,
-                            style="minor"
-                            if variant == self.selected_variant
-                            else "plain",
+                            style=(
+                                "minor" if variant == self.selected_variant else "plain"
+                            ),
                             on_press=functools.partial(
                                 self._on_select_variant, variant
                             ),
@@ -274,7 +274,7 @@ Use the `rio.Icon` component like this:
         children: list[rio.Component] = [
             rio.TextInput(
                 label="Search for an icon",
-                text=IconsPage.search_text,
+                text=self.bind().search_text,
                 on_change=self._on_search_text_change,
             ),
         ]
