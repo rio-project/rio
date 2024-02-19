@@ -32,63 +32,47 @@ class Revealer(FundamentalComponent):
     content. It can be used to create collapsible sections, or to hide and
     reveal content based on user input.
 
+
     ## Attributes:
-    `header:` The header of the `Revealer`. If `None`, the `Revealer` will be
+
+    `header`: The header of the `Revealer`. If `None`, the `Revealer` will be
             hidden by default.
 
-    `content:` The content to display when the `Revealer` is open.
+    `content`: The content to display when the `Revealer` is open.
 
-    `header_style:` The style of the header. Can be one of `"heading1"`,
+    `header_style`: The style of the header. Can be one of `"heading1"`,
             `"heading2"`, `"heading3"`, or `"text"`.
 
-    `is_open:` Whether the `Revealer` is open or not.
+    `is_open`: Whether the `Revealer` is open or not.
 
-    `on_change:` An event handler that is called when the `Revealer` is opened
+    `on_change`: An event handler that is called when the `Revealer` is opened
             or closed. The event handler receives a `RevealerChangeEvent` as
             input.
 
+
     ## Example:
-    A simple `Revealer` that displays a button when opened:
+
+    A simple `Revealer` that displays "Hello" when opened:
+
     ```python
-    rio.Revealer(
-        header="Click to reveal",
-        content=rio.Button(
-            content="Hello",
-        ),
-    )
+    rio.Revealer(header="Click to reveal", content=rio.Text("Hello"))
     ```
 
-    A `Revealer` that displays a `MultiLineTextInput` when opened and updates
-    its text on change:
-    ```python
-    class Component(rio.Component):
-        text: str = ""
+    A `Revealer` is a component that hides content, in this case a `TextInput`,
+    until it's opened:
 
-        def build(self) -> rio.Component:
-            return rio.Revealer(
-                    header= "Click to Reveal",
-                    content = rio.MultiLineTextInput(
-                                label="Write your comments here",
-                                text=Component.text,
-                                ),
-                    header_style = "heading2",
-                    )
-    ```
-
-    A `Revealer` that displays a `MultiLineTextInput` when opened and updates
-    its text on change:
     ```python
 
     class Component(rio.Component):
         text: str = ""
 
-        def on_change_update_text(self, ev: rio.MultiLineTextInputChangeEvent):
+        def on_change_update_text(self, ev: rio.TextInputChangeEvent):
             self.text = ev.text
 
         def build(self) -> rio.Component:
             return rio.Revealer(
                     header= "Click to Reveal",
-                    content = rio.MultiLineTextInput(
+                    content = rio.TextInput(
                                 label="Write your comments here",
                                 text=self.text,
                                 on_change=self.on_change_update_text,

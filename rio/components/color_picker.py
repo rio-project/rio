@@ -46,27 +46,31 @@ class ColorPicker(FundamentalComponent):
 
     ## Example:
 
-    Simple color picker:
+    This minimal example will simply display a `ColorPicker` with the default color red:
 
     ```python
-    rio.ColorPicker(rio.Color.from_rgb(0.5, 0.5, 0.5))
+    rio.ColorPicker(rio.Color.from_hex(#ff0000))
     ```
 
-    Color picker with a default color and color will be updated when user changes the color:
+    `ColorPicker`s are commonly used to let the user select a color. You can easily
+    achieve this by saving the color in a variable and using it in your application:
+
     ```python
-    class ComponentClass(rio.Component):
-        color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
+    class MyComponent(rio.Component):
+        color: rio.Color = rio.Color.from_hex(#ff0000)
+
         def build(self)->rio.Component:
             return rio.ColorPicker(
-                        color=ComponentClass.color,
+                        color=MyComponent.color,
                         pick_opacity=True,
                     )
     ```
 
-    Color picker with an event handler:
+    You can use an event handler to react to changes in the color. This example will
+    print the color to the console whenever the user changes it:
 
     ```python
-    class ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
 
         def on_change_color(self, event: rio.ColorChangeEvent) -> None:
@@ -75,13 +79,12 @@ class ColorPicker(FundamentalComponent):
         def build(self)->rio.Component:
             return rio.Card(
                 rio.ColorPicker(
-                        color=ComponentClass.color,
+                        color=self.color,
                         pick_opacity=True,
                         on_change=self.on_change_color,
                     ),
                 )
     ```
-
     """
 
     color: color.Color

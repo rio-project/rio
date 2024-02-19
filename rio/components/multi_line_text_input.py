@@ -29,60 +29,66 @@ class MultiLineTextInputConfirmEvent:
 class MultiLineTextInput(KeyboardFocusableFundamentalComponent):
     """
     # MultiLineTextInput
-    A user-editable text field. It's similar to `TextInput`, but it allows the user to
-    enter multiple lines of text.
+
+    A user-editable text field.
+
+    It's similar to `TextInput`, but it allows the user to enter multiple lines of text.
 
     `MultiLineTextInput` allows the user to enter a short text. The text can either be
     shown in plain text or other sensitive information.
 
+
     ## Attributes:
-    `text:` The text currently entered by the user.
 
-    `label:` A short text to display next to the text input.
+    `text`: The text currently entered by the user.
 
-    `is_sensitive:` Whether the text input should respond to user input.
+    `label`: A short text to display next to the text input.
 
-    `is_valid:` Visually displays to the user whether the current text is
+    `is_sensitive`: Whether the text input should respond to user input.
+
+    `is_valid`: Visually displays to the user whether the current text is
             valid. You can use this to signal to the user that their input needs
             to be changed.
 
-    `on_change:` Triggered when the user changes the text.
+    `on_change`: Triggered when the user changes the text.
 
-    `on_confirm:` Triggered when the user explicitly confirms their input,
+    `on_confirm`: Triggered when the user explicitly confirms their input,
             such as by pressing the "Enter" key. You can use this to trigger
             followup actions, such as logging in or submitting a form.
 
+
     ## Example:
-    A simple `MultiLineTextInput` with a default text of "" and a label:
-    `Note:` The text will not be updated if the user changes the text in the input field.
+
+    A minimal example of `MultiLineTextInput` with a default text of "" will be shown:
+    `Note`: The text will not be updated if the user changes the text in the input field.
+
     ```python
-    rio.MultiLineTextInput(
-        text="",
-        label="Write your comments here",
-    )
+    rio.MultiLineTextInput(text="")
     ```
 
-    In a Component class state bindings can be used to update the the input and listen to changes:
+    `MultiLineTextInput`s are often used to capture user input. You can easily bind state
+    variables to them to track changes:
 
     ```python
-    class Component(rio.Component):
+    class MyComponent(rio.Component):
         text: str = ""
-        def build(self)->rio.Component:
 
+        def build(self)->rio.Component:
             return rio.MultiLineTextInput(
-                        text=Component.text,
+                        text=MyComponent.text,
                         label="Write your comments here",
                     )
     ```
 
-    In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
+    In another case, you can update the input by listening to the `on_change` or `on_confirm` events:
 
     ```python
-    class Component(rio.Component):
+    class MyComponent(rio.Component):
         text: str = ""
 
         def on_change_update_text(self, ev: rio.MultiLineTextInputChangeEvent):
             self.text = ev.text
+            # You can do whatever you want with the new text
 
         def build(self)->rio.Component:
             return rio.MultiLineTextInput(

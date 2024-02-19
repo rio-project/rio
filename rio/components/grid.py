@@ -24,49 +24,54 @@ class GridChildPosition:
 class Grid(FundamentalComponent):
     """
     # Grid
+
     A container which arranges its children in a table-like grid.
 
     Grids arrange their children in a table-like grid. Each child is placed in
-    one or more cells of the grid.
+    one or more cells of the grid. You can add children to the grid either by
+    passing them in as a list or by using the `grid_add` method.
+
 
     ## Attributes:
-    `row_spacing:` The amount of space between rows of the grid.
 
-    `column_spacing:` The amount of space between columns of the grid.
+    `row_spacing`: The amount of space between rows of the grid.
+
+    `column_spacing`: The amount of space between columns of the grid.
+
 
     ## Example:
 
-    A grid with two rows and two columns. In the first row will be the `Text` component  "Hello" and
-    "World!", in the second row "Foo" and "Bar":
+    This code creates a grid layout with two rows and two columns, and adds
+    children to the grid by passing them in as a list:
+
     ```python
     rio.Grid(
-        [
-            rio.Text("Hello"),
-            rio.Text("World!"),
-        ],
-        [
-            rio.Text("Foo"),
-            rio.Text("Bar"),
-        ],
-        row_spacing=1,
-        column_spacing=1,
+            [rio.Text("Hello"), rio.Text("World!")], # 1. Row
+            [rio.Text("Foo"), rio.Text("Bar")],      # 2. Row
     )
     ```
 
-    Another option is to use the `add_child` method in the build function to add children to the grid:
+    Alternatively, you can use the `add_child` method to add children to the grid.
+    Here's how you can do it:
+
     ```python
     grid = rio.Grid(row_spacing=1, column_spacing=1)
+
     grid.add_child(rio.Text("Hello"), row=0, column=0)
     grid.add_child(rio.Text("World!"), row=0, column=1)
     grid.add_child(rio.Text("Foo"), row=1, column=0)
     grid.add_child(rio.Text("Bar"), row=1, column=1)
     ```
 
-    In a Component class the grid can be used like this:
+    In your Component class, you can use the `add_child` method within the build function to
+    add children to the grid. Here's how you can do it:
+
     ```python
-    ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
+
         def build(self)->rio.Component:
             grid = rio.Grid(row_spacing=1, column_spacing=1)
+
             grid.add_child(rio.Text("Hello"), row=0, column=0)
             grid.add_child(rio.Text("World!"), row=0, column=1)
             grid.add_child(rio.Text("Foo"), row=1, column=0)
@@ -149,6 +154,28 @@ class Grid(FundamentalComponent):
         width: int = 1,
         height: int = 1,
     ) -> None:
+        """
+        Add a child to the grid at a specified position.
+
+        ## Arguments:
+
+        `child`: The child component to add to the grid.
+
+        `row`: The row in which to place the child.
+
+        `column`: The column in which to place the child.
+
+        `width`: The number of columns the child should take up.
+
+        `height`: The number of rows the child should take up.
+
+        ## Example:
+
+        ```python
+        grid = rio.Grid(row_spacing=1, column_spacing=1)
+        grid.add_child(rio.Text("Hello"), row=0, column=0)
+        ```
+        """
         if width <= 0:
             raise ValueError("Children have to take up at least one column")
 

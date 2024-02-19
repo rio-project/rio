@@ -15,6 +15,7 @@ __all__ = [
 class CustomButton(Component):
     """
     # CustomButton
+
     A clickable button with customizable visuals.
 
     Most buttons in apps should fit the main Theme and are well served by the
@@ -26,43 +27,51 @@ class CustomButton(Component):
     full control about the button's appearance, while still providing the
     same functionality as regular buttons.
 
-    # Attributes:
-    `text:` The text to display on the button.
 
-    `is_sensitive:` Whether the button should respond to user input.
+    ## Attributes:
 
-    `style_default:` The background style to use when the button is not
+    `text`: The text to display on the button.
+
+    `is_sensitive`: Whether the button should respond to user input.
+
+    `style_default`: The background style to use when the button is not
             hovered or pressed.
 
-    `style_hover:` The background style to use when the cursor is hovering
+    `style_hover`: The background style to use when the cursor is hovering
             above the button.
 
-    `style_press:` The background style to use when the button is pressed.
+    `style_press`: The background style to use when the button is pressed.
 
-    `style_insensitive:` The background style to use when the button is
+    `style_insensitive`: The background style to use when the button is
             not sensitive.
 
-    `text_style_default:` The text style to use when the button is not
+    `text_style_default`: The text style to use when the button is not
             hovered or pressed.
 
-    `text_style_hover:` The text style to use when the cursor is hovering
+    `text_style_hover`: The text style to use when the cursor is hovering
             above the button.
 
-    `text_style_press:` The text style to use when the button is pressed.
+    `text_style_press`: The text style to use when the button is pressed.
 
-    `text_style_insensitive:` The text style to use when the button is
+    `text_style_insensitive`: The text style to use when the button is
             not sensitive.
 
-    `transition_speed:` How many seconds it takes for the button to transition
+    `transition_speed`: How many seconds it takes for the button to transition
             between styles.
 
-    `ripple:` Whether the button should display a Material Design ripple
+    `ripple`: Whether the button should display a Material Design ripple
             effect when hovered or clicked.
 
-    `on_press:` Triggered when the user clicks on the button.
+    `on_press`: Triggered when the user clicks on the button.
+
 
     ## Example:
-    A "fancy" button with a custom style:
+
+    CustomButton enables you to create a button with a fully customized appearance.
+    The following example creates a button with a white background and black text by default,
+    a black background and white text when hovered, a yellow background when pressed,
+    and a magenta background when insensitive. The button also transitions between styles:
+
     ```python
     rio.CustomButton(
         content="Click me!",
@@ -168,9 +177,11 @@ class CustomButton(Component):
                 style=style,
                 hover_style=hover_style,
                 transition_time=self.transition_speed,
-                cursor=rio.CursorStyle.POINTER
-                if self.is_sensitive
-                else rio.CursorStyle.DEFAULT,
+                cursor=(
+                    rio.CursorStyle.POINTER
+                    if self.is_sensitive
+                    else rio.CursorStyle.DEFAULT
+                ),
             ),
             on_mouse_enter=self._on_mouse_enter,
             on_mouse_leave=self._on_mouse_leave,

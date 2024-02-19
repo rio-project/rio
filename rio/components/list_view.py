@@ -13,18 +13,23 @@ class ListView(FundamentalComponent):
     """
     # ListView
 
+    A `ListView` is a container that vertically arranges its children.
+
     A container which arranges its children in a vertical list. It is similar to `Column`,
     but it is optimized for displaying large numbers of items.
 
     ## Attributes:
-    `children:` The children to display in the list.
 
-    `key:` A unique key for this component. If the key changes, the component will be
+    `children`: The children to display in the list.
+
+    `key`: A unique key for this component. If the key changes, the component will be
             destroyed and recreated. This is useful for components which maintain state
             across rebuilds.
 
     ## Example:
-    A list view with two items will be shown:
+
+    A minimal example of a `ListView` with two items will be shown:
+
     ```python
     rio.ListView(
         [
@@ -34,34 +39,37 @@ class ListView(FundamentalComponent):
     )
     ```
 
-    Lets assume you want to build a `ListView` with a list of products. You can easily
-    build the list items with a for loop and add them to the `ListView`. You can use
-    `functools.partial` to pass the product to the `on_press` event handler:
+    `ListView`s are commonly used to display lists of dynamic length. You can easily
+    achieve this by adding the children to a list first, and then unpacking that list:
 
     ```python
     import functools
 
-    class ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
+        products: list[str] = ["Product 1", "Product 2", "Product 3"]
 
-        products: List[str] = ["Product 1", "Product 2", "Product 3"]
-
-        def on_press_simple_list_item(self, product:str) -> None:
+        def on_press_heading_list_item(self, product:str) -> None:
             print(f"Selected {product}")
 
         def build(self)->rio.Component:
+            # Store all children in an intermediate list
             list_items = []
+
             for product in self.products:
                 list_items.append(
-                    rio.SimpleListItem(
+                    rio.HeadingListItem(
                         text=product,
                         key=product,
-                        left_child=rio.Icon("castle"),
+                        # Note the use of `functools.partial` to pass the product
+                        # to the event handler.
                         on_press=functools.partial(
-                            self.on_press_simple_list_item,
+                            self.on_press_heading_list_item,
                             product=product,
                         ),
                     )
                 )
+
+            # Then unpack the list to pass the children to the `ListView`
             return rio.ListView(*list_items)
     ```
     """

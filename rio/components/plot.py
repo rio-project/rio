@@ -23,22 +23,53 @@ __all__ = ["Plot"]
 class Plot(FundamentalComponent):
     """
     # Plot
+
     Displays a matplotlib, seaborn or plotly plot.
 
-    ## Attributes:
-    `figure:` The plot figure to display.
 
-    `background:` The background color of the plot. If `None`, a color from
+    ## Attributes:
+
+    `figure`: The plot figure to display.
+
+    `background`: The background color of the plot. If `None`, a color from
         the theme is used.
 
-    `corner_radius:` The corner radius of the plot
+    `corner_radius`: The corner radius of the plot
+
 
     ## Example:
-    A simple plot with a background color:
+
+    A minimal example with a plotly plot:
+
     ```python
-    TODO: add example
+    import plotly.graph_objects as go
+
+    fig = go.Figure()
+    # create your own plot here
+    # ... add traces, layout and so on...
+
+    rio.Plot(fig)
     ```
 
+    `Plot` components are utilized to display graphical plots. You can easily
+    showcase plots defined in your build function by passing the figure to the
+    `Plot` component.
+
+    ```python
+    import pandas as pd
+    import import plotly.express as px
+
+    class MyComponent(rio.Component):
+
+        def build(self) -> rio.Component:
+            df = pd.DataFrame({
+                "x": [1, 2, 3, 4],
+                "y": [4, 3, 2, 1],
+            })
+            fig = px.line(df, x="x", y="y", title="sample figure")
+
+            return rio.Plot(fig)
+    ```
     """
 
     figure: (

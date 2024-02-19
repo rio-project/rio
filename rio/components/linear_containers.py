@@ -31,6 +31,7 @@ class _LinearContainer(FundamentalComponent):
 class Row(_LinearContainer):
     """
     # Row
+
     A container that lays out its children horizontally.
 
     `Row`s are one of the most common components in Rio. They take any number of
@@ -41,7 +42,8 @@ class Row(_LinearContainer):
     The `Row`'s horizontal counterpart is the `Column`. A similar component, but
     stacking its children in the Z direction, is the `Stack`.
 
-    ### Undefined Space
+
+    ## Undefined Space
 
     Like most containers in `rio`, `Row`s always attempt to allocate all
     available space to their children. In the context of a `Row` though, this
@@ -59,28 +61,35 @@ class Row(_LinearContainer):
     components a `"grow"` value as its height, or set the `Row`'s vertical
     alignment.
 
-    ## Attributes:
-    `children:` The components to place in this `Row`.
 
-    `spacing:` How much empty space to leave between two adjacent children. No
+    ## Attributes:
+
+    `children`: The components to place in this `Row`.
+
+    `spacing`: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.
+
+    `proportions`: If set, the children will grow according to these proportions.
+        - `homogeneous`: All children will grow equally.
+        - A list of floats: Each child will grow according to its proportion.
+        - `None`: Allows all child components to expand as much as they need.
+
 
     ## Example:
 
-    A `Row` with two `Text` components and spacing between them:
+    This minimal example will display a `Row` with two `Text` components:
+
     ```python
-    rio.Row(
-        rio.Text("Hello"),
-        rio.Text("World!"),
-        spacing=1,
-    )
+    rio.Row(rio.Text("Hello"), rio.Text("World!"))
     ```
 
-    A `Row` is used to place an `Icon` and two `Text` components in a Row. A `Card` with text
-    and an icon in it, which is elevated when the mouse hovers over it and prints a message
-    when clicked:
+    `Row`s are commonly used to line up multiple components horizontally. In this example, we're
+    using a `Row` to place an `Icon` and two `Text` components in a `Row`. Wrap them in a `Card`
+    for a cool hover effect and a click response.
+
     ```python
-    class Component(rio.Component):
+    class MyComponent(rio.Component):
+
         def on_press_card(self) -> None:
             print("Card was pressed!")
 
@@ -90,7 +99,9 @@ class Row(_LinearContainer):
                 rio.Text("Hello"),
                 rio.Text("World!"),
                 spacing=1,
-                align_x=0.5,  # align card content in the center
+                # align card content in the center
+                # to avoid undefined space
+                align_x=0.5,
             )
             return rio.Card(
                 content=card_content,
@@ -145,6 +156,7 @@ Row._unique_id = "Row-builtin"
 class Column(_LinearContainer):
     """
     # Column
+
     A container that lays out its children vertically.
 
     `Column`s are one of the most common components in Rio. They take any number
@@ -155,7 +167,8 @@ class Column(_LinearContainer):
     The `Column`'s horizontal counterpart is the `Row`. A similar component, but
     stacking its children in the Z direction, is the `Stack`.
 
-    ### Undefined Space
+
+    ## Undefined Space
 
     Like most containers in `rio`, `Column`s always attempt to allocate all
     available space to their children. In the context of a `Column` though, this
@@ -173,27 +186,34 @@ class Column(_LinearContainer):
     components a `"grow"` value as its height, or set the `Column`'s vertical
     alignment.
 
-    ## Attributes:
-    `children:` The components to place in this `Column`.
 
-    `spacing:` How much empty space to leave between two adjacent children. No
+    ## Attributes:
+
+    `children`: The components to place in this `Column`.
+
+    `spacing`: How much empty space to leave between two adjacent children. No
             spacing is added before the first child or after the last child.
 
+    `proportions`: If set, the children will grow according to these proportions.
+        - `homogeneous`: All children will grow equally.
+        - A list of floats: Each child will grow according to its proportion.
+        - `None`: Allows all child components to expand as much as they need.
+
+
     ## Example:
-    A `Column` with two `Text` components and spacing between them:
+
+    This minimal example will display a `Column` with two `Text` components:
+
     ```python
-    rio.Column(
-        rio.Text("Hello"),
-        rio.Text("World!"),
-        spacing=1,
-    )
+    rio.Column(rio.Text("Hello"), rio.Text("World!"))
     ```
 
-    A `Column` is used to place an `Icon` and two `Text` components in a Column. A `Card` with text
-    and an icon in it, which is elevated when the mouse hovers over it and prints a message
-    when clicked:
+    `Columns`s are commonly used to line up multiple components vertically. In this example, we're
+    using a `Column` to place an `Icon` and two `Text` components in a `Column`. Wrap them in a `Card`
+    for a cool hover effect and a click response.
+
     ```python
-    class ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
         def on_press_card(self) -> None:
             print("Card was pressed!")
 
@@ -203,8 +223,11 @@ class Column(_LinearContainer):
                 rio.Text("Hello"),
                 rio.Text("World!"),
                 spacing=1,
-                align_x=0.5,  # align card content in the center
+                # align card content in the center
+                # to avoid undefined space
+                align_x=0.5,
             )
+
             return rio.Card(
                 content=card_content,
                 on_press=self.on_press_card,

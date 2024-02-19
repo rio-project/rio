@@ -17,21 +17,30 @@ __all__ = [
 class Link(FundamentalComponent):
     """
     # Link
+
     Navigates to a page or URL when clicked.
 
     `Link`s display a short text, or arbitrary component, and navigate to a page
     or URL when clicked.
 
+
     ## Attributes:
-    `content:` The text or component to display inside the link.
 
-    `target_url:` The page or URL to navigate to when clicked.
 
-    `open_in_new_tab:` Whether to open the link in a new tab. Defaults to `False`.
+    `child_text`: The text to display inside the link.
+
+    `child_component`: The component to display inside the link.
+
+    `target_url`: The page or URL to navigate to when clicked.
+
+    `open_in_new_tab`: Whether to open the link in a new tab. Defaults to `False`.
+
 
     ## Example:
-    A simple `Link` with the text "Click me!" and the URL "https://example.com"
-    will be shown:
+
+    This minimal example will simply display a link with the URL
+    "https://example.com/image.png" and a text "Click me!":
+
     ```python
     rio.Link("Click me!", "https://example.com")
     ```

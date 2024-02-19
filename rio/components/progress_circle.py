@@ -14,6 +14,7 @@ __all__ = [
 class ProgressCircle(FundamentalComponent):
     """
     # ProgressCircle
+
     A progress indicator in the shape of a circle.
 
     `ProgressCircle` conveys to the user that activity is ongoing. It can either
@@ -23,22 +24,23 @@ class ProgressCircle(FundamentalComponent):
 
     The linear counterpart to this component is the `ProgressBar`.
 
+
     ## Attributes:
-    `progress:` The progress to display, as a fraction from 0 to 1. If `None`,
+
+    `progress`: The progress to display, as a fraction from 0 to 1. If `None`,
             the progress indicator will be indeterminate.
 
-    `color:` The color scheme of the progress indicator. Keeping the default
+    `color`: The color scheme of the progress indicator. Keeping the default
                 is recommended, but it may make sense to change the color in
                 case the default is hard to perceive on your background.
 
 
     ## Example:
 
-    A simple progress circle that is 50% complete:
+    A minimal example displaying a progress circle that is 50% complete.
+
     ```python
-    rio.ProgressCircle(
-        progress=0.5,
-    )
+    rio.ProgressCircle(progress=0.5)
     ```
     """
 

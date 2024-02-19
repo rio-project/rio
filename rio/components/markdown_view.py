@@ -21,10 +21,12 @@ class MarkdownView(FundamentalComponent):
     Markdown is a great way to write text that is both human-readable, yet
     beautifully formatted.
 
-    ## Attributes:
-    `text:` The Markdown-formatted text to display.
 
-    `default_language:` The default language to use for code blocks. If
+    ## Attributes:
+
+    `text`: The Markdown-formatted text to display.
+
+    `default_language`: The default language to use for code blocks. If
         `None`, Rio will try to guess the language automatically. If a
         default is given, it will be used for all code blocks that don't
         specify a language explicitly.
@@ -33,12 +35,14 @@ class MarkdownView(FundamentalComponent):
         short to reliably guess the language - so make sure to set a default
         language if you want your inline code to be syntax-highlighted.
 
+
     ## Example:
 
-    A `MarkdownView` with the text Hello and World in bold will be shown:
+    This minimal example will simply display a markdown view with a bold text
+    "Hello World!":
 
      ```python
-    rio.MarkdownView("Hello **World**!")
+    rio.MarkdownView("**Hello World!**")
     ```
     """
 

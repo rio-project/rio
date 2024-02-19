@@ -283,59 +283,60 @@ class Component(metaclass=ComponentMeta):
     useful components out of the box, but you can also subclass a component to
     create your own.
 
+
     ## Attributes:
-    `key:` A unique identifier for this component. If two components with the
+    `key`: A unique identifier for this component. If two components with the
         same key are present during reconciliation they will be considered
         the same component and their state will be preserved. If no key is
         specified, reconciliation falls back to a less precise method, by
         comparing the location of the component in the component tree.
 
-    `margin:` The margin around this component. This is a shorthand for
+    `margin`: The margin around this component. This is a shorthand for
         setting `margin_left`, `margin_top`, `margin_right` and
         `margin_bottom` to the same value. If multiple conflicting margins
         are specified the most specific one wins. If for example `margin`
         and `margin_left` are both specified, `margin_left` is used for the
         left side, while the other sides use `margin`.
 
-    `margin_x:` The horizontal margin around this component. This is a
+    `margin_x`: The horizontal margin around this component. This is a
         shorthand for setting `margin_left` and `margin_right` to the same
         value. If multiple conflicting margins are specified the most
         specific one wins. If for example `margin_x` and `margin_left` are
         both specified, `margin_left` is used for the left side, while the
         other side uses `margin_x`.
 
-    `margin_y:` The vertical margin around this component. This is a shorthand
+    `margin_y`: The vertical margin around this component. This is a shorthand
         for setting `margin_top` and `margin_bottom` to the same value. If
         multiple conflicting margins are specified the most specific one
         wins. If for example `margin_y` and `margin_top` are both specified,
         `margin_top` is used for the top side, while the other side uses
         `margin_y`.
 
-    `margin_left:` The left margin around this component. If multiple
+    `margin_left`: The left margin around this component. If multiple
         conflicting margins are specified this one will be used, since it's
         the most specific. If for example `margin_left` and `margin` are
         both specified, `margin_left` is used for the left side, while the
         other sides use `margin`.
 
-    `margin_top:` The top margin around this component. If multiple
+    `margin_top`: The top margin around this component. If multiple
         conflicting margins are specified this one will be used, since it's
         the most specific. If for example `margin_top` and `margin` are both
         specified, `margin_top` is used for the top side, while the other
         sides use `margin`.
 
-    `margin_right:` The right margin around this component. If multiple
+    `margin_right`: The right margin around this component. If multiple
         conflicting margins are specified this one will be used, since it's
         the most specific. If for example `margin_right` and `margin` are
         both specified, `margin_right` is used for the right side, while the
         other sides use `margin`.
 
-    `margin_bottom:` The bottom margin around this component. If multiple
+    `margin_bottom`: The bottom margin around this component. If multiple
         conflicting margins are specified this one will be used, since it's
         the most specific. If for example `margin_bottom` and `margin` are
         both specified, `margin_bottom` is used for the bottom side, while
         the other sides use `margin`.
 
-    `width:` How much horizontal space this component should request during
+    `width`: How much horizontal space this component should request during
         layouting. This can be either a number, or one of the special
         values:
 
@@ -352,7 +353,7 @@ class Component(metaclass=ComponentMeta):
         `Component` to only take up as much space as requested, consider
         specifying an alignment.
 
-    `height:` How much vertical space this component should request during
+    `height`: How much vertical space this component should request during
         layouting. This can be either a number, or one of the special values:
 
     - If `"natural"`, the component will request the minimum amount it
@@ -368,12 +369,12 @@ class Component(metaclass=ComponentMeta):
         `Component` to only take up as much space as requested, consider
         specifying an alignment.
 
-    `align_x:` How this component should be aligned horizontally, if it
+    `align_x`: How this component should be aligned horizontally, if it
         receives more space than it requested. This can be a number between
         0 and 1, where 0 means left-aligned, 0.5 means centered, and 1 means
         right-aligned.
 
-    `align_y:` How this component should be aligned vertically, if it receives
+    `align_y`: How this component should be aligned vertically, if it receives
         more space than it requested. This can be a number between 0 and 1,
         where 0 means top-aligned, 0.5 means centered, and 1 means
         bottom-aligned.

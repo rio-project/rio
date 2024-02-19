@@ -8,6 +8,7 @@ __all__ = [
 class ProgressBar(FundamentalComponent):
     """
     # ProgressBar
+
     A progress indicator in the shape of a horizontal bar.
 
     `ProgressBar` conveys to the user that activity is ongoing. It can either
@@ -17,16 +18,19 @@ class ProgressBar(FundamentalComponent):
 
     The circular counterpart to this component is the `ProgressCircle`.
 
+
     ## Attributes:
-    `progress:` The progress to display, as a fraction from 0 to 1. If `None`,
+
+    `progress`: The progress to display, as a fraction from 0 to 1. If `None`,
             the progress indicator will be indeterminate.
 
+
     ## Example:
-    A simple progress bar that is 50% complete:
+
+    A minimal example displaying a progress bar that is 50% complete.
+
     ```python
-    rio.ProgressBar(
-        progress=0.5,
-    )
+    rio.ProgressBar(progress=0.5)
     ```
     """
 

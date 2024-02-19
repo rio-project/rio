@@ -23,6 +23,7 @@ class PopupOpenOrCloseEvent:
 class Popup(FundamentalComponent):
     """
     # Popup
+
     A container which floats above other components.
 
     Popups are containers which float above the page when open. This allows you
@@ -37,29 +38,34 @@ class Popup(FundamentalComponent):
     `alignment` and `gap` attributes. Popups wil do their best to honor those
     settings, but deviate if necessary to ensure they don't go off-screen.
 
+
     ## Attributes:
-    `anchor:` A component which is always visible and positions the popup.
 
-    `content:` A component which is only visible when the popup is open.
+    `anchor`: A component which is always visible and positions the popup.
 
-    `direction:` The direction into which the popup opens.
+    `content`: A component which is only visible when the popup is open.
 
-    `alignment:` The alignment of the popup within the anchor. If the popup
+    `direction`: The direction into which the popup opens.
+
+    `alignment`: The alignment of the popup within the anchor. If the popup
             opens to the left or right, this is the vertical alignment, with `0`
             being the top and `1` being the bottom. If the popup opens to the
             top or bottom, this is the horizontal alignment, with `0` being the
             left and `1` being the right. Has no effect if the popup opens
             centered.
 
-    `gap:` How much space to leave between the popup and the anchor. Has no
+    `gap`: How much space to leave between the popup and the anchor. Has no
             effect popup opens centered.
 
-    `is_open:` Whether the popup is currently open.
+    `is_open`: Whether the popup is currently open.
 
-    `on_open_or_close:` Triggered when the popup is opened or closed.
+    `on_open_or_close`: Triggered when the popup is opened or closed.
+
 
     ## Example:
+
     A simple popup with a button as the anchor and a text input as the content:
+
     ```python
     TODO: add example
     ```

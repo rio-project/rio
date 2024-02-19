@@ -14,23 +14,38 @@ __all__ = [
 class Container(Component):
     """
     # Container
+
     A component holding a single child.
 
     `Container` is a simple container which holds a single child component. It
     is useful for when you receive a component as child and wish to add
     additional layout attributes such as a margin.
 
+
     ##Attributes:
-    `content:` The component to place inside the container.
+
+    `content`: The component to place inside the container.
+
 
     ## Example:
-    A container with a margin:
+
+    This minimal example will simply display a container with the text "Hello World!":
+
     ```python
-    rio.Container(
-        content=rio.Text("Hello World!"),
-        margin=1,
-    )
+    rio.Container(rio.Text("Hello World!"))
     ```
+
+    `Container`s are commonly used to add layout attributes to a single child. You can easily
+    achieve this by adding the content to the container and then adding the layout attributes:
+
+    ```python
+    class MyComponent(rio.Component):
+
+        def build(self) -> rio.Component:
+            return rio.Container(
+                rio.Text("Hello World!"),
+                margin=2,
+            )
     """
 
     content: rio.Component

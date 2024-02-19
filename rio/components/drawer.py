@@ -23,6 +23,7 @@ class DrawerOpenOrCloseEvent:
 class Drawer(FundamentalComponent):
     """
     # Drawer
+
     A container which slides in from the edge of the screen.
 
     Drawers are containers which can either be completely hidden from view, or
@@ -36,38 +37,45 @@ class Drawer(FundamentalComponent):
     Drawers have the ability to be `modal`. Modal drawers draw attention to
     themselves and prevent interaction with the anchor while open.
 
+
     ## Attributes:
-    `anchor:` A component which is always visible and positions the drawer.
 
-    `content:` A component which is only visible when the drawer is open.
+    `anchor`: A component which is always visible and positions the drawer.
 
-    `on_open_or_close:` Triggered whenever the user opens or closes the
+    `content`: A component which is only visible when the drawer is open.
+
+    `on_open_or_close`: Triggered whenever the user opens or closes the
         drawer.
 
-    `side:` The side of the screen from which the drawer slides in.
+    `side`: The side of the screen from which the drawer slides in.
 
-    `is_modal:` Whether the drawer should prevent interaction with the anchor
+    `is_modal`: Whether the drawer should prevent interaction with the anchor
         while open.
 
-    `is_open:` Whether the drawer is currently open.
+    `is_open`: Whether the drawer is currently open.
 
-    `is_user_openable:` Whether the user can open or close the drawer. If this
+    `is_user_openable`: Whether the user can open or close the drawer. If this
         is `False`, the drawer can only be opened or closed
         programmatically.
 
+
     ## Example:
-    A simple drawer with a button as the anchor and some text as the content:
+
+    A simple drawer with a button as the anchor and some text as content:
+
     ```python
     rio.Drawer(
         anchor=rio.Button("Click Me!"),
         content=rio.Text("It was clickbait my friend!"),
-        is_open=True,
     )
     ```
-    A drawer with a button as the anchor and a switcher bar as the content, if the
-    button is clicked, the drawer will open and close:
+
+    The drawer has a button as its anchor and a switcher bar as its content.
+    The functionality is such that when the button is clicked, the drawer will
+    toggle between open and closed states:
+
     ```python
-    class Component(rio.Component):
+    class MyComponent(rio.Component):
         is_open: bool = False
 
         def on_press_button(self) -> None:

@@ -285,6 +285,7 @@ class CustomListItem(FundamentalComponent):
 
 
     ## Attributes:
+
     `content`: The content to display.
 
     `on_press`: Triggered when the list item is pressed.
