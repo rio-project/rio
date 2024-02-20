@@ -63,7 +63,7 @@ class PageView(Component):
 
     ## Attributes:
 
-    `fallback_build:` A callback that is called if the current URL does not
+    `fallback_build`: A callback that is called if the current URL does not
         correspond to any page in the application. It should return a Rio
         component that is displayed instead. If not specified Rio will
         display a default error page.
@@ -74,18 +74,22 @@ class PageView(Component):
     A minimal example:
 
     ```python
-    import rio
-
     app = rio.App(
         build=lambda: rio.Column(
-            rio.Text("Welcome to my page!"), rio.PageView(
-                width="grow", height="grow",
+            rio.Text("Welcome to my page!"),
+            rio.PageView(
+                width="grow",
+                height="grow",
             ),
-        ), pages=[
+        ),
+        pages=[
             rio.Page(
-                "", build=lambda: rio.Text("This is the home page"),
-            ), rio.Page(
-                "subpage", build=lambda: rio.Text("This is a subpage"),
+                "",
+                build=lambda: rio.Text("This is the home page"),
+            ),
+            rio.Page(
+                "subpage",
+                build=lambda: rio.Text("This is a subpage"),
             ),
         ],
     )

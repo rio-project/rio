@@ -12,6 +12,7 @@ __all__ = [
 class Spacer(class_container.ClassContainer):
     """
     # Spacer
+
     Adds empty space.
 
     Spacers are invisible components which add empty space between other
@@ -23,7 +24,9 @@ class Spacer(class_container.ClassContainer):
     they're frequently used.
 
     ## Example:
-    A simple `Spacer` with a height of 5:
+
+    A minimal example of `Spacer` will be shown:
+
     ```python
     rio.Spacer(height=5)
     ```

@@ -56,9 +56,8 @@ class Rectangle(FundamentalComponent):
 
     ```python
     rio.Rectangle(
-        rio.Text(Hello World!),
-        style=rio.BoxStyle(
-            fill=rio.Color.from_hex("ff0000")),
+        content=rio.Text("Hello World!"),
+        style=rio.BoxStyle(fill=rio.Color.from_hex("ff0000")),
     )
     ```
 
@@ -66,6 +65,7 @@ class Rectangle(FundamentalComponent):
 
     ```python
     from pathlib import Path
+
     PATH = Path(__file__).parent
 
     rio.Rectangle(

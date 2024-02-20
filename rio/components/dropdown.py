@@ -62,51 +62,61 @@ class Dropdown(FundamentalComponent, Generic[T]):
     rio.Dropdown(["a", "b", "c"])
     ```
 
-    This snippet demonstrates a simple `Dropdown` component with three options.
-    The default selected value is "b". When a different option is selected, the
-    new value will be printed to the console:
-
-    ```python
-    rio.Dropdown(
-        options={"a": 1, "b": 2, "c": 3},
-        label="Dropdown",
-        selected_value=2,
-        on_change=lambda event: print(event.value),
-    )
-    ```
-
     In a Component class, you can use state bindings to keep your input value updated
     and track any changes. Here's a quick example with a `Dropdown`:
 
     ```python
     class MyComponent(rio.Component):
-        value: str="b"
+        value: str = "b"
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.Dropdown(
-                        options=["a", "b", "c"],
-                        label="Dropdown",
-                        selected_value=MyComponent.value,
-                    )
+                options=["a", "b", "c"],
+                label="Dropdown",
+                selected_value=self.bind().value,  # state binding
+                on_change=lambda event: print(event.value),
+            )
     ```
 
-    In another Component class, you can update the input by listening to the `on_change` event.
-    Check out this example:
+    Instead of state bindings you can also use the `on_change` event to track any changes:
 
     ```python
     class MyComponent(rio.Component):
-        value: str="b"
+        value: str = "b"
 
         def on_change_update_value(self, ev: rio.DropdownChangeEvent):
             self.value = ev.value
+            print(self.value)
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.Dropdown(
-                        options=["a", "b", "c"],
-                        label="Dropdown",
-                        selected_value=self.value,
-                        on_change=self.on_change_update_value,
-                    )
+                options=["a", "b", "c"],
+                label="Dropdown",
+                selected_value=self.value,
+                on_change=lambda event: setattr(self, "value", event.value),
+            )
+    ```
+
+    If you want to do more than e.g. just print a message, you can use a method call
+    instead of a lambda function:
+
+    ```python
+    class MyComponent(rio.Component):
+        value: str = "b"
+
+        def on_change_update_value(self, ev: rio.DropdownChangeEvent):
+            # You can do whatever you want in this method
+            # like update the value and print it
+            self.value = ev.value
+            print(self.value)
+
+        def build(self) -> rio.Component:
+            return rio.Dropdown(
+                options=["a", "b", "c"],
+                label="Dropdown",
+                selected_value=self.value,
+                on_change=self.on_change_update_value,
+            )
     ```
     """
 

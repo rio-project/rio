@@ -8,7 +8,6 @@ __all__ = [
 
 
 class MarkdownView(FundamentalComponent):
-    # TODO: check if bold, italics and links are displayed here correctly
     """
     # MarkdownView
 

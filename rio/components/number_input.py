@@ -51,6 +51,7 @@ class NumberInput(Component):
 
 
     ## Attributes:
+
     `value`: The number currently entered by the user.
 
     `label`: A short text to display next to the text input.
@@ -91,42 +92,65 @@ class NumberInput(Component):
     rio.NumberInput(value=20.00)
     ```
 
-    `NumberInputs` are used to capture user input. You can easily bind state variables to
-    them to track changes:
+    You can easily `bind` state variables to track changes. If you want to make your `NumberInput` more
+    responsive, you can easily achieve this by adding a lambda function call to e.g. `on_change`:
 
     ```python
     class MyComponent(rio.Component):
-        value: float=0.0
+        value: float = 0.0
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.NumberInput(
-                        value=MyComponent.value, # Bind the value to the component
-                        label="price",
-                        prefix_text="$",
-                        minimum=0,
-                        decimals=2,
-                    )
+                value=self.bind().value,  # state binding
+                label="price",
+                prefix_text="$",
+                minimum=0,
+                decimals=2,
+                on_change=lambda event: print(f"value: {event.value}"),
+            )
     ```
 
-    In another case, you can update the input by listening to the `on_change` or `on_confirm` events:
+    If you are not using state bindings, you can also use a lambda function for updating the input value:
+
+     ```python
+    class MyComponent(rio.Component):
+        value: float = 0.0
+
+        def build(self) -> rio.Component:
+            return rio.NumberInput(
+                value=self.bind().value,  # Bind the value to the component
+                label="price",
+                prefix_text="$",
+                minimum=0,
+                decimals=2,
+                on_change=lambda event: setattr(
+                    self, "value", event.value
+                ),  # Update the value
+            )
+    ```
+
+    You can also use a method for updating the input value and do whatever you want. `Note` that methods
+    are handy if you want to do more than just updating the input value. For example run async code or
+    update other components based on the input text:
 
     ```python
     class MyComponent(rio.Component):
-        value: float=0.0
+        value: float = 0.0
 
-        def on_change_update_value(self, ev: rio.NumberInputChangeEvent):
-            self.value = ev.value
+        def on_change_update_value(self, event: rio.NumberInputChangeEvent):
+            self.value = event.value
+            print(f"new value: {self.value}")
             # You can do whatever you want with the new value
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.NumberInput(
-                        value=self.value,
-                        label="price",
-                        prefix_text="$",
-                        minimum=0,
-                        decimals=2,
-                        on_change=self.on_change_update_value,
-                    )
+                value=self.value,
+                label="price",
+                prefix_text="$",
+                minimum=0,
+                decimals=2,
+                on_change=self.on_change_update_value,
+            )
     ```
     """
 

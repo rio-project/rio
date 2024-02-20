@@ -23,23 +23,64 @@ class SwitchChangeEvent:
 class Switch(FundamentalComponent):
     """
     # Switch
+
     An input for `True` / `False` values.
 
     Switches allow the user to toggle between an "on" and an "off" state. They
     thus correspond to a Python `bool` value. Use them to allow the user to
     enable or disable certain features, or to select between two options.
 
+
     ## Attributes:
-    `is_on:` Whether the switch is currently in the "on" state.
 
-    `is_sensitive:` Whether the switch should respond to user input.
+    `is_on`: Whether the switch is currently in the "on" state.
 
-    `on_change:` Triggered when the user toggles the switch.
+    `is_sensitive`: Whether the switch should respond to user input.
+
+    `on_change`: Triggered when the user toggles the switch.
+
 
     ## Example:
-    A simple switch:
+
+    A minimal example of a `Switch` will be shown:
+
     ```python
     rio.Switch(is_on=True)
+    ```
+
+    You can also bind the value of the switch to a state variable. This will
+    update the state variable whenever the switch value changes:
+
+    ```python
+    class MyComponent(rio.Component):
+        is_on: bool = False
+
+        def build(self) -> rio.Component:
+            return rio.Switch(
+                is_on=self.bind().is_on,
+                on_change=lambda event: print(
+                    f"Switch is now {'on' if event.is_on else 'off'}"
+                ),
+            )
+    ```
+
+    You can also listen to changes in the switch by providing an `on_change`
+    callback:
+
+    ```python
+    class MyComponent(rio.Component):
+        is_on: bool = False
+
+        def on_change(self, event: rio.SwitchChangeEvent):
+            self.is_on = event.is_on
+            # You can do whatever you here like printing the state
+            print(f"Switch is now {'on' if event.is_on else 'off'}")
+
+        def build(self) -> rio.Component:
+            return rio.Switch(
+                is_on=self.is_on,
+                on_change=self.on_change,
+            )
     ```
     """
 

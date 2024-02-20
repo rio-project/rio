@@ -84,30 +84,21 @@ class Row(_LinearContainer):
     ```
 
     `Row`s are commonly used to line up multiple components horizontally. In this example, we're
-    using a `Row` to place an `Icon` and two `Text` components in a `Row`. Wrap them in a `Card`
-    for a cool hover effect and a click response.
+    using an `Icon` and two `Text` components in a `Row` and wrap them in a `Card`.
 
     ```python
     class MyComponent(rio.Component):
-
-        def on_press_card(self) -> None:
-            print("Card was pressed!")
-
-        def build(self)->rio.Component:
-            card_content = rio.Row(
-                rio.Icon(icon="castle"),
-                rio.Text("Hello"),
-                rio.Text("World!"),
-                spacing=1,
-                # align card content in the center
-                # to avoid undefined space
-                align_x=0.5,
-            )
+        def build(self) -> rio.Component:
             return rio.Card(
-                content=card_content,
-                on_press=self.on_press_card,
-                elevate_on_hover=True,
-                color="primary",
+                content=rio.Row(
+                    rio.Icon(icon="castle"),
+                    rio.Text("Hello"),
+                    rio.Text("World!"),
+                    spacing=1,
+                    # align card content in the center
+                    # to avoid undefined space
+                    align_x=0.5,
+                ),
             )
     ```
     """
@@ -209,30 +200,21 @@ class Column(_LinearContainer):
     ```
 
     `Columns`s are commonly used to line up multiple components vertically. In this example, we're
-    using a `Column` to place an `Icon` and two `Text` components in a `Column`. Wrap them in a `Card`
-    for a cool hover effect and a click response.
+    using an `Icon` and two `Text` components in a `Column` and wrap them in a `Card`.
 
     ```python
     class MyComponent(rio.Component):
-        def on_press_card(self) -> None:
-            print("Card was pressed!")
-
         def build(self) -> rio.Component:
-            card_content = rio.Column(
-                rio.Icon(icon="castle"),
-                rio.Text("Hello"),
-                rio.Text("World!"),
-                spacing=1,
-                # align card content in the center
-                # to avoid undefined space
-                align_x=0.5,
-            )
-
             return rio.Card(
-                content=card_content,
-                on_press=self.on_press_card,
-                elevate_on_hover=True,
-                color="primary",
+                content=rio.Column(
+                    rio.Icon(icon="castle"),
+                    rio.Text("Hello"),
+                    rio.Text("World!"),
+                    spacing=1,
+                    # align card content in the center
+                    # to avoid undefined space
+                    align_x=0.5,
+                ),
             )
     ```
     """

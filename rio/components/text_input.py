@@ -36,69 +36,93 @@ class TextInput(KeyboardFocusableFundamentalComponent):
     shown in plain text, or hidden when used for passwords or other sensitive
     information.
 
+
     ## Attributes:
-    `text:` The text currently entered by the user.
 
-    `label:` A short text to display next to the text input.
+    `text`: The text currently entered by the user.
 
-    `prefix_text:` A short text to display before the text input. Useful for
+    `label`: A short text to display next to the text input.
+
+    `prefix_text`: A short text to display before the text input. Useful for
             displaying currency symbols or other prefixed units.
 
-    `suffix_text:` A short text to display after the text input. Useful for
+    `suffix_text`: A short text to display after the text input. Useful for
             displaying units, parts of e-mail addresses, and similar.
 
-    `is_secret:` Whether the text should be hidden. Use this to hide sensitive
+    `is_secret`: Whether the text should be hidden. Use this to hide sensitive
             information such as passwords.
 
-    `is_sensitive:` Whether the text input should respond to user input.
+    `is_sensitive`: Whether the text input should respond to user input.
 
-    `is_valid:` Visually displays to the user whether the current text is
+    `is_valid`: Visually displays to the user whether the current text is
             valid. You can use this to signal to the user that their input needs
             to be changed.
 
-    `on_change:` Triggered when the user changes the text.
+    `on_change`: Triggered when the user changes the text.
 
-    `on_confirm:` Triggered when the user explicitly confirms their input,
+    `on_confirm`: Triggered when the user explicitly confirms their input,
             such as by pressing the "Enter" key. You can use this to trigger
             followup actions, such as logging in or submitting a form.
 
+
     ## Example:
+
     A simple `TextInput` with a default value of "John Doe" and a label:
-    `Note:` The value will not be updated if the user changes the value in the input field.
+    `Note`: The value will not be updated if the user changes the value in the input field.
+
     ```python
-    rio.TextInput(
-        text="John Doe",
-        label="Name",
-    )
+    rio.TextInput(text="John Doe", label="Name")
     ```
 
-    In a Component class state bindings can be used to update the the input and listen to changes:
+    You can easily `bind` state variables to track changes. If you want to make your `TextInput` more
+    responsive, you can easily achieve this by adding a lambda function call to e.g. `on_change`:
 
     ```python
-    class ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
         text: str = ""
-        def build(self)->rio.Component:
+
+        def build(self) -> rio.Component:
             return rio.TextInput(
-                        text=ComponentClass.text,
-                        label="Name",
-                    )
+                text=self.bind().text,  # state binding
+                label="Name",
+                on_change=lambda event: print(f"Name: {event.text}"),
+            )
     ```
 
-    In another Component class the the input can be updated by listening to the `on_change` or `on_confirm` event:
+    If you are not using state bindings, you can also use a lambda function for updating the input text:
 
     ```python
-    class ComponentClass(rio.Component):
+    class MyComponent(rio.Component):
         text: str = ""
 
-        def on_change_update_text(self, ev: rio.TextInputChangeEvent):
-            self.text = ev.text
-
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.TextInput(
-                        text=self.text,
-                        label="Name",
-                        on_change=self.on_change_update_value,
-                    )
+                text=self.text,
+                label="Name",
+                on_change=lambda event: setattr(
+                    self, "text", event.text
+                ),  # Update the text
+            )
+    ```
+
+    You can also use a method for updating the input text and do whatever you want. `Note` that methods
+    are handy if you want to do more than just updating the input text. For example run async code or
+    update other components based on the input text:
+
+    ```python
+    class MyComponent(rio.Component):
+        text: str = ""
+
+        def on_change_update_text(self, event: rio.TextInputChangeEvent):
+            self.text = event.text
+            print(f"Name: {self.text}")
+
+        def build(self) -> rio.Component:
+            return rio.TextInput(
+                text=self.text,
+                label="Name",
+                on_change=self.on_change_update_text,
+            )
     ```
     """
 

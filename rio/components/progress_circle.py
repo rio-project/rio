@@ -22,6 +22,10 @@ class ProgressCircle(FundamentalComponent):
     indeterminate progress animation, which is useful when the exact progress
     isn't known.
 
+    Note that unlike most components in Rio, `ProgressCircle` does not have a
+    `natural` size, since the circle can easily be scaled to fit any size.
+    Therefore it defaults to a reasonable size which should fit most use cases.
+
     The linear counterpart to this component is the `ProgressBar`.
 
 
@@ -33,6 +37,10 @@ class ProgressCircle(FundamentalComponent):
     `color`: The color scheme of the progress indicator. Keeping the default
                 is recommended, but it may make sense to change the color in
                 case the default is hard to perceive on your background.
+
+    `size`: The size of the progress indicator. This is equivalent to setting
+            a component's `width` and `height` to the same value.
+
 
 
     ## Example:

@@ -46,8 +46,8 @@ class Grid(FundamentalComponent):
 
     ```python
     rio.Grid(
-            [rio.Text("Hello"), rio.Text("World!")], # 1. Row
-            [rio.Text("Foo"), rio.Text("Bar")],      # 2. Row
+        [rio.Text("Hello"), rio.Text("World!")],  # 1. Row
+        [rio.Text("Foo"), rio.Text("Bar")],  # 2. Row
     )
     ```
 
@@ -56,7 +56,6 @@ class Grid(FundamentalComponent):
 
     ```python
     grid = rio.Grid(row_spacing=1, column_spacing=1)
-
     grid.add_child(rio.Text("Hello"), row=0, column=0)
     grid.add_child(rio.Text("World!"), row=0, column=1)
     grid.add_child(rio.Text("Foo"), row=1, column=0)
@@ -68,14 +67,13 @@ class Grid(FundamentalComponent):
 
     ```python
     class MyComponent(rio.Component):
-
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             grid = rio.Grid(row_spacing=1, column_spacing=1)
-
             grid.add_child(rio.Text("Hello"), row=0, column=0)
             grid.add_child(rio.Text("World!"), row=0, column=1)
             grid.add_child(rio.Text("Foo"), row=1, column=0)
             grid.add_child(rio.Text("Bar"), row=1, column=1)
+
             return grid
     ```
     """

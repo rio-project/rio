@@ -66,9 +66,8 @@ class Popup(FundamentalComponent):
 
     A simple popup with a button as the anchor and a text input as the content:
 
-    ```python
     TODO: add example
-    ```
+
     """
 
     anchor: rio.Component

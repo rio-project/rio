@@ -63,17 +63,42 @@ class Card(FundamentalComponent):
     rio.Card(content=rio.Icon("castle"))
     ```
 
-    `Card`s are commonly used to display content. You can easily achieve this
-    by adding a icon and text in a row. You can also attach an event handler
-    to the card to make it interactive:
+    `Card`s are commonly used to display content. You can easily make your `Card`
+    interactive by adding a lambda function call to `on_press`:
 
     ```python
     class MyComponent(rio.Component):
+        def build(self) -> rio.Component:
+            # Create a row with an icon and text
+            # as the card content
+            card_content = rio.Row(
+                rio.Icon(icon="castle"),
+                rio.Text("Click me!"),
+                spacing=1,
+                # align the card content in the center
+                align_x=0.5,
+            )
 
+            return rio.Card(
+                content=card_content,
+                on_press=lambda: print("Card clicked!"),
+                elevate_on_hover=True,
+            )
+    ```
+
+
+    You can also use a method for updating the input text and do whatever you want.
+    `Note` that methods are handy if you want to do more than just updating the input
+    text. For example run async code or update other components based on the input text:
+
+    ```python
+    class MyComponent(rio.Component):
         def on_press_card(self) -> None:
+            # Do whatever you want when
+            # the card is pressed
             print("Card was pressed!")
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             # Create a row with an icon and text
             # as the card content
             card_content = rio.Row(
@@ -84,10 +109,10 @@ class Card(FundamentalComponent):
                 align_x=0.5,
             )
             return rio.Card(
-                        contend=card_content,
-                        on_press=self.on_press_card,
-                        elevate_on_hover=True,
-                    )
+                content=card_content,
+                on_press=self.on_press_card,
+                elevate_on_hover=True,
+            )
     ```
     """
 

@@ -277,6 +277,7 @@ class ComponentMeta(RioDataclassMeta):
 class Component(metaclass=ComponentMeta):
     """
     # Component
+
     Base class for all `rio` components.
 
     Components are the building blocks of `rio` apps. `rio` ships with many
@@ -285,6 +286,7 @@ class Component(metaclass=ComponentMeta):
 
 
     ## Attributes:
+
     `key`: A unique identifier for this component. If two components with the
         same key are present during reconciliation they will be considered
         the same component and their state will be preserved. If no key is

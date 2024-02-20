@@ -12,6 +12,37 @@ __all__ = [
 
 
 class Tooltip(FundamentalComponent):
+    """
+    # Tooltip
+
+    A small pop-up window that appears when the user hovers over an element.
+
+    `Tooltip` is a small pop-up window that appears when the user hovers over an
+    element. It is commonly used to provide additional information about the
+    element, such as a description or a hint.
+
+    ## Attributes:
+
+    `anchor`: The component to which the tooltip is anchored.
+
+    `tip`: The text or component to display in the tooltip.
+
+    `position`: The position of the tooltip relative to the anchor. It can be
+        one of the following values: `left`, `top`, `right`, `bottom`.
+
+    ## Example:
+
+    A minimal example of a `Tooltip` will be shown:
+
+    ```python
+    rio.Tooltip(
+        anchor=rio.Icon("info"),
+        tip="This is a tooltip.",
+        position="top",
+    )
+    ```
+    """
+
     anchor: rio.Component
     tip_text: str | None
     tip_component: rio.Component | None

@@ -27,46 +27,52 @@ class SwitcherBarChangeEvent(Generic[T]):
 class SwitcherBar(FundamentalComponent, Generic[T]):
     """
     # SwitcherBar
+
     A bar of options which can be switched between.
 
     A `SwitcherBar` is a bar of options which can be switched between. It is
     commonly used to switch between different views or modes.
 
-    ## Attributes:
-    `values:` The list of values which can be selected.
 
-    `names:` The list of names to display for each value. If `None`, the
+    ## Attributes:
+
+    `values`: The list of values which can be selected.
+
+    `names`: The list of names to display for each value. If `None`, the
         string representation of each value is used.
 
-    `icons:` The list of icons to display for each value.
+    `icons`: The list of icons to display for each value.
 
-    `color:` The color of the switcher bar.
+    `color`: The color of the switcher bar.
 
-    `orientation:` The orientation of the switcher bar.
+    `orientation`: The orientation of the switcher bar.
 
-    `spacing:` The spacing between options.
+    `spacing`: The spacing between options.
 
-    `selected_value:` The currently selected value.
+    `selected_value`: The currently selected value.
 
-    `allow_none:` Whether the switcher bar can have no value selected.
+    `allow_none`: Whether the switcher bar can have no value selected.
 
-    `on_change:` Triggered whenever the selected value changes.
+    `on_change`: Triggered whenever the selected value changes.
+
 
     ## Example:
+
     A simple switcher bar with three options:
+
     ```python
     rio.SwitcherBar(
-                values=[1, 2, 3],
-                names=["A-SwitchName", "B-SwitchName", "C-SwitchName"],
-                selected_value=1,
-                on_change=lambda event: print(event.value),
-            )
+        values=[1, 2, 3],
+        names=["A-SwitchName", "B-SwitchName", "C-SwitchName"],
+        selected_value=1,
+        on_change=lambda event: print(event.value),
+    )
     ```
 
     You can use a `SwitcherBar` to create your own custom Navigation Bar. You
     can use the `on_page_change` event to trigger a refresh of the `SwitcherBar`
     when the page changes. Use the page_url defined in your rio.App and rio.Page
-    instances to navigate to the selected page.Here is an example of a custom
+    instances to navigate to the selected page. Here is an example of a custom
     `NavigationBar` component:
 
     ```python

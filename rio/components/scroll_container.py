@@ -45,9 +45,8 @@ class ScrollContainer(FundamentalComponent):
 
     ```python
     rio.ScrollContainer(
-        content=rio.Text(
-            text="This is a very long text that will be scrollable.",
-        ),
+        content=rio.Icon("castle", width=50, height=50),
+        height=10,
     )
     ```
     """

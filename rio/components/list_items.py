@@ -55,15 +55,10 @@ class HeadingListItem(FundamentalComponent):
     achieve this by adding the children to a list first, and then unpacking that list:
 
     ```python
-    import functools
-
     class MyComponent(rio.Component):
         products: list[str] = ["Product 1", "Product 2", "Product 3"]
 
-        def on_press_heading_list_item(self, product:str) -> None:
-            print(f"Selected {product}")
-
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             # Store all children in an intermediate list
             list_items = []
 
@@ -72,12 +67,6 @@ class HeadingListItem(FundamentalComponent):
                     rio.HeadingListItem(
                         text=product,
                         key=product,
-                        # Note the use of `functools.partial` to pass the product
-                        # to the event handler.
-                        on_press=functools.partial(
-                            self.on_press_heading_list_item,
-                            product=product,
-                        ),
                     )
                 )
 
@@ -158,13 +147,14 @@ class SimpleListItem(Component):
     ```python
     import functools
 
+
     class MyComponent(rio.Component):
         products: list[str] = ["Product 1", "Product 2", "Product 3"]
 
-        def on_press_simple_list_item(self, product:str) -> None:
+        def on_press_simple_list_item(self, product: str) -> None:
             print(f"Selected {product}")
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             # Store all children in an intermediate list
             list_items = []
 

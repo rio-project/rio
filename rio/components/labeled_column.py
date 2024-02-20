@@ -12,6 +12,38 @@ __all__ = ["LabeledColumn"]
 
 
 class LabeledColumn(Component):
+    """
+    # LabeledColumn
+
+    A container that lays out its children in a column, with labels for each child.
+
+    `LabeledColumn` is a container that lays out its children in a column, with
+    labels for each child. It is similar to `Column`, but allows you to specify
+    labels for each child.
+
+
+    ## Attributes:
+
+    `children`: The components to place inside the container, with labels.
+
+
+    ## Example:
+
+    This minimal example will show a container with a column layout and labels:
+
+    ```python
+    rio.LabeledColumn(
+        {
+            "First Name": rio.TextInput(),
+            "Last Name": rio.TextInput(),
+            "Age": rio.TextInput(),
+        }
+    )
+    ```
+
+
+    """
+
     _child_list: list[Component] = field(init=False)
 
     def __init__(

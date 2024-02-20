@@ -79,19 +79,32 @@ class Button(Component):
     ```
 
     `Button`s are commonly used to trigger actions. You can easily achieve this by
-    adding a function call to `on_press`:
+    adding a lambda function call to `on_press`:
 
     ```python
     class MyComponent(rio.Component):
+        def build(self) -> rio.Component:
+            return rio.Button(
+                content="Click me!",
+                on_press=lambda: print("Button pressed!"),
+            )
+    ```
 
-            def on_press_button(self) -> None:
-                print("Button pressed!")
+    If you want to do more than e.g. just print a message, you can use a method call
+    instead of a lambda function:
 
-            def build(self)->rio.Component:
-                return rio.Button(
-                        content="Click me!",
-                        on_press=self.on_press_button,
-                    )
+    ```python
+    class MyComponent(rio.Component):
+        def on_press_button(self) -> None:
+            # You can do whatever you want here,
+            # like printing
+            print("Button pressed!")
+
+        def build(self) -> rio.Component:
+            return rio.Button(
+                content="Click me!",
+                on_press=self.on_press_button,
+            )
     ```
 
     `Button`s are commonly used to trigger actions. You can easily achieve this by
@@ -104,9 +117,9 @@ class Button(Component):
 
         def on_press_button(self) -> None:
             self.banner_text = "Button pressed!"
+            # Do whatever you want here
 
-        def build(self)->rio.Component:
-
+        def build(self) -> rio.Component:
             return rio.Column(
                 rio.Banner(
                     text=self.banner_text,
@@ -272,26 +285,15 @@ class IconButton(Component):
     adding a function call to `on_press`:
 
     ```python
-<<<<<<< HEAD
-    class ComponentClass(rio.Component):
-            def on_press_button(self) -> None:
-                print("Icon button pressed!")
-
-            def build(self)->rio.Component:
-                return rio.IconButton(
-=======
     class MyComponent(rio.Component):
-
         def on_press_button(self) -> None:
             print("Icon button pressed!")
 
-        def build(self)->rio.Component:
-
+        def build(self) -> rio.Component:
             return rio.IconButton(
->>>>>>> a5f9561 (updated component docs)
-                        icon="castle",
-                        on_press=self.on_press_button,
-                    )
+                icon="castle",
+                on_press=self.on_press_button,
+            )
     ```
 
     `IconButton`s are commonly used to trigger actions. You can easily achieve this by
@@ -299,18 +301,13 @@ class IconButton(Component):
     the banner text signaling that the button was pressed:
 
     ```python
-<<<<<<< HEAD
-    class ComponentClass(rio.Component):
-=======
     class MyComponent(rio.Component):
->>>>>>> a5f9561 (updated component docs)
         banner_text: str = ""
 
         def on_press_button(self) -> None:
             self.banner_text = "Icon button pressed!"
 
-        def build(self)->rio.Component:
-
+        def build(self) -> rio.Component:
             return rio.Column(
                 rio.Banner(
                     text=self.banner_text,

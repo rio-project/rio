@@ -22,7 +22,7 @@ class Container(Component):
     additional layout attributes such as a margin.
 
 
-    ##Attributes:
+    ## Attributes:
 
     `content`: The component to place inside the container.
 

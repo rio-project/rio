@@ -12,6 +12,7 @@ __all__ = ["Stack"]
 class Stack(FundamentalComponent):
     """
     # Stack
+
     A container that stacks its children in the Z direction.
 
     `Stacks` are similar to rows and columns, but they stack their children in
@@ -19,8 +20,42 @@ class Stack(FundamentalComponent):
     children overlap each other, with the first one at the bottom, the second
     one above that, and so on.
 
+
     ## Attributes:
-    `children:` The components to place in this `Stack`.
+
+    `children`: The components to place in this `Stack`.
+
+    ## Example:
+
+    A minimal example of `Stack` will be shown. This example will create a stack
+    of three icons, each with a different size and color. The first icon will be
+    at the bottom, the second one above that, and the third one at the top:
+
+    ```python
+    rio.Stack(
+        # bottom
+        rio.Icon(
+            "castle",
+            width=50,
+            height=50,
+            fill=rio.Color.from_hex("00ff00"),
+        ),
+        # middle
+        rio.Icon(
+            "castle",
+            width=30,
+            height=30,
+            fill=rio.Color.from_hex("ff0000"),
+        ),
+        # top
+        rio.Icon(
+            "castle",
+            width=10,
+            height=10,
+            fill=rio.Color.from_hex("000000"),
+        ),
+    )
+    ```
     """
 
     children: list[rio.Component]

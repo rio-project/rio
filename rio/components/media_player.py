@@ -59,10 +59,20 @@ class MediaPlayer(KeyboardFocusableFundamentalComponent):
     A minimal example of a `MediaPlayer` playing a local file will be shown:
 
     ```python
+    rio.MediaPlayer(rio.URL("https://example.com/example_video.mp4"))
+    ```
+
+    You can use a local file as well:
+
+    ```python
     from pathlib import Path
+
     PATH = Path(__file__).parent
 
     rio.MediaPlayer(PATH / "example_video.mp4")
+    ```
+
+
     """
 
     media: pathlib.Path | rio.URL | bytes

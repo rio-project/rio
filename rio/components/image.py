@@ -60,7 +60,7 @@ class Image(FundamentalComponent):
     "https://example.com/image.png":
 
     ```python
-    rio.Image(https://example.com/image.png)
+    rio.Image(rio.URL("https://example.com/image.png"))
     ````
 
     This example demonstrates how to display an `Image` using a Path object.
@@ -69,13 +69,15 @@ class Image(FundamentalComponent):
 
     ```python
     from pathlib import Path
+
     PATH = Path(__file__).parent
 
-    rio.Image(PATH / "example_image.png",
-              fill_mode="fit",
-              width=20,
-              height=20,
-              corner_radius=2,
+    rio.Image(
+        PATH / "example_image.png",
+        fill_mode="fit",
+        width=20,
+        height=20,
+        corner_radius=2,
     )
     ```
     """

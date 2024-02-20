@@ -23,52 +23,81 @@ class SliderChangeEvent:
 class Slider(FundamentalComponent):
     """
     # Slider
+
     A component for selecting a single value from a range.
 
     The `Slider` components allows the user to select a single real number value
     by dragging a handle along a line. The value can be any number within a
     range you can specify.
 
+
     ## Attributes:
-    `minimum:` The minimum value the slider can be set to.
 
-    `maximum:` The maximum value the slider can be set to.
+    `minimum`: The minimum value the slider can be set to.
 
-    `value:` The current value of the slider.
+    `maximum`: The maximum value the slider can be set to.
 
-    `is_sensitive:` Whether the slider should respond to user input.
+    `value`: The current value of the slider.
+
+    `is_sensitive`: Whether the slider should respond to user input.
+
+    `on_change`: A callback that is called when the value of the slider changes.
+
 
     ## Example:
-    A simple slider with a range from 0 to 100:
+
+    A minimal example of a `Slider` ranging from 0 to 100 will be shown:
+
     ```python
-    rio.Slider(
-        minimum=0,
-        maximum=100,
-    )
+    rio.Slider(minimum=0, maximum=100)
     ```
 
-    A simple slider with with a range from 0 to 100 and a step size of 1:
-    ```python
-    class Component(rio.Component):
-        value:int = 0
+    You can easily `bind` state variables to track changes. If you want to make your `Slider` more
+    responsive, you can easily achieve this by adding a lambda function call to `on_change`:
 
-        def build(self)->rio.Component:
+    ```python
+    class MyComponent(rio.Component):
+        value: int = 0
+
+        def build(self) -> rio.Component:
             return rio.Slider(
-                value=Component.value,
+                value=self.bind().value,  # state binding
                 minimum=0,
                 maximum=100,
                 step_size=1,
+                on_change=lambda event: print(f"value: {event.value}"),
             )
+    ```
 
-    Or a slider with a range from 0 to 100 and a step size of 1, and a callback:
+    If you are not using state bindings, you can also use a lambda function for updating the input value:
+
     ```python
-    class Component(rio.Component):
-        value:int = 0
+    class MyComponent(rio.Component):
+        value: int = 0
 
-        def on_change(self, event:rio.SliderChangeEvent):
+        def build(self) -> rio.Component:
+            return rio.Slider(
+                value=self.value,
+                minimum=0,
+                maximum=100,
+                step_size=1,
+                on_change=lambda event: setattr(self, "value", event.value),
+            )
+    ```
+
+    You can also use a method for updating the input value and do whatever you want. `Note` that methods
+    are handy if you want to do more than just updating the input value. For example run async code or
+    update other components based on the input text:
+
+    ```python
+    class MyComponent(rio.Component):
+        value: float = 0
+
+        def on_change(self, event: rio.SliderChangeEvent):
             self.value = event.value
+            print(f"value: {self.value}")
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.Slider(
                 value=self.value,
                 minimum=0,

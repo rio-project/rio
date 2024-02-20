@@ -45,8 +45,8 @@ class Plot(FundamentalComponent):
     import plotly.graph_objects as go
 
     fig = go.Figure()
-    # create your own plot here
-    # ... add traces, layout and so on...
+
+    # create your own plot here (add traces, ect.)
 
     rio.Plot(fig)
     ```
@@ -57,15 +57,17 @@ class Plot(FundamentalComponent):
 
     ```python
     import pandas as pd
-    import import plotly.express as px
+    import plotly.express as px
+
 
     class MyComponent(rio.Component):
-
         def build(self) -> rio.Component:
-            df = pd.DataFrame({
-                "x": [1, 2, 3, 4],
-                "y": [4, 3, 2, 1],
-            })
+            df = pd.DataFrame(
+                {
+                    "x": [1, 2, 3, 4],
+                    "y": [4, 3, 2, 1],
+                }
+            )
             fig = px.line(df, x="x", y="y", title="sample figure")
 
             return rio.Plot(fig)

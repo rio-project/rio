@@ -49,21 +49,37 @@ class ColorPicker(FundamentalComponent):
     This minimal example will simply display a `ColorPicker` with the default color red:
 
     ```python
-    rio.ColorPicker(rio.Color.from_hex(#ff0000))
+    rio.ColorPicker(rio.Color.from_hex("#ff0000"))
     ```
 
     `ColorPicker`s are commonly used to let the user select a color. You can easily
-    achieve this by saving the color in a variable and using it in your application:
+    achieve this by using state bindings to save the color in a variable and using it
+    in your application:
 
     ```python
     class MyComponent(rio.Component):
-        color: rio.Color = rio.Color.from_hex(#ff0000)
+        color: rio.Color = rio.Color.from_hex("#ff0000")
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.ColorPicker(
-                        color=MyComponent.color,
-                        pick_opacity=True,
-                    )
+                color=self.bind().color,
+                pick_opacity=True,
+            )
+    ```
+
+    If you want to make your `ColorPicker`more interactive, you can easily achieve this by
+    adding a lambda function call to `on_change`:
+
+    ```python
+    class MyComponent(rio.Component):
+        color: rio.Color = rio.Color.from_hex("#ff0000")
+
+        def build(self) -> rio.Component:
+            return rio.ColorPicker(
+                color=self.bind().color,
+                pick_opacity=True,
+                on_change=lambda event: print(f"selected color: {event.color}"),
+            )
     ```
 
     You can use an event handler to react to changes in the color. This example will
@@ -74,16 +90,19 @@ class ColorPicker(FundamentalComponent):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
 
         def on_change_color(self, event: rio.ColorChangeEvent) -> None:
-            print(f"Color changed to {event.color}")
+            # you can do whatever you want
+            # in this method
+            self.color = event.color
+            print(f"selected color: {event.color}")
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             return rio.Card(
                 rio.ColorPicker(
-                        color=self.color,
-                        pick_opacity=True,
-                        on_change=self.on_change_color,
-                    ),
-                )
+                    color=self.color,
+                    pick_opacity=True,
+                    on_change=self.on_change_color,
+                ),
+            )
     ```
     """
 

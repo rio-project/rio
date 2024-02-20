@@ -78,14 +78,11 @@ class Drawer(FundamentalComponent):
     class MyComponent(rio.Component):
         is_open: bool = False
 
-        def on_press_button(self) -> None:
-            self.is_open = True
-
         def build(self) -> rio.Component:
             return rio.Drawer(
                 anchor=rio.Button(
                     "Click Me!",
-                    on_press=self.on_press_button,
+                    on_press=lambda: setattr(self, "is_open", True),
                 ),
                 content=rio.Text(
                     "It was clickbait my friend!",

@@ -18,6 +18,7 @@ __all__ = [
 class Slideshow(FundamentalComponent):
     """
     # Slideshow
+
     Prominently switch between multiple components based on a timer.
 
     The `Slideshow` component is a container that can hold multiple components,
@@ -25,28 +26,31 @@ class Slideshow(FundamentalComponent):
     between. These are very useful for displaying a series of demos or news to
     visitors.
 
-    ## Attributes:
-    `children:` The components to transition between.
 
-    `linger_time:` The time in seconds to display each component before
+    ## Attributes:
+
+    `children`: The components to transition between.
+
+    `linger_time`: The time in seconds to display each component before
             switching to the next one.
 
-    `corner_radius:` How rounded the slideshow's corners should be. If set to
+    `corner_radius`: How rounded the slideshow's corners should be. If set to
             `None`, the slideshow will use a default corner radius from the
             current theme.
 
+
     ## Example:
-    A simple slideshow with two images:
+
+    A minimal example of `Slideshow` displaying two images will be shown:
+
     ```python
     from pathlib import Path
 
-    pictures_directory = Path.home() / "Pictures" / "..."
+    PATH = Path(__file__).parent
 
     rio.Slideshow(
-        children=[
-            rio.Image(pictures_directory / "first.jpg"),
-            rio.Image(pictures_directory / "second.jpg"),
-        ],
+        rio.Image(PATH / "first.jpg"),
+        rio.Image(PATH / "second.jpg"),
         linger_time=5,
     )
     ```

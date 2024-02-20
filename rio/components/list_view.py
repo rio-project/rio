@@ -32,10 +32,8 @@ class ListView(FundamentalComponent):
 
     ```python
     rio.ListView(
-        [
-            rio.SimpleListItem("Hello", key='item1'),
-            rio.SimpleListItem("World!", key='item2'),
-        ],
+        rio.SimpleListItem("Product 1", key="item1"),
+        rio.SimpleListItem("Product 2", key="item2"),
     )
     ```
 
@@ -45,19 +43,20 @@ class ListView(FundamentalComponent):
     ```python
     import functools
 
+
     class MyComponent(rio.Component):
         products: list[str] = ["Product 1", "Product 2", "Product 3"]
 
-        def on_press_heading_list_item(self, product:str) -> None:
+        def on_press_heading_list_item(self, product: str) -> None:
             print(f"Selected {product}")
 
-        def build(self)->rio.Component:
+        def build(self) -> rio.Component:
             # Store all children in an intermediate list
             list_items = []
 
             for product in self.products:
                 list_items.append(
-                    rio.HeadingListItem(
+                    rio.SimpleListItem(
                         text=product,
                         key=product,
                         # Note the use of `functools.partial` to pass the product
