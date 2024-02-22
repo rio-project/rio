@@ -4,9 +4,11 @@ import dataclasses
 import types
 import weakref
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import introspection.typing
+
+from . import global_state
 
 if TYPE_CHECKING:
     from .components import Component
@@ -92,6 +94,10 @@ class StateProperty:
                 f"Cannot assign to readonly property {cls_name}.{self.name}"
             )
 
+        assert not isinstance(
+            value, StateProperty
+        ), f"You're still using the old state binding syntax for {instance} {self.name}"
+
         instance._properties_assigned_after_creation_.add(self.name)
 
         # Look up the stored value
@@ -99,7 +105,11 @@ class StateProperty:
         try:
             local_value = instance_vars[self.name]
         except KeyError:
-            pass
+            # If no value is currently stored, that means this component is
+            # currently being instantiated. We may have to create a state
+            # binding.
+            if isinstance(value, PleaseTurnThisIntoAStateBinding):
+                value = self._create_state_binding(instance, value)
         else:
             # If a value is already stored, that means this is a re-assignment.
             # Which further means it's an assignment outside of `__init__`.
@@ -121,6 +131,42 @@ class StateProperty:
             instance,
             include_children_recursively=False,
         )
+
+    def _create_state_binding(
+        self,
+        component: Component,
+        request: PleaseTurnThisIntoAStateBinding,
+    ) -> StateBinding:
+        # In order to create a `StateBinding`, the creator's attribute must
+        # also be a binding
+        creator = global_state.currently_building_component
+        creator_vars = vars(creator)
+
+        parent_binding = creator_vars[request.state_property.name]
+
+        if not isinstance(parent_binding, StateBinding):
+            parent_binding = StateBinding(
+                owning_component_weak=weakref.ref(creator),
+                owning_property=self,
+                is_root=True,
+                parent=None,
+                value=parent_binding,
+                children=weakref.WeakSet(),
+            )
+            creator_vars[request.state_property.name] = parent_binding
+
+        # Create the child binding
+        child_binding = StateBinding(
+            owning_component_weak=weakref.ref(component),
+            owning_property=self,
+            is_root=False,
+            parent=parent_binding,
+            value=None,
+            children=weakref.WeakSet(),
+        )
+        parent_binding.children.add(child_binding)
+
+        return child_binding
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.name}>"

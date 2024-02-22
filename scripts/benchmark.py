@@ -65,10 +65,13 @@ class BenchmarkComponent(rio.Component):
 
 
 def main():
-    app = rio.App(
-        build=BenchmarkComponent,
-    )
-    app.run_in_window()
+    # app = rio.App(
+    #     build=BenchmarkComponent,
+    # )
+    # app.run_in_window()
+    import rio.cli
+
+    rio.cli.run(release=True)
 
 
 with cProfile.Profile() as profile:

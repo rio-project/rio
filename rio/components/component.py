@@ -189,14 +189,14 @@ class ComponentMeta(RioDataclassMeta):
             cls._state_properties_[field_name] = state_property
 
     def __call__(cls: type[C], *args: object, **kwargs: object) -> C:
-        component: C = object.__new__(cls)  # type: ignore[wtf]
-
         # Inject the session before calling the constructor
         # Fetch the session this component is part of
         if global_state.currently_building_session is None:
             raise RuntimeError(
                 "Components can only be created inside of `build` methods."
             )
+
+        component: C = object.__new__(cls)  # type: ignore[wtf]
 
         session = global_state.currently_building_session
         component._session_ = session
@@ -216,8 +216,6 @@ class ComponentMeta(RioDataclassMeta):
         component._properties_set_by_creator_.update(
             _determine_properties_set_by_creator(component, args, kwargs)
         )
-
-        component._create_state_bindings()
 
         # Store a weak reference to the component's creator
         if global_state.currently_building_component is None:
@@ -438,11 +436,6 @@ class Component(metaclass=ComponentMeta):
     # component
     _on_populate_triggered_: bool = internal_field(default=False, init=False)
 
-    # This flag indicates whether state bindings for this component have already
-    # been initialized. Used by `__getattribute__` to check if it should throw
-    # an error.
-    _state_bindings_initialized_: bool = internal_field(default=False, init=False)
-
     # Whether this instance is internal to Rio, e.g. because the spawning
     # component is a high-level component defined in Rio.
     #
@@ -454,65 +447,6 @@ class Component(metaclass=ComponentMeta):
     # The stackframe which has created this component. Used by the debugger.
     # Only initialized if in debugging mode.
     _creator_stackframe_: tuple[Path, int] = internal_field(init=False)
-
-    def _create_state_bindings(self) -> None:
-        self._state_bindings_initialized_ = True
-
-        creator = global_state.currently_building_component
-
-        # The creator can be `None` if this component was created by the app's
-        # `build` function. It's not possible to create a state binding in that
-        # case.
-        if creator is None:
-            return
-
-        creator_vars = vars(creator)
-        self_vars = vars(self)
-
-        for prop_name, state_property in self._state_properties_.items():
-            # The dataclass constructor doesn't actually assign default values
-            # as instance attributes. In that case we get a KeyError here. But
-            # default values can't be state bindings, so just skip this
-            # attribute
-            try:
-                value = self_vars[prop_name]
-            except KeyError:
-                continue
-
-            assert not isinstance(
-                value, StateProperty
-            ), f"You're still using the old state binding syntax for {self} {prop_name}"
-
-            # Create a StateBinding if requested
-            if not isinstance(value, PleaseTurnThisIntoAStateBinding):
-                continue
-
-            # In order to create a `StateBinding`, the creator's attribute must
-            # also be a binding
-            parent_binding = creator_vars[value.state_property.name]
-
-            if not isinstance(parent_binding, StateBinding):
-                parent_binding = StateBinding(
-                    owning_component_weak=weakref.ref(creator),
-                    owning_property=value,
-                    is_root=True,
-                    parent=None,
-                    value=parent_binding,
-                    children=weakref.WeakSet(),
-                )
-                creator_vars[value.state_property.name] = parent_binding
-
-            # Create the child binding
-            child_binding = StateBinding(
-                owning_component_weak=weakref.ref(self),
-                owning_property=state_property,
-                is_root=False,
-                parent=parent_binding,
-                value=None,
-                children=weakref.WeakSet(),
-            )
-            parent_binding.children.add(child_binding)
-            self_vars[prop_name] = child_binding
 
     @property
     def session(self) -> rio.Session:
