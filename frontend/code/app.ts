@@ -17,6 +17,10 @@ globalThis.CHILD_ATTRIBUTE_NAMES = '{child_attribute_names}';
 // needed. This is an instance of `DebuggerConnectorComponent`.
 globalThis.RIO_DEBUGGER = null;
 
+// Set to indicate that we're intentionally leaving the page. This can be used
+// to suppress the connection lost popup, reconnects, or similar
+export let goingAway: boolean = false;
+
 function getScrollBarWidthInPixels(): number {
     let outer = document.createElement('div');
     outer.style.position = 'absolute';
@@ -52,7 +56,9 @@ function main(): void {
     // Display a warning if running in debug mode
     if (globalThis.RIO_DEBUG_MODE) {
         console.warn(
-            'Rio is running in DEBUG mode.\nDebug mode includes helpful tools for development, but is slower and disables some safety checks. Never use it in production!'
+            'Rio is running in DEBUG mode.\nDebug mode includes helpful tools' +
+                ' for development, but is slower and disables some safety checks.' +
+                ' Never use it in production!'
         );
     }
 
@@ -72,12 +78,7 @@ function main(): void {
     globalThis.scrollBarSize = scrollBarSize;
 
     window.addEventListener('beforeunload', () => {
-        // Delete the connection-lost-popup, otherwise it would become visible
-        // for a little while when the browser navigates to a different website
-        let connectionLostPopup = document.querySelector(
-            '.rio-connection-lost-popup'
-        );
-        connectionLostPopup?.remove();
+        goingAway = true;
     });
 
     // Listen for URL changes, so the session can switch page

@@ -28,20 +28,18 @@ export class LinkComponent extends ComponentBase {
         //
         // This only needs to handle pages, since regular links will be handled
         // by the browser.
-        containerElement.addEventListener(
-            'click',
-            (event: MouseEvent) => {
-                if (this.state.isPage) {
-                    this.sendMessageToBackend({
-                        page: this.state.targetUrl,
-                    });
+        containerElement.addEventListener('click', (event: MouseEvent) => {
+            if (!this.state.isPage) {
+                return;
+            }
 
-                    event.stopPropagation();
-                    event.preventDefault();
-                }
-            },
-            { capture: true }
-        );
+            this.sendMessageToBackend({
+                page: this.state.targetUrl,
+            });
+
+            event.stopPropagation();
+            event.preventDefault();
+        });
 
         return containerElement;
     }

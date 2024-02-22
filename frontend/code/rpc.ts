@@ -1,4 +1,4 @@
-import { pixelsPerRem } from './app';
+import { goingAway, pixelsPerRem } from './app';
 import { DebuggerConnectorComponent } from './components/debuggerConnector';
 import { componentsById, updateComponentStates } from './componentManagement';
 import {
@@ -31,7 +31,15 @@ export type JsonRpcResponse = {
     };
 };
 
-export function setConnectionLostPopupVisible(visible: boolean): void {
+export function setConnectionLostPopupVisibleUnlessGoingAway(
+    visible: boolean
+): void {
+    // If the user is intentionally leaving, don't annoy them with a popup
+    if (goingAway) {
+        return;
+    }
+
+    // Find the component
     let connectionLostPopup = document.querySelector(
         '.rio-connection-lost-popup'
     ) as HTMLElement | null;
@@ -40,6 +48,7 @@ export function setConnectionLostPopupVisible(visible: boolean): void {
         return;
     }
 
+    // Update it
     if (visible) {
         connectionLostPopup.style.display = 'block';
         commitCss(connectionLostPopup); // TODO: Is this actually needed here?
@@ -52,7 +61,8 @@ export function setConnectionLostPopupVisible(visible: boolean): void {
     }
 }
 
-globalThis.setConnectionLostPopupVisible = setConnectionLostPopupVisible;
+globalThis.setConnectionLostPopupVisible =
+    setConnectionLostPopupVisibleUnlessGoingAway;
 
 // Because processing incoming messages is async, we can't just attach our
 // function to `websocket.onMessage`. That could lead to multiple messages being
@@ -76,7 +86,13 @@ async function processMessages(): Promise<void> {
 }
 processMessages();
 
-function createWebsocket(): WebSocket {
+function createWebsocket(): void {
+    // If the user is leaving the page, don't try to connect anymore. This could
+    // prevent the user from leaving.
+    if (goingAway) {
+        return;
+    }
+
     let url = new URL(
         `/rio/ws?sessionToken=${globalThis.SESSION_TOKEN}`,
         window.location.href
@@ -89,13 +105,11 @@ function createWebsocket(): WebSocket {
     websocket.addEventListener('message', onMessage);
     websocket.addEventListener('error', onError);
     websocket.addEventListener('close', onClose);
-
-    return websocket;
 }
 
 export function initWebsocket(): void {
-    let websocket = createWebsocket();
-    websocket.addEventListener('open', sendInitialMessage);
+    createWebsocket();
+    websocket!.addEventListener('open', sendInitialMessage);
 }
 
 /// Send the initial message with user information to the server
@@ -140,7 +154,7 @@ function onOpen(): void {
     console.log('Websocket connection opened');
 
     connectionAttempt = 1;
-    setConnectionLostPopupVisible(false);
+    setConnectionLostPopupVisibleUnlessGoingAway(false);
 
     // Some proxies kill idle websocket connections. Send pings occasionally to
     // keep the connection alive.
@@ -176,7 +190,7 @@ function onClose(event: Event) {
     clearInterval(pingPongHandlerId);
 
     // Show the user that the connection was lost
-    setConnectionLostPopupVisible(true);
+    setConnectionLostPopupVisibleUnlessGoingAway(true);
 
     // Wait a bit before trying to reconnect (again)
     if (connectionAttempt >= 10 && !globalThis.RIO_DEBUG_MODE) {

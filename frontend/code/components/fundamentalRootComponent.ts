@@ -2,7 +2,7 @@ import { pixelsPerRem } from '../app';
 import { componentsById } from '../componentManagement';
 import { LayoutContext } from '../layouting';
 import { ComponentId } from '../models';
-import { setConnectionLostPopupVisible } from '../rpc';
+import { setConnectionLostPopupVisibleUnlessGoingAway } from '../rpc';
 import { ComponentBase, ComponentState } from './componentBase';
 
 export type FundamentalRootComponentState = ComponentState & {
@@ -69,7 +69,10 @@ export class FundamentalRootComponent extends ComponentBase {
         // Looking up elements via selector is wonky if the element has only
         // just been added. Give the browser time to update.
         setTimeout(
-            () => setConnectionLostPopupVisible(connectionLostPopupVisible),
+            () =>
+                setConnectionLostPopupVisibleUnlessGoingAway(
+                    connectionLostPopupVisible
+                ),
             0
         );
 
