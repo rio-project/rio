@@ -9,7 +9,7 @@ export function updateInputBoxNaturalWidth(
     additionalSpace: number
 ): void {
     // Enforce a minimum width, common to all input boxes
-    let padding = 0.6;
+    let padding = 1.6;
     let newWidth = Math.max(8, additionalSpace + padding);
 
     // Dirty?
@@ -28,7 +28,7 @@ export function updateInputBoxNaturalHeight(
 ) {
     // Calculate the new height. If a label is set, the height needs to increase
     // to make room for it, when floating above the entered text.
-    let newHeight = label.length == 0 ? 2.0 : 3.3;
+    let newHeight = label.length === 0 ? 2.0 : 3.3;
     newHeight += additionalSpace;
 
     // Dirty?

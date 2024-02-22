@@ -46,9 +46,6 @@ $infinite-corner-radius: 99999px;
 // Nonstandard transition timing function
 $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
-// Values common to all input boxes
-$input-box-padding-bottom: 0.4rem;
-
 // Theme Switcheroos
 .rio-switcheroo-background {
     // surface := primary
@@ -704,12 +701,20 @@ select {
 
     user-select: none;
 
-    padding-bottom: $input-box-padding-bottom;
+    padding-bottom: 0.6rem;
 
     color: var(--rio-local-text-color);
 
     opacity: 0;
     transition: all 0.13s linear;
+}
+
+.rio-text-input-prefix-text {
+    margin-right: 0.2rem;
+}
+
+.rio-text-input-suffix-text {
+    margin-left: 0.3rem;
 }
 
 input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
@@ -727,8 +732,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     flex-direction: row;
     align-items: stretch;
 
-    padding-left: 0.3rem;
-    padding-right: 0.3rem;
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
     box-sizing: border-box;
 
     background-color: var(--rio-local-plain-bg-variant);
@@ -756,6 +761,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     flex-grow: 1;
     min-width: 0;
 
+    padding: 0;
+
     background-color: transparent;
     color: var(--rio-local-text-color);
     caret-color: var(--rio-local-accent-bg);
@@ -763,7 +770,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
 }
 
 .rio-input-box > input {
-    height: calc(200% - 2.17rem);
+    height: calc(200% - 2.38rem); // Trial and error
 }
 
 .rio-input-box > textarea {
@@ -796,7 +803,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     pointer-events: none;
 
     position: absolute;
-    left: 1.5rem;
+    left: 0.8rem;
     top: calc(50% - 0.5rem);
     font-size: 1rem;
     color: var(--rio-local-text-color);
@@ -810,7 +817,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 .rio-input-box:focus-within > .rio-input-box-label,
 .rio-input-box-focused > .rio-input-box-label {
     opacity: 1;
-    top: 0.5rem;
+    top: 0.4rem;
     bottom: unset;
     font-size: 0.8rem;
 }
