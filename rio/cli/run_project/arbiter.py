@@ -442,6 +442,9 @@ class Arbiter:
                     print()
                     print(f"[bold]{rel_path}[/] has changed -> Reloading")
 
+                    # Update the timestamp
+                    last_reload_started_at = time.monotonic_ns()
+
                     # Restart the app
                     await self._restart_app()
 
