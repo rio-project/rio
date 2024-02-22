@@ -9,6 +9,8 @@ export type ScrollContainerState = ComponentState & {
     content?: ComponentId;
     scroll_x?: 'never' | 'auto' | 'always';
     scroll_y?: 'never' | 'auto' | 'always';
+    initial_x?: number;
+    initial_y?: number;
     sticky_bottom?: boolean;
 };
 
@@ -17,8 +19,16 @@ const NATURAL_SIZE = 1.0;
 export class ScrollContainerComponent extends ComponentBase {
     state: Required<ScrollContainerState>;
 
+    // Sometimes components are temporarily removed from the DOM or resized (for
+    // example, `getElementDimensions` does both), which can lead to the scroll
+    // position being changed or reset. In order to prevent this, we'll wrap our
+    // child in a container element.
+    private childContainer: HTMLElement;
+
+    private isFirstLayout: boolean = true;
     private assumeVerticalScrollBarWillBeNeeded: boolean = true;
     private numSequentialIncorrectAssumptions: number = 0;
+    private wasScrolledToBottom: boolean | null = null;
 
     private shouldLayoutWithVerticalScrollbar(): boolean {
         switch (this.state.scroll_y) {
@@ -36,6 +46,10 @@ export class ScrollContainerComponent extends ComponentBase {
     createElement(): HTMLElement {
         let element = document.createElement('div');
         element.classList.add('rio-scroll-container');
+
+        this.childContainer = document.createElement('div');
+        element.appendChild(this.childContainer);
+
         return element;
     }
 
@@ -43,13 +57,14 @@ export class ScrollContainerComponent extends ComponentBase {
         deltaState: ScrollContainerState,
         latentComponents: Set<ComponentBase>
     ): void {
-        this.replaceFirstChild(latentComponents, deltaState.content);
+        this.replaceFirstChild(
+            latentComponents,
+            deltaState.content,
+            this.childContainer
+        );
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {
-        if (this.state.sticky_bottom)
-            console.debug('scrollTop NW (px):', this.element.scrollTop);
-
         if (this.state.scroll_x === 'never') {
             let child = componentsById[this.state.content]!;
             this.naturalWidth = child.requestedWidth;
@@ -65,9 +80,20 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateAllocatedWidth(ctx: LayoutContext): void {
-        if (this.state.sticky_bottom)
-            console.debug('scrollTop AW (px):', this.element.scrollTop);
         let child = componentsById[this.state.content]!;
+
+        // If `sticky_bottom` is enabled, we need to find out whether we're
+        // scrolled all the way to the bottom before we change the child's
+        // allocation.
+        //
+        // We can't do this in `updateNaturalWidth` because the layouting
+        // algorithm doesn't always call that method.
+        if (
+            this.state.sticky_bottom &&
+            this.numSequentialIncorrectAssumptions === 0
+        ) {
+            this.wasScrolledToBottom = this._checkIfScrolledToBottom(child);
+        }
 
         let availableWidth = this.allocatedWidth;
         if (this.shouldLayoutWithVerticalScrollbar()) {
@@ -86,11 +112,11 @@ export class ScrollContainerComponent extends ComponentBase {
             this.element.style.overflowX =
                 this.state.scroll_x === 'always' ? 'scroll' : 'hidden';
         }
+
+        this.childContainer.style.width = `${child.allocatedWidth}rem`;
     }
 
     updateNaturalHeight(ctx: LayoutContext): void {
-        if (this.state.sticky_bottom)
-            console.debug('scrollTop NH (px):', this.element.scrollTop);
         if (this.state.scroll_y === 'never') {
             let child = componentsById[this.state.content]!;
             this.naturalHeight = child.requestedHeight;
@@ -106,12 +132,7 @@ export class ScrollContainerComponent extends ComponentBase {
     }
 
     updateAllocatedHeight(ctx: LayoutContext): void {
-        if (this.state.sticky_bottom) {
-            console.debug('scrollTop AH (px):', this.element.scrollTop);
-        }
         let child = componentsById[this.state.content]!;
-
-        let heightBefore = child.allocatedHeight;
 
         let availableHeight = this.allocatedHeight;
         if (this.element.style.overflowX === 'scroll') {
@@ -176,48 +197,51 @@ export class ScrollContainerComponent extends ComponentBase {
         // Only change the allocatedHeight once we're sure that we won't be
         // re-layouting again
         child.allocatedHeight = newAllocatedHeight;
+        this.childContainer.style.height = `${child.allocatedHeight}rem`;
 
-        // If `sticky_bottom` is enabled, check if we have to scroll down
-        console.debug('Child allocated height before:', heightBefore);
-        console.debug('Child allocated height after:', child.allocatedHeight);
-        if (this.state.sticky_bottom && child.allocatedHeight > heightBefore) {
-            // Calculate how much of the child is visible
-            let visibleHeight = this.allocatedHeight;
-            if (this.element.style.overflowX === 'scroll') {
-                visibleHeight -= scrollBarSize;
-            }
-            console.debug('visible height:', visibleHeight);
-            console.debug('scrollTop (px):', this.element.scrollTop);
-            console.debug(
-                'bounding height (px):',
-                child.element.getBoundingClientRect().height
-            );
-            console.debug(
-                'child.element.style.height:',
-                child.element.style.height
-            );
+        if (this.isFirstLayout) {
+            this.isFirstLayout = false;
 
-            // Check if the scrollbar is all the way at the bottom
-            if (
-                (this.element.scrollTop + 1) / pixelsPerRem + visibleHeight >=
-                heightBefore - 0.00001
-            ) {
-                console.debug('Scrolling to', child.allocatedHeight);
-                // Our CSS `height` hasn't been updated yet, so we can't scroll
-                // down any further. We must assign the `height` manually.
-                this.element.style.height = `${
-                    this.allocatedHeight * pixelsPerRem
-                }px`;
-                child.element.style.height = `${
-                    child.allocatedHeight * pixelsPerRem
-                }px`;
+            // Our CSS `height` hasn't been updated yet, so we can't scroll
+            // down any further. We must assign the `height` manually.
+            this.element.style.height = `${this.allocatedHeight}rem`;
 
-                this.element.scroll({
-                    top: child.allocatedHeight * pixelsPerRem + 1000,
-                    left: this.element.scrollLeft,
-                    behavior: 'instant',
-                });
-            }
+            this.element.scroll({
+                top:
+                    (child.allocatedHeight - this.allocatedHeight) *
+                    pixelsPerRem *
+                    this.state.initial_y,
+                left:
+                    (child.allocatedWidth - this.allocatedWidth) *
+                    pixelsPerRem *
+                    this.state.initial_y,
+                behavior: 'instant',
+            });
         }
+        // If `sticky_bottom` is enabled, check if we have to scroll down
+        else if (this.state.sticky_bottom && this.wasScrolledToBottom) {
+            // Our CSS `height` hasn't been updated yet, so we can't scroll
+            // down any further. We must assign the `height` manually.
+            this.element.style.height = `${this.allocatedHeight}rem`;
+
+            this.element.scroll({
+                top: child.allocatedHeight * pixelsPerRem + 999,
+                left: this.element.scrollLeft,
+                behavior: 'instant',
+            });
+        }
+    }
+
+    private _checkIfScrolledToBottom(child: ComponentBase): boolean {
+        // Calculate how much of the child is visible
+        let visibleHeight = this.allocatedHeight;
+        if (this.element.style.overflowX === 'scroll') {
+            visibleHeight -= scrollBarSize;
+        }
+
+        return (
+            (this.element.scrollTop + 1) / pixelsPerRem + visibleHeight >=
+            child.allocatedHeight - 0.00001
+        );
     }
 }

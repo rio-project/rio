@@ -55,6 +55,8 @@ class ScrollContainer(FundamentalComponent):
     _: KW_ONLY
     scroll_x: Literal["never", "auto", "always"] = "auto"
     scroll_y: Literal["never", "auto", "always"] = "auto"
+    initial_x: float = 0
+    initial_y: float = 0
     sticky_bottom: bool = False
 
 
