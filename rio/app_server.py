@@ -318,7 +318,7 @@ class AppServer(fastapi.FastAPI):
 
         # Add any attachments, except for user settings. These are deserialized
         # later on, once the client has sent the initial message.
-        for attachment in self.app._default_attachments:
+        for attachment in self.app.default_attachments:
             if isinstance(attachment, user_settings_module.UserSettings):
                 continue
 

@@ -4,13 +4,14 @@
 
 import { ComponentBase } from './components/componentBase';
 
+export const HORIZONTAL_PADDING: number = 0.8;
+
 export function updateInputBoxNaturalWidth(
     component: ComponentBase,
     additionalSpace: number
 ): void {
     // Enforce a minimum width, common to all input boxes
-    let padding = 1.6;
-    let newWidth = Math.max(8, additionalSpace + padding);
+    let newWidth = Math.max(8, additionalSpace + HORIZONTAL_PADDING * 2);
 
     // Dirty?
     if (newWidth !== component.naturalWidth) {

@@ -46,6 +46,9 @@ $infinite-corner-radius: 99999px;
 // Nonstandard transition timing function
 $transition-timing-overshoot: cubic-bezier(0.5, 0.5, 0.2, 1.14);
 
+// Reusable attributes used by input box
+$rio-input-box-horizontal-padding: 0.8rem;
+
 // Theme Switcheroos
 .rio-switcheroo-background {
     // surface := primary
@@ -710,17 +713,24 @@ select {
 }
 
 .rio-text-input-prefix-text {
+    padding-left: $rio-input-box-horizontal-padding;
     margin-right: 0.2rem;
 }
 
 .rio-text-input-suffix-text {
-    margin-left: 0.3rem;
+    padding-right: $rio-input-box-horizontal-padding;
+    margin-left: 0.2rem;
 }
 
 input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
 .rio-input-box:focus-within > .rio-text-input-hint-text,
 .rio-input-box-focused > .rio-text-input-hint-text {
     opacity: 0.5;
+}
+
+.rio-text-input.rio-input-box {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
 }
 
 // Input Box: This is a style common to multiple input components, such as
@@ -732,8 +742,8 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     flex-direction: row;
     align-items: stretch;
 
-    padding-left: 0.8rem;
-    padding-right: 0.8rem;
+    padding-left: $rio-input-box-horizontal-padding;
+    padding-right: $rio-input-box-horizontal-padding;
     box-sizing: border-box;
 
     background-color: var(--rio-local-plain-bg-variant);
@@ -803,7 +813,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     pointer-events: none;
 
     position: absolute;
-    left: 0.8rem;
+    left: $rio-input-box-horizontal-padding;
     top: calc(50% - 0.5rem);
     font-size: 1rem;
     color: var(--rio-local-text-color);

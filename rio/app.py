@@ -7,7 +7,7 @@ import webbrowser
 from collections.abc import Callable, Iterable
 from datetime import timedelta
 from pathlib import Path
-from typing import Any
+from typing import *  # type: ignore
 
 import __main__
 import fastapi
@@ -256,7 +256,7 @@ class App:
         self._on_app_start = on_app_start
         self._on_session_start = on_session_start
         self._on_session_end = on_session_end
-        self._default_attachments = tuple(default_attachments)
+        self.default_attachments: MutableSequence[Any] = list(default_attachments)
         self._theme = theme
         self._build_connection_lost_message = build_connection_lost_message
 

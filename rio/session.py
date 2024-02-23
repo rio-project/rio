@@ -1430,7 +1430,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                     settings_json[key] = value
 
         # Instantiate and attach the settings
-        for default_settings in self._app_server.app._default_attachments:
+        for default_settings in self._app_server.app.default_attachments:
             if not isinstance(default_settings, user_settings_module.UserSettings):
                 continue
 

@@ -2,10 +2,10 @@ import { ComponentBase, ComponentState } from './componentBase';
 import { getTextDimensions } from '../layoutHelpers';
 import { LayoutContext } from '../layouting';
 import {
+    HORIZONTAL_PADDING as INPUT_BOX_HORIZONTAL_PADDING,
     updateInputBoxNaturalHeight,
     updateInputBoxNaturalWidth,
 } from '../inputBoxTools';
-import { pixelsPerRem } from '../app';
 
 export type TextInputState = ComponentState & {
     _type_: 'TextInput-builtin';
@@ -136,10 +136,12 @@ export class TextInputComponent extends ComponentBase {
         if (deltaState.prefix_text === '') {
             this.prefixTextElement.style.display = 'none';
             this.prefixTextWidth = 0;
+            this.inputElement.style.paddingLeft = `${INPUT_BOX_HORIZONTAL_PADDING}rem`;
             this.makeLayoutDirty();
         } else if (deltaState.prefix_text !== undefined) {
             this.prefixTextElement.textContent = deltaState.prefix_text;
             this.prefixTextElement.style.removeProperty('display');
+            this.inputElement.style.removeProperty('padding-left');
 
             // Update the layout, if needed
             this.prefixTextWidth =
@@ -150,10 +152,12 @@ export class TextInputComponent extends ComponentBase {
         if (deltaState.suffix_text === '') {
             this.suffixTextElement.style.display = 'none';
             this.suffixTextWidth = 0;
+            this.inputElement.style.paddingRight = `${INPUT_BOX_HORIZONTAL_PADDING}rem`;
             this.makeLayoutDirty();
         } else if (deltaState.suffix_text !== undefined) {
             this.suffixTextElement.textContent = deltaState.suffix_text;
             this.suffixTextElement.style.removeProperty('display');
+            this.inputElement.style.removeProperty('padding-right');
 
             // Update the layout, if needed
             this.suffixTextWidth =
