@@ -28,7 +28,7 @@ revel = "0.8.17"
 timer-dict = "^1.0.0"
 typing-extensions = "^4.5.0"
 unicall = "^0.1.3"
-uniserde = "^0.3.10"
+uniserde = "^0.3.11"
 uvicorn = { extras = ["standard"], version = "^0.23.2" }
 yarl = "^1.9.2"
 material-color-utilities-python = "^0.1.5"
