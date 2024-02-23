@@ -47,6 +47,10 @@ class IconRegistry:
                 common.RIO_ASSETS_DIR / "icon-sets" / "rio.tar.xz"
             )
 
+            _icon_registry.icon_set_archives["styling"] = (
+                common.RIO_ASSETS_DIR / "icon-sets" / "styling.tar.xz"
+            )
+
         # Use it
         return _icon_registry
 

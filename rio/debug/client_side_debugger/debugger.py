@@ -3,7 +3,6 @@ from typing import *  # type: ignore
 import rio
 
 from . import (
-    ai_chat_page,
     deploy_page,
     docs_page,
     icons_page,
@@ -19,7 +18,6 @@ class ClientSideDebugger(rio.Component):
             "project",
             "tree",
             "docs",
-            "ai-chat",
             "deploy",
         ]
         | None
@@ -62,12 +60,6 @@ class ClientSideDebugger(rio.Component):
                 width=PAGE_WIDTH,
             )
 
-        # AI Chat
-        if self.selected_page == "ai-chat":
-            return ai_chat_page.AIChatPage(
-                width=PAGE_WIDTH,
-            )
-
         # Deploy
         if self.selected_page == "deploy":
             return deploy_page.DeployPage(
@@ -102,7 +94,6 @@ class ClientSideDebugger(rio.Component):
                         "Icons",
                         "Theme",
                         "Docs",
-                        "AI",
                         "Deploy",
                     ],
                     icons=[
@@ -111,7 +102,6 @@ class ClientSideDebugger(rio.Component):
                         "emoji-people",
                         "palette",
                         "library-books",
-                        "chat-bubble",
                         "rocket-launch",
                     ],
                     values=[
@@ -120,7 +110,6 @@ class ClientSideDebugger(rio.Component):
                         "icons",
                         "theme",
                         "docs",
-                        "ai-chat",
                         "deploy",
                     ],
                     allow_none=True,
