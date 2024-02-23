@@ -24,8 +24,8 @@ export class SwitcherComponent extends ComponentBase {
     private isDeterminingLayout: boolean = true;
 
     // The width and height the switcher was at before starting the animation.
-    private initialWidth: number;
-    private initialHeight: number;
+    private initialRequestedWidth: number;
+    private initialRequestedHeight: number;
 
     // -1 if no animation is running
     private animationStartedAt: number = -1;
@@ -89,7 +89,6 @@ export class SwitcherComponent extends ComponentBase {
             }
 
             // Start the layouting process
-            this.isDeterminingLayout = true;
             this.makeLayoutDirty();
         }
 
@@ -113,31 +112,30 @@ export class SwitcherComponent extends ComponentBase {
 
     updateNaturalWidth(ctx: LayoutContext): void {
         // If the child's requested size has changed, start the animation
-        // if (
-        //     this.activeChildInstance !== null &&
-        //     (this.previousChildRequestedWidth !==
-        //         this.activeChildInstance.requestedWidth ||
-        //         this.previousChildRequestedHeight !==
-        //             this.activeChildInstance.requestedHeight)
-        // ) {
-        //     this.isDeterminingLayout = true;
+        let childRequestedWidth, childRequestedHeight;
 
-        //     this.previousChildRequestedWidth =
-        //         this.activeChildInstance.requestedWidth;
-        //     this.previousChildRequestedHeight =
-        //         this.activeChildInstance.requestedHeight;
-        // }
+        if (this.activeChildInstance === null) {
+            childRequestedWidth = 0;
+            childRequestedHeight = 0;
+        } else {
+            childRequestedWidth = this.activeChildInstance.requestedWidth;
+            childRequestedHeight = this.activeChildInstance.requestedHeight;
+        }
+
+        if (
+            this.previousChildRequestedWidth !== childRequestedWidth ||
+            this.previousChildRequestedHeight !== childRequestedHeight
+        ) {
+            console.debug('Detected child size change, starting animation');
+            this.isDeterminingLayout = true;
+            this.previousChildRequestedWidth = childRequestedWidth;
+            this.previousChildRequestedHeight = childRequestedHeight;
+        }
 
         // Case: Trying to determine the size the child will receive once the
         // animation finishes
         if (this.isDeterminingLayout) {
-            this.initialWidth = this.naturalWidth;
-            this.initialHeight = this.naturalHeight;
-
-            this.naturalWidth =
-                this.activeChildInstance === null
-                    ? 0
-                    : this.activeChildInstance.requestedWidth;
+            this.naturalWidth = childRequestedWidth;
             return;
         }
 
@@ -149,23 +147,13 @@ export class SwitcherComponent extends ComponentBase {
         );
         let easedT = easeInOut(linearT);
 
-        let childRequestedWidth =
-            this.activeChildInstance === null
-                ? 0
-                : this.activeChildInstance.requestedWidth;
-
-        let childRequestedHeight =
-            this.activeChildInstance === null
-                ? 0
-                : this.activeChildInstance.requestedHeight;
-
         this.naturalWidth =
-            this.initialWidth +
-            easedT * (childRequestedWidth - this.initialWidth);
+            this.initialRequestedWidth +
+            easedT * (childRequestedWidth - this.initialRequestedWidth);
 
         this.naturalHeight =
-            this.initialHeight +
-            easedT * (childRequestedHeight - this.initialHeight);
+            this.initialRequestedHeight +
+            easedT * (childRequestedHeight - this.initialRequestedHeight);
 
         // Keep going?
         if (linearT < 1) {
@@ -174,8 +162,15 @@ export class SwitcherComponent extends ComponentBase {
                 updateLayout();
             });
         } else {
+            this.initialRequestedWidth = Math.max(
+                this.naturalWidth,
+                this.state._size_[0]
+            );
+            this.initialRequestedHeight = Math.max(
+                this.naturalHeight,
+                this.state._size_[1]
+            );
             this.animationStartedAt = -1;
-            // this.isDeterminingLayout = true;
         }
     }
 
@@ -220,17 +215,23 @@ export class SwitcherComponent extends ComponentBase {
 
             this.isDeterminingLayout = false;
 
-            if (this.hasBeenLaidOut) {
-                if (this.animationStartedAt === -1) {
-                    this.animationStartedAt = Date.now();
-
-                    ctx.requestImmediateReLayout(() => {
-                        this.makeLayoutDirty();
-                    });
-                }
-            } else {
+            // If this is the first layout don't animate, just assume the
+            // correct size
+            if (!this.hasBeenLaidOut) {
                 this.hasBeenLaidOut = true;
+                this.initialRequestedWidth = this.allocatedWidth;
+                this.initialRequestedHeight = this.allocatedHeight;
+                return;
             }
+
+            // Start the animation
+            if (this.animationStartedAt === -1) {
+                this.animationStartedAt = Date.now();
+            }
+
+            ctx.requestImmediateReLayout(() => {
+                this.makeLayoutDirty();
+            });
             return;
         }
 
