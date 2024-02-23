@@ -71,7 +71,7 @@ class Dataset(rio.Component):
                         ),
                         color="background",
                         corner_radius=2,
-                        key="card1",
+                        key="ex1-card1",
                     ),
                     line_indices_to_component_keys=[
                         "ex1-card1",
