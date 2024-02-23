@@ -182,7 +182,10 @@ export class ScrollContainerComponent extends ComponentBase {
                 // that the current layouting process won't continue. Assign a
                 // reasonable amount of space to the child so any subsequent
                 // layouting functions don't crash because of unassigned values.
-                child.allocatedHeight = child.requestedHeight;
+                //
+                // The exact value doesn't matter, but this one is noticeable
+                // when debugging and easy to find in the code.
+                child.allocatedHeight = 7.77777777;
 
                 // Then, request a re-layout
                 ctx.requestImmediateReLayout(() => {
