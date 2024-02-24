@@ -46,6 +46,9 @@ async def test_init_cannot_read_state_properties():
     # Accessing state properties in `__init__` is not allowed because state
     # bindings aren't initialized yet at that point. In development mode, trying
     # to access a state property in `__init__` should raise an exception.
+    init_executed = False
+    accessing_foo_raised_exception = accessing_margin_top_raised_exception = False
+
     class IllegalComponent(rio.Component):
         foo: int
 
@@ -54,11 +57,20 @@ async def test_init_cannot_read_state_properties():
 
             self.foo = foo
 
-            with pytest.raises(Exception):
+            nonlocal accessing_foo_raised_exception
+            try:
                 _ = self.foo
+            except Exception:
+                accessing_foo_raised_exception = True
 
-            with pytest.raises(Exception):
+            nonlocal accessing_margin_top_raised_exception
+            try:
                 _ = self.margin_top
+            except Exception:
+                accessing_margin_top_raised_exception = True
+
+            nonlocal init_executed
+            init_executed = True
 
         def build(self) -> rio.Component:
             return rio.Text("hi", margin_top=self.margin_top)
@@ -68,4 +80,6 @@ async def test_init_cannot_read_state_properties():
             return IllegalComponent(17)
 
     async with create_mockapp(Container):
-        pass
+        assert init_executed
+        assert accessing_foo_raised_exception
+        assert accessing_margin_top_raised_exception

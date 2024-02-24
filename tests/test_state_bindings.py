@@ -3,33 +3,35 @@ from typing import cast
 from utils import create_mockapp
 
 import rio
-
-StateBinding = rio.component.StateBinding
-StateProperty = rio.component.StateProperty
+from rio.state_properties import PleaseTurnThisIntoAStateBinding
 
 
 class Parent(rio.Component):
     text: str = ""
 
     def build(self):
-        return rio.Text(Parent.text)
+        return rio.Text(self.bind().text)
 
 
 class Grandparent(rio.Component):
     text: str = ""
 
     def build(self):
-        return Parent(Grandparent.text)
+        return Parent(self.bind().text)
 
 
 async def test_bindings_arent_created_too_early():
-    # There was a time when state bindings were created in `Component.__init__`.
-    # Make sure they're created after *all* `__init__`s have run.
+    # There was a time when state bindings were created in `Component.__init__`,
+    # thus skipping any properties that were only assigned later.
     class IHaveACustomInit(rio.Component):
         text: str
 
         def __init__(self, *args, text: str, **kwargs):
             super().__init__(*args, **kwargs)
+
+            # `Component.__init__`` has already run, but we haven't assigned
+            # `self.text` yet. Do it now and assert that it still becomes a
+            # state binding.
             self.text = text
 
         def build(self) -> rio.Component:
@@ -39,7 +41,7 @@ async def test_bindings_arent_created_too_early():
         text: str = "hi"
 
         def build(self) -> rio.Component:
-            return IHaveACustomInit(text=Container.text)
+            return IHaveACustomInit(text=self.bind().text)
 
     async with create_mockapp(Container) as app:
         root_component = app.get_component(Container)
@@ -51,15 +53,19 @@ async def test_bindings_arent_created_too_early():
         assert child_component.text == "bye"
 
 
-async def test_init_receives_state_properties_as_input():
+async def test_init_receives_state_bindings_as_input():
     # For a while we considered initializing state bindings before calling a
     # component's `__init__` and passing the values of the bindings as arguments
     # into `__init__`. But ultimately we decided against it, because some
     # components may want to use state properties/bindings in their __init__. So
-    # make sure the `__init__` actually receives a `StateProperty` as input.
+    # make sure the `__init__` actually receives a
+    # `PleaseTurnThisIntoAStateBinding` object as input.
+    size_value = None
+
     class Square(rio.Component):
         def __init__(self, size: float):
-            assert isinstance(size, StateProperty), size
+            nonlocal size_value
+            size_value = size
 
             super().__init__(width=size, height=size)
 
@@ -70,10 +76,10 @@ async def test_init_receives_state_properties_as_input():
         size: float
 
         def build(self) -> rio.Component:
-            return Square(Container.size)
+            return Square(self.bind().size)
 
     async with create_mockapp(lambda: Container(7)):
-        pass
+        assert isinstance(size_value, PleaseTurnThisIntoAStateBinding)
 
 
 async def test_binding_assignment_on_child():
@@ -110,8 +116,8 @@ async def test_binding_assignment_on_sibling():
 
         def build(self):
             return rio.Column(
-                rio.Text(Root.text),
-                rio.Text(Root.text),
+                rio.Text(self.bind().text),
+                rio.Text(self.bind().text),
             )
 
     async with create_mockapp(Root) as app:
@@ -202,8 +208,8 @@ async def test_binding_assignment_on_sibling_after_reconciliation():
 
         def build(self):
             return rio.Column(
-                rio.Text(Root.text),
-                rio.Text(Root.text),
+                rio.Text(self.bind().text),
+                rio.Text(self.bind().text),
             )
 
     async with create_mockapp(Root) as app:
