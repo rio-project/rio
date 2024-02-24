@@ -6,15 +6,18 @@ from typing import *  # type: ignore
 import black
 import pyright
 import revel
+import rio_docs
 from revel import print, print_chapter
 
 import rio
-import rio_docs
 
 CODE_BLOCK_PATTERN = re.compile(r"```.*?\n(.*?)\n```", re.DOTALL)
 
 
 def all_components() -> Iterable[Type[rio.Component]]:
+    """
+    Iterates over all components that ship with Rio.
+    """
     to_do: Iterable[Type[rio.Component]] = [rio.Component]
 
     while to_do:
