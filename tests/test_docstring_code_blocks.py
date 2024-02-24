@@ -5,58 +5,88 @@ from typing import *  # type: ignore
 
 import black
 import pyright
-import revel
-import rio_docs
-from revel import print, print_chapter
+import pytest
 
 import rio
+import rio.docs
 
 CODE_BLOCK_PATTERN = re.compile(r"```.*?\n(.*?)\n```", re.DOTALL)
 
 
-def all_components() -> Iterable[Type[rio.Component]]:
+def all_components() -> list[Type[rio.Component]]:
     """
     Iterates over all components that ship with Rio.
     """
     to_do: Iterable[Type[rio.Component]] = [rio.Component]
+    result: list[Type[rio.Component]] = []
 
     while to_do:
         component = to_do.pop()
-        yield component
+        result.append(component)
         to_do.extend(component.__subclasses__())
 
+    return result
 
-def verify_code_block(source: str) -> None:
-    assert source.startswith("```")
-    assert source.endswith("```")
 
-    # Split into language and source
-    linebreak = source.index("\n")
-    assert linebreak != -1
-    first_line = source[3:linebreak].strip()
-    source = source[linebreak + 1 : -3]
+def get_code_blocks(comp: Type[rio.Component]) -> list[str]:
+    """
+    Returns a list of all code blocks in the docstring of a component.
+    """
+    docs = rio.docs.ClassDocs.parse(comp)
 
-    # Make sure a language is specified
-    assert first_line, "No language specified"
+    # No docs?
+    if docs.details is None:
+        return []
 
-    # Make sure the source is valid Python
-    try:
-        result = compile(source, "<string>", "exec")
-    except SyntaxError as e:
-        raise SyntaxError(f"Syntax error in {first_line} code block: {e}")
+    # Find any contained code blocks
+    result: list[str] = []
+    for match in CODE_BLOCK_PATTERN.finditer(docs.details):
+        block: str = match.group(0)
 
-    # Make sure the string is properly formatted
-    formatted_source = black.format_str(source, mode=black.FileMode())
+        assert block.startswith("```")
+        assert block.endswith("```")
 
-    if formatted_source != source:
-        raise ValueError(f"Code block is not properly formatted:\n{formatted_source}")
+        # Split into language and source
+        linebreak = block.index("\n")
+        assert linebreak != -1
+        first_line = block[3:linebreak].strip()
+        block = block[linebreak + 1 : -3]
 
-    # Run static analysis on the code
+        # Make sure a language is specified
+        assert first_line, "The code block has no language specified"
+
+        result.append(block)
+
+    return result
+
+
+@pytest.mark.parametrize("comp", all_components())
+def test_eval_code_block(comp: Type[rio.Component]) -> None:
+    # Eval all code blocks and make sure they don't crash
+    for source in get_code_blocks(comp):
+        compile(source, "<string>", "exec")
+
+
+@pytest.mark.parametrize("comp", all_components())
+def test_code_block_is_formatted(comp: Type[rio.Component]) -> None:
+    # Make sure all code blocks are formatted according to black
+    for source in get_code_blocks(comp):
+        formatted_source = black.format_str(source, mode=black.FileMode())
+        assert source == formatted_source
+
+
+def _pyright_check_source(source: str) -> tuple[int, int]:
+    """
+    Run pyright on the given source and return the number of errors and
+    warnings.
+    """
     with tempfile.NamedTemporaryFile(suffix=".py") as f:
+        # Dump the source to a file, and implicitly import rio
         f.write("import rio\n".encode("utf-8"))
-        f.write(formatted_source.encode("utf-8"))
+        f.write(source.encode("utf-8"))
         f.flush()
 
+        # Run pyright
         proc = pyright.run(
             f.name,
             stdout=subprocess.PIPE,
@@ -66,35 +96,20 @@ def verify_code_block(source: str) -> None:
         assert isinstance(result_out, bytes), type(result_out)
         result_out = result_out.decode()
 
+        # Find the number of errors and warnings
         match = re.search(
             r"(\d+) error(s)?, (\d+) warning(s)?, (\d+) information",
             result_out,
         )
         assert match is not None, result_out
-
-        n_errors = int(match.group(1))
-        if n_errors:
-            raise ValueError(f"Code block has {n_errors} errors:\n{result_out}")
+        return int(match.group(1)), int(match.group(3))
 
 
-def main() -> None:
-    # Find all component classes
-    components = list(all_components())
+@pytest.mark.parametrize("comp", all_components())
+def test_analyze_code_block(comp: Type[rio.Component]) -> None:
+    # Make sure pyright is happy with all code blocks
+    for source in get_code_blocks(comp):
+        n_errors, n_warnings = _pyright_check_source(source)
 
-    # Get their docstrings
-    for comp in components:
-        print_chapter(comp.__name__)
-        docs = rio_docs.ClassDocs.parse(comp)
-
-        # No docs?
-        if docs.details is None:
-            print("No docs")
-            continue
-
-        # Find any contained code blocks
-        for match in CODE_BLOCK_PATTERN.finditer(docs.details):
-            verify_code_block(match.group(0))
-
-
-if __name__ == "__main__":
-    main()
+        assert n_errors == 0, f"Found {n_errors} errors"
+        assert n_warnings == 0, f"Found {n_warnings} warnings"

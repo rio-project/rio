@@ -4,8 +4,6 @@ Contains processing specific to the RIO project.
 
 from typing import *  # type: ignore
 
-from revel import *  # type: ignore
-
 import rio
 
 from . import models
