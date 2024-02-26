@@ -22,8 +22,8 @@ class UserSettings:
 
     When creating an app or website you'll often want to store some values so
     that you can access them the next time the user visits your app. A typical
-    example are configuration values set by the user. You wouldn't want to ask
-    for them every time.
+    example are configuration values set by the user - you wouldn't want to ask
+    for these every time.
 
     Rio makes it easy to store and retrieve such values. Create a class that
     inherits from `UserSettings`, and attach it to the `Session`. That's it! Rio
@@ -31,13 +31,13 @@ class UserSettings:
 
     TODO: Give an example
 
-    Warning! Since settings are stored on the user's device, special
+    Warning: Since settings are stored on the user's device, special
     considerations apply. Some countries have strict privacy laws regulating
     what you can store with/without the user's consent. Make sure you are
     familiar with the legal situation before going wild and storing everything
     you can think of.
 
-    Warning! Since settings are stored on the user's device, you should never
+    Warning: Since settings are stored on the user's device, you should never
     trust them to be valid. A malicious actor could modify them to intentionally
     trigger bugs in your app. Always validate the values before using them.
 
