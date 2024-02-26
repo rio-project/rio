@@ -10,6 +10,11 @@ from rio.debug.monkeypatches import apply_monkeypatches
 apply_monkeypatches()
 
 
+def test_components_cant_be_instantiated_outside_of_build_methods():
+    with pytest.raises(Exception):
+        rio.Row()
+
+
 @enable_component_instantiation
 def test_type_checking():
     rio.Text(

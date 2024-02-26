@@ -30,7 +30,6 @@ from . import (
     assets,
     common,
     errors,
-    font,
     global_state,
     inspection,
     routing,
@@ -65,11 +64,11 @@ class WontSerialize(Exception):
 
 
 async def dummy_send_message(message: Jsonable) -> None:
-    raise NotImplementedError()
+    raise NotImplementedError()  # pragma: no cover
 
 
 async def dummy_receive_message() -> JsonDoc:
-    raise NotImplementedError()
+    raise NotImplementedError()  # pragma: no cover
 
 
 class SessionAttachments:
@@ -1076,11 +1075,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             old_component.key,
             new_component.key,
         )
-
-        # Let any following code assume that the two components aren't the same
-        # instance
-        if old_component is new_component:
-            return
+        assert old_component is not new_component
 
         # Determine which properties will be taken from the new component
         overridden_values: dict[str, object] = {}
@@ -1868,7 +1863,7 @@ a.remove();
         css_variables: dict[str, str],
         theme_variant: Literal["light", "dark"],
     ) -> None:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(
         name="setTitle",
@@ -1876,7 +1871,7 @@ a.remove();
         await_response=False,
     )
     async def _remote_set_title(self, title: str) -> None:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(
         name="setKeyboardFocus",
@@ -1884,7 +1879,7 @@ a.remove();
         await_response=False,
     )
     async def _remote_set_keyboard_focus(self, component_id: int) -> None:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(
         name="updateComponentStates",
@@ -1902,7 +1897,7 @@ a.remove();
         """
         Replace all components in the UI with the given one.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(
         name="evaluateJavaScript",
@@ -1919,7 +1914,7 @@ a.remove();
           - Variables are neatly contained in a scope and don't pollute the
             global scope
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(
         name="requestFileUpload",
@@ -1935,7 +1930,7 @@ a.remove();
         """
         Tell the client to upload a file to the server.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(name="setUserSettings", await_response=False)
     async def _set_user_settings(self, delta_settings: dict[str, Any]) -> None:
@@ -1946,18 +1941,18 @@ a.remove();
         Any keys not present here are still preserved. Thus the function
         effectively behaves like `dict.update`.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(name="registerFont", await_response=False)
     async def _remote_register_font(self, name: str, urls: list[str | None]) -> None:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @unicall.remote(
         name="closeSession",
         await_response=False,
     )
     async def _remote_close_session(self) -> None:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def _try_get_component_for_message(self, component_id: int) -> rio.Component | None:
         """

@@ -716,14 +716,24 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
                 # the frontend.
                 init_coro = sess._refresh()
 
+            async def init():
+                try:
+                    await init_coro
+                except Exception:
+                    # If an error happens during session initialization, close
+                    # the session
+                    logging.exception(
+                        "Unexpected exception during session initialization"
+                    )
+                    sess.close()
+
             # This is done in a task because the server is not yet running, so
             # the method would never receive a response, and thus would hang
             # indefinitely.
-            sess.create_task(init_coro, name=f"Session `{sess}` init")
+            asyncio.create_task(init())
 
-            # Serve the socket
+            # Serve the websocket
             await sess.serve()
-
         except asyncio.CancelledError:
             pass
 

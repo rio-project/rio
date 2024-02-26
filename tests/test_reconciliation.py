@@ -345,3 +345,33 @@ async def test_margin_reconciliation():
             == texts[6].margin_bottom
             == None
         )
+
+
+async def test_reconcile_instance_with_itself():
+    # There used to be a bug where, when a widget was reconciled with itself, it
+    # was removed from `Session._dirty_components`. So any changes in that
+    # widget weren't sent to the frontend.
+
+    class Container(rio.Component):
+        child: rio.Component
+
+        def build(self) -> rio.Component:
+            return self.child
+
+    def build() -> rio.Component:
+        return Container(rio.Text("foo"))
+
+    async with create_mockapp(build, use_ordered_dirty_set=True) as app:
+        container = app.get_component(Container)
+        child = app.get_component(rio.Text)
+
+        # Change the child's state and make its parent rebuild
+        child.text = "bar"
+        container.child = child
+
+        # In order for the bug to occur, the parent has to be rebuilt before the
+        # child
+        assert list(app.session._dirty_components) == [child, container]
+        await app.refresh()
+
+        assert app.last_updated_components == {child, container}

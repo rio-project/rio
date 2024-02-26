@@ -3,9 +3,17 @@ import contextlib
 import functools
 import json
 import types
-from collections.abc import AsyncGenerator, Callable, Container, Iterable, Iterator
+from collections.abc import (
+    AsyncGenerator,
+    Callable,
+    Container,
+    Iterable,
+    Iterator,
+    Mapping,
+)
 from typing import Any, TypeVar
 
+import ordered_set
 from uniserde import Jsonable, JsonDoc
 
 import rio.global_state
@@ -29,7 +37,7 @@ class MockApp:
         session: rio.Session,
         user_settings: JsonDoc = {},
     ) -> None:
-        self._session = session
+        self.session = session
         self.outgoing_messages: list[JsonDoc] = []
 
         self._first_refresh_completed = asyncio.Event()
@@ -71,22 +79,29 @@ class MockApp:
 
     @property
     def dirty_components(self) -> Container[rio.Component]:
-        return set(self._session._dirty_components)
+        return set(self.session._dirty_components)
 
     @property
     def last_updated_components(self) -> set[rio.Component]:
+        return set(self.last_component_state_changes)
+
+    @property
+    def last_component_state_changes(
+        self,
+    ) -> Mapping[rio.Component, Mapping[str, object]]:
         for message in reversed(self.outgoing_messages):
             if message["method"] == "updateComponentStates":
+                delta_states: dict = message["params"]["deltaStates"]  # type: ignore
                 return {
-                    self._session._weak_components_by_id[int(component_id)]
-                    for component_id in message["params"]["deltaStates"]  # type: ignore
-                    if int(component_id) != self._session._root_component._id
+                    self.session._weak_components_by_id[int(component_id)]: delta
+                    for component_id, delta in delta_states.items()
+                    if int(component_id) != self.session._root_component._id
                 }
 
-        return set()
+        return {}
 
     def get_root_component(self) -> rio.Component:
-        sess = self._session
+        sess = self.session
 
         high_level_root = sess._root_component
         assert isinstance(high_level_root, HighLevelRootComponent), high_level_root
@@ -119,7 +134,7 @@ class MockApp:
         component: rio.Component,
         type_: type[C] | None = None,
     ) -> C:
-        result = self._session._weak_component_data_by_component[component].build_result
+        result = self.session._weak_component_data_by_component[component].build_result
 
         if type_ is not None:
             assert type(result) is type_, f"Expected {type_}, got {type(result)}"
@@ -127,7 +142,7 @@ class MockApp:
         return result  # type: ignore
 
     async def refresh(self) -> None:
-        await self._session._refresh()
+        await self.session._refresh()
 
 
 @contextlib.asynccontextmanager
@@ -138,6 +153,7 @@ async def create_mockapp(
     running_in_window: bool = False,
     user_settings: JsonDoc = {},
     default_attachments: Iterable[object] = (),
+    use_ordered_dirty_set: bool = False,
 ) -> AsyncGenerator[MockApp, None]:
     app = rio.App(
         build=build,
@@ -161,6 +177,10 @@ async def create_mockapp(
     await app_server._serve_index(fake_request, "")
 
     [[session_token, session]] = app_server._active_session_tokens.items()
+
+    if use_ordered_dirty_set:
+        session._dirty_components = ordered_set.OrderedSet(session._dirty_components)  # type: ignore
+
     mock_app = MockApp(session, user_settings=user_settings)
 
     fake_websocket: Any = types.SimpleNamespace(
@@ -176,8 +196,15 @@ async def create_mockapp(
     async def serve_websocket():
         try:
             await app_server._serve_websocket(fake_websocket, session_token)
+        except asyncio.CancelledError:
+            pass
         except Exception as error:
             test_task.cancel(f"Exception in AppServer._serve_websocket: {error}")
+        else:
+            test_task.cancel(
+                "AppServer._serve_websocket exited unexpectedly. An exception"
+                " must have occurred in the `init_coro`."
+            )
 
     server_task = asyncio.create_task(serve_websocket())
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import asyncio
 import inspect
 import io
@@ -20,12 +21,7 @@ import rio
 
 from .. import event, global_state, inspection
 from ..dataclass import RioDataclassMeta, class_local_fields, internal_field
-from ..state_properties import (
-    PleaseTurnThisIntoAStateBinding,
-    StateBinding,
-    StateBindingMaker,
-    StateProperty,
-)
+from ..state_properties import StateBindingMaker, StateProperty
 from . import fundamental_component
 
 __all__ = ["Component"]
@@ -135,7 +131,7 @@ class ComponentMeta(RioDataclassMeta):
             if not isinstance(base, ComponentMeta):
                 continue
 
-            for event_tag, handlers in base._rio_event_handlers_.items():  # type: ignore[wtf]
+            for event_tag, handlers in base._rio_event_handlers_.items():
                 cls._rio_event_handlers_[event_tag].extend(handlers)
 
         # Add events from this class itself
@@ -272,7 +268,10 @@ class ComponentMeta(RioDataclassMeta):
         return component
 
 
-class Component(metaclass=ComponentMeta):
+# Using `metaclass=ComponentMeta` makes this an abstract class, but since
+# pyright is too stupid to understand that, we have to additionally inherit from
+# `abc.ABC`
+class Component(abc.ABC, metaclass=ComponentMeta):
     """
     # Component
 
@@ -480,7 +479,7 @@ class Component(metaclass=ComponentMeta):
         The `build` function should be pure, meaning that it does not modify the
         component's state and returns the same result each time it's invoked.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def _iter_direct_children(self) -> Iterable[Component]:
         for name in inspection.get_child_component_containing_attribute_names(
@@ -594,7 +593,7 @@ class Component(metaclass=ComponentMeta):
         self,
         handler: rio.EventHandler[[]],
     ) -> None:
-        ...
+        ...  # pragma: no cover
 
     @overload
     async def call_event_handler(
@@ -603,7 +602,7 @@ class Component(metaclass=ComponentMeta):
         event_data: T,
         /,
     ) -> None:
-        ...
+        ...  # pragma: no cover
 
     async def call_event_handler(
         self,
