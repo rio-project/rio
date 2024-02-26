@@ -84,14 +84,6 @@ class SessionAttachments:
         return typ in self._attachments
 
     def __getitem__(self, typ: type[T]) -> T:
-        """
-        Retrieves an attachment from this session.
-
-        Attached values are:
-        - the session's user settings
-        - any value that was previously attached using `Session.attach`
-        """
-
         try:
             return self._attachments[typ]  # type: ignore
         except KeyError:
@@ -121,10 +113,6 @@ class SessionAttachments:
             self._session._save_settings_soon()
 
     def add(self, value: Any) -> None:
-        """
-        Attaches the given value to the `Session`. It can be retrieved later
-        using `session.attachments[...]`.
-        """
         self._add(value, synchronize=True)
 
 
@@ -276,7 +264,7 @@ class Session(unicall.Unicall):
         # Attachments. These are arbitrary values which are passed around inside
         # of the app. They can be looked up by their type.
         # Note: These are initialized by the AppServer.
-        self.attachments = SessionAttachments(self)
+        self._attachments = SessionAttachments(self)
 
         # This allows easy access to the app's assets. Users can simply write
         # `component.session.assets / "my_asset.png"`.
@@ -344,7 +332,24 @@ class Session(unicall.Unicall):
         """
         return self._websocket is not None
 
+    def attach(self, value: Any) -> None:
+        """
+        Attaches the given value to the `Session`. It can be retrieved later
+        using `session[...]`.
+        """
+        self._attachments.add(value)
+
+    def __getitem__(self, typ: type[T]) -> T:
+        """
+        Retrieves an attachment from this session. To attach values to the
+        session, use `Session.attach`.
+        """
+        return self._attachments[typ]
+
     def close(self) -> None:
+        """
+        Ends the session, closing any window or browser tab.
+        """
         self.create_task(self._close(True))
 
     async def _close(self, close_remote_session: bool) -> None:
@@ -1440,7 +1445,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             )
 
             # Attach the instance to the session
-            self.attachments._add(settings, synchronize=False)
+            self._attachments._add(settings, synchronize=False)
 
     async def _save_settings_now(self) -> None:
         async with self._settings_sync_lock:
@@ -1449,7 +1454,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                 tuple[user_settings_module.UserSettings, set[str]]
             ] = []
 
-            for settings in self.attachments:
+            for settings in self._attachments:
                 if not isinstance(settings, user_settings_module.UserSettings):
                     continue
 

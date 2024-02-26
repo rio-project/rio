@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rio-ui"
-version = "0.4.5"
+version = "0.4.6"
 description = ""
 authors = ["Jakob Pinterits <jakob.pinterits@gmail.com>", "Paul Pinterits"]
 readme = "README.md"
@@ -24,7 +24,7 @@ python = "^3.10"
 python-multipart = "^0.0.6"
 pytz = "^2023.3.post1"
 pywebview = { version = "^4.2.2", optional = true }
-revel = "0.8.18"
+revel = "0.8.19"
 timer-dict = "^1.0.0"
 typing-extensions = "^4.5.0"
 unicall = "^0.1.5"

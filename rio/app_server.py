@@ -322,7 +322,7 @@ class AppServer(fastapi.FastAPI):
             if isinstance(attachment, user_settings_module.UserSettings):
                 continue
 
-            sess.attachments.add(copy.deepcopy(attachment))
+            sess.attach(copy.deepcopy(attachment))
 
         # Load the templates
         html = read_frontend_template("index.html")

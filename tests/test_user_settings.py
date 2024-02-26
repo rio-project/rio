@@ -40,8 +40,8 @@ async def test_load_settings():
         default_attachments=(RootSettings(), FooSettings()),
         user_settings=user_settings,
     ) as app:
-        root_settings = app._session.attachments[RootSettings]
-        foo_settings = app._session.attachments[FooSettings]
+        root_settings = app._session[RootSettings]
+        foo_settings = app._session[FooSettings]
 
         assert root_settings.foo == "bar"
         assert foo_settings.bar == "baz"
@@ -58,8 +58,8 @@ async def test_load_settings_file(monkeypatch):
         running_in_window=True,
         default_attachments=(RootSettings(), FooSettings()),
     ) as app:
-        root_settings = app._session.attachments[RootSettings]
-        foo_settings = app._session.attachments[FooSettings]
+        root_settings = app._session[RootSettings]
+        foo_settings = app._session[FooSettings]
 
         assert root_settings.foo == "bar"
         assert foo_settings.bar == "baz"
