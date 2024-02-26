@@ -29,7 +29,37 @@ class UserSettings:
     inherits from `UserSettings`, and attach it to the `Session`. That's it! Rio
     will automatically store and retrieve the values for you.
 
-    TODO: Give an example
+    ```python
+    # Create a dataclass that inherits from rio.UserSettings. This indicates to
+    # Rio that these are settings and should be persisted.
+    class MySettings(rio.UserSettings):
+        language: str = "en"
+
+
+    # Attach the settings to the app. This way the settings will be available in
+    # all sessions. They will be loaded automatically from the user whenever
+    # they connect or start the app.
+    app = rio.App(
+        ...,
+        default_attachments=[
+            MySettings(),
+        ],
+    )
+    ```
+
+    You can just modify the settings anywhere in your app. Rio will detect
+    changes and persist them automatically:
+
+    ```python
+    # ... somewhere in your code
+    settings = self.session[MySettings]
+
+    # Read any values you need to
+    print(settings.language)  # "en"
+
+    # Assignments will be automatically detected and saved
+    settings.language = "de"
+    ```
 
     Warning: Since settings are stored on the user's device, special
     considerations apply. Some countries have strict privacy laws regulating
@@ -41,7 +71,7 @@ class UserSettings:
     trust them to be valid. A malicious actor could modify them to intentionally
     trigger bugs in your app. Always validate the values before using them.
 
-    Attributes:
+    ## Attributes
         section_name: If provided, the settings file will contain a section with
             this name. This allows you to keep the configuration file organized.
             If `None`, the settings will be stored outside of any section.
