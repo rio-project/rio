@@ -52,9 +52,11 @@ class UserSettings:
     # set outside of any sections.
     section_name: ClassVar[str] = ""
 
-    _rio_session_: session.Session | None = field(default=None, init=False, repr=False)
+    _rio_session_: session.Session | None = field(
+        default=None, init=False, repr=False, compare=False
+    )
     _rio_dirty_attribute_names_: set[str] = field(
-        default_factory=set, init=False, repr=False
+        default_factory=set, init=False, repr=False, compare=False
     )
 
     def __init_subclass__(cls) -> None:

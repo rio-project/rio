@@ -206,6 +206,8 @@ class ComponentMeta(RioDataclassMeta):
         # Call `__init__`
         component.__init__(*args, **kwargs)
 
+        component._init_called_ = True
+
         # Some components (like `Grid`) manually mark some properties as
         # explicitly set in their `__init__`, so we must use `.update()` instead
         # of an assignment
@@ -446,6 +448,10 @@ class Component(abc.ABC, metaclass=ComponentMeta):
     # The stackframe which has created this component. Used by the debugger.
     # Only initialized if in debugging mode.
     _creator_stackframe_: tuple[Path, int] = internal_field(init=False)
+
+    # Whether this component's `__init__` has already been called. Used to
+    # verify that the `__init__` doesn't try to read any state properties.
+    _init_called_: bool = internal_field(init=False, default=False)
 
     @property
     def session(self) -> rio.Session:

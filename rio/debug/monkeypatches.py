@@ -1,4 +1,3 @@
-import functools
 import inspect
 import warnings
 from pathlib import Path
@@ -15,16 +14,12 @@ __all__ = [
 
 
 def apply_monkeypatches() -> None:
-    ComponentMeta.__call__ = functools.partialmethod(
-        ComponentMeta_call, ComponentMeta.__call__
-    )  # type: ignore[wtf]
-
-    StateProperty.__set__ = functools.partialmethod(
-        StateProperty_set, StateProperty.__set__
-    )  # type: ignore[wtf]
+    introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
+    introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
+    introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
 
 
-def ComponentMeta_call(cls, wrapped_method, *args, **kwargs):
+def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
     component: Component = wrapped_method(cls, *args, **kwargs)
 
     # Keep track of who created this component
@@ -45,9 +40,26 @@ def ComponentMeta_call(cls, wrapped_method, *args, **kwargs):
     return component
 
 
-def StateProperty_set(
-    self: StateProperty,
+def StateProperty_get(
     wrapped_method,
+    self: StateProperty,
+    instance: Component,
+    owner=None,
+):
+    if not instance._init_called_:
+        raise RuntimeError(
+            f"The `__init__` method of {instance} attempted to access the state"
+            f" property {self.name!r}. This is not allowed. `__init__` methods"
+            f" must only *set* properties, not *read* them. Move the code that"
+            f" needs to read a state property into the `__post_init__` method."
+        )
+
+    return wrapped_method(self, instance, owner)
+
+
+def StateProperty_set(
+    wrapped_method,
+    self: StateProperty,
     instance: Component,
     value: object,
 ):
