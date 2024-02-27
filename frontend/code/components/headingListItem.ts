@@ -9,7 +9,7 @@ const PADDING_RIGHT: number = 1.0;
 const PADDING_BOTTOM: number = 0.3;
 
 export type HeadingListItemState = ComponentState & {
-    _type_: 'CustomListItem-builtin';
+    _type_: 'HeadingListItem-builtin';
     text?: string;
 };
 

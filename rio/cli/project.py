@@ -32,7 +32,7 @@ class RioProject:
         ignores: rioignore.RioIgnore,
     ):
         # Path to the `rio.toml` file. May or may not exist
-        self._file_path = file_path
+        self.rio_toml_path = file_path
 
         # All of the data from the `rio.toml` file
         self._toml_dict = toml_dict
@@ -134,7 +134,7 @@ class RioProject:
 
     @property
     def project_directory(self) -> Path:
-        return self._file_path.parent
+        return self.rio_toml_path.parent
 
     @functools.cached_property
     def module_path(self) -> Path:
@@ -209,7 +209,7 @@ class RioProject:
         return name
 
     @staticmethod
-    def try_load() -> "RioProject":
+    def try_locate_and_load() -> "RioProject":
         """
         Best-effort attempt to locate the project directory and load the
         `rio.toml` file.
@@ -290,6 +290,11 @@ class RioProject:
             ignores=ignores,
         )
 
+    def discard_changes_and_reload(self) -> None:
+        """
+        Reload the `rio.toml` file, discarding any latent changes.
+        """
+
     def __enter__(self) -> "RioProject":
         return self
 
@@ -302,15 +307,15 @@ class RioProject:
         if not self._dirty_keys:
             return
 
-        logging.debug(f"Writing `{self._file_path}`")
+        logging.debug(f"Writing `{self.rio_toml_path}`")
 
         # Make sure the parent directory exists
-        self._file_path.parent.mkdir(parents=True, exist_ok=True)
+        self.rio_toml_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Fetch an up-to-date copy of the file contents, with all formatting
         # intact
         try:
-            new_toml_dict = tomlkit.loads(self._file_path.read_text())
+            new_toml_dict = tomlkit.loads(self.rio_toml_path.read_text())
 
         # If it can't be read, preserve all known values
         except (OSError, tomlkit.exceptions.TOMLKitError) as e:
@@ -335,12 +340,12 @@ class RioProject:
 
         # Write the file
         try:
-            with self._file_path.open("w") as f:
+            with self.rio_toml_path.open("w") as f:
                 tomlkit.dump(new_toml_dict, f)
 
         except OSError as e:
             fatal(
-                f"Couldn't write `{self._file_path}`: {e}",
+                f"Couldn't write `{self.rio_toml_path}`: {e}",
                 status_code=1,
             )
 

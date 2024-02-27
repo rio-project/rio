@@ -220,7 +220,7 @@ async def create_or_update_app(
 
 
 async def main():
-    with rio.cli.project.RioProject.try_load() as proj:
+    with rio.cli.project.RioProject.try_locate_and_load() as proj:
         async with rio.cli.cli_instance.CliInstance() as cli:
             await create_or_update_app(None, proj)
 

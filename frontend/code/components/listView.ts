@@ -1,6 +1,10 @@
+import { componentsByElement } from '../componentManagement';
 import { ComponentId } from '../models';
 import { ComponentBase } from './componentBase';
+import { CustomListItemComponent } from './customListItem';
+import { HeadingListItemComponent } from './headingListItem';
 import { ColumnComponent, LinearContainerState } from './linearContainers';
+import { SeparatorListItemComponent } from './separatorListItem';
 
 export class ListViewComponent extends ColumnComponent {
     constructor(id: ComponentId, state: Required<LinearContainerState>) {
@@ -42,12 +46,40 @@ export class ListViewComponent extends ColumnComponent {
         this.makeLayoutDirty();
     }
 
-    _isGroupedListItem(element: HTMLElement): boolean {
-        // Check whether the element has the `rio-custom-list-item` class.
-        // However, take care to unwrap the outer div first.
-        return !element.firstElementChild!.classList.contains(
-            'rio-heading-list-item'
+    _isGroupedListItemWorker(comp: ComponentBase): boolean {
+        // Is this a recognized list item type?
+        if (
+            comp instanceof HeadingListItemComponent ||
+            comp instanceof SeparatorListItemComponent
+        ) {
+            return false;
+        }
+
+        if (comp instanceof CustomListItemComponent) {
+            return true;
+        }
+
+        // If the component only has a single child, drill down
+        if (comp.children.size === 1) {
+            return this._isGroupedListItemWorker(
+                comp.children.values().next().value
+            );
+        }
+
+        // Otherwise, nope
+        return false;
+    }
+
+    _isGroupedListItem(elem: HTMLElement): boolean {
+        let comp = componentsByElement.get(
+            elem.firstElementChild as HTMLElement
         );
+
+        if (comp === undefined) {
+            throw new Error(`Cannot find component for list element ${elem}`);
+        }
+
+        return this._isGroupedListItemWorker(comp);
     }
 
     _updateChildStyles(): void {

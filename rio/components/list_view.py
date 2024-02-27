@@ -13,7 +13,7 @@ class ListView(FundamentalComponent):
     """
     # ListView
 
-    A `ListView` is a container that vertically arranges its children.
+    Vertically arranges and styles its children.
 
     A container which arranges its children in a vertical list. It is similar to `Column`,
     but it is optimized for displaying large numbers of items.
@@ -77,7 +77,7 @@ class ListView(FundamentalComponent):
 
     def __init__(
         self,
-        *children: rio.CustomListItem | rio.HeadingListItem | rio.SimpleListItem,
+        *children: rio.Component,
         key: str | None = None,
         margin: float | None = None,
         margin_x: float | None = None,
@@ -90,18 +90,7 @@ class ListView(FundamentalComponent):
         height: float | Literal["natural", "grow"] = "natural",
         align_x: float | None = None,
         align_y: float | None = None,
-    ):
-        assert isinstance(children, tuple), children
-        for child in children:
-            assert isinstance(
-                child,
-                (
-                    rio.HeadingListItem,
-                    rio.SimpleListItem,
-                    rio.CustomListItem,
-                ),
-            ), child
-
+    ) -> None:
         super().__init__(
             key=key,
             margin=margin,

@@ -33,7 +33,7 @@ export class CustomListItemComponent extends ComponentBase {
         // Update the child
         this.replaceFirstChild(latentComponents, deltaState.content);
 
-        // Style the surface depending on whether it is pressable.
+        // Style the surface depending on whether it is pressable
         if (deltaState.pressable === true) {
             if (this.mdcRipple === null) {
                 this.mdcRipple = new MDCRipple(this.element);

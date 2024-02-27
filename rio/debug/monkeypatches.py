@@ -4,7 +4,7 @@ from pathlib import Path
 
 import introspection.typing
 
-from .. import global_state
+from .. import components, global_state
 from ..components.component import Component, ComponentMeta
 from ..state_properties import PleaseTurnThisIntoAStateBinding, StateProperty
 
@@ -17,6 +17,10 @@ def apply_monkeypatches() -> None:
     introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
     introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
     introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
+
+    components.ListView.__init__ = functools.partialmethod(
+        ListView___init__, components.ListView.__init__
+    )  # type: ignore[wtf]
 
 
 def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
@@ -95,4 +99,21 @@ def StateProperty_set(
                     f" annotated as {self._annotation_as_string()}"
                 )
 
+    # Chain to the original method
     wrapped_method(self, instance, value)
+
+
+def ListView___init__(self: components.ListView, wrapped_method, *children, **kwargs):
+    # Make sure all children have a key set
+    assert isinstance(children, tuple), children
+
+    for child in children:
+        if child.key != None or isinstance(child, components.SeparatorListItem):
+            continue
+
+        raise ValueError(
+            f"ListView child {child!r} has no key set. List items change frequently, and are often reshuffled. This can lead to unexpected reconciliations, and slow down the UI."
+        )
+
+    # Chain to the original method
+    wrapped_method(self, *children, **kwargs)

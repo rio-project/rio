@@ -9,7 +9,7 @@ class ProjectPage(rio.Component):
     project: rio.cli.project.RioProject | None = None
 
     def __post_init__(self) -> None:
-        self.project = rio.cli.project.RioProject.try_load()
+        self.project = rio.cli.project.RioProject.try_locate_and_load()
 
     async def _on_change_app_type(self, event: rio.DropdownChangeEvent) -> None:
         assert self.project is not None

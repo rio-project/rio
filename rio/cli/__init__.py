@@ -104,7 +104,7 @@ def run(
     public: bool = False,
     quiet: bool = True,
 ) -> None:
-    with project.RioProject.try_load() as proj:
+    with project.RioProject.try_locate_and_load() as proj:
         # Some options only make sense for websites
         if proj.app_type == "app":
             if port is not None:
@@ -154,7 +154,7 @@ def add(what: Literal["page", "component"], /, name: str) -> None:
     if what == "page":
         raise NotImplementedError("FIXME: Adding pages is not yet supported")
 
-    with project.RioProject.try_load() as proj:
+    with project.RioProject.try_locate_and_load() as proj:
         module_path = proj.module_path
         if not module_path.is_dir():
             fatal(

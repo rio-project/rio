@@ -27,6 +27,8 @@ import { MarkdownViewComponent } from './components/markdownView';
 import { MediaPlayerComponent } from './components/mediaPlayer';
 import { MouseEventListenerComponent } from './components/mouseEventListener';
 import { MultiLineTextInputComponent } from './components/multiLineTextInput';
+import { NodeInputComponent } from './components/nodeInput';
+import { NodeOutputComponent } from './components/nodeOutput';
 import { OverlayComponent } from './components/overlay';
 import { PlaceholderComponent } from './components/placeholder';
 import { PlotComponent } from './components/plot';
@@ -38,6 +40,8 @@ import { reprElement } from './utils';
 import { RevealerComponent } from './components/revealer';
 import { ScrollContainerComponent } from './components/scrollContainer';
 import { ScrollTargetComponent } from './components/scrollTarget';
+import { SeparatorComponent } from './components/separator';
+import { SeparatorListItemComponent } from './components/separatorListItem';
 import { SliderComponent } from './components/slider';
 import { SlideshowComponent } from './components/slideshow';
 import { StackComponent } from './components/stack';
@@ -50,9 +54,6 @@ import { TextInputComponent } from './components/textInput';
 import { ThemeContextSwitcherComponent } from './components/themeContextSwitcher';
 import { TooltipComponent } from './components/tooltip';
 import { updateLayout } from './layouting';
-import { NodeInputComponent } from './components/nodeInput';
-import { NodeOutputComponent } from './components/nodeOutput';
-import { SeparatorComponent } from './components/separator';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
@@ -95,6 +96,7 @@ const COMPONENT_CLASSES = {
     'ScrollContainer-builtin': ScrollContainerComponent,
     'ScrollTarget-builtin': ScrollTargetComponent,
     'Separator-builtin': SeparatorComponent,
+    'SeparatorListItem-builtin': SeparatorListItemComponent,
     'Slider-builtin': SliderComponent,
     'Slideshow-builtin': SlideshowComponent,
     'Stack-builtin': StackComponent,

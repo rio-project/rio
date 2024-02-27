@@ -11,9 +11,10 @@ from .component import Component
 from .fundamental_component import FundamentalComponent
 
 __all__ = [
-    "CustomListItem",
     "HeadingListItem",
+    "SeparatorListItem",
     "SimpleListItem",
+    "CustomListItem",
 ]
 
 
@@ -28,19 +29,9 @@ class HeadingListItem(FundamentalComponent):
     generic list item with additional children, you can use the `SimpleListItem`.
     Or if you want to build a more complex list item, you can use the `CustomListItem`.
 
-    Note that like with other `ListItem`s the `key` is not optional. This is to
-    avoid unintentional reconciliation with other items when the list is
-    updated.
-
-
     ## Attributes:
 
     `text`: The text to display.
-
-    `key`: A unique key to identify the list item. This is used to avoid
-        unintentional reconciliation with other items when the list is
-        updated.
-
 
     ## Example:
 
@@ -76,26 +67,16 @@ class HeadingListItem(FundamentalComponent):
     """
 
     text: str
-    key: str
-
-    def __init__(
-        self,
-        text: str,
-        *,
-        key: str,
-        width: float | Literal["natural", "grow"] = "natural",
-        height: float | Literal["natural", "grow"] = "natural",
-    ) -> None:
-        super().__init__(
-            width=width,
-            height=height,
-            key=key,
-        )
-
-        self.text = text
 
 
 HeadingListItem._unique_id = "HeadingListItem-builtin"
+
+
+class SeparatorListItem(FundamentalComponent):
+    pass
+
+
+SeparatorListItem._unique_id = "SeparatorListItem-builtin"
 
 
 class SimpleListItem(Component):
@@ -109,11 +90,6 @@ class SimpleListItem(Component):
     and even additional children (e.g. icons or buttons) to the left and right.
     Most children are optional so you can only add whichever parts you need.
 
-    Note that like with other `ListItem`s the `key` is not optional. This is to
-    avoid unintentional reconciliation with other items when the list is
-    updated.
-
-
     ## Attributes
 
     `text`: The text to display.
@@ -126,11 +102,6 @@ class SimpleListItem(Component):
     `right_child`: A component to display on the right side of the list item.
 
     `on_press`: Triggered when the list item is pressed.
-
-    `key`: A unique key to identify the list item. This is used to avoid
-        unintentional reconciliation with other items when the list is
-        updated.
-
 
     ## Example
 
@@ -183,13 +154,12 @@ class SimpleListItem(Component):
     left_child: rio.Component | None
     right_child: rio.Component | None
     on_press: rio.EventHandler[[]]
-    key: str
 
     def __init__(
         self,
         text: str,
         *,
-        key: str,
+        key: str | None = None,
         secondary_text: str = "",
         left_child: rio.Component | None = None,
         right_child: rio.Component | None = None,
@@ -265,14 +235,10 @@ class CustomListItem(FundamentalComponent):
 
     A list item with custom content.
 
-    Most of the time the `SimpleListItem` will do the job. With `CustomListItems` you
-    can build more complex list items. You can add any component to the list item.
-    This can be e.g. a `Row`, `Column`, `Text`, `Icon`, `Image` or any other component.
-
-    Note that like with other `ListItem`s the `key` is not optional. This is to
-    avoid unintentional reconciliation with other items when the list is
-    updated.
-
+    Most of the time the `SimpleListItem` will do the job. With
+    `CustomListItems` you can build more complex list items. You can add any
+    component to the list item. This can be e.g. a `Row`, `Column`, `Text`,
+    `Icon`, `Image` or any other component.
 
     ## Attributes:
 
@@ -280,13 +246,7 @@ class CustomListItem(FundamentalComponent):
 
     `on_press`: Triggered when the list item is pressed.
 
-    `key`: A unique key to identify the list item. This is used to avoid
-        unintentional reconciliation with other items when the list is
-        updated.
-
-
-    ## Example:
-    TODO: add example
+    ## Example: TODO: add example
 
     ```python
 
@@ -295,13 +255,12 @@ class CustomListItem(FundamentalComponent):
 
     content: rio.Component
     on_press: rio.EventHandler[[]]
-    key: str
 
     def __init__(
         self,
         content: rio.Component,
         *,
-        key: str,
+        key: str | None = None,
         on_press: rio.EventHandler[[]] = None,
         width: float | Literal["natural", "grow"] = "natural",
         height: float | Literal["natural", "grow"] = "natural",
