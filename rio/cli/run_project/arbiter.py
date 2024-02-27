@@ -431,11 +431,6 @@ class Arbiter:
 
                 # A file has changed
                 if isinstance(event, run_models.FileChanged):
-                    # If the `rio.toml` has changed, reload the entire project,
-                    # not just the app
-                    # if event.path_to_file == self.proj.rio_toml_path:
-                    #     self.proj.proj
-
                     # Ignore events that happened before the last reload started
                     if event.timestamp_nanoseconds < last_reload_started_at:
                         continue
@@ -449,6 +444,11 @@ class Arbiter:
 
                     # Update the timestamp
                     last_reload_started_at = time.monotonic_ns()
+
+                    # If the `rio.toml` has changed, reload the entire project,
+                    # not just the app
+                    if event.path_to_file == self.proj.rio_toml_path:
+                        self.proj.discard_changes_and_reload()
 
                     # Restart the app
                     await self._restart_app()

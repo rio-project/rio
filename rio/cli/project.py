@@ -238,7 +238,8 @@ class RioProject:
         rio_toml_path = project_dir / "rio.toml"
 
         try:
-            rio_toml_dict = tomlkit.load(rio_toml_path.open()).unwrap()
+            with rio_toml_path.open() as f:
+                rio_toml_dict = tomlkit.load(f).unwrap()
 
         # No such file. Offer to create one
         except FileNotFoundError:
@@ -294,6 +295,12 @@ class RioProject:
         """
         Reload the `rio.toml` file, discarding any latent changes.
         """
+        # Discard any latent changes
+        self._dirty_keys.clear()
+
+        # Re-load the `rio.toml` file
+        with self.rio_toml_path.open() as f:
+            self._toml_dict = tomlkit.load(f).unwrap()
 
     def __enter__(self) -> "RioProject":
         return self
