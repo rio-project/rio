@@ -17,10 +17,7 @@ def apply_monkeypatches() -> None:
     introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
     introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
     introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
-
-    components.ListView.__init__ = functools.partialmethod(
-        ListView___init__, components.ListView.__init__
-    )  # type: ignore[wtf]
+    introspection.wrap_method(ListView___init__, components.ListView, "__init__")
 
 
 def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
