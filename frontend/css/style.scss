@@ -771,8 +771,6 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     flex-grow: 1;
     min-width: 0;
 
-    padding: 0;
-
     background-color: transparent;
     color: var(--rio-local-text-color);
     caret-color: var(--rio-local-accent-bg);
@@ -796,7 +794,7 @@ input:not(:placeholder-shown) ~ .rio-text-input-hint-text,
     width: 100%;
 
     resize: none;
-    padding: 0;
+    padding: 0 $rio-input-box-horizontal-padding;
 }
 
 .rio-input-box > input:active,
