@@ -821,7 +821,7 @@ Sitemap: {request_url.with_path("/sitemap.xml")}
         #
         # Since this event is often used for important initialization tasks like
         # adding attachments, actually wait for it to finish before continuing.
-        await sess._call_event_handler(self.app._on_session_start, sess)
+        await sess._call_event_handler(self.app._on_session_start, sess, refresh=False)
 
         # Run any page guards for the initial page
         #

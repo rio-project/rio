@@ -622,7 +622,7 @@ class Component(abc.ABC, metaclass=ComponentMeta):
         discard any exceptions. If `event_data` is present, it will be passed to
         the event handler.
         """
-        await self.session._call_event_handler(handler, *event_data)
+        await self.session._call_event_handler(handler, *event_data, refresh=False)
 
     async def force_refresh(self) -> None:
         """

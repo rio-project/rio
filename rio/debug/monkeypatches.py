@@ -47,9 +47,12 @@ def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
 def StateProperty_get(
     wrapped_method,
     self: StateProperty,
-    instance: Component,
+    instance: Component | None,
     owner=None,
 ):
+    if instance is None:
+        return self
+
     if not instance._init_called_:
         raise RuntimeError(
             f"The `__init__` method of {instance} attempted to access the state"

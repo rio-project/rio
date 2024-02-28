@@ -360,7 +360,9 @@ class Session(unicall.Unicall):
             return
 
         # Fire the session end event
-        await self._call_event_handler(self._app_server.app._on_session_end, self)
+        await self._call_event_handler(
+            self._app_server.app._on_session_end, self, refresh=False
+        )
 
         # Save the settings
         await self._save_settings_now()
@@ -407,25 +409,26 @@ class Session(unicall.Unicall):
 
     @overload
     async def _call_event_handler(
-        self,
-        handler: common.EventHandler[[]],
+        self, handler: common.EventHandler[[]], *, refresh: bool
     ) -> None:
         ...
 
     @overload
     async def _call_event_handler(
-        self,
-        handler: common.EventHandler[[T]],
-        event_data: T,
-        /,
+        self, handler: common.EventHandler[[T]], event_data: T, /, *, refresh: bool
     ) -> None:
         ...
 
     async def _call_event_handler(
-        self,
-        handler: common.EventHandler[...],
-        *event_data: object,
+        self, handler: common.EventHandler[...], *event_data: object, refresh: bool
     ) -> None:
+        """
+        Calls an event handler function. If it's async, it's awaited.
+
+        Does *not* refresh the session. It's the caller's responsibility to do
+        that.
+        """
+
         # Event handlers are optional
         if handler is None:
             return
@@ -442,6 +445,9 @@ class Session(unicall.Unicall):
             print("Exception in event handler:")
             traceback.print_exc()
 
+        if refresh:
+            await self._refresh()
+
     @overload
     def _call_event_handler_sync(
         self,
@@ -463,6 +469,15 @@ class Session(unicall.Unicall):
         handler: common.EventHandler[...],
         *event_data: object,
     ) -> None:
+        """
+        Calls an event handler function. If it returns an awaitable, it is
+        scheduled as an asyncio task.
+
+        In the async case, the session is automatically refreshed once the task
+        completes. In the synchronous case, however, the caller is responsible
+        for refreshing the session.
+        """
+
         # Event handlers are optional
         if handler is None:
             return
@@ -612,7 +627,7 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             for component, callbacks in self._page_change_callbacks.items():
                 for callback in callbacks:
                     self.create_task(
-                        self._call_event_handler(callback, component),
+                        self._call_event_handler(callback, component, refresh=True),
                         name="`on_page_change` event handler",
                     )
 
@@ -682,7 +697,10 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
             build_count = visited_components[component]
             if build_count > 5:
                 raise RecursionError(
-                    f"The component `{component}` has been rebuilt {build_count} times during a single refresh. This is likely because one of your components' `build` methods is modifying the component's state"
+                    f"The component `{component}` has been rebuilt"
+                    f" {build_count} times during a single refresh. This is"
+                    f" likely because one of your components' `build` methods"
+                    f" is modifying the component's state"
                 )
 
             # Fundamental components require no further treatment
@@ -834,68 +852,69 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
         # For why this lock is here see its creation in `__init__`
         async with self._refresh_lock:
-            # Refresh and get a set of all components which have been visited
-            (
-                visited_components,
-                all_children_old,
-                all_children_new,
-            ) = self._refresh_sync()
+            while self._dirty_components:
+                # Refresh and get a set of all components which have been visited
+                (
+                    visited_components,
+                    all_children_old,
+                    all_children_new,
+                ) = self._refresh_sync()
 
-            # Find all components which have recently been added to or removed
-            # from the component tree
-            mounted_components = all_children_new - all_children_old
-            unmounted_components = all_children_old - all_children_new
+                # Find all components which have recently been added to or
+                # removed from the component tree
+                mounted_components = all_children_new - all_children_old
+                unmounted_components = all_children_old - all_children_new
 
-            # Any components which were previously unmounted, and are now
-            # mounted may not show up in the `visited_components` set, but must
-            # be sent to the client because it considers them to be dead.
-            visited_components |= mounted_components
+                # Any components which were previously unmounted, and are now
+                # mounted may not show up in the `visited_components` set, but
+                # must be sent to the client because it considers them to be
+                # dead.
+                visited_components |= mounted_components
 
-            # Avoid sending empty messages
-            if not visited_components:
-                return
+                # Avoid sending empty messages
+                if not visited_components:
+                    return
 
-            # Serialize all components which have been visited
-            delta_states: dict[int, JsonDoc] = {
-                component._id: serialization.serialize_and_host_component(component)
-                for component in visited_components
-            }
+                # Serialize all components which have been visited
+                delta_states: dict[int, JsonDoc] = {
+                    component._id: serialization.serialize_and_host_component(component)
+                    for component in visited_components
+                }
 
-            await self._update_component_states(visited_components, delta_states)
+                await self._update_component_states(visited_components, delta_states)
 
-            # Trigger the `on_unmount` event
-            #
-            # Notes:
-            # - All events are triggered only after the client has been notified
-            #   of the changes. This way, if the event handlers trigger another
-            #   client message themselves, any referenced components will already
-            #   exist
-            for comp in unmounted_components:
-                # Trigger the event
-                for handler, _ in comp._rio_event_handlers_[
-                    rio.event.EventTag.ON_UNMOUNT
-                ]:
-                    self.create_task(
-                        self._call_event_handler(handler, comp),
-                        name="`on_unmount` event handler",
-                    )
+                # Trigger the `on_unmount` event
+                #
+                # Notes:
+                # - All events are triggered only after the client has been
+                #   notified of the changes. This way, if the event handlers
+                #   trigger another client message themselves, any referenced
+                #   components will already exist
+                for component in unmounted_components:
+                    # Trigger the event
+                    for handler, _ in component._rio_event_handlers_[
+                        rio.event.EventTag.ON_UNMOUNT
+                    ]:
+                        self._call_event_handler_sync(handler, component)
 
-            # Trigger the `on_mount` event
-            #
-            # Notes:
-            # - See the note on running after notifying the client above
-            # - This function enlarges the set of watched components. The
-            #   `on_unmount` event handler iterates over that set. By processing
-            #   that handler first it only needs to process a smaller set
-            for component in mounted_components:
-                # Trigger the event
-                for handler, _ in component._rio_event_handlers_[
-                    rio.event.EventTag.ON_MOUNT
-                ]:
-                    self.create_task(
-                        self._call_event_handler(handler, component),
-                        name="`on_mount` event handler",
-                    )
+                # Trigger the `on_mount` event
+                #
+                # Notes:
+                # - See the note on running after notifying the client above
+                # - This function enlarges the set of watched components. The
+                #   `on_unmount` event handler iterates over that set. By
+                #   processing that handler first it only needs to process a
+                #   smaller set
+                for component in mounted_components:
+                    # Trigger the event
+                    for handler, _ in component._rio_event_handlers_[
+                        rio.event.EventTag.ON_MOUNT
+                    ]:
+                        self._call_event_handler_sync(handler, component)
+
+                # If there were any synchronous `on_mount` or `on_unmount`
+                # handlers, we must immediately refresh again. So we'll simply
+                # loop until there are no more dirty components.
 
     async def _update_component_states(
         self, visited_components: set[rio.Component], delta_states: dict[int, JsonDoc]
@@ -2040,6 +2059,6 @@ a.remove();
         # Call any registered callbacks
         for component, callback in self._on_window_resize_callbacks.items():
             self.create_task(
-                self._call_event_handler(callback, component),
+                self._call_event_handler(callback, component, refresh=True),
                 name="`on_window_resize` event handler",
             )
