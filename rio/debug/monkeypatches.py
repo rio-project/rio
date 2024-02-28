@@ -103,7 +103,12 @@ def StateProperty_set(
     wrapped_method(self, instance, value)
 
 
-def ListView_init(self: components.ListView, wrapped_method, *children, **kwargs):
+def ListView_init(
+    wrapped_method,
+    self: components.ListView,
+    *children,
+    **kwargs,
+):
     # Make sure all children have a key set
     assert isinstance(children, tuple), children
 
