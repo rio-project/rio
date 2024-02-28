@@ -17,7 +17,7 @@ def apply_monkeypatches() -> None:
     introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
     introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
     introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
-    introspection.wrap_method(ListView___init__, components.ListView, "__init__")
+    introspection.wrap_method(ListView_init, components.ListView, "__init__")
 
 
 def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
@@ -103,7 +103,7 @@ def StateProperty_set(
     wrapped_method(self, instance, value)
 
 
-def ListView___init__(self: components.ListView, wrapped_method, *children, **kwargs):
+def ListView_init(self: components.ListView, wrapped_method, *children, **kwargs):
     # Make sure all children have a key set
     assert isinstance(children, tuple), children
 

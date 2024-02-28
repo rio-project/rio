@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import functools
+import inspect
 import json
 import types
 from collections.abc import (
@@ -219,7 +220,11 @@ def enable_component_instantiation(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         def build():
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            assert not inspect.isawaitable(
+                result
+            ), "The test function must not be async"
+
             return rio.Text("")
 
         app = rio.App(build=build)
