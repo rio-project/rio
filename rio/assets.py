@@ -123,6 +123,11 @@ class Asset(SelfSerializing):
             image.save(file, format="PNG")
             image = file.getvalue()
             media_type = "image/png"
+        elif media_type is None:
+            # For some image formats, browsers are too stupid to display the
+            # image correctly if we don't explicitly tell them the mime type.
+            # Check for those formats.
+            media_type = detect_important_image_types(image)
 
         return Asset.new(image, media_type)
 
@@ -298,3 +303,15 @@ class UrlAsset(Asset):
 
     def _serialize(self, sess: rio.Session) -> str:
         return self._url.human_repr()
+
+
+def detect_important_image_types(image: ImageLike) -> str | None:
+    if isinstance(image, Path):
+        if image.suffix == ".svg":
+            return "image/svg+xml"
+
+    if isinstance(image, bytes):
+        if b"<svg" in image:
+            return "image/svg+xml"
+
+    return None
