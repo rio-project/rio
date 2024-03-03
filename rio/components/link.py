@@ -39,7 +39,7 @@ class Link(FundamentalComponent):
     ## Example:
 
     This minimal example will simply display a link with the URL
-    "https://example.com/image.png" and a text "Click me!":
+    "https://example.com" and a text "Click me!":
 
     ```python
     rio.Link("Click me!", "https://example.com")

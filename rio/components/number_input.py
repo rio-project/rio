@@ -86,14 +86,14 @@ class NumberInput(Component):
     ## Example:
 
     A minimal example of `NumberInput` with a default value of 20.00 will be shown:
-    `Note`: The text will not be updated if the user changes the value in the input field.
+    Note: The text will not be updated if the user changes the value in the input field.
 
     ```python
     rio.NumberInput(value=20.00)
     ```
 
-    You can easily `bind` state variables to track changes. If you want to make your `NumberInput` more
-    responsive, you can easily achieve this by adding a lambda function call to e.g. `on_change`:
+    You can easily bind state variables to track changes. If you want to make your `NumberInput` more
+    responsive, you can easily achieve this by adding a lambda function call to e.g. on_change:
 
     ```python
     class MyComponent(rio.Component):
@@ -110,26 +110,7 @@ class NumberInput(Component):
             )
     ```
 
-    If you are not using state bindings, you can also use a lambda function for updating the input value:
-
-     ```python
-    class MyComponent(rio.Component):
-        value: float = 0.0
-
-        def build(self) -> rio.Component:
-            return rio.NumberInput(
-                value=self.bind().value,  # Bind the value to the component
-                label="price",
-                prefix_text="$",
-                minimum=0,
-                decimals=2,
-                on_change=lambda event: setattr(
-                    self, "value", event.value
-                ),  # Update the value
-            )
-    ```
-
-    You can also use a method for updating the input value and do whatever you want. `Note` that methods
+    You can also use a method for updating the input value and do whatever you want. Note that methods
     are handy if you want to do more than just updating the input value. For example run async code or
     update other components based on the input text:
 

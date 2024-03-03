@@ -78,25 +78,6 @@ class Dropdown(FundamentalComponent, Generic[T]):
             )
     ```
 
-    Instead of state bindings you can also use the `on_change` event to track any changes:
-
-    ```python
-    class MyComponent(rio.Component):
-        value: str = "b"
-
-        def on_change_update_value(self, ev: rio.DropdownChangeEvent):
-            self.value = ev.value
-            print(self.value)
-
-        def build(self) -> rio.Component:
-            return rio.Dropdown(
-                options=["a", "b", "c"],
-                label="Dropdown",
-                selected_value=self.value,
-                on_change=lambda event: setattr(self, "value", event.value),
-            )
-    ```
-
     If you want to do more than e.g. just print a message, you can use a method call
     instead of a lambda function:
 

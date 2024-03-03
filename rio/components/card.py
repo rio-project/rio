@@ -63,8 +63,8 @@ class Card(FundamentalComponent):
     rio.Card(content=rio.Icon("castle"))
     ```
 
-    `Card`s are commonly used to display content. You can easily make your `Card`
-    interactive by adding a lambda function call to `on_press`:
+    `Card`s are commonly used to display content. You can easily make your Card
+    interactive by adding a lambda function call to on_press:
 
     ```python
     class MyComponent(rio.Component):
@@ -88,7 +88,7 @@ class Card(FundamentalComponent):
 
 
     You can also use a method for updating the input text and do whatever you want.
-    `Note` that methods are handy if you want to do more than just updating the input
+    Note that methods are handy if you want to do more than just updating the input
     text. For example run async code or update other components based on the input text:
 
     ```python

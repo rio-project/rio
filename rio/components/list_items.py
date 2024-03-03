@@ -246,10 +246,64 @@ class CustomListItem(FundamentalComponent):
 
     `on_press`: Triggered when the list item is pressed.
 
-    ## Example: TODO: add example
+    `key`: A unique key to identify the list item. This is used to avoid
+        unintentional reconciliation with other items when the list is
+        updated.
+
+
+    ## Example:
+
+    Instead of using the `SimpleListItem` you can use the `CustomListItem` to create
+    a custom list item. This can be useful if you want to add more complex content
+    to the list item. You can add any component to the list item.
 
     ```python
+    class MyCustomListItemComponent(rio.Component):
+        # create a custom list item
+        product: str
+        button_text: str
 
+        def build(self) -> rio.Component:
+
+            return rio.Row(
+                rio.Text(self.product),
+                rio.Spacer(),
+                rio.Button(
+                    self.button_text,
+                    on_press=lambda: print("Hello, world!"),
+                ),
+            )
+
+
+    class MyComponent(rio.Component):
+        products: list[str] = ["Product 1", "Product 2", "Product 3"]
+
+        def on_press_heading_list_item(self, product: str) -> None:
+            print(f"Selected {product}")
+
+        def build(self) -> rio.Component:
+            # Store all children in an intermediate list
+            list_items = []
+
+            for product in self.products:
+                list_items.append(
+                    rio.CustomListItem(
+                        # Use the `MyCustomListItem` component to create a custom list item
+                        content=MyCustomListItemComponent(
+                            product=product, button_text="Click Me!"
+                        ),
+                        key=product,
+                        # Note the use of `functools.partial` to pass the product
+                        # to the event handler.
+                        on_press=functools.partial(
+                            self.on_press_heading_list_item,
+                            product=product,
+                        ),
+                    )
+                )
+
+            # Then unpack the list to pass the children to the `ListView`
+            return rio.ListView(*list_items)
     ```
     """
 

@@ -58,7 +58,7 @@ class Revealer(FundamentalComponent):
     rio.Revealer(header="Click to reveal", content=rio.Text("Hello"))
     ```
 
-    A `Revealer` is a component that hides content, in this case a `TextInput`,
+    A `Revealer` is a component that hides content, in this case a TextInput,
     until it's opened:
 
     ```python

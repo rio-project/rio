@@ -66,8 +66,8 @@ class ColorPicker(FundamentalComponent):
             )
     ```
 
-    If you want to make your `ColorPicker`more interactive, you can easily achieve this by
-    adding a lambda function call to `on_change`:
+    If you want to make your `ColorPicker` more interactive, you can easily achieve this by
+    adding a lambda function call to on_change:
 
     ```python
     class MyComponent(rio.Component):

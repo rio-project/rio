@@ -29,7 +29,7 @@ class Container(Component):
 
     ## Example:
 
-    This minimal example will simply display a container with the text "Hello World!":
+    This minimal example will simply display a `container` with the text "Hello World!":
 
     ```python
     rio.Container(rio.Text("Hello World!"))

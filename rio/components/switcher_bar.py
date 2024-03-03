@@ -69,9 +69,9 @@ class SwitcherBar(FundamentalComponent, Generic[T]):
     )
     ```
 
-    You can use a `SwitcherBar` to create your own custom Navigation Bar. You
-    can use the `on_page_change` event to trigger a refresh of the `SwitcherBar`
-    when the page changes. Use the page_url defined in your rio.App and rio.Page
+    You can use a `SwitcherBar` to create your own custom Navigation Bar. use
+    the on_page_change event to trigger a refresh of the `SwitcherBar` when the
+    page changes. Use the page_url defined in your rio.App and rio.Page
     instances to navigate to the selected page. Here is an example of a custom
     `NavigationBar` component:
 

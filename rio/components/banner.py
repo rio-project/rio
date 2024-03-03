@@ -57,29 +57,6 @@ class Banner(component.Component):
 
     `Banner`s are commonly used to inform the users of about the result
     of an action. You can easily achieve this by adding a banner with its text
-    set to the result of the action. You can share the banner text with other
-    components by using state bindings:
-
-    ```python
-    class MyComponent(rio.Component):
-        banner_text: str = ""
-
-        def build(self) -> rio.Component:
-            return rio.Column(
-                rio.Banner(
-                    text=self.bind().banner_text,
-                    style="info",
-                ),
-                rio.Button(
-                    content="Press me!",
-                    on_press=lambda: setattr(self, "banner_text", "Button pressed!"),
-                ),
-                spacing=1,
-            )
-    ```
-
-    `Banner`s are commonly used to inform the users of about the result
-    of an action. You can easily achieve this by adding a banner with its text
     set to the result of the action. For example, you could show a banner with
     the text "Button pressed!" when a button is pressed:
 

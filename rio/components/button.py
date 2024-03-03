@@ -108,7 +108,7 @@ class Button(Component):
     ```
 
     `Button`s are commonly used to trigger actions. You can easily achieve this by
-    adding a function call to `on_press`. You can use a function call to update
+    adding a function call to on_press. You can use a function call to update
     the banner text signaling that the button was pressed:
 
     ```python
@@ -232,18 +232,16 @@ class IconButton(Component):
     """
     # IconButton
 
-    A round, clickable button with shadow.
+    A round, clickable button with an icon.
 
-    The `FloatingActionButton` component is similar to the `Button` component,
-    but has a different visual style. It is round and has a shadow, making it
-    appear to hover above the rest of the page. It is typically used to make the
-    most important action on a page stand out. For example, an e-mail client
-    might use a floating action button to compose a new e-mail. A note taking
-    app might use it to create a new note.
+    The `IconButton` component allows the user to trigger an action by clicking
+    on it. You can use it to trigger a function call, navigate to a different
+    page, or perform other actions.
 
-    The `FloatingActionButton` itself doesn't perform any special layouting.
-    Combine it with `rio.Stack` or `rio.Overlay` to make it float above other
-    components.
+    It is similar to the `Button` component, but it is specifically designed to
+    display an icon, and it has a round shape. A similar, but more customizable
+    component is `CustomButton`. Use that if you need more control over the
+    button's visuals, e.g. for creating a navigation button.
 
 
     ## Attributes:

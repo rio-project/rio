@@ -10,12 +10,23 @@ __all__ = [
 
 class Website(FundamentalComponent):
     """
+    # Website
+
     Displays a website.
 
     `Website` takes a URL as input and displays that website in your app.
 
-    Attributes:
-    `url`: The URL of the website you want to display.
+    ## Attributes:
+
+        `url`: The URL of the website you want to display.
+
+    ## Example:
+
+    A minimal example of a `Website` will be shown:
+
+    ```python
+    rio.Website(url=rio.URL("https://www.example.com"))
+    ```
     """
 
     url: URL

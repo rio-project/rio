@@ -21,6 +21,7 @@ class Tooltip(FundamentalComponent):
     element. It is commonly used to provide additional information about the
     element, such as a description or a hint.
 
+
     ## Attributes:
 
     `anchor`: The component to which the tooltip is anchored.
@@ -29,6 +30,7 @@ class Tooltip(FundamentalComponent):
 
     `position`: The position of the tooltip relative to the anchor. It can be
         one of the following values: `left`, `top`, `right`, `bottom`.
+
 
     ## Example:
 

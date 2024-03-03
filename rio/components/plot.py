@@ -51,9 +51,8 @@ class Plot(FundamentalComponent):
     rio.Plot(fig)
     ```
 
-    `Plot` components are utilized to display graphical plots. You can easily
-    showcase plots defined in your build function by passing the figure to the
-    `Plot` component.
+    You can easily show plots defined in your build function by passing
+    the figure to the `Plot` component.
 
     ```python
     import pandas as pd

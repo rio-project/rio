@@ -66,9 +66,9 @@ class MultiLineTextInput(KeyboardFocusableFundamentalComponent):
     rio.MultiLineTextInput(text="")
     ```
 
-    You can easily `bind` state variables to track changes. If you want to make your
+    You can easily bind state variables to track changes. If you want to make your
     `MultiLineTextInput` more responsive, you can easily achieve this by adding a
-    lambda function call to e.g. `on_change`:
+    lambda function call to e.g. on_change:
 
     ```python
     class MyComponent(rio.Component):
@@ -82,25 +82,8 @@ class MultiLineTextInput(KeyboardFocusableFundamentalComponent):
             )
     ```
 
-    If you are not using state bindings, you can also use a lambda function for updating
-    the input text:
-
-    ```python
-    class MyComponent(rio.Component):
-        text: str = ""
-
-        def build(self) -> rio.Component:
-            return rio.MultiLineTextInput(
-                text=self.text,
-                label="Write your comments here",
-                on_change=lambda event: setattr(
-                    self, "text", event.text
-                ),  # Update the text
-            )
-    ```
-
     You can also use a method for updating the input text and do whatever you want.
-    `Note` that methods are handy if you want to do more than just updating the input
+    Note that methods are handy if you want to do more than just updating the input
     text. For example run async code or update other components based on the input text:
 
     ```python

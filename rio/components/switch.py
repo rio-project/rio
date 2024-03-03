@@ -64,7 +64,7 @@ class Switch(FundamentalComponent):
             )
     ```
 
-    You can also listen to changes in the switch by providing an `on_change`
+    You can also listen to changes in the switch by providing an on_change
     callback:
 
     ```python

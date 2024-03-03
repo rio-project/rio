@@ -155,24 +155,23 @@ class Grid(FundamentalComponent):
         """
         Add a child to the grid at a specified position.
 
-        ## Arguments:
+        Args:
+            child: The child component to add to the grid.
 
-        `child`: The child component to add to the grid.
+            row: The row in which to place the child.
 
-        `row`: The row in which to place the child.
+            column: The column in which to place the child.
 
-        `column`: The column in which to place the child.
+            width The number of columns the child should take up.
 
-        `width`: The number of columns the child should take up.
+            height: The number of rows the child should take up.
 
-        `height`: The number of rows the child should take up.
 
-        ## Example:
-
-        ```python
-        grid = rio.Grid(row_spacing=1, column_spacing=1)
-        grid.add_child(rio.Text("Hello"), row=0, column=0)
-        ```
+        Example:
+            ```python
+            grid = rio.Grid(row_spacing=1, column_spacing=1)
+            grid.add_child(rio.Text("Hello"), row=0, column=0)
+            ```
         """
         if width <= 0:
             raise ValueError("Children have to take up at least one column")

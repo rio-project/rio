@@ -68,14 +68,14 @@ class TextInput(KeyboardFocusableFundamentalComponent):
     ## Example:
 
     A simple `TextInput` with a default value of "John Doe" and a label:
-    `Note`: The value will not be updated if the user changes the value in the input field.
+    Note: The value will not be updated if the user changes the value in the input field.
 
     ```python
     rio.TextInput(text="John Doe", label="Name")
     ```
 
-    You can easily `bind` state variables to track changes. If you want to make your `TextInput` more
-    responsive, you can easily achieve this by adding a lambda function call to e.g. `on_change`:
+    You can easily bind state variables to track changes. If you want to make your TextInput more
+    responsive, you can easily achieve this by adding a lambda function call to e.g. on_change:
 
     ```python
     class MyComponent(rio.Component):
@@ -89,23 +89,7 @@ class TextInput(KeyboardFocusableFundamentalComponent):
             )
     ```
 
-    If you are not using state bindings, you can also use a lambda function for updating the input text:
-
-    ```python
-    class MyComponent(rio.Component):
-        text: str = ""
-
-        def build(self) -> rio.Component:
-            return rio.TextInput(
-                text=self.text,
-                label="Name",
-                on_change=lambda event: setattr(
-                    self, "text", event.text
-                ),  # Update the text
-            )
-    ```
-
-    You can also use a method for updating the input text and do whatever you want. `Note` that methods
+    You can also use a method for updating the input text and do whatever you want. Note that methods
     are handy if you want to do more than just updating the input text. For example run async code or
     update other components based on the input text:
 

@@ -52,8 +52,8 @@ class Slider(FundamentalComponent):
     rio.Slider(minimum=0, maximum=100)
     ```
 
-    You can easily `bind` state variables to track changes. If you want to make your `Slider` more
-    responsive, you can easily achieve this by adding a lambda function call to `on_change`:
+    You can easily bind state variables to track changes. If you want to make your `Slider` more
+    responsive, you can easily achieve this by adding a lambda function call to on_change:
 
     ```python
     class MyComponent(rio.Component):
@@ -69,23 +69,7 @@ class Slider(FundamentalComponent):
             )
     ```
 
-    If you are not using state bindings, you can also use a lambda function for updating the input value:
-
-    ```python
-    class MyComponent(rio.Component):
-        value: int = 0
-
-        def build(self) -> rio.Component:
-            return rio.Slider(
-                value=self.value,
-                minimum=0,
-                maximum=100,
-                step_size=1,
-                on_change=lambda event: setattr(self, "value", event.value),
-            )
-    ```
-
-    You can also use a method for updating the input value and do whatever you want. `Note` that methods
+    You can also use a method for updating the input value and do whatever you want. Note that methods
     are handy if you want to do more than just updating the input value. For example run async code or
     update other components based on the input text:
 

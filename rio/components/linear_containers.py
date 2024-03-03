@@ -77,14 +77,14 @@ class Row(_LinearContainer):
 
     ## Example:
 
-    This minimal example will display a `Row` with two `Text` components:
+    This minimal example will display a `Row` with two text components:
 
     ```python
     rio.Row(rio.Text("Hello"), rio.Text("World!"))
     ```
 
     `Row`s are commonly used to line up multiple components horizontally. In this example, we're
-    using an `Icon` and two `Text` components in a `Row` and wrap them in a `Card`.
+    using an Icon and two Text components in a Row and wrap them in a Card.
 
     ```python
     class MyComponent(rio.Component):
@@ -193,14 +193,14 @@ class Column(_LinearContainer):
 
     ## Example:
 
-    This minimal example will display a `Column` with two `Text` components:
+    This minimal example will display a `Column` with two text components:
 
     ```python
     rio.Column(rio.Text("Hello"), rio.Text("World!"))
     ```
 
     `Columns`s are commonly used to line up multiple components vertically. In this example, we're
-    using an `Icon` and two `Text` components in a `Column` and wrap them in a `Card`.
+    using an Icon and two Text components in a Column and wrap them in a Card.
 
     ```python
     class MyComponent(rio.Component):
