@@ -67,8 +67,6 @@ class FlowContainer(FundamentalComponent):
         align_y: float | None = None,
     ):
         assert isinstance(children, tuple), children
-        for child in children:
-            assert isinstance(child, rio.Component), child
 
         super().__init__(
             key=key,

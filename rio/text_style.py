@@ -30,8 +30,12 @@ class Font(SelfSerializing):
         sess._register_font(self)
         return self.name
 
+    # Predefined fonts
+    ROBOTO: ClassVar[Font]
+    ROBOTO_MONO: ClassVar[Font]
 
-ROBOTO = Font(
+
+Font.ROBOTO = Font(
     "Roboto",
     regular=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-Regular.ttf",
     bold=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-Bold.ttf",
@@ -39,7 +43,7 @@ ROBOTO = Font(
     bold_italic=common.HOSTED_ASSETS_DIR / "fonts/Roboto/Roboto-BoldItalic.ttf",
 )
 
-ROBOTO_MONO = Font(
+Font.ROBOTO_MONO = Font(
     "Roboto Mono",
     regular=common.HOSTED_ASSETS_DIR / "fonts/Roboto Mono/RobotoMono-Regular.ttf",
     bold=common.HOSTED_ASSETS_DIR / "fonts/Roboto Mono/RobotoMono-Bold.ttf",

@@ -10,7 +10,7 @@ from uniserde import Jsonable
 import rio
 
 from . import color
-from .text_style import ROBOTO, ROBOTO_MONO
+from . import text_style as text_style_module
 
 # This module imports `curses` even though it doesn't need it, which causes
 # problems on Windows. Since it's unused, we'll just give it a fake module if
@@ -128,8 +128,8 @@ class Theme:
 
     shadow_color: rio.Color
 
-    font: rio.Font
-    monospace_font: rio.Font
+    font: text_style_module.Font
+    monospace_font: text_style_module.Font
 
     # Text styles
     heading1_style: rio.TextStyle
@@ -153,16 +153,16 @@ class Theme:
         corner_radius_medium: float = 1.4,
         corner_radius_large: float = 2.4,
         color_headings: bool | Literal["auto"] = "auto",
-        font: rio.Font = ROBOTO,
-        monospace_font: rio.Font = ROBOTO_MONO,
+        font: text_style_module.Font = text_style_module.Font.ROBOTO,
+        monospace_font: text_style_module.Font = text_style_module.Font.ROBOTO_MONO,
         light: bool = True,
     ) -> Self:
         # Impute defaults
         if primary_color is None:
-            primary_color = rio.Color.from_hex("b002ef")
+            primary_color = rio.Color.from_hex("01dffd")
 
         if secondary_color is None:
-            secondary_color = rio.Color.from_hex("329afc")
+            secondary_color = rio.Color.from_hex("0083ff")
 
         if success_color is None:
             success_color = rio.Color.from_hex("1E8E3E")
@@ -347,8 +347,8 @@ class Theme:
         corner_radius_small: float = 0.6,
         corner_radius_medium: float = 1.6,
         corner_radius_large: float = 2.6,
-        font: rio.Font = ROBOTO,
-        monospace_font: rio.Font = ROBOTO_MONO,
+        font: text_style_module.Font = text_style_module.Font.ROBOTO,
+        monospace_font: text_style_module.Font = text_style_module.Font.ROBOTO_MONO,
         color_headings: bool | Literal["auto"] = "auto",
     ) -> tuple[Self, Self]:
         func = functools.partial(
@@ -410,8 +410,8 @@ class Theme:
         corner_radius_medium: float | None = None,
         corner_radius_large: float | None = None,
         shadow_color: rio.Color | None = None,
-        font_family: rio.Font | None = None,
-        monospace_font: rio.Font | None = None,
+        font_family: text_style_module.Font | None = None,
+        monospace_font: text_style_module.Font | None = None,
         heading1_style: rio.TextStyle | None = None,
         heading2_style: rio.TextStyle | None = None,
         heading3_style: rio.TextStyle | None = None,
