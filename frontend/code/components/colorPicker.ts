@@ -414,6 +414,11 @@ export class ColorPickerComponent extends ComponentBase {
 
         // Deselect the text input
         event.target.blur();
+
+        // Send the final color to the frontend
+        this.sendMessageToBackend({
+            color: this.state.color,
+        });
     }
 
     updateNaturalWidth(ctx: LayoutContext): void {

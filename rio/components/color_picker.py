@@ -7,7 +7,6 @@ from uniserde import JsonDoc
 
 import rio
 
-from .. import color
 from .fundamental_component import FundamentalComponent
 
 __all__ = [
@@ -18,7 +17,7 @@ __all__ = [
 
 @dataclass
 class ColorChangeEvent:
-    color: color.Color
+    color: rio.Color
 
 
 class ColorPicker(FundamentalComponent):
@@ -106,7 +105,7 @@ class ColorPicker(FundamentalComponent):
     ```
     """
 
-    color: color.Color
+    color: rio.Color
     _: KW_ONLY
     pick_opacity: bool = False
     on_change: rio.EventHandler[ColorChangeEvent] = None
@@ -115,15 +114,15 @@ class ColorPicker(FundamentalComponent):
         # Parse the message
         assert isinstance(msg, dict), msg
 
+        color = rio.Color.from_rgb(*msg["color"])
+
         # Update the color
-        self._apply_delta_state_from_frontend(
-            {"color": color.Color.from_rgb(*msg["color"])}
-        )
+        self._apply_delta_state_from_frontend({"color": color})
 
         # Trigger the change event
         await self.call_event_handler(
             self.on_change,
-            ColorChangeEvent(self.color),
+            ColorChangeEvent(color),
         )
 
         # Refresh the session
