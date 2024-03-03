@@ -15,7 +15,7 @@ include = ["rio/generated/index.html"]
 aiofiles = "^23.2.1"
 cefpython3 = { version = "^66.1", platform = "windows", optional = true }
 fastapi = "^0.95.1"
-introspection = "^1.7.9"
+introspection = "^1.7.10"
 platformdirs = { version = "^3.11.0", optional = true }
 pillow = "^9.2.0"
 pygobject = { version = "^3.44.1", platform = "linux", optional = true }

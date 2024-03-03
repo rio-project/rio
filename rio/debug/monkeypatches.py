@@ -1,8 +1,8 @@
 import inspect
-import warnings
 from pathlib import Path
 
 import introspection.typing
+import revel
 
 from .. import components, global_state
 from ..components.component import Component, ComponentMeta
@@ -14,6 +14,10 @@ __all__ = [
 
 
 def apply_monkeypatches() -> None:
+    """
+    Enables extra safeguards that are too slow to be enabled permanently. Used
+    by `rio run` when running in debug mode.
+    """
     introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
     introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
     introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
@@ -85,9 +89,16 @@ def StateProperty_set(
             valid = introspection.typing.is_instance(
                 value, annotation, forward_ref_context=self._module
             )
+        except introspection.errors.CannotResolveForwardref as error:
+            revel.warning(
+                f"Unable to verify assignment of {value!r} to"
+                f" {type(instance).__qualname__}.{self.name} (annotated as"
+                f" {self._annotation_as_string()}) because the forward"
+                f" reference {error.forward_ref!r} cannot be resolved"
+            )
         except NotImplementedError:
-            warnings.warn(
-                f"Unable to verify assignment to"
+            revel.warning(
+                f"Unable to verify assignment of {value!r} to"
                 f" {type(instance).__qualname__}.{self.name} (annotated as"
                 f" {self._annotation_as_string()})"
             )

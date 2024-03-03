@@ -62,6 +62,21 @@ def test_component_class_can_be_used_as_build_function(
     _ = rio.PageView(fallback_build=component_cls)
 
 
+@pytest.mark.parametrize(
+    "component_cls",
+    [
+        rio.Rectangle,
+        rio.Text,
+    ],
+)
+@enable_component_instantiation
+def test_component_class_cant_be_used_as_build_function(
+    component_cls: type[rio.Component],
+):
+    with pytest.raises(Exception):
+        _ = rio.PageView(fallback_build=component_cls)
+
+
 async def test_init_cannot_read_state_properties():
     # Accessing state properties in `__init__` is not allowed because state
     # bindings aren't initialized yet at that point. In development mode, trying

@@ -14,6 +14,7 @@ from dataclasses import KW_ONLY, field
 from pathlib import Path
 from typing import *  # type: ignore
 
+import introspection
 from typing_extensions import Self, dataclass_transform
 from uniserde import Jsonable, JsonDoc
 
@@ -184,6 +185,7 @@ class ComponentMeta(RioDataclassMeta):
             # Add it to the set of all state properties for rapid lookup
             cls._state_properties_[field_name] = state_property
 
+    @introspection.mark.does_not_alter_signature
     def __call__(cls: type[C], *args: object, **kwargs: object) -> C:
         # Inject the session before calling the constructor
         # Fetch the session this component is part of
