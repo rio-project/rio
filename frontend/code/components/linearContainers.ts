@@ -19,6 +19,7 @@ class LinearContainer extends ComponentBase {
     protected undef2: HTMLElement;
 
     protected nGrowers: number; // Number of children that grow in the major axis
+    protected totalProportions: number; // Sum of all proportions, if there are proportions
 
     createElement(): HTMLElement {
         let element = document.createElement('div');
@@ -64,7 +65,16 @@ class LinearContainer extends ComponentBase {
         }
 
         // Proportions
-        if (deltaState.proportions !== undefined) {
+        if (
+            deltaState.proportions === undefined ||
+            deltaState.proportions === null
+        ) {
+        } else if (deltaState.proportions === 'homogeneous') {
+            this.totalProportions = this.children.size;
+        } else {
+            this.totalProportions = deltaState.proportions.reduce(
+                (a, b) => a + b
+            );
         }
 
         // Re-layout
@@ -107,12 +117,18 @@ export class RowComponent extends LinearContainer {
             for (let i = 0; i < proportions.length; i++) {
                 let child = componentsById[this.state.children[i]]!;
                 let proportion = proportions[i];
-                let proportionSize = child.requestedWidth / proportion;
-                maxProportionSize = Math.max(maxProportionSize, proportionSize);
+
+                if (proportion !== 0) {
+                    let proportionSize = child.requestedWidth / proportion;
+
+                    maxProportionSize = Math.max(
+                        maxProportionSize,
+                        proportionSize
+                    );
+                }
             }
 
-            let totalProportions = proportions.reduce((a, b) => a + b);
-            this.naturalWidth = maxProportionSize * totalProportions;
+            this.naturalWidth = maxProportionSize * this.totalProportions;
         }
 
         // Account for spacing
@@ -138,8 +154,7 @@ export class RowComponent extends LinearContainer {
                 this.state.proportions === 'homogeneous'
                     ? Array(this.children.size).fill(1)
                     : this.state.proportions;
-            let totalProportions = proportions.reduce((a, b) => a + b);
-            let proportionSize = this.allocatedWidth / totalProportions;
+            let proportionSize = this.allocatedWidth / this.totalProportions;
 
             for (let i = 0; i < proportions.length; i++) {
                 let child = componentsById[this.state.children[i]]!;
@@ -255,12 +270,18 @@ export class ColumnComponent extends LinearContainer {
             for (let i = 0; i < proportions.length; i++) {
                 let child = componentsById[this.state.children[i]]!;
                 let proportion = proportions[i];
-                let proportionSize = child.requestedHeight / proportion;
-                maxProportionSize = Math.max(maxProportionSize, proportionSize);
+
+                if (proportion !== 0) {
+                    let proportionSize = child.requestedHeight / proportion;
+
+                    maxProportionSize = Math.max(
+                        maxProportionSize,
+                        proportionSize
+                    );
+                }
             }
 
-            let totalProportions = proportions.reduce((a, b) => a + b);
-            this.naturalHeight = maxProportionSize * totalProportions;
+            this.naturalHeight = maxProportionSize * this.totalProportions;
         }
 
         // Account for spacing
@@ -322,8 +343,7 @@ export class ColumnComponent extends LinearContainer {
                 this.state.proportions === 'homogeneous'
                     ? Array(this.children.size).fill(1)
                     : this.state.proportions;
-            let totalProportions = proportions.reduce((a, b) => a + b);
-            let proportionSize = this.allocatedHeight / totalProportions;
+            let proportionSize = this.allocatedHeight / this.totalProportions;
 
             for (let i = 0; i < proportions.length; i++) {
                 let child = componentsById[this.state.children[i]]!;

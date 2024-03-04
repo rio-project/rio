@@ -1,5 +1,6 @@
 import inspect
 from pathlib import Path
+from typing import *  # type: ignore
 
 import introspection.typing
 import revel
@@ -21,6 +22,8 @@ def apply_monkeypatches() -> None:
     introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
     introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
     introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
+    introspection.wrap_method(LinearContainer_init, components.Row, "__init__")
+    introspection.wrap_method(LinearContainer_init, components.Column, "__init__")
     introspection.wrap_method(ListView_init, components.ListView, "__init__")
 
 
@@ -112,6 +115,45 @@ def StateProperty_set(
 
     # Chain to the original method
     wrapped_method(self, instance, value)
+
+
+def LinearContainer_init(
+    wrapped_method,
+    self: components.Row,
+    *children,
+    proportions: Literal["homogeneous"] | Sequence[float] | None = None,
+    **kwargs,
+):
+    # Proportions related checks
+    if proportions is not None and not isinstance(proportions, str):
+        proportions = list(proportions)
+
+        # Make sure the number of proportions matches the number of children
+        if len(proportions) != len(children):
+            raise ValueError(
+                f"The component has {len(children)} children, but {len(proportions)} proportions were provided."
+            )
+
+        # The sum of all proportions must exceed 0
+        if proportions and sum(proportions) <= 0:
+            # TODO: While this handles a lenght of zero children fine, JS
+            # probably doesn't!
+            raise ValueError("The sum of all proportions must be greater than 0.")
+
+        # Every proportion must be positive
+        for proportion in proportions:
+            if proportion < 0:
+                raise ValueError(
+                    f"{proportion} is not a valid proportion. All proportions must be greater than or equal to zero."
+                )
+
+    # Chain to the original method
+    wrapped_method(
+        self,
+        *children,
+        proportions=proportions,
+        **kwargs,
+    )
 
 
 def ListView_init(
