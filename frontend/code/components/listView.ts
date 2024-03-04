@@ -1,3 +1,4 @@
+import { group } from 'console';
 import { componentsByElement } from '../componentManagement';
 import { ComponentId } from '../models';
 import { ComponentBase } from './componentBase';
@@ -5,6 +6,7 @@ import { CustomListItemComponent } from './customListItem';
 import { HeadingListItemComponent } from './headingListItem';
 import { ColumnComponent, LinearContainerState } from './linearContainers';
 import { SeparatorListItemComponent } from './separatorListItem';
+import { createSecureContext } from 'tls';
 
 export class ListViewComponent extends ColumnComponent {
     constructor(id: ComponentId, state: Required<LinearContainerState>) {
@@ -66,8 +68,8 @@ export class ListViewComponent extends ColumnComponent {
             );
         }
 
-        // Otherwise, nope
-        return false;
+        // Everything else defaults to being grouped
+        return true;
     }
 
     _isGroupedListItem(elem: HTMLElement): boolean {
@@ -83,6 +85,19 @@ export class ListViewComponent extends ColumnComponent {
     }
 
     _updateChildStyles(): void {
+        // Precompute which children are grouped
+        let groupedChildren = new Set<any>();
+        for (let child of this.childContainer.children) {
+            let castChild = child as HTMLElement;
+
+            if (this._isGroupedListItem(castChild)) {
+                groupedChildren.add(castChild);
+                castChild.classList.add('rio-listview-grouped');
+            } else {
+                castChild.classList.remove('rio-listview-grouped');
+            }
+        }
+
         // Round the corners of each first & last child in a a group, and add
         // separators between them.
         //
@@ -92,18 +107,15 @@ export class ListViewComponent extends ColumnComponent {
             let curChild = curChildUncast as HTMLElement;
 
             // Is this even a regular list item?
-            let curIsGrouped = this._isGroupedListItem(curChild);
+            let curIsGrouped = groupedChildren.has(curChild);
 
             // Look up the neighboring elements
-            let prevChild = curChild.previousElementSibling;
-            let nextChild = curChild.nextElementSibling;
-
-            let prevIsGrouped =
-                prevChild !== null &&
-                this._isGroupedListItem(prevChild as HTMLElement);
-            let nextIsGrouped =
-                nextChild !== null &&
-                this._isGroupedListItem(nextChild as HTMLElement);
+            let prevIsGrouped = groupedChildren.has(
+                curChild.previousElementSibling
+            );
+            let nextIsGrouped = groupedChildren.has(
+                curChild.nextElementSibling
+            );
 
             if (!curIsGrouped) {
                 continue;
@@ -124,22 +136,28 @@ export class ListViewComponent extends ColumnComponent {
 
             curChild.style.overflow = 'hidden';
 
-            // Add a separator? These have to be discrete elements, because CSS
-            // doesn't support setting opacity of a color defined in a variable.
-            //
-            // The current system is a bit hacky: `replaceChildren` will unwrap
-            // the children and assume that the child is the only element inside
-            // of the wrapping div. However, it actually accesses the child via
-            // `firstElementChild`, so adding the separator _after_ the child
-            // works out here. Very fragile, though.
-            //
-            // This also means that the separator will eat up one pixel of the
-            // actual child. Not perfect, but also not exactly noticeable.
-            if (prevIsGrouped) {
-                let separator = document.createElement('div');
-                separator.classList.add('rio-listview-separator');
-                curChild.appendChild(separator);
-            }
+            // // Remove any separators left over from before
+            // let childChildren = curChild.children;
+            // while (childChildren.length > 1) {
+            //     childChildren[1].remove();
+            // }
+
+            // // Add a separator? These have to be discrete elements, because CSS
+            // // doesn't support setting opacity of a color defined in a variable.
+            // //
+            // // The current system is a bit hacky: `replaceChildren` will unwrap
+            // // the children and assume that the child is the only element inside
+            // // of the wrapping div. However, it actually accesses the child via
+            // // `firstElementChild`, so adding the separator _after_ the child
+            // // works out here. Very fragile, though.
+            // //
+            // // This also means that the separator will eat up one pixel of the
+            // // actual child. Not perfect, but also not exactly noticeable.
+            // if (prevIsGrouped) {
+            //     let separator = document.createElement('div');
+            //     separator.classList.add('rio-listview-separator');
+            //     curChild.appendChild(separator);
+            // }
         }
     }
 }

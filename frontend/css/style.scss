@@ -2139,7 +2139,7 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     box-sizing: border-box;
 }
 
-.rio-custom-list-item {
+.rio-listview-grouped {
     pointer-events: auto;
 
     background-color: var(--rio-local-plain-bg-variant);
@@ -2147,11 +2147,9 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     transition: background-color 0.1s ease-out;
 }
 
-.rio-custom-list-item:hover {
-    background-color: var(--rio-local-plain-bg-active);
-}
+.rio-listview-grouped + .rio-listview-grouped::after {
+    content: '';
 
-.rio-listview-separator {
     position: absolute;
     top: 0;
     left: 0;

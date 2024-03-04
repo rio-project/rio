@@ -21,9 +21,7 @@ export class CustomListItemComponent extends ComponentBase {
     private mdcRipple: MDCRipple | null = null;
 
     createElement(): HTMLElement {
-        let element = document.createElement('div');
-        element.classList.add('rio-custom-list-item');
-        return element;
+        return document.createElement('div');
     }
 
     updateElement(
