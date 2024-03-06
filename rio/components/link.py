@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import webbrowser
 from typing import Any, Literal
 
 from uniserde import JsonDoc
@@ -109,12 +110,19 @@ class Link(FundamentalComponent):
     async def _on_message(self, msg: Any) -> None:
         assert isinstance(msg, dict), msg
 
-        # Navigate to the link. Note that this allows the client to inject a,
-        # possibly malicious, link. This is fine, because the client can do so
-        # anyway, simply by changing the URL in the browser. Thus the server
-        # has to be equipped to handle malicious page URLs anyway.
-        target_page = msg["page"]
-        self.session.navigate_to(target_page)
+        if "page" in msg:
+            # Navigate to the link. Note that this allows the client to inject
+            # a, possibly malicious, link. This is fine, because the client can
+            # do so anyway, simply by changing the URL in the browser. Thus the
+            # server has to be equipped to handle malicious page URLs anyway.
+            target_page = msg["page"]
+            self.session.navigate_to(target_page)
+        elif self.session.running_in_window:
+            # If running in a window, clicking a link shouldn't open it in the
+            # app window. Instead, we receive a message telling us to open the
+            # link in browser.
+            target_url = msg["open"]
+            webbrowser.open(target_url)
 
     def _custom_serialize(self) -> JsonDoc:
         # Get the full URL to navigate to

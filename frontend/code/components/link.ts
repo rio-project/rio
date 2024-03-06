@@ -29,13 +29,17 @@ export class LinkComponent extends ComponentBase {
         // This only needs to handle pages, since regular links will be handled
         // by the browser.
         containerElement.addEventListener('click', (event: MouseEvent) => {
-            if (!this.state.isPage) {
+            if (this.state.isPage) {
+                this.sendMessageToBackend({
+                    page: this.state.targetUrl,
+                });
+            } else if (globalThis.RUNNING_IN_WINDOW) {
+                this.sendMessageToBackend({
+                    open: this.state.targetUrl,
+                });
+            } else {
                 return;
             }
-
-            this.sendMessageToBackend({
-                page: this.state.targetUrl,
-            });
 
             event.stopPropagation();
             event.preventDefault();

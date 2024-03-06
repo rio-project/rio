@@ -1,4 +1,4 @@
-import { getComponentByElement, getRootComponent } from './componentManagement';
+import { getComponentByElement } from './componentManagement';
 import { updateLayout } from './layouting';
 import { callRemoteMethodDiscardResponse, initWebsocket } from './rpc';
 
@@ -12,6 +12,7 @@ globalThis.SESSION_TOKEN = '{session_token}';
 globalThis.PING_PONG_INTERVAL_SECONDS = '{ping_pong_interval}';
 globalThis.RIO_DEBUG_MODE = '{debug_mode}';
 globalThis.CHILD_ATTRIBUTE_NAMES = '{child_attribute_names}';
+globalThis.RUNNING_IN_WINDOW = '{running_in_window}';
 
 // If a debugger is present it is exposed here so the codebase can notify it as
 // needed. This is an instance of `DebuggerConnectorComponent`.
