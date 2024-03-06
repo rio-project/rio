@@ -351,6 +351,10 @@ class AppServer(fastapi.FastAPI):
             json.dumps(self.debug_mode),
         )
 
+        html = html.replace(
+            '"{running_in_window}"', "true" if self.running_in_window else "false"
+        )
+
         html = html.replace("{title}", self.app.name)
 
         # Respond
