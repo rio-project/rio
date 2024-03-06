@@ -337,8 +337,11 @@ Use the `rio.Icon` component like this:
             children.append(self.build_details())
 
         # Combine everything
-        return rio.Column(
-            *children,
-            spacing=1,
-            margin=1,
+        return rio.ScrollContainer(
+            rio.Column(
+                *children,
+                spacing=1,
+                margin=1,
+            ),
+            scroll_x="never",
         )

@@ -31,7 +31,7 @@ def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
     component: Component = wrapped_method(cls, *args, **kwargs)
 
     # Keep track of who created this component
-    caller = inspect.stack()[1]
+    caller = inspect.stack()[2]
     component._creator_stackframe_ = (Path(caller.filename), caller.lineno)
 
     # Track whether this instance is internal to Rio. This is the case if

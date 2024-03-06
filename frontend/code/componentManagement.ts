@@ -1,4 +1,5 @@
 import { AlignComponent } from './components/align';
+import { BuildFailedComponent } from './components/buildFailed';
 import { ButtonComponent } from './components/button';
 import { CardComponent } from './components/card';
 import { ClassContainerComponent } from './components/classContainer';
@@ -57,6 +58,7 @@ import { updateLayout } from './layouting';
 
 const COMPONENT_CLASSES = {
     'Align-builtin': AlignComponent,
+    'BuildFailed-builtin': BuildFailedComponent,
     'Button-builtin': ButtonComponent,
     'Card-builtin': CardComponent,
     'ClassContainer-builtin': ClassContainerComponent,

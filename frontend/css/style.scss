@@ -522,6 +522,30 @@ $rio-input-box-horizontal-padding: 0.8rem;
     animation: content-loading 3s linear infinite;
 }
 
+@keyframes barber-pole {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 3rem 0rem;
+    }
+}
+
+@mixin barber-pole($color) {
+    background-image: linear-gradient(
+        -45deg,
+        $color 15%,
+        transparent 15%,
+        transparent 50%,
+        $color 50%,
+        $color 65%,
+        transparent 65%
+    );
+    background-size: 3rem 3rem;
+    animation: barber-pole 1s linear infinite;
+}
+
 // General
 a {
     color: var(--rio-local-accent-bg);
@@ -577,31 +601,11 @@ select {
     position: relative !important;
 }
 
-@keyframes barber-pole {
-    from {
-        background-position: 0 0;
-    }
-
-    to {
-        background-position: 3rem 0rem;
-    }
-}
-
 .rio-undefined-space {
     pointer-events: none;
     flex-grow: 1;
 
-    background-image: linear-gradient(
-        -45deg,
-        var(--rio-global-warning-bg) 15%,
-        transparent 15%,
-        transparent 50%,
-        var(--rio-global-warning-bg) 50%,
-        var(--rio-global-warning-bg) 65%,
-        transparent 65%
-    );
-    background-size: 3rem 3rem;
-    animation: barber-pole 1s linear infinite;
+    @include barber-pole(var(--rio-global-warning-bg));
 }
 
 .rio-row {
@@ -1620,8 +1624,10 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-markdown-code-block-copy-button {
-    min-width: 2rem;
-    min-height: 2rem;
+    $min-size: 1.2rem;
+    min-width: $min-size;
+    min-height: $min-size;
+
     cursor: pointer;
     border: none;
     background: none;
@@ -2593,6 +2599,18 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     opacity: 0;
 
     transition: opacity 0.15s ease-in-out;
+}
+
+// Build failed component
+.rio-build-failed {
+    @include barber-pole(var(--rio-global-danger-bg));
+    @include center-content();
+
+    svg {
+        $max-size: 3rem;
+        max-width: $max-size;
+        max-height: $max-size;
+    }
 }
 
 // Code Explorer

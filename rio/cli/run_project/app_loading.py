@@ -1,3 +1,4 @@
+import functools
 import html
 import os
 import sys
@@ -69,6 +70,18 @@ def make_traceback_html(
 """
 
 
+def make_error_message_component(
+    err: Union[str, BaseException],
+    project_directory: Path,
+) -> rio.Component:
+    html = make_traceback_html(
+        err=err,
+        project_directory=project_directory,
+    )
+
+    return rio.Html(html)
+
+
 def make_error_message_app(
     err: Union[str, BaseException],
     project_directory: Path,
@@ -77,13 +90,8 @@ def make_error_message_app(
     """
     Creates an app that displays the given error message.
     """
-    html = make_traceback_html(
-        err=err,
-        project_directory=project_directory,
-    )
-
     return rio.App(
-        build=lambda: rio.Html(html),
+        build=functools.partial(make_error_message_component, err, project_directory),
         theme=theme,
     )
 
@@ -163,5 +171,8 @@ def load_user_app(proj: project.RioProject) -> rio.App:
     if module_path.is_file():
         module_path = module_path.parent
     app.assets_dir = module_path / app._assets_dir
+
+    # If runnWrap the app's `build` function so that it displays a nice traceback
+    # in case of an error
 
     return app

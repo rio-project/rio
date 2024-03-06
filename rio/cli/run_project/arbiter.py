@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import json
 import logging
 import signal
@@ -9,7 +10,6 @@ import webbrowser
 from typing import *  # type: ignore
 
 import revel
-import uvicorn.lifespan
 from revel import print
 
 import rio.app_server
@@ -214,6 +214,11 @@ class Arbiter:
                 ),
                 err,
             )
+
+        # If running in debug mode, catch exceptions thrown by the app's `build`
+        # function and display them in the GUI
+        if self.debug_mode:
+            app._build = functools.partial(self._try_build_app, app._build)
 
         # Remember the app's theme. If in the future a placeholder app is used,
         # this theme will be used for it.
@@ -554,3 +559,11 @@ window.setConnectionLostPopupVisible(true);
             evaljs_as_coroutine(),
             name=f"Eval JS in session {session._session_token}",
         )
+
+    def _try_build_app(self, build: Callable[[], rio.Component]) -> rio.Component:
+        try:
+            return build()
+        except Exception as error:
+            return app_loading.make_error_message_component(
+                error, self.proj.project_directory
+            )

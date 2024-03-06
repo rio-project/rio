@@ -38,7 +38,7 @@ from . import (
     theme,
     user_settings_module,
 )
-from .components import fundamental_component, root_components
+from .components import build_failed, fundamental_component, root_components
 from .state_properties import StateBinding
 
 __all__ = ["Session"]
@@ -727,22 +727,29 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
 
             try:
                 build_result = component.build()
+            except Exception:
+                logging.exception(
+                    f"An exception occurred in the `build` method of {component!r}"
+                )
+                build_result = build_failed.BuildFailed()
+            else:
+                # Sanity check
+                if not isinstance(build_result, rio.Component):  # type: ignore[unnecessary-isinstance]
+                    logging.error(
+                        f"The output of `build` methods must be instances of"
+                        f" `rio.Component`, but `{component}` returned `{build_result}`"
+                    )
+                    build_result = build_failed.BuildFailed()
+
+                if component in self._dirty_components:
+                    logging.warning(
+                        f"The `build()` method of the component `{component}`"
+                        f" changed the component's state. Assignments to properties"
+                        f" of the component aren't allowed in the `build()` method."
+                    )
             finally:
                 global_state.currently_building_component = None
                 global_state.currently_building_session = None
-
-            # Sanity check
-            if not isinstance(build_result, rio.Component):  # type: ignore[unnecessary-isinstance]
-                raise TypeError(
-                    f"The output of `build` methods must be instances of `rio.Component`, but `{component}` returned `{build_result}`"
-                )
-
-            if component in self._dirty_components:
-                raise AssertionError(
-                    f"The `build()` method of the component `{component}`"
-                    f" changed the component's state. Assignments to properties"
-                    f" of the component aren't allowed in the `build()` method."
-                )
 
             # Has this component been built before?
             try:
