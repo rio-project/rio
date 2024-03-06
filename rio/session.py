@@ -740,16 +740,16 @@ window.scrollTo({{ top: 0, behavior: "smooth" }});
                         f" `rio.Component`, but `{component}` returned `{build_result}`"
                     )
                     build_result = build_failed.BuildFailed()
-
-                if component in self._dirty_components:
-                    logging.warning(
-                        f"The `build()` method of the component `{component}`"
-                        f" changed the component's state. Assignments to properties"
-                        f" of the component aren't allowed in the `build()` method."
-                    )
             finally:
                 global_state.currently_building_component = None
                 global_state.currently_building_session = None
+
+            if component in self._dirty_components:
+                logging.warning(
+                    f"The `build()` method of the component `{component}`"
+                    f" changed the component's state. Assignments to properties"
+                    f" of the component aren't allowed in the `build()` method."
+                )
 
             # Has this component been built before?
             try:

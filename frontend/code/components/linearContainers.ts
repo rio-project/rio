@@ -36,6 +36,19 @@ class LinearContainer extends ComponentBase {
         this.undef2.classList.add('rio-undefined-space');
         element.appendChild(this.undef2);
 
+        if (globalThis.RIO_DEBUG_MODE) {
+            let undefinedSpaceMessage =
+                `This ${this.state._python_type_} is` +
+                ` larger than its content, so it's unclear how the content` +
+                ` should be positioned. You can fix this by giving the` +
+                ` component an alignment.`;
+
+            for (let elem of [this.undef1, this.undef2]) {
+                elem.title = undefinedSpaceMessage;
+                elem.style.pointerEvents = 'auto';
+            }
+        }
+
         return element;
     }
 

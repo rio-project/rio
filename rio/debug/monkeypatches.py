@@ -97,13 +97,15 @@ def StateProperty_set(
                 f"Unable to verify assignment of {value!r} to"
                 f" {type(instance).__qualname__}.{self.name} (annotated as"
                 f" {self._annotation_as_string()}) because the forward"
-                f" reference {error.forward_ref!r} cannot be resolved"
+                f" reference {error.forward_ref!r} cannot be resolved",
+                markup=False,
             )
         except NotImplementedError:
             revel.warning(
                 f"Unable to verify assignment of {value!r} to"
                 f" {type(instance).__qualname__}.{self.name} (annotated as"
-                f" {self._annotation_as_string()})"
+                f" {self._annotation_as_string()})",
+                markup=False,
             )
         else:
             if not valid:
