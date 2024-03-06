@@ -1,4 +1,3 @@
-import { group } from 'console';
 import { componentsByElement } from '../componentManagement';
 import { ComponentId } from '../models';
 import { ComponentBase } from './componentBase';
@@ -6,7 +5,6 @@ import { CustomListItemComponent } from './customListItem';
 import { HeadingListItemComponent } from './headingListItem';
 import { ColumnComponent, LinearContainerState } from './linearContainers';
 import { SeparatorListItemComponent } from './separatorListItem';
-import { createSecureContext } from 'tls';
 
 export class ListViewComponent extends ColumnComponent {
     constructor(id: ComponentId, state: Required<LinearContainerState>) {
@@ -135,29 +133,6 @@ export class ListViewComponent extends ColumnComponent {
             curChild.style.borderBottomRightRadius = bottomRadius;
 
             curChild.style.overflow = 'hidden';
-
-            // // Remove any separators left over from before
-            // let childChildren = curChild.children;
-            // while (childChildren.length > 1) {
-            //     childChildren[1].remove();
-            // }
-
-            // // Add a separator? These have to be discrete elements, because CSS
-            // // doesn't support setting opacity of a color defined in a variable.
-            // //
-            // // The current system is a bit hacky: `replaceChildren` will unwrap
-            // // the children and assume that the child is the only element inside
-            // // of the wrapping div. However, it actually accesses the child via
-            // // `firstElementChild`, so adding the separator _after_ the child
-            // // works out here. Very fragile, though.
-            // //
-            // // This also means that the separator will eat up one pixel of the
-            // // actual child. Not perfect, but also not exactly noticeable.
-            // if (prevIsGrouped) {
-            //     let separator = document.createElement('div');
-            //     separator.classList.add('rio-listview-separator');
-            //     curChild.appendChild(separator);
-            // }
         }
     }
 }
