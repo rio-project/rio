@@ -227,8 +227,11 @@ export abstract class ComponentBase {
         let children = childIds.map((id) => componentsById[id]!);
         let curIndex = 0;
 
+        // Since children are being moved between parents, it's possible for
+        // some empty wrappers to persist. In that case `unwrap` will return
+        // `null`.
         let wrap: (element: HTMLElement) => Element;
-        let unwrap: (element: Element) => HTMLElement;
+        let unwrap: (element: Element) => HTMLElement | null;
         if (wrapInDivs) {
             wrap = (element: HTMLElement) => {
                 let wrapper = document.createElement('div');
@@ -236,15 +239,15 @@ export abstract class ComponentBase {
                 return wrapper;
             };
             unwrap = (element: Element) =>
-                element.firstElementChild as HTMLElement;
+                element.firstElementChild as HTMLElement | null;
         } else {
             wrap = (element: HTMLElement) => element;
             unwrap = (element: Element) => element as HTMLElement;
         }
 
         while (true) {
-            // If there are no more children in the DOM element, add the remaining
-            // children
+            // If there are no more children in the DOM element, add the
+            // remaining children
             if (curElement === null) {
                 while (curIndex < children.length) {
                     let child = children[curIndex];
@@ -263,11 +266,13 @@ export abstract class ComponentBase {
             if (curIndex >= children.length) {
                 while (curElement !== null) {
                     let nextElement = curElement.nextElementSibling;
-
                     curElement.remove();
 
-                    let child = getComponentByElement(unwrap(curElement));
-                    child.unparent(latentComponents);
+                    let childElement = unwrap(curElement);
+                    if (childElement !== null) {
+                        let child = getComponentByElement(childElement);
+                        child.unparent(latentComponents);
+                    }
 
                     dirty = true;
                     curElement = nextElement;
@@ -275,8 +280,20 @@ export abstract class ComponentBase {
                 break;
             }
 
+            // If this was just an empty wrapper element, remove it and move on
+            // to the next element
+            let childElement = unwrap(curElement);
+
+            if (childElement === null) {
+                let nextElement = curElement.nextElementSibling;
+                curElement.remove();
+                dirty = true;
+                curElement = nextElement;
+                continue;
+            }
+
             // If this element is the correct element, move on
-            let curChild = getComponentByElement(unwrap(curElement));
+            let curChild = getComponentByElement(childElement);
             let expectedChild = children[curIndex];
             if (curChild === expectedChild) {
                 curElement = curElement.nextElementSibling;

@@ -79,7 +79,6 @@ export class SlideshowComponent extends SingleContainer {
                 latentComponents,
                 deltaState.children,
                 this.childContainer,
-
                 true
             );
 
