@@ -11,8 +11,8 @@ __all__ = [
     "app",
 ]
 
-revel.GLOBAL_STYLES.add_alias("primary", ["magenta"])
-revel.GLOBAL_STYLES.add_alias("bg-primary", ["bg-magenta"])
+revel.GLOBAL_STYLES.add_alias("primary", ["cyan"])
+revel.GLOBAL_STYLES.add_alias("bg-primary", ["bg-cyan"])
 
 app = revel.App(
     summary="An easy to use, app & web framework for Python",
