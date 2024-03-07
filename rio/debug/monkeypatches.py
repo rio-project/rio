@@ -19,12 +19,25 @@ def apply_monkeypatches() -> None:
     Enables extra safeguards that are too slow to be enabled permanently. Used
     by `rio run` when running in debug mode.
     """
+    introspection.wrap_method(Component_bind, Component, "bind")
     introspection.wrap_method(ComponentMeta_call, ComponentMeta, "__call__")
     introspection.wrap_method(StateProperty_get, StateProperty, "__get__")
     introspection.wrap_method(StateProperty_set, StateProperty, "__set__")
     introspection.wrap_method(LinearContainer_init, components.Row, "__init__")
     introspection.wrap_method(LinearContainer_init, components.Column, "__init__")
     introspection.wrap_method(ListView_init, components.ListView, "__init__")
+
+
+def Component_bind(wrapped_method, self: Component):
+    if global_state.currently_building_session is None:
+        raise RuntimeError(
+            "`.bind()` can only be called inside of the `build()` method"
+        )
+
+    if global_state.currently_building_component is not self:
+        raise RuntimeError("`.bind()` can only be called on `self`")
+
+    return wrapped_method(self)
 
 
 def ComponentMeta_call(wrapped_method, cls, *args, **kwargs):
