@@ -257,7 +257,7 @@ def ensure_valid_port(host: str, port: int | None) -> int:
     return port
 
 
-def first_non_null(*values: float | None) -> float:
+def first_non_null(*values: T | None) -> T:
     """
     Returns the first non-`None` value, or raises a `ValueError` if all values
     are `None`.

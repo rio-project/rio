@@ -9,23 +9,8 @@ from uniserde import Jsonable
 
 import rio
 
-from . import color
+from . import color, common
 from . import text_style as text_style_module
-
-# This module imports `curses` even though it doesn't need it, which causes
-# problems on Windows. Since it's unused, we'll just give it a fake module if
-# the real curses isn't available.
-try:
-    import material_color_utilities_python
-except ImportError:
-    import sys
-    import types
-
-    sys.modules["curses"] = types.SimpleNamespace(termattrs=None)  # type: ignore
-    import material_color_utilities_python
-
-    del sys.modules["curses"]
-
 
 __all__ = [
     "Palette",
@@ -34,23 +19,6 @@ __all__ = [
 
 
 T = TypeVar("T")
-
-
-def elvis(optional: Optional[T], default: T) -> T:
-    if optional is None:
-        return default
-    else:
-        return optional
-
-
-class MaterialPalette:
-    def __init__(self, hue: int, chroma: int):
-        self._material_palette = material_color_utilities_python.TonalPalette(
-            hue, chroma
-        )
-
-    def __getitem__(self, tone: int) -> rio.Color:
-        return rio.Color._from_material_argb(self._material_palette.tone(tone))
 
 
 @dataclass(frozen=True)
@@ -67,14 +35,23 @@ class Palette:
         color: rio.Color,
         is_light_theme: bool,
     ) -> Self:
-        as_hct = material_color_utilities_python.Hct.fromInt(color._as_material_argb)
-        hct_palette = MaterialPalette(as_hct.hue, as_hct.chroma)
+        # For the foreground color, keep the same shade but adjust the
+        # brightness to make it readable.
+        current_brightness = color.perceived_brightness
+        target_brightness = 0.08 if is_light_theme else 0.92
+        brightness_scale = target_brightness / current_brightness
+
+        foreground = rio.Color.from_rgb(
+            min(max(color.red * brightness_scale, 0), 1),
+            min(max(color.green * brightness_scale, 0), 1),
+            min(max(color.blue * brightness_scale, 0), 1),
+        )
 
         return cls(
             background=color,
-            background_variant=hct_palette[as_hct.tone + 5],
-            background_active=hct_palette[as_hct.tone + 15],
-            foreground=hct_palette[8 if as_hct.tone > 60 else 92],
+            background_variant=color.brighter(0.05),
+            background_active=color.brighter(0.15),
+            foreground=foreground,
         )
 
     def replace(
@@ -85,10 +62,14 @@ class Palette:
         foreground: rio.Color | None = None,
     ) -> Palette:
         return Palette(
-            background=elvis(background, self.background),
-            background_variant=elvis(background_variant, self.background_variant),
-            background_active=elvis(background_active, self.background_active),
-            foreground=elvis(foreground, self.foreground),
+            background=common.first_non_null(background, self.background),
+            background_variant=common.first_non_null(
+                background_variant, self.background_variant
+            ),
+            background_active=common.first_non_null(
+                background_active, self.background_active
+            ),
+            foreground=common.first_non_null(foreground, self.foreground),
         )
 
 
@@ -418,25 +399,45 @@ class Theme:
         text_style: rio.TextStyle | None = None,
     ) -> Theme:
         return Theme(
-            primary_palette=elvis(primary_palette, self.primary_palette),
-            secondary_palette=elvis(secondary_palette, self.secondary_palette),
-            background_palette=elvis(background_palette, self.background_palette),
-            neutral_palette=elvis(neutral_palette, self.neutral_palette),
-            hud_palette=elvis(hud_palette, self.hud_palette),
-            disabled_palette=elvis(disabled_palette, self.disabled_palette),
-            success_palette=elvis(success_palette, self.success_palette),
-            warning_palette=elvis(warning_palette, self.warning_palette),
-            danger_palette=elvis(danger_palette, self.danger_palette),
-            corner_radius_small=elvis(corner_radius_small, self.corner_radius_small),
-            corner_radius_medium=elvis(corner_radius_medium, self.corner_radius_medium),
-            corner_radius_large=elvis(corner_radius_large, self.corner_radius_large),
-            shadow_color=elvis(shadow_color, self.shadow_color),
-            font=elvis(font_family, self.font),
-            monospace_font=elvis(monospace_font, self.monospace_font),
-            heading1_style=elvis(heading1_style, self.heading1_style),
-            heading2_style=elvis(heading2_style, self.heading2_style),
-            heading3_style=elvis(heading3_style, self.heading3_style),
-            text_style=elvis(text_style, self.text_style),
+            primary_palette=common.first_non_null(
+                primary_palette, self.primary_palette
+            ),
+            secondary_palette=common.first_non_null(
+                secondary_palette, self.secondary_palette
+            ),
+            background_palette=common.first_non_null(
+                background_palette, self.background_palette
+            ),
+            neutral_palette=common.first_non_null(
+                neutral_palette, self.neutral_palette
+            ),
+            hud_palette=common.first_non_null(hud_palette, self.hud_palette),
+            disabled_palette=common.first_non_null(
+                disabled_palette, self.disabled_palette
+            ),
+            success_palette=common.first_non_null(
+                success_palette, self.success_palette
+            ),
+            warning_palette=common.first_non_null(
+                warning_palette, self.warning_palette
+            ),
+            danger_palette=common.first_non_null(danger_palette, self.danger_palette),
+            corner_radius_small=common.first_non_null(
+                corner_radius_small, self.corner_radius_small
+            ),
+            corner_radius_medium=common.first_non_null(
+                corner_radius_medium, self.corner_radius_medium
+            ),
+            corner_radius_large=common.first_non_null(
+                corner_radius_large, self.corner_radius_large
+            ),
+            shadow_color=common.first_non_null(shadow_color, self.shadow_color),
+            font=common.first_non_null(font_family, self.font),
+            monospace_font=common.first_non_null(monospace_font, self.monospace_font),
+            heading1_style=common.first_non_null(heading1_style, self.heading1_style),
+            heading2_style=common.first_non_null(heading2_style, self.heading2_style),
+            heading3_style=common.first_non_null(heading3_style, self.heading3_style),
+            text_style=common.first_non_null(text_style, self.text_style),
         )
 
     @property

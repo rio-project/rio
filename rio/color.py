@@ -108,16 +108,16 @@ class Color(SelfSerializing):
         """
 
         if red < 0.0 or red > 1.0:
-            raise ValueError("`red` must be between 0.0 and 1.0")
+            raise ValueError(f"`red` must be between 0.0 and 1.0, not {red}")
 
         if green < 0.0 or green > 1.0:
-            raise ValueError("`green` must be between 0.0 and 1.0")
+            raise ValueError(f"`green` must be between 0.0 and 1.0, not {green}")
 
         if blue < 0.0 or blue > 1.0:
-            raise ValueError("`blue` must be between 0.0 and 1.0")
+            raise ValueError(f"`blue` must be between 0.0 and 1.0, not {blue}")
 
         if opacity < 0.0 or opacity > 1.0:
-            raise ValueError("`opacity` must be between 0.0 and 1.0")
+            raise ValueError(f"`opacity` must be between 0.0 and 1.0, not {opacity}")
 
         self = object.__new__(cls)
 

@@ -16,7 +16,5 @@ app = rio.App(
             build=pages.Dashboard,
         ),
     ],
-    theme=rio.Theme.from_color(
-        primary_color=rio.Color.from_hex("a200f0"),
-    ),
+    theme=rio.Theme.from_color(),
 )
