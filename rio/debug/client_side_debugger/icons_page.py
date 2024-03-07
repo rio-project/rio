@@ -270,25 +270,35 @@ Use the `rio.Icon` component like this:
         return rio.Column(*children, spacing=0.8)
 
     def build(self) -> rio.Component:
+        children: list[rio.Component] = []
+        has_search = bool(self.search_text)
+
+        # Top Decoration
+        if not has_search:
+            children.append(
+                rio.Text(
+                    "Rio comes with a large array of icons out of the box. You can find them all here.",
+                    multiline=True,
+                    style=rio.TextStyle(
+                        font_size=1.1,
+                        font_weight="bold",
+                        fill=self.session.theme.secondary_color,
+                    ),
+                    margin_bottom=1,
+                )
+            )
+
         # Search field
-        children: list[rio.Component] = [
+        children.append(
             rio.TextInput(
                 label="Search for an icon",
                 text=self.bind().search_text,
                 on_change=self._on_search_text_change,
             ),
-        ]
+        )
 
         # Display the top results in a grid
-        if not self.search_text:
-            children.append(
-                rio.Text(
-                    "Rio comes with a large array of icons out of the box. You can find them all here.",
-                    multiline=True,
-                    align_y=0.5,
-                )
-            )
-        elif self.matches:
+        if self.matches:
             results = []
 
             for icon_set, icon_name, icon_variants in self.matches[:50]:
@@ -305,9 +315,27 @@ Use the `rio.Icon` component like this:
                     ),
                 )
 
-            children.append(rio.FlowContainer(*results, height="grow"))
+            children.append(
+                rio.FlowContainer(
+                    *results,
+                    height="grow",
+                    align_y=0,
+                )
+            )
 
-        else:
+        # Bottom Decoration
+        if not has_search:
+            children.append(
+                rio.Image(
+                    rio.common.RIO_ASSETS_DIR / "icons-showcase.svg",
+                    height="grow",
+                    fill_mode="zoom",
+                    margin_top=2,
+                ),
+            )
+
+        # No results
+        if has_search and not self.matches:
             children.append(
                 rio.Container(
                     rio.Column(
@@ -329,11 +357,8 @@ Use the `rio.Icon` component like this:
                 )
             )
 
-        # Absorb additional space
-        children.append(rio.Spacer())
-
         # If an icon is selected, show its details
-        if self.selected_icon is not None:
+        if has_search and self.selected_icon is not None:
             children.append(self.build_details())
 
         # Combine everything
