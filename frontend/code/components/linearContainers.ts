@@ -167,7 +167,11 @@ export class RowComponent extends LinearContainer {
                 this.state.proportions === 'homogeneous'
                     ? Array(this.children.size).fill(1)
                     : this.state.proportions;
-            let proportionSize = this.allocatedWidth / this.totalProportions;
+
+            let spacing =
+                Math.max(this.children.size - 1, 0) * this.state.spacing;
+            let proportionSize =
+                (this.allocatedWidth - spacing) / this.totalProportions;
 
             for (let i = 0; i < proportions.length; i++) {
                 let child = componentsById[this.state.children[i]]!;
@@ -356,7 +360,11 @@ export class ColumnComponent extends LinearContainer {
                 this.state.proportions === 'homogeneous'
                     ? Array(this.children.size).fill(1)
                     : this.state.proportions;
-            let proportionSize = this.allocatedHeight / this.totalProportions;
+
+            let spacing =
+                Math.max(this.children.size - 1, 0) * this.state.spacing;
+            let proportionSize =
+                (this.allocatedWidth - spacing) / this.totalProportions;
 
             for (let i = 0; i < proportions.length; i++) {
                 let child = componentsById[this.state.children[i]]!;
