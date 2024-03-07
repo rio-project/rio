@@ -146,6 +146,7 @@ def generate_root_init(
     page_string = "\n".join(page_strings)
 
     # Write the result
+    default_theme = rio.Theme.from_color()
     fil.write(
         f"""
 from typing import *  # type: ignore
@@ -162,8 +163,8 @@ from . import components as comps
 # The most important parameters are listed, but more are available! You can find
 # them all in the docs TODO: Add link.
 theme = rio.Theme.from_color(
-    primary_color=rio.Color.from_hex("b002ef"),
-    secondary_color=rio.Color.from_hex("329afc"),
+    primary_color=rio.Color.from_hex("{default_theme.primary_color.hex}"),
+    secondary_color=rio.Color.from_hex("{default_theme.secondary_color.hex}"),
     light=True,
 )
 
