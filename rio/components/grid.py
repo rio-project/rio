@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable
 from dataclasses import KW_ONLY, dataclass
 from typing import Literal
@@ -90,7 +91,7 @@ class Grid(FundamentalComponent):
 
     def __init__(
         self,
-        *rows: Iterable[rio.Component],
+        *rows: rio.Component | Iterable[rio.Component],
         row_spacing: float = 0.0,
         column_spacing: float = 0.0,
         key: str | None = None,
@@ -126,32 +127,70 @@ class Grid(FundamentalComponent):
 
         # JS can only work with lists of Components, so we'll store the
         # components and their positions separately
-        _children: list[rio.Component] = []
-        _child_positions: list[GridChildPosition] = []
-
-        for row_nr, row_components in enumerate(rows):
-            for col_nr, component in enumerate(row_components):
-                _children.append(component)
-                _child_positions.append(
-                    GridChildPosition(
-                        row=row_nr,
-                        column=col_nr,
-                    )
-                )
-
-        self._children = _children
-        self._child_positions = _child_positions
+        self._children, self._child_positions = self._add_initial_children(rows)
 
         self._properties_set_by_creator_.update(["_children", "_child_positions"])
 
-    def add_child(
+    def __repr__(self) -> str:
+        return "foo"
+
+    def _add_initial_children(
+        self,
+        children: Iterable[rio.Component | Iterable[rio.Component]],
+    ) -> tuple[list[rio.Component], list[GridChildPosition]]:
+        """
+        Adds the children added in the constructor to the component. This is
+        fairly complex and thus has its own function so not to pollute the
+        constructor.
+        """
+        result_children: list[rio.Component] = []
+        result_child_positions: list[GridChildPosition] = []
+
+        # Pre process the rows and find the number of children in each
+        rows: list[list[rio.Component]] = []
+        row_widths: list[int] = []
+
+        for row in children:
+            if isinstance(row, rio.Component):
+                row = [row]
+            else:
+                row = list(row)
+
+            rows.append(row)
+            row_widths.append(len(row))
+
+        # Find the target number of columns
+        target_columns = math.lcm(*row_widths)
+
+        # Add the children
+        for yy, row_components in enumerate(rows):
+            row_width = row_widths[yy]
+            multiplier = target_columns // row_width
+
+            for xx, component in enumerate(row_components):
+                result_children.append(component)
+                result_child_positions.append(
+                    GridChildPosition(
+                        yy,
+                        xx * multiplier,
+                        width=multiplier,
+                        height=1,
+                    )
+                )
+
+        # Done
+        return result_children, result_child_positions
+
+    def add(
         self,
         child: rio.Component,
         row: int,
         column: int,
+        *,
         width: int = 1,
         height: int = 1,
     ) -> None:
+        assert isinstance(child, rio.Component), child
         """
         Add a child to the grid at a specified position.
 

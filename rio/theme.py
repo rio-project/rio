@@ -37,15 +37,20 @@ class Palette:
     ) -> Self:
         # For the foreground color, keep the same shade but adjust the
         # brightness to make it readable.
-        current_brightness = color.perceived_brightness
-        target_brightness = 0.08 if is_light_theme else 0.92
-        brightness_scale = target_brightness / current_brightness
 
-        foreground = rio.Color.from_rgb(
-            min(max(color.red * brightness_scale, 0), 1),
-            min(max(color.green * brightness_scale, 0), 1),
-            min(max(color.blue * brightness_scale, 0), 1),
-        )
+        current_brightness = color.perceived_brightness
+        target_brightness = 0.08 if current_brightness > 0.4 else 0.92
+
+        if current_brightness == 0:
+            foreground = rio.Color.from_grey(target_brightness)
+        else:
+            brightness_scale = target_brightness / current_brightness
+
+            foreground = rio.Color.from_rgb(
+                min(max(color.red * brightness_scale, 0), 1),
+                min(max(color.green * brightness_scale, 0), 1),
+                min(max(color.blue * brightness_scale, 0), 1),
+            )
 
         return cls(
             background=color,

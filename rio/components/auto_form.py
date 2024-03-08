@@ -128,13 +128,13 @@ class AutoForm(component.Component):
                 continue
 
             # Add a label
-            grid.add_child(
+            grid.add(
                 rio.Text(text=field_nicename, align_x=0),
                 ii,
                 0,
             )
 
             # And a input field
-            grid.add_child(input_component, ii, 1)
+            grid.add(input_component, ii, 1)
 
         return grid

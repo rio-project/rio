@@ -24,7 +24,7 @@ class Dashboard(rio.Component):
         )
 
         # The banner will display a message at the top of the page.
-        grid.add_child(
+        grid.add(
             rio.Banner(
                 self.banner_message,
                 style="info",
@@ -35,7 +35,7 @@ class Dashboard(rio.Component):
         )
 
         # CPU
-        grid.add_child(
+        grid.add(
             comps.StatCard(
                 icon="memory",
                 # color=rio.Color.RED,
@@ -49,7 +49,7 @@ class Dashboard(rio.Component):
 
         # Memory
         mem = psutil.virtual_memory()
-        grid.add_child(
+        grid.add(
             comps.StatCard(
                 icon="apps",
                 # color=rio.Color.GREEN,
@@ -64,7 +64,7 @@ class Dashboard(rio.Component):
 
         # Network
         net = psutil.net_io_counters()
-        grid.add_child(
+        grid.add(
             comps.StatCard(
                 icon="wifi",
                 # color=rio.Color.BLUE,
@@ -78,7 +78,7 @@ class Dashboard(rio.Component):
 
         # Storage
         disk = psutil.disk_usage("/")
-        grid.add_child(
+        grid.add(
             comps.StatCard(
                 icon="storage",
                 # color=rio.Color.ORANGE,
@@ -91,7 +91,7 @@ class Dashboard(rio.Component):
             column=3,
         )
 
-        grid.add_child(
+        grid.add(
             comps.History(
                 height="grow",
             ),
@@ -99,7 +99,7 @@ class Dashboard(rio.Component):
             column=0,
             width=3,
         )
-        grid.add_child(
+        grid.add(
             comps.ProcessList(
                 align_y=0,
             ),

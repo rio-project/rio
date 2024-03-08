@@ -102,7 +102,7 @@ class ComponentDetails(rio.Component):
             *,
             width: int = 1,
         ) -> None:
-            result.add_child(
+            result.add(
                 rio.Text(
                     text,
                     style="dim" if is_label else "text",
@@ -131,7 +131,7 @@ class ComponentDetails(rio.Component):
             ]
 
         # Title
-        result.add_child(
+        result.add(
             rio.Row(
                 rio.Text(
                     type(target).__qualname__,
@@ -156,7 +156,7 @@ class ComponentDetails(rio.Component):
         except ValueError:
             pass
 
-        result.add_child(
+        result.add(
             rio.Text(
                 f"{file} line {line}",
                 style="dim",
@@ -227,8 +227,8 @@ class ComponentDetails(rio.Component):
             row_index += 1
 
             # Header
-            result.add_child(rio.Text("width", style="dim", align_x=0), row_index, 1)
-            result.add_child(rio.Text("height", style="dim", align_x=0), row_index, 2)
+            result.add(rio.Text("width", style="dim", align_x=0), row_index, 1)
+            result.add(rio.Text("height", style="dim", align_x=0), row_index, 2)
             row_index += 1
 
             # The size as specified in Python
@@ -309,7 +309,7 @@ class ComponentDetails(rio.Component):
             docs_url = f"https://rio.dev/docs/{type(target).__name__.lower()}"
             link_color = self.session.theme.secondary_color
 
-            result.add_child(
+            result.add(
                 rio.Link(
                     rio.Row(
                         rio.Icon("library-books", fill=link_color),
