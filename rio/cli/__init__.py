@@ -58,7 +58,7 @@ def new(
     template: project_setup.TemplatesLiteral | None = None,
 ) -> None:
     project_setup.create_project(
-        nicename=nicename,
+        raw_name=nicename,
         type=type,
         template=template,
     )

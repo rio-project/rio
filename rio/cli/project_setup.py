@@ -1,6 +1,9 @@
+import re
+import string
 from pathlib import Path
 from typing import *  # type: ignore
 
+import introspection
 import revel
 from revel import error, fatal, input, print, success, warning
 from typing_extensions import TypeAlias
@@ -111,7 +114,7 @@ def find_all_dependency_snippets(
 
 def generate_root_init(
     fil: TextIO,
-    nicename: str,
+    raw_name: str,
     project_type: Literal["app", "website"],
     dependencies: Iterable[rio.snippets.Snippet],
     main_page_snippet_name: str,
@@ -149,6 +152,8 @@ def generate_root_init(
     default_theme = rio.Theme.from_color()
     fil.write(
         f"""
+from __future__ import annotations
+
 from typing import *  # type: ignore
 
 import rio
@@ -171,7 +176,7 @@ theme = rio.Theme.from_color(
 
 # Create the Rio app
 app = rio.App(
-    name={nicename!r},
+    name={raw_name!r},
     build={root_component_name},
     pages=[{page_string}
     ],
@@ -193,9 +198,42 @@ fastapi_app = app.as_fastapi()
         )
 
 
+def strip_invalid_filename_characters(name: str) -> str:
+    """
+    Given a name, strip any characters that are not allowed in a filename.
+    """
+    return re.sub(r'[<>:"/\\|?*]', "", name)
+
+
+def derive_module_name(raw_name: str) -> str:
+    """
+    Given a name, derive a valid all_lower Python module identifier from it.
+    """
+    # Convert to lower_case
+    name = introspection.convert_case(raw_name, "snake")
+
+    # Strip any invalid characters
+    name = "".join(c for c in name if c.isidentifier() or c in string.digits)
+
+    # Since modules are written to files, the name also has to be a valid file
+    # name
+    name = strip_invalid_filename_characters(name)
+
+    # Identifiers cannot start with a digit
+    while name and name[0].isdigit():
+        name = name[1:]
+
+    # This could've resulted in an empty string
+    if not name:
+        name = "rio_app"
+
+    # Done
+    return name
+
+
 def create_project(
     *,
-    nicename: str,
+    raw_name: str,
     type: Literal["app", "website"],
     template: TemplatesLiteral | None = None,
 ) -> None:
@@ -204,25 +242,14 @@ def create_project(
     the terminal, asking for input and printing output.
     """
 
-    # Derive the python name from the nicename
-    python_name = nicename.strip().replace("-", "_").replace(" ", "_").lower()
+    # Derive a valid module name
+    module_name = derive_module_name(raw_name)
 
-    # If the python name is not a valid module name, ask for a different one
-    if not python_name.isidentifier():
-        print(
-            f"`{nicename}` is not a valid Python module name. What should the module be called?"
-        )
-
-        def parse_module_name(name: str) -> str:
-            if not name.isidentifier():
-                raise ValueError()
-
-            return name
-
-        python_name = input("Module name", parse=parse_module_name)
+    # The project directory is called the same, but in kebab-case
+    dashed_name = module_name.replace("_", "-")
 
     # Create the target directory
-    project_dir = Path.cwd() / nicename
+    project_dir = Path.cwd() / dashed_name
     project_dir.mkdir(parents=True, exist_ok=True)
 
     # If the project directory already exists it must be empty
@@ -236,10 +263,10 @@ def create_project(
         f.write("\n")
         f.write(f"[app]\n")
         f.write(f'app_type = "{type}"  # This is either "website" or "app"\n')
-        f.write(f'main_module = "{python_name}"  # The name of your Python module\n')
+        f.write(f'main_module = "{module_name}"  # The name of your Python module\n')
 
     # Create the main module and its subdirectories
-    main_module_dir = project_dir / python_name
+    main_module_dir = project_dir / module_name
     main_module_dir.mkdir()
     (main_module_dir / "components").mkdir()
     (main_module_dir / "pages").mkdir()
@@ -274,7 +301,7 @@ def create_project(
     with open(main_module_dir / "__init__.py", "w") as fil:
         generate_root_init(
             fil=fil,
-            nicename=nicename,
+            raw_name=raw_name,
             project_type=type,
             dependencies=dependencies,
             main_page_snippet_name=main_page_snippet.name,
@@ -300,13 +327,13 @@ def create_project(
     # fails without. So hey, why not make a template.
     with open(project_dir / "README.md", "w") as f:
         f.write(
-            f"""# {nicename}
+            f"""# {raw_name}
 
 This is a placeholder README for your project. Use it to describe what your
 project is about, to give new users a quick overview of what they can expect.
 
-_{nicename.capitalize()} was created using [Rio](http://rio.dev/), an easy to use
-app & website framework for Python._
+_{raw_name.capitalize()} was created using [Rio](http://rio.dev/), an easy to
+use app & website framework for Python._
 """
         )
 
@@ -322,10 +349,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 # Import the main module
-import {python_name}
+import {module_name}
 
 # Run the app
-{python_name}.app.run_in_window()
+{module_name}.app.run_in_window()
 """
             )
 
