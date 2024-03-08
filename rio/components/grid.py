@@ -189,7 +189,7 @@ class Grid(FundamentalComponent):
         *,
         width: int = 1,
         height: int = 1,
-    ) -> None:
+    ) -> Grid:
         assert isinstance(child, rio.Component), child
         """
         Add a child to the grid at a specified position.
@@ -220,6 +220,9 @@ class Grid(FundamentalComponent):
 
         self._children.append(child)
         self._child_positions.append(GridChildPosition(row, column, width, height))
+
+        # Return self for chaining
+        return self
 
     def _custom_serialize(self) -> JsonDoc:
         return {
