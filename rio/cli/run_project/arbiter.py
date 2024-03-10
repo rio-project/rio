@@ -453,6 +453,7 @@ class Arbiter:
                     # If the `rio.toml` has changed, reload the entire project,
                     # not just the app
                     if event.path_to_file == self.proj.rio_toml_path:
+                        print("Reloading project configuration from `rio.toml`")
                         self.proj.discard_changes_and_reload()
 
                     # Restart the app
