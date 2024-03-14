@@ -361,7 +361,7 @@ class Session(unicall.Unicall):
 
         # Fire the session end event
         await self._call_event_handler(
-            self._app_server.app._on_session_end, self, refresh=False
+            self._app_server.app._on_session_close, self, refresh=False
         )
 
         # Save the settings

@@ -496,6 +496,16 @@ window.setConnectionLostPopupVisible(true);
     async def _restart_app(self) -> None:
         assert self._uvicorn_worker is not None
 
+        app_server = self._uvicorn_worker.app_server
+        assert app_server is not None
+
+        # Shut down the current app. This happens automatically when the app
+        # server shuts down, but since we're just swapping out the app, we have
+        # to call it manually.
+        # TODO: Shouldn't we close all the active sessions first? It's odd that
+        # `on_app_close` is called while there are still active sessions.
+        await app_server._call_on_app_close()
+
         # Load the user's app again
         new_app, loading_error = self.try_load_app()
 
@@ -517,8 +527,6 @@ window.setConnectionLostPopupVisible(true);
         # The app has changed, but the uvicorn server is still the same. Because
         # of this, uvicorn won't call the `on_app_start` function - do it
         # manually.
-        app_server = self._uvicorn_worker.app_server
-        assert app_server is not None
         await app_server._call_on_app_start()
 
         # Tell all sessions to reconnect, and close old sessions

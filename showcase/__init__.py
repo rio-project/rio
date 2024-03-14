@@ -488,7 +488,7 @@ app = rio.App(
     name="Rio Showcase",
     build=ComponentShowcase,
     on_session_start=lambda sess: print("Session Started"),
-    on_session_end=lambda sess: print("Session Ended"),
+    on_session_close=lambda sess: print("Session Ended"),
     theme=theme,
 )
 

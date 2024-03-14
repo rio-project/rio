@@ -215,6 +215,21 @@ class AppServer(fastapi.FastAPI):
             print("Exception in `on_app_start` event handler:")
             traceback.print_exc()
 
+    async def _call_on_app_close(self) -> None:
+        if self.app._on_app_close is None:
+            return
+
+        try:
+            result = self.app._on_app_close(self.app)
+
+            if inspect.isawaitable(result):
+                await result
+
+        # Display and discard exceptions
+        except Exception:
+            print("Exception in `_on_app_close` event handler:")
+            traceback.print_exc()
+
     @contextlib.asynccontextmanager
     async def _lifespan(self):
         # If running as a server, periodically clean up expired sessions
@@ -251,6 +266,8 @@ class AppServer(fastapi.FastAPI):
                     traceback.print_exception(
                         type(result), result, result.__traceback__
                     )
+
+            await self._call_on_app_close()
 
     def weakly_host_asset(self, asset: assets.HostedAsset) -> None:
         """

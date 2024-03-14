@@ -155,8 +155,9 @@ class App:
         icon: ImageLike | None = None,
         pages: Iterable[rio.Page] = tuple(),
         on_app_start: rio.EventHandler[App] = None,
+        on_app_close: rio.EventHandler[App] = None,
         on_session_start: rio.EventHandler[rio.Session] = None,
-        on_session_end: rio.EventHandler[rio.Session] = None,
+        on_session_close: rio.EventHandler[rio.Session] = None,
         default_attachments: Iterable[Any] = (),
         ping_pong_interval: int | float | timedelta = timedelta(seconds=50),
         assets_dir: str | os.PathLike = "assets",
@@ -209,7 +210,7 @@ class App:
                 is to make sure initialization code doesn't accidentally make
                 the user wait.
 
-            on_session_end: A function that will be called each time a session
+            on_session_close: A function that will be called each time a session
                 ends. In the context of a website that would be each time a user
                 closes their browser tab. In the context of a window this will
                 only be called once, when the window is closed.
@@ -254,8 +255,9 @@ class App:
         self._icon = assets.Asset.from_image(icon)
         self.pages = tuple(pages)
         self._on_app_start = on_app_start
+        self._on_app_close = on_app_close
         self._on_session_start = on_session_start
-        self._on_session_end = on_session_end
+        self._on_session_close = on_session_close
         self.default_attachments: MutableSequence[Any] = list(default_attachments)
         self._theme = theme
         self._build_connection_lost_message = build_connection_lost_message
