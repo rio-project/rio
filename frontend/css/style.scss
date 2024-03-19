@@ -2426,6 +2426,24 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     gap: 0.5rem;
 }
 
+// Expander Arrow
+.rio-debugger-component-tree-item
+    > .rio-debugger-component-tree-item-header::before {
+    width: 1rem;
+    content: ' ';
+    text-align: center;
+
+    transition: transform 0.5s ease-in-out;
+}
+.rio-debugger-component-tree-item[data-has-children='true']
+    > .rio-debugger-component-tree-item-header::before {
+    content: '>';
+}
+.rio-debugger-component-tree-item[data-expanded='true']
+    > .rio-debugger-component-tree-item-header::before {
+    transform: rotate(90deg);
+}
+
 .rio-debugger-component-tree-item-header::after {
     pointer-events: none;
     content: '';
@@ -2478,9 +2496,15 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 }
 
 .rio-debugger-component-tree-item-children {
-    display: flex;
+    margin-left: 0.7rem;
+
+    display: none;
     flex-direction: column;
     gap: 0.2rem;
+}
+.rio-debugger-component-tree-item[data-has-children='true'][data-expanded='true']
+    > .rio-debugger-component-tree-item-children {
+    display: flex;
 }
 
 .rio-debugger-component-highlighter {

@@ -185,7 +185,6 @@ export class ComponentTreeComponent extends ComponentBase {
         let children = this.getDisplayableChildren(component);
         let childElement = document.createElement('div');
         childElement.classList.add('rio-debugger-component-tree-item-children');
-        childElement.style.marginLeft = '0.7rem';
         element.appendChild(childElement);
 
         for (let childInfo of children) {
@@ -194,7 +193,8 @@ export class ComponentTreeComponent extends ComponentBase {
 
         // Expand the node, or not
         let expanded = this.getNodeExpanded(component);
-        childElement.style.display = expanded ? 'flex' : 'none';
+        element.dataset.expanded = `${expanded}`;
+        element.dataset.hasChildren = `${children.length > 0}`;
 
         // Add icons to give additional information
         let icons: string[] = [];
@@ -317,9 +317,7 @@ export class ComponentTreeComponent extends ComponentBase {
         let children = this.getDisplayableChildren(component);
 
         if (element !== null) {
-            let childrenElement = element.lastChild as HTMLElement;
-            childrenElement.style.display =
-                expanded && children.length > 0 ? 'flex' : 'none';
+            element.dataset.expanded = `${expanded}`;
         }
 
         // If expanding, and the node only has a single child, expand that child
