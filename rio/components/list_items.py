@@ -24,10 +24,11 @@ class HeadingListItem(FundamentalComponent):
 
     A simple list item with only a header.
 
-    `HeadingListItem`s are the easiest way to create list items, which can
-    take care of the most primitive task: Display a text. If your want a more
-    generic list item with additional children, you can use the `SimpleListItem`.
-    Or if you want to build a more complex list item, you can use the `CustomListItem`.
+    `HeadingListItem`s are the easiest way to create list items, which can take
+    care of the most primitive task: Display a text. If your want a more generic
+    list item with additional children, you can use the `SimpleListItem`. Or if
+    you want to build a more complex list item, you can use the
+    `CustomListItem`.
 
     ## Attributes:
 
@@ -42,8 +43,9 @@ class HeadingListItem(FundamentalComponent):
     rio.HeadingListItem("Click me!", key="item1")
     ```
 
-    `ListView`s are commonly used to display lists of dynamic length. You can easily
-    achieve this by adding the children to a list first, and then unpacking that list:
+    `ListView`s are commonly used to display lists of dynamic length. You can
+    easily achieve this by adding the children to a list first, and then
+    unpacking that list:
 
     ```python
     class MyComponent(rio.Component):
@@ -112,8 +114,9 @@ class SimpleListItem(Component):
     rio.SimpleListItem("Click me!", key="item1")
     ```
 
-    `ListView`s are commonly used to display lists of dynamic length. You can easily
-    achieve this by adding the children to a list first, and then unpacking that list:
+    `ListView`s are commonly used to display lists of dynamic length. You can
+    easily achieve this by adding the children to a list first, and then
+    unpacking that list:
 
     ```python
     import functools
@@ -135,8 +138,8 @@ class SimpleListItem(Component):
                         text=product,
                         key=product,
                         left_child=rio.Icon("castle"),
-                        # Note the use of `functools.partial` to pass the product
-                        # to the event handler.
+                        # Note the use of `functools.partial` to pass the
+                        # product to the event handler.
                         on_press=functools.partial(
                             self.on_press_simple_list_item,
                             product=product,

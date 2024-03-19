@@ -62,8 +62,8 @@ class Dropdown(FundamentalComponent, Generic[T]):
     rio.Dropdown(["a", "b", "c"])
     ```
 
-    In a Component class, you can use state bindings to keep your input value updated
-    and track any changes. Here's a quick example with a `Dropdown`:
+    In a `Component` class, you can use state bindings to keep your input value
+    updated and track any changes. Here's a quick example with a `Dropdown`:
 
     ```python
     class MyComponent(rio.Component):
@@ -73,23 +73,23 @@ class Dropdown(FundamentalComponent, Generic[T]):
             return rio.Dropdown(
                 options=["a", "b", "c"],
                 label="Dropdown",
-                selected_value=self.bind().value,  # state binding
+                selected_value=self.bind().value,  # State binding
                 on_change=lambda event: print(event.value),
             )
     ```
 
-    If you want to do more than e.g. just print a message, you can use a method call
-    instead of a lambda function:
+    If you want to do more than e.g. just print a message, you can use a method
+    call instead of a lambda function:
 
     ```python
     class MyComponent(rio.Component):
         value: str = "b"
 
-        def on_change_update_value(self, ev: rio.DropdownChangeEvent):
-            # You can do whatever you want in this method
-            # like update the value and print it
-            self.value = ev.value
-            print(self.value)
+        def on_change_update_value(self, event: rio.DropdownChangeEvent):
+            # You can do whatever you want in this method like update the value
+            # and print it
+            self.value = event.value
+            print(event.value)
 
         def build(self) -> rio.Component:
             return rio.Dropdown(

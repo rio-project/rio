@@ -24,7 +24,7 @@ class LabeledColumn(Component):
 
     ## Attributes:
 
-    `children`: The components to place inside the container, with labels.
+    `content`: The components to place inside the container, with labels.
 
 
     ## Example:
@@ -40,15 +40,13 @@ class LabeledColumn(Component):
         }
     )
     ```
-
-
     """
 
     _child_list: list[Component] = field(init=False)
 
     def __init__(
         self,
-        children: Mapping[str, rio.Component],
+        content: Mapping[str, rio.Component],
         *,
         key: str | None = None,
         margin: float | None = None,
@@ -78,21 +76,21 @@ class LabeledColumn(Component):
             align_y=align_y,
         )
 
-        self.children = children
+        self.content = content
 
     @property
-    def children(self) -> Mapping[str, Component]:
-        return self._children
+    def content(self) -> Mapping[str, Component]:
+        return self._content
 
-    @children.setter
-    def children(self, children: Mapping[str, Component]) -> None:
-        self._children = children
+    @content.setter
+    def content(self, children: Mapping[str, Component]) -> None:
+        self._content = children
         self._child_list = list(children.values())
 
     def build(self) -> Component:
         rows = []
 
-        for label, child in self.children.items():
+        for label, child in self.content.items():
             rows.append(
                 [
                     rio.Text(label, align_x=1),

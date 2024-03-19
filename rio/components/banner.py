@@ -13,7 +13,7 @@ __all__ = [
 
 
 class Banner(component.Component):
-    """
+    r"""
     # Banner
 
     Displays a short message to the user.
@@ -43,7 +43,7 @@ class Banner(component.Component):
 
     `multiline`: Whether long text may be wrapped over multiple lines.
             Multiline banners are also styled slightly differently to make the
-            icon fit their larger size. Use `"\\n"` to add a line break.
+            icon fit their larger size. Use `"\n"` to add a line break.
 
 
     ## Example:
@@ -65,7 +65,7 @@ class Banner(component.Component):
         banner_text: str = ""
 
         def on_press_button(self) -> None:
-            MyComponent.banner_text = "Button pressed!"
+            self.banner_text = "Button pressed!"
 
         def build(self) -> rio.Component:
             return rio.Column(
@@ -82,7 +82,7 @@ class Banner(component.Component):
     ```
     """
 
-    text: Optional[str]
+    text: str | None
     style: Literal["info", "success", "warning", "danger"]
 
     _: KW_ONLY

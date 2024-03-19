@@ -24,7 +24,7 @@ class ColorPicker(FundamentalComponent):
     """
     # ColorPicker
 
-    Allows the user to pick a RGB(A) color.
+    Allows the user to pick an RGB(A) color.
 
     `ColorPicker` is a component that allows the user to pick a color. It
     displays a combination of colorful areas and sliders that the user can
@@ -45,15 +45,16 @@ class ColorPicker(FundamentalComponent):
 
     ## Example:
 
-    This minimal example will simply display a `ColorPicker` with the default color red:
+    This minimal example will simply display a `ColorPicker` with the default
+    color red:
 
     ```python
     rio.ColorPicker(rio.Color.from_hex("#ff0000"))
     ```
 
-    `ColorPicker`s are commonly used to let the user select a color. You can easily
-    achieve this by using state bindings to save the color in a variable and using it
-    in your application:
+    `ColorPicker`s are commonly used to let the user select a color. You can
+    easily achieve this by using state bindings to save the color in a variable
+    and using it in your application:
 
     ```python
     class MyComponent(rio.Component):
@@ -66,8 +67,8 @@ class ColorPicker(FundamentalComponent):
             )
     ```
 
-    If you want to make your `ColorPicker` more interactive, you can easily achieve this by
-    adding a lambda function call to on_change:
+    If you want to make your `ColorPicker` more interactive, you can easily
+    achieve this by adding a lambda function call to on_change:
 
     ```python
     class MyComponent(rio.Component):
@@ -81,18 +82,17 @@ class ColorPicker(FundamentalComponent):
             )
     ```
 
-    You can use an event handler to react to changes in the color. This example will
-    print the color to the console whenever the user changes it:
+    You can use an event handler to react to changes in the color. This example
+    will print the color to the console whenever the user changes it:
 
     ```python
     class MyComponent(rio.Component):
         color: rio.Color = rio.Color.from_rgb(0.5, 0.5, 0.5)
 
         def on_change_color(self, event: rio.ColorChangeEvent) -> None:
-            # you can do whatever you want
-            # in this method
+            # You can do whatever you want in this method
             self.color = event.color
-            print(f"selected color: {event.color}")
+            print(f"Selected color: {event.color}")
 
         def build(self) -> rio.Component:
             return rio.Card(

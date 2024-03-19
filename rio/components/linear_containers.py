@@ -199,20 +199,20 @@ class Column(_LinearContainer):
     rio.Column(rio.Text("Hello"), rio.Text("World!"))
     ```
 
-    `Columns`s are commonly used to line up multiple components vertically. In this example, we're
-    using an Icon and two Text components in a Column and wrap them in a Card.
+    `Columns`s are commonly used to line up multiple components vertically. In
+    this example, we're using an Icon and two Text components in a Column and
+    wrap them in a Card.
 
     ```python
     class MyComponent(rio.Component):
         def build(self) -> rio.Component:
             return rio.Card(
                 content=rio.Column(
-                    rio.Icon(icon="castle"),
+                    rio.Icon("material/castle"),
                     rio.Text("Hello"),
                     rio.Text("World!"),
                     spacing=1,
-                    # align card content in the center
-                    # to avoid undefined space
+                    # Align card content in the center to avoid undefined space
                     align_x=0.5,
                 ),
             )

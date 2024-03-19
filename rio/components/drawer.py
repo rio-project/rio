@@ -66,7 +66,7 @@ class Drawer(FundamentalComponent):
     ```python
     rio.Drawer(
         anchor=rio.Button("Click Me!"),
-        content=rio.Text("It was clickbait my friend!"),
+        content=rio.Text("It was clickbait!"),
     )
     ```
 
@@ -88,7 +88,7 @@ class Drawer(FundamentalComponent):
                     on_press=self.on_press_button,
                 ),
                 content=rio.Text(
-                    "It was clickbait my friend!",
+                    "It was clickbait!",
                 ),
                 is_open=self.is_open,
             )

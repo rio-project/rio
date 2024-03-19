@@ -29,18 +29,19 @@ class Container(Component):
 
     ## Example:
 
-    This minimal example will simply display a `container` with the text "Hello World!":
+    This minimal example will simply display a `container` with the text "Hello
+    World!":
 
     ```python
     rio.Container(rio.Text("Hello World!"))
     ```
 
-    `Container`s are commonly used to add layout attributes to a single child. You can easily
-    achieve this by adding the content to the container and then adding the layout attributes:
+    `Container`s are commonly used to add layout attributes to a single child.
+    You can easily achieve this by adding the content to the container and then
+    adding the layout attributes:
 
     ```python
     class MyComponent(rio.Component):
-
         def build(self) -> rio.Component:
             return rio.Container(
                 rio.Text("Hello World!"),

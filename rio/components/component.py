@@ -351,7 +351,7 @@ class Component(abc.ABC, metaclass=ComponentMeta):
     - If `"grow"`, the component will request all the remaining space in its parent.
 
     - Please note that the space a `Component` receives during layouting
-        may not match the request. As a general rule for example, containers
+        may not match the request. As a general rule, for example, containers
         try to pass on all available space to children. If you really want a
         `Component` to only take up as much space as requested, consider
         specifying an alignment.
@@ -364,7 +364,8 @@ class Component(abc.ABC, metaclass=ComponentMeta):
         however much space the characters of that text require. A `Row`
         would request the height of its tallest child.
 
-    - If `"grow"`, the component will request all the remaining space in its parent.
+    - If `"grow"`, the component will request all the remaining space in its
+        parent.
 
     - Please note that the space a `Component` receives during layouting
         may not match the request. As a general rule for example, containers
@@ -401,7 +402,6 @@ class Component(abc.ABC, metaclass=ComponentMeta):
     margin_y: float | None = None
     margin: float | None = None
 
-    # TODO: Figure out why `internal_field` isn't working and use it instead
     _id: int = internal_field(init=False)
 
     # Weak reference to the component's builder. Used to check if the component

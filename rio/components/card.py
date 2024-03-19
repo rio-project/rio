@@ -60,7 +60,7 @@ class Card(FundamentalComponent):
     in it:
 
     ```python
-    rio.Card(content=rio.Icon("castle"))
+    rio.Card(content=rio.Icon("material/castle"))
     ```
 
     `Card`s are commonly used to display content. You can easily make your Card
@@ -72,7 +72,7 @@ class Card(FundamentalComponent):
             # Create a row with an icon and text
             # as the card content
             card_content = rio.Row(
-                rio.Icon(icon="castle"),
+                rio.Icon(icon="material/castle"),
                 rio.Text("Click me!"),
                 spacing=1,
                 # align the card content in the center
@@ -87,25 +87,24 @@ class Card(FundamentalComponent):
     ```
 
 
-    You can also use a method for updating the input text and do whatever you want.
-    Note that methods are handy if you want to do more than just updating the input
-    text. For example run async code or update other components based on the input text:
+    You can also use a method for updating the input text and do whatever you
+    want. Note that methods are handy if you want to do more than just updating
+    the input text. For example run async code or update other components based
+    on the input text:
 
     ```python
     class MyComponent(rio.Component):
         def on_press_card(self) -> None:
-            # Do whatever you want when
-            # the card is pressed
+            # Do whatever you want when the card is pressed
             print("Card was pressed!")
 
         def build(self) -> rio.Component:
-            # Create a row with an icon and text
-            # as the card content
+            # Create a row with an icon and text as the card content
             card_content = rio.Row(
-                rio.Icon(icon="castle"),
+                rio.Icon(icon="material/castle"),
                 rio.Text("Click me!"),
                 spacing=1,
-                # align the card content in the center
+                # Align the card content in the center
                 align_x=0.5,
             )
             return rio.Card(
@@ -118,7 +117,7 @@ class Card(FundamentalComponent):
 
     content: rio.Component
     _: KW_ONLY
-    corner_radius: Union[None, float, tuple[float, float, float, float]] = None
+    corner_radius: float | tuple[float, float, float, float] | None = None
     on_press: rio.EventHandler[[]] = None
     elevate_on_hover: bool | None = None
     colorize_on_hover: bool | None = None

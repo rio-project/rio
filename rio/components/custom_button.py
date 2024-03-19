@@ -67,10 +67,11 @@ class CustomButton(Component):
 
     ## Example:
 
-    CustomButton enables you to create a button with a fully customized appearance.
-    The following example creates a button with a white background and black text by default,
-    a black background and white text when hovered, a yellow background when pressed,
-    and a magenta background when insensitive. The button also transitions between styles:
+    CustomButton enables you to create a button with a fully customized
+    appearance. The following example creates a button with a white background
+    and black text by default, a black background and white text when hovered, a
+    yellow background when pressed, and a magenta background when insensitive.
+    The button also transitions between styles:
 
     ```python
     rio.CustomButton(

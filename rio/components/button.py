@@ -75,11 +75,11 @@ class Button(Component):
     me!" and a castle icon:
 
     ```python
-    rio.Button(content="Click me!", icon="castle")
+    rio.Button(content="Click me!", icon="material/castle")
     ```
 
-    `Button`s are commonly used to trigger actions. You can easily achieve this by
-    adding a lambda function call to `on_press`:
+    `Button`s are commonly used to trigger actions. You can easily achieve this
+    by adding a lambda function call to `on_press`:
 
     ```python
     class MyComponent(rio.Component):
@@ -90,14 +90,13 @@ class Button(Component):
             )
     ```
 
-    If you want to do more than e.g. just print a message, you can use a method call
-    instead of a lambda function:
+    If you want to do more than e.g. just print a message, you can use a method
+    call instead of a lambda function:
 
     ```python
     class MyComponent(rio.Component):
         def on_press_button(self) -> None:
-            # You can do whatever you want here,
-            # like printing
+            # You can do whatever you want here, like printing
             print("Button pressed!")
 
         def build(self) -> rio.Component:
@@ -107,8 +106,8 @@ class Button(Component):
             )
     ```
 
-    `Button`s are commonly used to trigger actions. You can easily achieve this by
-    adding a function call to on_press. You can use a function call to update
+    `Button`s are commonly used to trigger actions. You can easily achieve this
+    by adding a function call to on_press. You can use a function call to update
     the banner text signaling that the button was pressed:
 
     ```python
@@ -134,7 +133,7 @@ class Button(Component):
     ```
     """
 
-    content: rio.Component | str = ""
+    content: str | rio.Component = ""
     _: KW_ONLY
     icon: str | None = None
     shape: Literal["pill", "rounded", "rectangle"] = "pill"
