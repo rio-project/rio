@@ -77,7 +77,7 @@ class ClientSideDebugger(rio.Component):
         return rio.Row(
             # Big fat line to separate the debugger from the rest of the page
             rio.Rectangle(
-                width=0.4,
+                width=0.3,
                 style=rio.BoxStyle(fill=self.session.theme.primary_palette.background),
             ),
             # Currently active page

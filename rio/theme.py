@@ -21,6 +21,28 @@ __all__ = [
 T = TypeVar("T")
 
 
+def map_range(value: float, in1: float, in2: float, out1: float, out2: float) -> float:
+    """
+    Maps a value from one range to another.
+    """
+    frac = (value - in1) / (in2 - in1)
+    frac = min(max(frac, 0), 1)
+    return out1 + frac * (out2 - out1)
+
+
+def color_with_brightness(color: rio.Color, target_brightness: float) -> rio.Color:
+    """
+    Returns the same shade of color, but with a different brightness. Brightness
+    0 corresponds to pure black. 1 is pure white. 0.5 is the original color.
+    """
+    return rio.Color.from_hsv(
+        hue=color.hue,
+        saturation=map_range(color.saturation, 0.5, 1, 1, 0),
+        value=min(target_brightness * 2, 1),
+        opacity=color.opacity,
+    )
+
+
 @dataclass(frozen=True)
 class Palette:
     background: rio.Color
@@ -30,33 +52,37 @@ class Palette:
     foreground: rio.Color
 
     @classmethod
-    def from_color(
+    def _from_color(
         cls,
         color: rio.Color,
-        is_light_theme: bool,
+        *,
+        colorful: bool,
     ) -> Self:
         # For the foreground color, keep the same shade but adjust the
         # brightness to make it readable.
-
         current_brightness = color.perceived_brightness
-        target_brightness = 0.08 if current_brightness > 0.4 else 0.92
 
-        if current_brightness == 0:
-            foreground = rio.Color.from_grey(target_brightness)
+        if colorful:
+            brightness_offset = 0.5
+            brightness_cutoff = 0.15
         else:
-            brightness_scale = target_brightness / current_brightness
+            brightness_offset = 0.8
+            brightness_cutoff = 0.08
 
-            foreground = rio.Color.from_rgb(
-                min(max(color.red * brightness_scale, 0), 1),
-                min(max(color.green * brightness_scale, 0), 1),
-                min(max(color.blue * brightness_scale, 0), 1),
-            )
+        target_brightness = (
+            current_brightness - brightness_offset
+            if current_brightness > 0.6  # Bias towards bright labels
+            else current_brightness + brightness_offset
+        )
+        target_brightness = max(
+            min(target_brightness, 1 - brightness_cutoff), brightness_cutoff
+        )
 
         return cls(
             background=color,
             background_variant=color.brighter(0.05),
             background_active=color.brighter(0.15),
-            foreground=foreground,
+            foreground=color_with_brightness(color, target_brightness),
         )
 
     def replace(
@@ -160,8 +186,8 @@ class Theme:
             danger_color = rio.Color.from_hex("B3261E")
 
         # Extract palettes from the material theme
-        primary_palette = Palette.from_color(primary_color, light)
-        secondary_palette = Palette.from_color(secondary_color, light)
+        primary_palette = Palette._from_color(primary_color, colorful=False)
+        secondary_palette = Palette._from_color(secondary_color, colorful=False)
 
         if light:
             if background_color is None:
@@ -176,7 +202,9 @@ class Theme:
                     foreground=rio.Color.from_grey(0.15),
                 )
             else:
-                background_palette = Palette.from_color(background_color, light)
+                background_palette = Palette._from_color(
+                    background_color, colorful=False
+                )
 
             if neutral_color is None:
                 neutral_palette = Palette(
@@ -190,18 +218,18 @@ class Theme:
                     foreground=rio.Color.from_grey(0.1),
                 )
             else:
-                neutral_palette = Palette.from_color(neutral_color, light)
+                neutral_palette = Palette._from_color(neutral_color, colorful=False)
 
             if hud_color is None:
-                hud_palette = Palette.from_color(
+                hud_palette = Palette._from_color(
                     rio.Color.from_grey(
                         0.06,
                         opacity=0.9,
                     ),
-                    light,
+                    colorful=False,
                 )
             else:
-                hud_palette = Palette.from_color(hud_color, light)
+                hud_palette = Palette._from_color(hud_color, colorful=False)
 
             if disabled_color is None:
                 disabled_palette = Palette(
@@ -211,7 +239,7 @@ class Theme:
                     rio.Color.from_grey(0.4),
                 )
             else:
-                disabled_palette = Palette.from_color(disabled_color, light)
+                disabled_palette = Palette._from_color(disabled_color, colorful=False)
 
             shadow_color = rio.Color.from_rgb(0.1, 0.1, 0.4, 0.3)
 
@@ -228,7 +256,9 @@ class Theme:
                     foreground=rio.Color.from_grey(0.9),
                 )
             else:
-                background_palette = Palette.from_color(background_color, light)
+                background_palette = Palette._from_color(
+                    background_color, colorful=False
+                )
 
             if neutral_color is None:
                 neutral_palette = Palette(
@@ -242,18 +272,18 @@ class Theme:
                     foreground=rio.Color.from_grey(0.5),
                 )
             else:
-                neutral_palette = Palette.from_color(neutral_color, light)
+                neutral_palette = Palette._from_color(neutral_color, colorful=False)
 
             if hud_color is None:
-                hud_palette = Palette.from_color(
+                hud_palette = Palette._from_color(
                     rio.Color.from_grey(
                         0.2,
                         opacity=0.8,
                     ),
-                    light,
+                    colorful=False,
                 )
             else:
-                hud_palette = Palette.from_color(hud_color, light)
+                hud_palette = Palette._from_color(hud_color, colorful=False)
 
             if disabled_color is None:
                 disabled_palette = Palette(
@@ -263,14 +293,14 @@ class Theme:
                     rio.Color.from_grey(0.6),
                 )
             else:
-                disabled_palette = Palette.from_color(disabled_color, light)
+                disabled_palette = Palette._from_color(disabled_color, colorful=False)
 
             shadow_color = rio.Color.from_rgb(0.0, 0.0, 0.1, 0.35)
 
         # Semantic colors
-        success_palette = Palette.from_color(success_color, light)
-        warning_palette = Palette.from_color(warning_color, light)
-        danger_palette = Palette.from_color(danger_color, light)
+        success_palette = Palette._from_color(success_color, colorful=True)
+        warning_palette = Palette._from_color(warning_color, colorful=True)
+        danger_palette = Palette._from_color(danger_color, colorful=True)
 
         # Colorful headings can be a problem when the primary color is similar
         # to the background/neutral color. If the `color_headings` argument is

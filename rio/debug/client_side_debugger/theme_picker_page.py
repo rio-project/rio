@@ -165,7 +165,7 @@ class PalettePicker(rio.Component):  #
     async def _on_color_change(self, event: rio.ColorChangeEvent) -> None:
         await update_and_apply_theme(
             self.session,
-            {self.palette_attribute_name: rio.Palette.from_color(event.color, True)},
+            {self.palette_attribute_name: rio.Palette._from_color(event.color, True)},
         )
 
     def _on_press(self, event: rio.PressEvent) -> None:

@@ -186,17 +186,6 @@ app = rio.App(
 """.lstrip()
     )
 
-    if project_type == "website":
-        fil.write(
-            """
-# Make the website available as a FastAPI app
-#
-# This allows you to run it either via the `rio run` command, or using tools
-# such as `uvicorn`.
-fastapi_app = app.as_fastapi()
-"""
-        )
-
 
 def strip_invalid_filename_characters(name: str) -> str:
     """
