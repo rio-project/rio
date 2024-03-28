@@ -2630,23 +2630,58 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
     pointer-events: auto;
     color: var(--rio-global-danger-fg);
 
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
     background: var(--rio-global-danger-bg);
     border-radius: var(--rio-global-corner-radius-small);
 
+    // `rio-build-failed-content` can't have a corner radius set, because that
+    // would make the barber pole peek through the corners. Instead enforce
+    // the corner radius from this element.
+    overflow: hidden;
+
     @include barber-pole(var(--rio-global-danger-bg-variant));
-    @include center-content();
+}
+
+.rio-build-failed-top,
+.rio-build-failed-bottom {
+    flex-grow: 1;
+}
+
+.rio-build-failed-top {
+    background: linear-gradient(
+        to top,
+        var(--rio-global-danger-bg),
+        var(--rio-global-danger-bg) 30%,
+        transparent
+    );
+}
+
+.rio-build-failed-bottom {
+    background: linear-gradient(
+        to bottom,
+        var(--rio-global-danger-bg),
+        var(--rio-global-danger-bg) 30%,
+        transparent
+    );
 }
 
 .rio-build-failed-content {
+    padding: 1rem;
+
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
 
-    padding: 1rem;
+    background: var(--rio-global-danger-bg);
 }
 
 .rio-build-failed-header {
+    align-self: center;
+
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -2659,6 +2694,10 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
 .rio-build-failed-summary {
     font-weight: bold;
+}
+
+.rio-build-failed-details {
+    align-self: center;
 }
 
 // Code Explorer

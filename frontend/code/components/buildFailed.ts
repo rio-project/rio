@@ -22,6 +22,7 @@ export class BuildFailedComponent extends ComponentBase {
         element.classList.add('rio-build-failed');
 
         element.innerHTML = `
+            <div class="rio-build-failed-top"></div>
             <div class="rio-build-failed-content">
                 <div class="rio-build-failed-header">
                     <div class="rio-build-failed-icon"></div>
@@ -29,6 +30,7 @@ export class BuildFailedComponent extends ComponentBase {
                 </div>
                 <div class="rio-build-failed-details"></div>
             </div>
+            <div class="rio-build-failed-bottom"></div>
         `;
 
         // Expose them
