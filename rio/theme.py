@@ -35,9 +35,19 @@ def color_with_brightness(color: rio.Color, target_brightness: float) -> rio.Col
     Returns the same shade of color, but with a different brightness. Brightness
     0 corresponds to pure black. 1 is pure white. 0.5 is the original color.
     """
+    hue, saturation, value = color.hsv
+
+    # Keep neutral colors neutral
+    if saturation == 0 or value == 0:
+        return rio.Color.from_grey(
+            target_brightness,
+            opacity=color.opacity,
+        )
+
+    # Otherwise keep the color and adjust the brightness
     return rio.Color.from_hsv(
-        hue=color.hue,
-        saturation=map_range(color.saturation, 0.5, 1, 1, 0),
+        hue=hue,
+        saturation=map_range(saturation, 0.5, 1, 1, 0),
         value=min(target_brightness * 2, 1),
         opacity=color.opacity,
     )
@@ -63,8 +73,8 @@ class Palette:
         current_brightness = color.perceived_brightness
 
         if colorful:
-            brightness_offset = 0.5
-            brightness_cutoff = 0.15
+            brightness_offset = 0.4
+            brightness_cutoff = 0.25
         else:
             brightness_offset = 0.8
             brightness_cutoff = 0.08

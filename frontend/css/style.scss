@@ -2627,14 +2627,38 @@ textarea:not(:placeholder-shown) ~ .rio-input-box-label,
 
 // Build failed component
 .rio-build-failed {
-    @include barber-pole(var(--rio-global-danger-bg));
-    @include center-content();
+    pointer-events: auto;
+    color: var(--rio-global-danger-fg);
 
-    svg {
-        $max-size: 3rem;
-        max-width: $max-size;
-        max-height: $max-size;
-    }
+    background: var(--rio-global-danger-bg);
+    border-radius: var(--rio-global-corner-radius-small);
+
+    @include barber-pole(var(--rio-global-danger-bg-variant));
+    @include center-content();
+}
+
+.rio-build-failed-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+
+    padding: 1rem;
+}
+
+.rio-build-failed-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rio-build-failed-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.rio-build-failed-summary {
+    font-weight: bold;
 }
 
 // Code Explorer
